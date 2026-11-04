@@ -4449,6 +4449,7 @@
                 const { error } = await sb.storage.from("paid-files").upload(path, f, { upsert: true, contentType: "application/pdf", cacheControl: "0" });
                 if (error) throw error;
                 p.file_url = `private:${path}`;
+                p._fileRemoved = false;
                 afterChange({ sheet: true });
                 toast("رُفع الملف. اضغط حفظ ليثبت في المنتج");
             });
@@ -4637,6 +4638,7 @@
             if (!p) return;
             if (!(await askConfirm("إزالة ملف هذا المنتج؟ لن يُرسل للعملاء بعد الآن."))) return;
             p.file_url = "";
+            p._fileRemoved = true;
             sb.storage.from("paid-files").remove([`${p.id}.pdf`]).catch(() => {});
             afterChange({ sheet: true });
             return;
@@ -5294,7 +5296,7 @@
             // المخزون يتغيّر مع كل طلب: نأخذ آخر كمية من الخادم إلا إذا عدّلتها أنت في المسودة
             let freshStock = new Map();
             try {
-                const fr = await sb.from("products").select("id,stock,is_available");
+                const fr = await sb.from("products").select("id,stock,is_available,file_url");
                 if (!fr.error) freshStock = new Map((fr.data || []).map((x) => [x.id, x]));
             } catch { /* نكمل بالمسودة */ }
             draft.products.forEach((p) => {
@@ -5324,7 +5326,7 @@
                 color_id: p.color_id || null,
                 story: p.story || null,
                 video_url: p.video_url || null,
-                file_url: p.file_url || null,
+                file_url: p.file_url || (p._fileRemoved ? null : (((freshStock.get(p.id) || {}).file_url || "").startsWith("private:") ? freshStock.get(p.id).file_url : null)),
                 weight_g: Number(p.weight_g) > 0 ? Math.round(Number(p.weight_g)) : null,
                 stock: ATHR.stockOf(p),
                 sort_order: i + 1
