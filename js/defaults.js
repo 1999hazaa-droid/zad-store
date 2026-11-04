@@ -476,7 +476,7 @@ ATHR.isDigitalDelivery = (d) => Boolean(d && d.type === "digital");
 // =====================================================
 ATHR.isStory = (p) => Boolean(p && p.story);
 // ملف مجاني للتحميل المباشر: سعره 0 وله رابط ملف
-ATHR.isFree = (p) => Boolean(p && p.file_url && Number(p.price) === 0);
+ATHR.isFree = (p) => Boolean(p && p.file_url && !String(p.file_url).startsWith("private:") && Number(p.price) === 0);
 ATHR.fileHref = (p) => { const u = String((p && p.file_url) || ""); return /^https?:/i.test(u) ? u : ATHR.base() + u.replace(/^\/+/, ""); };
 ATHR.isActivity = (p) => Boolean(p && (p.story === "coloring" || p.story === "abc"));
 ATHR.STORY_AGES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];

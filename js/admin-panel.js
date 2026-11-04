@@ -729,8 +729,16 @@
                     </ul>
                     ${images.length < 5 ? uploadButton(`إضافة صور (${images.length} من 5)`, `data-media-add="${esc(p.id)}" multiple`) : `<small class="adm-muted">وصلت للحد الأقصى: 5 صور.</small>`}
                     <hr>
-                    <h3>ملف التحميل المجاني</h3>
-                    ${text(`${base}.file_url`, "رابط ملف PDF للتحميل", { dir: "ltr", placeholder: "files/free/اسم-الملف.pdf", help: "لو وضعت رابط ملف وسعر المنتج 0 يظهر للزبون زر «تحميل مجاني» يحمّل الملف مباشرة بدون سلة ولا طلب. ارفع الملف في مجلد files/free في مستودع المتجر." })}
+                    <h3>ملف المنتج (PDF)</h3>
+                    ${String(p.file_url || "").startsWith("private:")
+                        ? `<p class="adm-muted">✅ ملف خاص مرفوع. يصل العميل برابط مؤقت على واتساب من بطاقة الطلب (زر «أرسل الملفات»).</p>
+                           <div class="inline">
+                               <label class="ab ab-soft ab-sm">استبدال الملف<input type="file" accept="application/pdf" data-paidfile-for="${esc(p.id)}" hidden></label>
+                               <button type="button" class="ab-mini danger" data-paidfile-del="${esc(p.id)}">إزالة الملف</button>
+                           </div>`
+                        : `<p class="adm-muted">ارفع ملف PDF الخاص بهذا المنتج. لا يراه أحد من المتجر، وتُرسله أنت للعميل بعد الدفع.</p>
+                           <div class="inline"><label class="ab ab-soft ab-sm">رفع ملف PDF (خاص)<input type="file" accept="application/pdf" data-paidfile-for="${esc(p.id)}" hidden></label></div>
+                           ${text(`${base}.file_url`, "أو رابط ملف مجاني للتحميل المباشر", { dir: "ltr", placeholder: "files/free/اسم-الملف.pdf", help: "للملفات المجانية فقط: ضع سعر المنتج 0 ورابط الملف، فيظهر للزبون زر «تحميل مجاني»." })}`}
                     <hr>
                     <h3>فيديو المنتج</h3>
                     ${video ? `<video class="vid-prev" src="${esc(video.url)}" controls playsinline muted></video>` : ""}
@@ -4431,6 +4439,22 @@
             return;
         }
 
+        if (d.paidfileFor) {
+            const p = A.draft.products.find((x) => x.id === d.paidfileFor);
+            const f = files[0];
+            if (!p || !f) return;
+            if (!/pdf$/i.test(f.type || "") && !/\.pdf$/i.test(f.name || "")) { toast("اختر ملف PDF فقط"); return; }
+            await withBusy("جاري رفع الملف...", async () => {
+                const path = `${p.id}.pdf`;
+                const { error } = await sb.storage.from("paid-files").upload(path, f, { upsert: true, contentType: "application/pdf", cacheControl: "0" });
+                if (error) throw error;
+                p.file_url = `private:${path}`;
+                afterChange({ sheet: true });
+                toast("رُفع الملف. اضغط حفظ ليثبت في المنتج");
+            });
+            return;
+        }
+
         if (d.videoFor) {
             const p = A.draft.products.find((x) => x.id === d.videoFor);
             if (!p) return;
@@ -4608,6 +4632,16 @@
         if (d.days) { A.statsDays = Number(d.days); renderBook(); return; }
         if (d.reviewSet) { setReviewStatus(d.reviewSet, d.value); return; }
         if (d.reviewDel) { deleteReview(d.reviewDel); return; }
+        if (d.paidfileDel) {
+            const p = A.draft.products.find((x) => x.id === d.paidfileDel);
+            if (!p) return;
+            if (!(await askConfirm("إزالة ملف هذا المنتج؟ لن يُرسل للعملاء بعد الآن."))) return;
+            p.file_url = "";
+            sb.storage.from("paid-files").remove([`${p.id}.pdf`]).catch(() => {});
+            afterChange({ sheet: true });
+            return;
+        }
+        if (d.orderFiles) { sendOrderFiles(d.orderFiles); return; }
         if (d.orderReview) { const o = A.orders.find((x) => x.id === d.orderReview); if (o) window.open(customerWa(o, reviewRequestText(o)), "_blank", "noopener"); return; }
         if (d.edit) { editProduct(d.edit); return; }
         if (d.toggleVisible) {
@@ -6133,6 +6167,7 @@
                     ${giftTo(o) && o.gift_phone ? `<button type="button" class="ab-mini wa" data-order-wa-gift="${esc(o.id)}">واتساب المُهدى إليه</button>` : ""}
                     ${giftTo(o) && o.gift_phone && cfg().sales.gift_card !== false ? `<button type="button" class="ab-mini wa" data-order-gift-card="${esc(o.id)}">💌 أرسل بطاقة الإهداء</button>` : ""}
                     ${o.status === "new" && o.phone ? `<button type="button" class="ab-mini" data-order-remind="${esc(o.id)}">تذكير بالطلب</button>` : ""}
+                    ${o.phone && orderFileItems(o).length ? `<button type="button" class="ab-mini wa" data-order-files="${esc(o.id)}">📎 أرسل الملفات</button>` : ""}
                     ${o.status === "delivered" && o.phone ? `<button type="button" class="ab-mini wa" data-order-review="${esc(o.id)}">اطلب تقييم</button>` : ""}
                     <button type="button" class="ab-mini" data-order-copy="${esc(o.id)}">نسخ</button>
                     <button type="button" class="ab-mini" data-order-hide="${esc(o.id)}">${o.hidden ? "إظهار في الدفتر" : "إخفاء"}</button>
@@ -6188,6 +6223,36 @@
             toast(field === "hidden" ? (value ? "أُخفي الطلب" : "أُظهر الطلب") : "حُفظ");
         }
         if (field !== "admin_note") renderOrdersList();
+    }
+
+    // منتجات الطلب التي لها ملف PDF خاص
+    function orderFileItems(o) {
+        const prods = ((A.draft || A.server || {}).products) || [];
+        const out = [];
+        (o.items || []).forEach((it) => {
+            const p = prods.find((x) => x.id === it.id);
+            if (p && String(p.file_url || "").startsWith("private:") && !out.some((x) => x.p.id === p.id)) out.push({ p, name: it.label || it.name || p.name });
+        });
+        return out;
+    }
+
+    async function sendOrderFiles(id) {
+        const o = A.orders.find((x) => x.id === id);
+        if (!o) return;
+        const list = orderFileItems(o);
+        if (!list.length) { toast("لا توجد ملفات مرفوعة لمنتجات هذا الطلب"); return; }
+        await withBusy("نجهّز روابط التحميل...", async () => {
+            const lines = [];
+            for (const { p, name } of list) {
+                const path = String(p.file_url).slice(8);
+                const { data, error } = await sb.storage.from("paid-files").createSignedUrl(path, 259200, { download: `${(p.slug || "zad-file")}.pdf` });
+                if (error || !data) throw error || new Error("signed url");
+                lines.push(`📄 ${name}\n${data.signedUrl}`);
+            }
+            const first = (o.customer_name || "").split(" ")[0];
+            const text = `أهلاً ${first} 🌟\nشكراً لطلبك من ${ATHR.storeName(cfg())}. هذه روابط تحميل ملفاتك (تعمل 3 أيام، حمّلها واحفظها على جهازك):\n\n${lines.join("\n\n")}\n\nبالتوفيق لأطفالك 💜`;
+            window.open(customerWa(o, text), "_blank", "noopener");
+        });
     }
 
     function customerWa(o, text) {

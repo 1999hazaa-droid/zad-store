@@ -3645,3 +3645,7 @@ html.tpl-apple .msg-sugs button, html.tpl-apple .sug { border: 0; background: va
 .btn.free-dl:hover { filter: brightness(.95); }
 .buybar-inner .free-dl { flex: 1; }
 .free-box .free-note { margin: 10px 0 0; font-size: 13px; color: #6B7280; line-height: 1.7; }
+
+/* زر «أضف للسلة» في بطاقات المنتجات: مستطيل بنفسجي والكلام أبيض */
+.card-action .btn.btn-primary:not(.free-dl) { background: var(--primary); color: #fff; border: 0; }
+.card-action .btn.btn-primary:not(.free-dl):hover, .card-action .btn.btn-primary:not(.free-dl):active { background: var(--primary); color: #fff; filter: brightness(1.1); }
