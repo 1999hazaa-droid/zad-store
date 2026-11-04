@@ -31,10 +31,7 @@ function wavUrl(parts, dur) {
       const x = i / len, fr = p.f2 ? p.f + (p.f2 - p.f) * x : p.f, vib = p.vib ? Math.sin(i / SR * 40) * p.vib : 0;
       ph += 2 * Math.PI * (fr + vib) / SR;
       let s2;
-      if (p.w === "noise") s2 = (Math.random() * 2 - 1);
-      else if (p.w === "square") s2 = Math.sign(Math.sin(ph)) * 0.6;
-      else if (p.w === "saw") s2 = ((ph / Math.PI) % 2) - 1;
-      else s2 = Math.sin(ph) + 0.28 * Math.sin(ph * 2) + 0.1 * Math.sin(ph * 3);
+      s2 = Math.sin(ph) + 0.12 * Math.sin(ph * 2); // نغمة ناعمة فقط
       const env = Math.min(1, i / (SR * 0.006)) * Math.pow(1 - x, p.dec == null ? 1.6 : p.dec);
       f[t0 + i] += s2 * env * v;
     }
@@ -49,14 +46,14 @@ function wavUrl(parts, dur) {
 }
 const NOTES = [523, 587, 659, 784, 880, 1047, 1175, 1319, 1568, 1760, 2093, 2349];
 const DEFS = {
-  ok: () => wavUrl([{ f: 523, d: .16, t: 0 }, { f: 659, d: .16, t: .09 }, { f: 784, d: .16, t: .18 }, { f: 1047, d: .34, t: .27 }, { f: 2093, d: .2, t: .3, v: .15 }], .7),
-  bad: () => wavUrl([{ f: 300, f2: 190, d: .22, t: 0, w: "saw", v: .35 }, { f: 220, f2: 130, d: .3, t: .2, w: "saw", v: .35 }], .55),
+  ok: () => wavUrl([{ f: 659, d: .14, t: 0, v: .4 }, { f: 880, d: .22, t: .09, v: .4 }], .35),
+  bad: () => wavUrl([{ f: 330, f2: 262, d: .28, v: .3 }], .32),
   tap: () => wavUrl([{ f: 900, f2: 700, d: .05, v: .35, dec: 2.5 }], .08),
-  pop: () => wavUrl([{ f: 380, f2: 1100, d: .1, v: .5, dec: 1.2 }, { f: 1500, d: .05, t: .06, v: .2 }], .2),
+  pop: () => wavUrl([{ f: 600, f2: 800, d: .08, v: .3, dec: 1.6 }], .12),
   flip: () => wavUrl([{ f: 320, f2: 520, d: .07, w: "square", v: .2 }], .12),
-  star: () => wavUrl([{ f: 1319, d: .14, t: 0 }, { f: 1568, d: .14, t: .08 }, { f: 2093, d: .28, t: .16 }], .5),
-  win: () => wavUrl([{ f: 523, d: .14, t: 0 }, { f: 523, d: .14, t: .14 }, { f: 523, d: .14, t: .28 }, { f: 659, d: .2, t: .42 }, { f: 784, d: .2, t: .6 }, { f: 1047, d: .6, t: .8 }, { f: 1319, d: .6, t: .8, v: .25 }], 1.5),
-  unlock: () => wavUrl([{ f: 392, d: .12, t: 0 }, { f: 523, d: .12, t: .1 }, { f: 659, d: .12, t: .2 }, { f: 784, d: .12, t: .3 }, { f: 1047, d: .5, t: .4 }, { f: 1319, d: .5, t: .4, v: .3 }, { f: 1568, d: .5, t: .4, v: .25 }], 1.0),
+  star: () => wavUrl([{ f: 1047, d: .12, t: 0, v: .35 }, { f: 1319, d: .24, t: .08, v: .35 }], .4),
+  win: () => wavUrl([{ f: 523, d: .16, t: 0, v: .4 }, { f: 659, d: .16, t: .12, v: .4 }, { f: 784, d: .16, t: .24, v: .4 }, { f: 1047, d: .4, t: .36, v: .4 }], .8),
+  unlock: () => wavUrl([{ f: 523, d: .14, t: 0, v: .4 }, { f: 784, d: .14, t: .1, v: .4 }, { f: 1047, d: .4, t: .2, v: .4 }], .65),
   whoosh: () => wavUrl([{ f: 100, d: .3, w: "noise", v: .35, dec: 1 }, { f: 300, f2: 900, d: .3, v: .12, dec: .8 }], .35),
   boing: () => wavUrl([{ f: 180, f2: 520, d: .28, v: .5, vib: 25, dec: 1 }], .32),
   coin: () => wavUrl([{ f: 988, d: .08, t: 0, w: "square", v: .25 }, { f: 1319, d: .3, t: .07, w: "square", v: .25 }], .4),
@@ -67,7 +64,7 @@ NOTES.forEach((f, i) => { DEFS["n" + i] = () => wavUrl([{ f, d: .22, v: .5 }, { 
 function makeSnd(name) {
   if (SND[name]) return SND[name];
   const url = DEFS[name]();
-  const els = [0, 1].map(() => { const a = new Audio(url); a.preload = "auto"; a.volume = 1; return a; });
+  const els = [0, 1].map(() => { const a = new Audio(url); a.preload = "auto"; a.volume = 0.4; return a; });
   return (SND[name] = { els, i: 0 });
 }
 function unlockAudio() {
@@ -88,14 +85,13 @@ function play(name) {
 }
 const buzz = (p) => { try { if (!muted && navigator.vibrate) navigator.vibrate(p); } catch { /* */ } };
 const sfx = {
-  ok() { play("ok"); buzz(25); }, bad() { play("bad"); buzz([60, 40, 60]); }, pop() { play("pop"); }, flip() { play("flip"); },
-  win() { play("win"); buzz([40, 30, 40, 30, 90]); }, tap() { play("tap"); }, star() { play("star"); }, unlock() { play("unlock"); buzz([50, 40, 50, 40, 120]); },
-  whoosh() { play("whoosh"); }, boing() { play("boing"); }, coin() { play("coin"); }, tick() { play("tick"); }, clap() { play("clap"); },
+  ok() { play("ok"); buzz(15); }, bad() { play("bad"); }, pop() { play("pop"); }, flip() { /* صامت */ },
+  win() { play("win"); buzz(30); }, tap() { /* صامت */ }, star() { play("star"); }, unlock() { play("unlock"); buzz(30); },
+  whoosh() { /* صامت */ }, boing() { play("pop"); }, coin() { play("star"); }, tick() { /* صامت */ }, clap() { play("star"); },
   note(i) { play("n" + (Math.max(0, i) % NOTES.length)); }
 };
 ["pointerdown", "touchstart", "click", "keydown"].forEach((ev) => addEventListener(ev, unlockAudio, { once: false, passive: true }));
-// أي زر يُضغط يصدر نقرة خفيفة (والألعاب تضيف أصواتها الخاصة)
-addEventListener("pointerdown", (e) => { const b = e.target.closest && e.target.closest("button, a.pill, a.cta"); if (b && !b.classList.contains("opt") && !b.classList.contains("tile") && !b.classList.contains("ord") && !b.classList.contains("bubble") && !b.classList.contains("card") && !b.classList.contains("seqbtn")) sfx.tap(); }, true);
+// لا نقرات صوتية عند الضغط على الأزرار (هدوء)
 /* اسم الطفل وعبارات التشجيع */
 let CHILD = "";
 const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -309,30 +305,32 @@ function login() {
 
 function home() {
   const cnt = (k) => GAMES.filter((g) => g.cat === k);
+  const doneToday = dly.last === todayKey();
   app.innerHTML = `
-    <div class="top"><button class="pill btn" id="who">👤 ${esc(CHILD)}</button><button class="pill btn" id="mute" aria-label="الصوت">${muted ? "🔇" : "🔊"}</button><span class="pill">⭐ ${totalStars()}</span></div>
-    <div class="hero"><div class="mascot">🦉</div><h1>مرحباً يا ${esc(CHILD)}!</h1><p>اختر قسماً والعب واجمع النجوم</p></div>
+    <div class="top"><button class="pill btn" id="who">${esc(CHILD)} 👤</button><button class="pill btn" id="mute" aria-label="الصوت">${muted ? "🔇" : "🔊"}</button></div>
+    <header class="hm-head"><h1>مرحباً، ${esc(CHILD)} 👋</h1><p>اختر قسماً وابدأ اللعب</p>
+      <div class="hm-stats"><span>⭐ <b>${totalStars()}</b> نجمة</span><span>🔥 <b>${streakNow()}</b> ${streakNow() === 1 ? "يوم" : "أيام"}</span></div></header>
     <div class="feat">
-      <button class="gcard daily" data-g="daily"><span class="ic">${calIcon(true)}</span><b>التحدي اليومي</b><small>${dly.last === todayKey() ? "✅ أنجزته اليوم، عُد غداً" : "10 أسئلة + 3 نجوم هدية"}</small><span class="st">🔥 ${streakNow()} ${streakNow() === 1 ? "يوم" : "أيام"}</span></button>
-      <button class="gcard garden" data-g="garden"><span class="ic">🏆</span><b>حديقة الشخصيات</b><small>افتح شخصيات جديدة</small><span class="st">${unlockedCount()} / ${CHARS.length}</span></button>
+      <button class="gcard daily" data-g="daily" style="--c:#F97316"><span class="ic">${calIcon(true)}</span><span class="gt"><b>التحدي اليومي</b><small>${doneToday ? "أنجزته اليوم ✅" : "10 أسئلة + 3 نجوم"}</small></span></button>
+      <button class="gcard garden" data-g="garden" style="--c:#D97706"><span class="ic">🏆</span><span class="gt"><b>حديقة الشخصيات</b><small>${unlockedCount()} من ${CHARS.length} شخصية</small></span></button>
     </div>
     <h2 class="cat">الأقسام</h2>
-    <div class="cats">${CATS.map(([k, name]) => { const gs = cnt(k), got = gs.reduce((a, g) => a + (prog[g.id] || 0), 0), all = gs.length * 3, st = CATSTY[k]; return `<button class="catcard" data-c="${k}" style="background:linear-gradient(135deg,${st[0]},${st[1]})"><span class="ci">${catIcon(name)}</span><span class="ct"><b>${catTitle(name)}</b><small>${st[2]}</small><span class="cbar"><i style="width:${Math.round(got / all * 100)}%"></i></span></span><span class="cn">${gs.length}<small>ألعاب</small></span></button>`; }).join("")}</div>
+    <div class="cats">${CATS.map(([k, name]) => { const gs = cnt(k), got = gs.reduce((a, g) => a + (prog[g.id] || 0), 0), all = gs.length * 3, st = CATSTY[k]; return `<button class="catcard" data-c="${k}" style="--c:${st[0]}"><span class="ci">${catIcon(name)}</span><span class="ct"><b>${catTitle(name)}</b><small>${st[2]}</small><span class="cbar"><i style="width:${Math.round(got / all * 100)}%"></i></span></span><span class="cn">${gs.length}<small>ألعاب</small></span></button>`; }).join("")}</div>
     <a class="cta" href="../#stories">📚 أعجبتك الألعاب؟ شاهد <b>قصصنا باسم طفلك</b></a>`;
   muteBtn();
   $("#who").onclick = () => go(login);
-  app.querySelectorAll(".catcard").forEach((b) => b.onclick = () => { sfx.whoosh(); go(() => catView(b.dataset.c)); });
-  app.querySelectorAll(".gcard").forEach((b) => b.onclick = () => { sfx.whoosh(); if (b.dataset.g === "garden") return go(garden); go(() => frame(DAILYGAME)); });
+  app.querySelectorAll(".catcard").forEach((b) => b.onclick = () => go(() => catView(b.dataset.c)));
+  app.querySelectorAll(".gcard").forEach((b) => b.onclick = () => { if (b.dataset.g === "garden") return go(garden); go(() => frame(DAILYGAME)); });
 }
 function catView(k) {
   const [, name] = CATS.find((c) => c[0] === k), st = CATSTY[k], gs = GAMES.filter((g) => g.cat === k);
   app.innerHTML = `
-    <div class="top"><button class="pill btn" id="back">→ الأقسام</button><button class="pill btn" id="mute">${muted ? "🔇" : "🔊"}</button><span class="pill">⭐ ${totalStars()}</span></div>
-    <div class="cathead" style="background:linear-gradient(135deg,${st[0]},${st[1]})"><span>${catIcon(name)}</span><h1>${catTitle(name)}</h1><p>${st[2]}</p></div>
-    <div class="grid">${gs.map((g) => `<button class="gcard" data-g="${g.id}" style="background:${g.c}"><span class="ic">${g.ic}</span><b>${g.t}</b><small>${g.s}</small><span class="st">${stars(prog[g.id] || 0)}</span></button>`).join("")}</div>`;
+    <div class="top"><button class="pill btn" id="back">→ الأقسام</button><button class="pill btn" id="mute" aria-label="الصوت">${muted ? "🔇" : "🔊"}</button></div>
+    <div class="cathead" style="--c:${st[0]}"><span>${catIcon(name)}</span><div><h1>${catTitle(name)}</h1><p>${st[2]}</p></div></div>
+    <div class="grid">${gs.map((g) => `<button class="gcard" data-g="${g.id}" style="--c:${st[0]}"><span class="ic">${g.ic}</span><b>${g.t}</b><small>${g.s}</small><span class="st">${stars(prog[g.id] || 0)}</span></button>`).join("")}</div>`;
   muteBtn();
   $("#back").onclick = () => go(home);
-  app.querySelectorAll(".gcard").forEach((b) => b.onclick = () => { sfx.whoosh(); const g = GAMES.find((x) => x.id === b.dataset.g); go(() => frame(g)); });
+  app.querySelectorAll(".gcard").forEach((b) => b.onclick = () => { const g = GAMES.find((x) => x.id === b.dataset.g); go(() => frame(g)); });
 }
 /* ---------- */
 const backFn = () => (cur && cur.cat ? () => catView(cur.cat) : home);

@@ -240,3 +240,52 @@ body { background: #F6F4FE; }
 .lg-feat { list-style: none; margin: 26px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .lg-feat li { background: rgba(255, 255, 255, .7); border: 1px solid #ECE7FA; border-radius: 14px; padding: 10px 4px; font-size: 13px; font-weight: 700; color: #6B5F8C; }
 .lg-feat b { display: block; font-size: 22px; margin-bottom: 2px; }
+
+
+/* ===== الرئيسية والأقسام: تصميم هادئ وعصري ===== */
+.pill { box-shadow: 0 1px 2px rgba(43, 27, 79, .08), 0 4px 12px rgba(109, 63, 224, .08); border: 1px solid #ECE7FA; font-size: 15px; padding: 8px 14px; }
+.pill:active { transform: scale(.97); box-shadow: 0 1px 2px rgba(43, 27, 79, .08); }
+.hm-head { padding: 18px 2px 8px; }
+.hm-head h1 { margin: 0 0 4px; font-size: 28px; line-height: 1.35; font-weight: 800; color: var(--ink); text-shadow: none; }
+.hm-head p { margin: 0 0 12px; font-size: 16px; color: #6B5F8C; }
+.hm-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.hm-stats span { background: #fff; border: 1px solid #ECE7FA; border-radius: 99px; padding: 5px 12px; font-size: 14px; font-weight: 700; color: #4B3C78; }
+.hm-stats b { color: var(--pri); }
+.feat { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+.gcard { background: #fff; color: var(--ink); border: 1px solid #ECE7FA; border-radius: 20px; box-shadow: 0 1px 2px rgba(43, 27, 79, .06), 0 8px 22px rgba(109, 63, 224, .08); min-height: 0; padding: 16px 10px 14px; gap: 6px; transition: transform .12s, box-shadow .12s; }
+.gcard:active { transform: scale(.98); box-shadow: 0 1px 2px rgba(43, 27, 79, .06); }
+.gcard::after { display: none; }
+.gcard .ic { display: grid; place-items: center; width: 60px; height: 60px; border-radius: 18px; font-size: 34px; line-height: 1; background: color-mix(in srgb, var(--c, #8B5CF6) 13%, #fff); }
+.gcard b { font-size: 17px; font-weight: 800; color: var(--ink); }
+.gcard small { font-size: 13px; color: #6B5F8C; opacity: 1; }
+.gcard .st { margin-top: 2px; background: #F6F4FE; border-radius: 99px; padding: 2px 10px; font-size: 14px; letter-spacing: 1px; color: #B7791F; }
+.gcard.daily, .gcard.garden { background: #fff; }
+.feat .gcard { min-height: 0; grid-template-columns: auto 1fr; justify-items: start; align-items: center; text-align: start; padding: 14px; gap: 10px; }
+.feat .gcard .ic { width: 52px; height: 52px; font-size: 28px; grid-row: span 1; }
+.feat .gcard .gt { display: grid; gap: 2px; }
+.feat .gcard b { font-size: 15.5px; line-height: 1.35; }
+.feat .gcard small { font-size: 12.5px; line-height: 1.4; }
+h2.cat { font-size: 17px; font-weight: 800; color: var(--ink); margin: 22px 2px 10px; text-shadow: none; }
+.cats { display: grid; gap: 10px; margin-top: 0; }
+.catcard { background: #fff; color: var(--ink); border: 1px solid #ECE7FA; border-radius: 20px; padding: 14px 16px; gap: 14px; box-shadow: 0 1px 2px rgba(43, 27, 79, .06), 0 8px 22px rgba(109, 63, 224, .07); transition: transform .12s; }
+.catcard:active { transform: scale(.985); box-shadow: 0 1px 2px rgba(43, 27, 79, .06); }
+.catcard::after { display: none; }
+.catcard .ci { width: 56px; height: 56px; border-radius: 17px; display: grid; place-items: center; font-size: 30px; background: color-mix(in srgb, var(--c) 14%, #fff); flex: none; }
+.catcard .ct b { font-size: 18px; font-weight: 800; }
+.catcard .ct small { font-size: 13px; color: #6B5F8C; opacity: 1; }
+.cbar { height: 6px; background: #EFEBFB; margin-top: 6px; }
+.cbar i { background: var(--c); }
+.catcard .cn { background: #F6F4FE; color: var(--c); border-radius: 14px; padding: 6px 12px; font-size: 22px; }
+.catcard .cn small { color: #6B5F8C; font-size: 11.5px; }
+.cathead { display: flex; align-items: center; gap: 14px; text-align: start; background: #fff; color: var(--ink); border: 1px solid #ECE7FA; border-radius: 20px; padding: 14px 16px; margin-top: 6px; box-shadow: 0 1px 2px rgba(43, 27, 79, .06), 0 8px 22px rgba(109, 63, 224, .07); }
+.cathead span { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 17px; font-size: 30px; background: color-mix(in srgb, var(--c) 14%, #fff); flex: none; }
+.cathead h1 { margin: 0; font-size: 21px; font-weight: 800; color: var(--ink); }
+.cathead p { margin: 2px 0 0; font-size: 13.5px; color: #6B5F8C; opacity: 1; }
+.grid { gap: 10px; margin-top: 12px; }
+.cta { background: #fff; border: 1px solid #ECE7FA; box-shadow: 0 1px 2px rgba(43, 27, 79, .06); font-size: 15px; padding: 14px; margin-top: 20px; }
+@media (min-width: 820px) { .hm-head h1 { font-size: 34px; } }
+.gcard .ic .cal { min-width: 0; width: 34px; font-size: 14px; border-radius: 7px; box-shadow: none; border: 1px solid #F2D8D8; }
+.gcard .ic .cal i { font-size: 8px; padding: 2px 1px; }
+.gcard .ic .cal b { font-size: 16px !important; padding: 1px 0 2px; }
+.gcard .ic .cal.big { min-width: 0; }
+.gcard .ic .cal.big i { font-size: 8px; padding: 2px 1px; } .gcard .ic .cal.big b { font-size: 16px !important; padding: 1px 0 2px; }
