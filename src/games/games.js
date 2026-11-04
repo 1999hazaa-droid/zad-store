@@ -287,10 +287,19 @@ const muteBtn = () => { const m = $("#mute"); if (!m) return; m.onclick = () => 
 
 function login() {
   const ps = profiles();
-  app.innerHTML = `<div class="top"><a class="pill" href="../">🏪 المتجر</a><button class="pill btn" id="mute">${muted ? "🔇" : "🔊"}</button></div>
-    <div class="hero"><div class="mascot">🦉</div><h1>أهلاً بك!</h1><p>ما اسمك أيها البطل؟</p></div>
-    <form class="login" id="lf"><input id="nm" maxlength="14" autocomplete="off" placeholder="اكتب اسمك هنا" aria-label="اسم الطفل"><button class="btn-big" type="submit">🚀 هيا نلعب</button></form>
-    ${ps.length ? `<h2 class="cat">أو اختر اسمك</h2><div class="plist">${ps.map((p) => `<button class="pchip" data-p="${esc(p)}">👤 ${esc(p)}</button>`).join("")}</div>` : ""}`;
+  app.innerHTML = `<div class="top"><a class="pill" href="../">🏪 المتجر</a><button class="pill btn" id="mute" aria-label="الصوت">${muted ? "🔇" : "🔊"}</button></div>
+    <main class="lg">
+      <div class="lg-badge"><img src="../images/logo.png" alt="" width="44" height="44"></div>
+      <h1 class="lg-title">ألعاب زاد التعليمية</h1>
+      <p class="lg-sub">تعلّم الحروف والأرقام واللعب بطريقة ممتعة</p>
+      <form class="lg-card" id="lf">
+        <label class="lg-lbl" for="nm">اسم اللاعب</label>
+        <input id="nm" maxlength="14" autocomplete="off" placeholder="اكتب اسمك" aria-label="اسم الطفل">
+        <button class="lg-go" type="submit">ابدأ اللعب</button>
+      </form>
+      ${ps.length ? `<div class="lg-prof"><span>أو اختر اسمك</span><div class="plist">${ps.map((p) => `<button class="pchip" data-p="${esc(p)}">${esc(p)}</button>`).join("")}</div></div>` : ""}
+      <ul class="lg-feat" aria-label="محتوى الألعاب"><li><b>🔤</b>حروف</li><li><b>🔢</b>أرقام</li><li><b>🎨</b>ألوان</li><li><b>🐾</b>حيوانات</li></ul>
+    </main>`;
   muteBtn();
   const enter = (name) => { loadProfile(name); sfx.win(); confetti(innerWidth / 2, innerHeight / 3, 60); go(home); setTimeout(() => speak(`مرحباً يا ${name}، هيا نلعب`), 500); };
   $("#lf").onsubmit = (e) => { e.preventDefault(); const v = $("#nm").value.trim().replace(/\s+/g, " ").slice(0, 14); if (!v) { sfx.bad(); $("#nm").classList.add("no"); setTimeout(() => $("#nm").classList.remove("no"), 400); return; } enter(v); };
