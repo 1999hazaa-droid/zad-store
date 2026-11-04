@@ -171,7 +171,7 @@ const ATHR_DEFAULTS = {
         best_title: "الأكثر طلباً",
         new_title: "جديد المتجر",
         sets_title: "حزم بسعر أقل",
-        upsell_show: true,
+        upsell_show: false,
         review_request_msg: "السلام عليكم {client}، نتمنى أن ملفات {name} أعجبتك 🤍 يسعدنا تقييمك في دقيقة من هنا: {link}"
     },
 
