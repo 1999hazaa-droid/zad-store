@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#5B34D6">
+<title>لوحة المعلمة | زاد التعليمية</title>
+<meta name="description" content="أداة مجانية للمعلمة: إدارة الفصول والطالبات، الحضور والغياب، الدرجات، التحضير الأسبوعي، وتقارير جاهزة للطباعة. بياناتك تبقى على جهازك فقط.">
+<style>
+@font-face{font-family:"Cairo";src:url("../fonts/cairo-regular.woff") format("woff");font-weight:400 600;font-display:swap}
+@font-face{font-family:"Cairo";src:url("../fonts/cairo-bold.woff") format("woff");font-weight:700 900;font-display:swap}
+:root{--pri:#5B34D6;--pri2:#4B2AB5;--bg:#F5F3FB;--card:#fff;--ink:#1D1633;--mut:#6E6890;--line:#E6E2F3;--ok:#1E9E62;--bad:#D6453D;--warn:#E49A12;--blue:#2F7BE0;--r:16px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font-family:"Cairo",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.6;padding-bottom:84px}
+button,input,select,textarea{font:inherit;color:inherit}
+.top{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.top h1{font-size:17px;margin:0;font-weight:800;flex:0 0 auto}
+.top select{flex:1;min-width:0;background:rgba(255,255,255,.18);border:0;border-radius:12px;color:#fff;padding:8px 10px;font-weight:700}
+.top select option{color:#000}
+.ib{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:12px;width:40px;height:40px;font-size:20px;cursor:pointer}
+main{max-width:820px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(40,20,90,.04)}
+.card h2{font-size:17px;margin:0 0 10px;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.stat b{display:block;font-size:26px;color:var(--pri);line-height:1.2}
+.stat span{color:var(--mut);font-size:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:12px;padding:10px 16px;font-weight:700;background:var(--pri);color:#fff;cursor:pointer;min-height:44px}
+.btn.sec{background:#EEE9FB;color:var(--pri2)}
+.btn.bad{background:#FCE9E7;color:var(--bad)}
+.btn.sm{min-height:36px;padding:6px 12px;font-size:14px}
+.btn.full{width:100%}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row.sp{justify-content:space-between}
+input[type=text],input[type=number],input[type=date],select.f,textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;min-height:44px}
+textarea{min-height:76px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--pri);outline-offset:1px;border-color:transparent}
+label.l{display:block;font-size:13px;color:var(--mut);margin:8px 0 4px;font-weight:600}
+.nav{position:fixed;bottom:0;inset-inline:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+.nav button{flex:1;border:0;background:none;padding:8px 2px 6px;color:var(--mut);font-size:11.5px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
+.nav button i{font-style:normal;font-size:21px}
+.nav button.on{color:var(--pri)}
+.stu{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}
+.stu:last-child{border:0}
+.stu .nm{flex:1;min-width:0;font-weight:700;word-break:break-word}
+.stu .no{width:26px;color:var(--mut);font-size:13px;text-align:center}
+.chips{display:flex;gap:5px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;font-size:13px;font-weight:700;cursor:pointer;min-height:38px;color:var(--mut)}
+.chip.p.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.chip.a.on{background:var(--bad);border-color:var(--bad);color:#fff}
+.chip.l.on{background:var(--warn);border-color:var(--warn);color:#fff}
+.chip.e.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:center;white-space:nowrap}
+th{background:#F0ECFB;font-weight:800;color:var(--pri2)}
+td.n{text-align:start;font-weight:700;position:sticky;inset-inline-start:0;background:#fff;min-width:110px}
+th.n{position:sticky;inset-inline-start:0}
+td input[type=number]{width:66px;min-width:66px;text-align:center;padding:6px 4px;min-height:38px}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12.5px;font-weight:800}
+.lv1{background:#DDF5E8;color:#14784A}.lv2{background:#E2EEFC;color:#1F5FB0}.lv3{background:#FFF1D6;color:#9A6508}.lv4{background:#FFE7D6;color:#A14A0C}.lv5{background:#FCE0DE;color:#A8312A}
+.empty{text-align:center;color:var(--mut);padding:26px 10px}
+.empty b{display:block;font-size:40px}
+.toast{position:fixed;bottom:96px;inset-inline:0;margin:auto;width:max-content;max-width:90%;background:#1D1633;color:#fff;padding:9px 16px;border-radius:99px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50}
+.toast.on{opacity:1}
+.day{border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:10px;background:#FBFAFF}
+.day h3{margin:0 0 6px;font-size:15px;color:var(--pri2)}
+.modal{position:fixed;inset:0;background:rgba(20,10,50,.5);z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.modal>div{background:#fff;width:100%;max-width:560px;border-radius:22px 22px 0 0;padding:18px;max-height:88vh;overflow:auto}
+.hint{color:var(--mut);font-size:13px}
+.star{font-size:18px}
+#print{display:none}
+@media print{
+ body{background:#fff;padding:0}
+ body>*:not(#print){display:none!important}
+ #print{display:block!important;color:#000}
+ #print h1{font-size:20px;margin:0 0 4px}
+ #print .meta{color:#444;font-size:13px;margin-bottom:10px}
+ #print table{font-size:13px}
+ #print th{background:#eee!important;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ #print th,#print td{border:1px solid #888;padding:5px 7px}
+ #print td.n,#print th.n{position:static}
+ .cert{border:6px double #5B34D6;padding:40px 30px;text-align:center;min-height:560px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+ .cert h1{font-size:40px;color:#5B34D6}
+ .cert .big{font-size:34px;font-weight:900}
+ @page{size:A4;margin:14mm}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>📒 لوحة المعلمة</h1>
+  <select id="clsSel" aria-label="الفصل"></select>
+  <button class="ib" id="addCls" aria-label="فصل جديد">＋</button>
+</div>
+<main id="view"></main>
+<nav class="nav" id="nav"></nav>
+<div class="toast" id="toast"></div>
+<div id="print"></div>
+<script>
+(function(){
+"use strict";
+var KEY="zad_teacher_v1";
+var DAYS=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"];
+var MONTHS=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+var DAYN=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+var STAT={p:"حاضرة",a:"غائبة",l:"متأخرة",e:"بعذر"};
+var TABS=[["home","🏠","الرئيسية"],["stu","👩‍🎓","الطالبات"],["att","✅","الحضور"],["gr","📊","الدرجات"],["plan","🗓️","التحضير"],["rep","🖨️","التقارير"]];
+var db=load(),tab="home",curDate=iso(new Date()),weekStart=sunday(new Date()),repMonth=curDate.slice(0,7);
+function load(){try{var d=JSON.parse(localStorage.getItem(KEY)||"null");if(d&&d.classes)return d}catch(e){}return{v:1,classes:[],cur:null}}
+var saveT;function save(msg){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){toast("تعذّر الحفظ: الذاكرة ممتلئة");return}if(msg)toast(msg)}
+function saveSoon(){clearTimeout(saveT);saveT=setTimeout(function(){save()},300)}
+function uid(){return Math.random().toString(36).slice(2,9)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function pad(n){return n<10?"0"+n:""+n}
+function iso(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function parse(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2])}
+function sunday(d){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-x.getDay());return iso(x)}
+function addDays(s,n){var d=parse(s);d.setDate(d.getDate()+n);return iso(d)}
+function fmt(s){var d=parse(s);return d.getDate()+" "+MONTHS[d.getMonth()]+" "+d.getFullYear()}
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove("on")},1800)}
+function cls(){var c=db.classes.filter(function(x){return x.id===db.cur})[0];return c||db.classes[0]||null}
+function level(p){return p>=90?["ممتاز","lv1"]:p>=80?["جيد جدًا","lv2"]:p>=65?["جيد","lv3"]:p>=50?["مقبول","lv4"]:["يحتاج دعم","lv5"]}
+function r1(n){return Math.round(n*10)/10}
+function totals(c,sid){var got=0,max=0;c.assess.forEach(function(a){var v=(c.marks[a.id]||{})[sid];if(v!==undefined&&v!==""&&v!==null){got+=+v;max+=+a.max}});return{got:got,max:max,pct:max?got/max*100:null}}
+function attCount(c,sid,month){var o={p:0,a:0,l:0,e:0};Object.keys(c.att).forEach(function(d){if(month&&d.slice(0,7)!==month)return;var s=c.att[d][sid];if(s&&o[s]!==undefined)o[s]++});return o}
+function newClass(name,subject){var c={id:uid(),name:name,subject:subject||"",students:[],att:{},assess:[],marks:{},plans:{}};db.classes.push(c);db.cur=c.id;save();return c}
+
+function renderTop(){var s=document.getElementById("clsSel");s.innerHTML=db.classes.length?db.classes.map(function(c){return'<option value="'+c.id+'"'+(c.id===(cls()||{}).id?" selected":"")+'>'+esc(c.name)+(c.subject?" — "+esc(c.subject):"")+'</option>'}).join(""):'<option>لا يوجد فصل</option>';
+ document.getElementById("nav").innerHTML=TABS.map(function(t){return'<button data-tab="'+t[0]+'" class="'+(tab===t[0]?"on":"")+'"><i>'+t[1]+'</i>'+t[2]+'</button>'}).join("")}
+function render(){renderTop();var v=document.getElementById("view"),c=cls();
+ if(!c){v.innerHTML=welcome();return}
+ v.innerHTML=({home:vHome,stu:vStu,att:vAtt,gr:vGr,plan:vPlan,rep:vRep})[tab](c)}
+function welcome(){return'<div class="card" style="text-align:center"><div style="font-size:54px">📒</div><h2>أهلاً بكِ في لوحة المعلمة</h2><p class="hint">أداة مجانية تنظّم لكِ الفصل: الطالبات، الحضور، الدرجات، والتحضير الأسبوعي، مع تقارير جاهزة للطباعة.<br>بياناتك تُحفظ على جوالك فقط ولا تُرفع لأي مكان.</p><label class="l">اسم الفصل</label><input type="text" id="wName" placeholder="مثال: الصف الثالث / ب"><label class="l">المادة (اختياري)</label><input type="text" id="wSub" placeholder="مثال: اللغة العربية"><div style="height:12px"></div><button class="btn full" data-act="wCreate">ابدأ</button></div>'}
+
+function vHome(c){var n=c.students.length,today=c.att[curDate]||{},pc=0;c.students.forEach(function(s){if(today[s.id]==="p"||today[s.id]==="l")pc++});var marked=Object.keys(today).length;
+ var avgs=c.students.map(function(s){return totals(c,s.id).pct}).filter(function(x){return x!==null});var avg=avgs.length?r1(avgs.reduce(function(a,b){return a+b},0)/avgs.length):null;
+ var low=c.students.filter(function(s){var p=totals(c,s.id).pct;return p!==null&&p<50});
+ return'<div class="grid"><div class="stat"><b>'+n+'</b><span>عدد الطالبات</span></div><div class="stat"><b>'+(marked?pc+"/"+n:"—")+'</b><span>حضور اليوم</span></div><div class="stat"><b>'+(avg===null?"—":avg+"%")+'</b><span>متوسط الفصل</span></div><div class="stat"><b>'+c.assess.length+'</b><span>عدد التقييمات</span></div></div><div style="height:12px"></div>'+
+ '<div class="card"><h2>ابدئي من هنا</h2><div class="row"><button class="btn" data-go="att">✅ تسجيل حضور اليوم</button><button class="btn sec" data-go="gr">📊 رصد درجات</button><button class="btn sec" data-go="plan">🗓️ تحضير الأسبوع</button></div></div>'+
+ (low.length?'<div class="card"><h2>⚠️ طالبات يحتجن دعمًا</h2><p class="hint">نسبتهن أقل من 50%:</p>'+low.map(function(s){return'<span class="pill lv5" style="margin:2px">'+esc(s.name)+'</span>'}).join("")+'</div>':"")+
+ '<div class="card"><h2>⚙️ إدارة الفصل والبيانات</h2><div class="row"><button class="btn sec sm" data-act="editCls">✏️ تعديل الفصل</button><button class="btn bad sm" data-act="delCls">🗑️ حذف الفصل</button></div><div style="height:10px"></div><div class="row"><button class="btn sec sm" data-act="backup">💾 نسخة احتياطية</button><button class="btn sec sm" data-act="restore">📥 استرجاع نسخة</button></div><p class="hint">بياناتك على هذا الجوال فقط. خذي نسخة احتياطية بين فترة وأخرى، وخصوصًا قبل تغيير الجوال أو مسح بيانات المتصفح.</p><input type="file" id="rf" accept=".json,application/json" hidden></div>'+
+ '<div class="card" style="background:#F1ECFF"><b>📚 تحتاجين ملفات جاهزة للطباعة؟</b><p class="hint" style="margin:4px 0 8px">ملفات تعليمية وأوراق عمل ودفاتر للمعلمة جاهزة في المتجر.</p><a class="btn sm" href="../" style="text-decoration:none">زيارة متجر زاد</a></div>'}
+
+function vStu(c){return'<div class="card"><h2>إضافة طالبات</h2><label class="l">اسم طالبة</label><div class="row" style="flex-wrap:nowrap"><input type="text" id="sOne" placeholder="الاسم"><button class="btn" data-act="addOne">إضافة</button></div><details style="margin-top:10px"><summary class="hint" style="cursor:pointer">إضافة قائمة كاملة دفعة واحدة</summary><textarea id="sMany" placeholder="الصقي الأسماء، كل اسم في سطر"></textarea><button class="btn sec full" data-act="addMany" style="margin-top:8px">إضافة القائمة</button></details></div>'+
+ '<div class="card"><h2>الطالبات ('+c.students.length+')</h2>'+(c.students.length?c.students.map(function(s,i){return'<div class="stu"><span class="no">'+(i+1)+'</span><span class="nm">'+esc(s.name)+(s.note?'<br><small class="hint">📝 '+esc(s.note)+'</small>':"")+'</span><button class="chip" data-star="'+s.id+'" style="color:#C98A00">⭐ '+(s.stars||0)+'</button><button class="chip" data-edit="'+s.id+'" aria-label="تعديل">✏️</button></div>'}).join(""):'<div class="empty"><b>👩‍🎓</b>لم تُضَف طالبات بعد</div>')+'</div>'}
+
+function vAtt(c){var m=c.att[curDate]||{},cnt={p:0,a:0,l:0,e:0};c.students.forEach(function(s){if(m[s.id])cnt[m[s.id]]++});
+ return'<div class="card"><label class="l">التاريخ</label><div class="row" style="flex-wrap:nowrap"><button class="btn sec sm" data-dd="-1">›</button><input type="date" id="aDate" value="'+curDate+'"><button class="btn sec sm" data-dd="1">‹</button></div><p class="hint" style="margin:6px 0 0">'+fmt(curDate)+' — '+DAYN[parse(curDate).getDay()]+'</p></div>'+
+ (c.students.length?'<div class="card"><div class="row sp" style="margin-bottom:6px"><b>حاضرة '+cnt.p+' · غائبة '+cnt.a+' · متأخرة '+cnt.l+' · بعذر '+cnt.e+'</b><button class="btn sm" data-act="allP">الكل حاضرة</button></div>'+c.students.map(function(s,i){return'<div class="stu" style="flex-wrap:wrap"><span class="no">'+(i+1)+'</span><span class="nm">'+esc(s.name)+'</span><div class="chips">'+["p","a","l","e"].map(function(k){return'<button class="chip '+k+(m[s.id]===k?" on":"")+'" data-att="'+s.id+':'+k+'">'+STAT[k]+'</button>'}).join("")+'</div></div>'}).join("")+'</div>':'<div class="card empty"><b>👩‍🎓</b>أضيفي الطالبات أولاً من تبويب «الطالبات»</div>')}
+
+function vGr(c){
+ var ah='<div class="card"><h2>التقييمات</h2><div class="row" style="flex-wrap:nowrap"><input type="text" id="aName" placeholder="اسم التقييم (اختبار قصير…)"><input type="number" id="aMax" placeholder="الدرجة" style="max-width:90px" inputmode="decimal"></div><button class="btn full" data-act="addAssess" style="margin-top:8px">＋ إضافة تقييم</button>'+(c.assess.length?'<div class="row" style="margin-top:10px">'+c.assess.map(function(a){return'<span class="pill lv2" style="padding:5px 10px">'+esc(a.name)+' ('+a.max+') <b data-delA="'+a.id+'" style="cursor:pointer;margin-inline-start:6px">✕</b></span>'}).join("")+'</div>':"")+'</div>';
+ if(!c.assess.length||!c.students.length)return ah+'<div class="card empty"><b>📊</b>أضيفي طالبات وتقييمًا واحدًا على الأقل لتبدأ رصد الدرجات</div>';
+ var h='<div class="card"><h2>رصد الدرجات</h2><div class="tw"><table><thead><tr><th class="n">الطالبة</th>'+c.assess.map(function(a){return'<th>'+esc(a.name)+'<br><small>من '+a.max+'</small></th>'}).join("")+'<th>المجموع</th><th>%</th><th>المستوى</th></tr></thead><tbody>'+
+ c.students.map(function(s){var t=totals(c,s.id),l=t.pct===null?null:level(t.pct);return'<tr><td class="n">'+esc(s.name)+'</td>'+c.assess.map(function(a){var v=(c.marks[a.id]||{})[s.id];return'<td><input type="number" inputmode="decimal" min="0" max="'+a.max+'" data-mk="'+a.id+':'+s.id+'" value="'+(v===undefined?"":v)+'"></td>'}).join("")+'<td data-t="'+s.id+'">'+(t.max?r1(t.got)+"/"+t.max:"—")+'</td><td data-p="'+s.id+'">'+(t.pct===null?"—":r1(t.pct)+"%")+'</td><td data-l="'+s.id+'">'+(l?'<span class="pill '+l[1]+'">'+l[0]+'</span>':"—")+'</td></tr>'}).join("")+'</tbody></table></div><p class="hint">تُحفظ الدرجات تلقائيًا وتُحسب النسبة والمستوى فورًا.</p></div>';
+ return ah+h}
+
+function vPlan(c){var p=c.plans[weekStart]||{};
+ return'<div class="card"><div class="row sp"><button class="btn sec sm" data-wk="-7">› السابق</button><b>أسبوع '+fmt(weekStart)+'</b><button class="btn sec sm" data-wk="7">التالي ‹</button></div></div>'+
+ DAYS.map(function(d,i){var x=p[i]||{};return'<div class="day"><h3>'+d+' — '+fmt(addDays(weekStart,i))+'</h3><label class="l">الدرس / الموضوع</label><input type="text" data-pl="'+i+':t" value="'+esc(x.t||"")+'"><label class="l">الأهداف</label><textarea data-pl="'+i+':g">'+esc(x.g||"")+'</textarea><label class="l">الأنشطة والواجب</label><textarea data-pl="'+i+':a">'+esc(x.a||"")+'</textarea></div>'}).join("")+'<button class="btn full" data-rep="plan">🖨️ طباعة خطة الأسبوع</button>'}
+
+function vRep(c){var opts=c.students.map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+'</option>'}).join("");
+ return'<div class="card"><h2>🖨️ تقارير جاهزة للطباعة</h2><p class="hint">تُطبع بصيغة A4 مرتبة. من نافذة الطباعة اختاري «حفظ كـ PDF» إن أردتِ ملفًا.</p><div class="row"><button class="btn sec" data-rep="roster">كشف الطالبات</button><button class="btn sec" data-rep="grades">كشف الدرجات</button></div></div>'+
+ '<div class="card"><h2>الحضور الشهري</h2><label class="l">الشهر</label><input type="month" id="rMonth" class="f" value="'+repMonth+'" style="width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px;min-height:44px"><div style="height:8px"></div><button class="btn sec full" data-rep="att">طباعة كشف الحضور والغياب</button></div>'+
+ '<div class="card"><h2>تقرير طالبة وشهادة تقدير</h2>'+(c.students.length?'<label class="l">الطالبة</label><select class="f" id="rStu">'+opts+'</select><div style="height:8px"></div><div class="row"><button class="btn sec" data-rep="stu">تقرير الطالبة</button><button class="btn sec" data-rep="cert">🏅 شهادة تقدير</button></div><label class="l">نص الشهادة (اختياري)</label><input type="text" id="rCert" placeholder="تقديرًا لتميّزها واجتهادها">':'<p class="hint">أضيفي طالبات أولاً.</p>')+'</div>'}
+
+function head(c,title){return'<h1>'+title+'</h1><div class="meta">'+esc(c.name)+(c.subject?" — "+esc(c.subject):"")+' · '+fmt(iso(new Date()))+'</div>'}
+function printHTML(html){var p=document.getElementById("print");p.innerHTML=html;setTimeout(function(){window.print()},80)}
+function doReport(kind){var c=cls(),h="";if(!c)return;
+ if(kind==="roster"){h=head(c,"كشف الطالبات")+'<table><thead><tr><th>م</th><th>اسم الطالبة</th><th>ملاحظات</th><th>النجوم</th></tr></thead><tbody>'+c.students.map(function(s,i){return'<tr><td>'+(i+1)+'</td><td style="text-align:start">'+esc(s.name)+'</td><td>'+esc(s.note||"")+'</td><td>'+(s.stars||0)+'</td></tr>'}).join("")+'</tbody></table>'}
+ if(kind==="grades"){h=head(c,"كشف الدرجات")+'<table><thead><tr><th>م</th><th>الطالبة</th>'+c.assess.map(function(a){return'<th>'+esc(a.name)+' ('+a.max+')</th>'}).join("")+'<th>المجموع</th><th>%</th><th>المستوى</th></tr></thead><tbody>'+c.students.map(function(s,i){var t=totals(c,s.id);return'<tr><td>'+(i+1)+'</td><td style="text-align:start">'+esc(s.name)+'</td>'+c.assess.map(function(a){var v=(c.marks[a.id]||{})[s.id];return'<td>'+(v===undefined?"":v)+'</td>'}).join("")+'<td>'+(t.max?r1(t.got)+"/"+t.max:"")+'</td><td>'+(t.pct===null?"":r1(t.pct)+"%")+'</td><td>'+(t.pct===null?"":level(t.pct)[0])+'</td></tr>'}).join("")+'</tbody></table>'}
+ if(kind==="att"){var m=document.getElementById("rMonth").value||repMonth;repMonth=m;var days=Object.keys(c.att).filter(function(d){return d.slice(0,7)===m}).sort();
+  h=head(c,"كشف الحضور والغياب — "+MONTHS[+m.slice(5)-1]+" "+m.slice(0,4))+(days.length?'<table><thead><tr><th>م</th><th>الطالبة</th>'+days.map(function(d){return'<th>'+(+d.slice(8))+'</th>'}).join("")+'<th>حاضرة</th><th>غائبة</th><th>متأخرة</th><th>بعذر</th></tr></thead><tbody>'+c.students.map(function(s,i){var n=attCount(c,s.id,m);return'<tr><td>'+(i+1)+'</td><td style="text-align:start">'+esc(s.name)+'</td>'+days.map(function(d){var x=c.att[d][s.id];return'<td>'+(x==="p"?"✓":x==="a"?"غ":x==="l"?"ت":x==="e"?"ع":"")+'</td>'}).join("")+'<td>'+n.p+'</td><td>'+n.a+'</td><td>'+n.l+'</td><td>'+n.e+'</td></tr>'}).join("")+'</tbody></table><p class="meta">✓ حاضرة · غ غائبة · ت متأخرة · ع بعذر</p>':'<p>لا يوجد حضور مسجّل في هذا الشهر.</p>')}
+ if(kind==="plan"){var p=c.plans[weekStart]||{};h=head(c,"خطة الأسبوع — "+fmt(weekStart))+'<table><thead><tr><th>اليوم</th><th>الدرس</th><th>الأهداف</th><th>الأنشطة والواجب</th></tr></thead><tbody>'+DAYS.map(function(d,i){var x=p[i]||{};return'<tr><td>'+d+'<br><small>'+fmt(addDays(weekStart,i))+'</small></td><td>'+esc(x.t||"")+'</td><td style="white-space:pre-wrap;text-align:start">'+esc(x.g||"")+'</td><td style="white-space:pre-wrap;text-align:start">'+esc(x.a||"")+'</td></tr>'}).join("")+'</tbody></table>'}
+ if(kind==="stu"||kind==="cert"){var sid=document.getElementById("rStu").value,s=c.students.filter(function(x){return x.id===sid})[0];if(!s)return;
+  if(kind==="cert"){var txt=(document.getElementById("rCert").value||"تقديرًا لتميّزها واجتهادها").trim();h='<div class="cert"><h1>شهادة شكر وتقدير</h1><div>تتقدّم معلمة الفصل ('+esc(c.name)+') بالشكر والتقدير للطالبة</div><div class="big">'+esc(s.name)+'</div><div style="font-size:20px">'+esc(txt)+'</div><div style="margin-top:30px;display:flex;justify-content:space-around"><span>المعلمة: ................</span><span>التاريخ: '+fmt(iso(new Date()))+'</span></div></div>'}
+  else{var t=totals(c,s.id),a=attCount(c,s.id),l=t.pct===null?"—":level(t.pct)[0];h=head(c,"تقرير الطالبة: "+esc(s.name))+'<table><tbody><tr><th>النسبة العامة</th><td>'+(t.pct===null?"—":r1(t.pct)+"%")+'</td><th>المستوى</th><td>'+l+'</td></tr><tr><th>الحضور</th><td>'+a.p+'</td><th>الغياب</th><td>'+a.a+'</td></tr><tr><th>التأخر</th><td>'+a.l+'</td><th>بعذر</th><td>'+a.e+'</td></tr></tbody></table><br><table><thead><tr><th>التقييم</th><th>الدرجة</th><th>من</th></tr></thead><tbody>'+c.assess.map(function(x){var v=(c.marks[x.id]||{})[s.id];return'<tr><td>'+esc(x.name)+'</td><td>'+(v===undefined?"—":v)+'</td><td>'+x.max+'</td></tr>'}).join("")+'</tbody></table><p><b>ملاحظات المعلمة:</b> '+esc(s.note||"")+'</p><p>⭐ نجوم التميّز: '+(s.stars||0)+'</p>'}}
+ if(h)printHTML(h)}
+
+function ask(msg,fn){var m=modal('<h2 style="margin-top:0">تأكيد</h2><p>'+esc(msg)+'</p><div class="row"><button class="btn bad" id="qY">نعم، متأكدة</button><button class="btn sec" id="qN">إلغاء</button></div>');m.querySelector("#qN").onclick=function(){m.remove()};m.querySelector("#qY").onclick=function(){m.remove();fn()}}
+function modal(html){var m=document.createElement("div");m.className="modal";m.innerHTML="<div>"+html+"</div>";m.addEventListener("click",function(e){if(e.target===m)m.remove()});document.body.appendChild(m);return m}
+function editStudent(id){var c=cls(),s=c.students.filter(function(x){return x.id===id})[0];if(!s)return;
+ var m=modal('<h2 style="margin-top:0">تعديل الطالبة</h2><label class="l">الاسم</label><input type="text" id="eN" value="'+esc(s.name)+'"><label class="l">ملاحظة</label><textarea id="eNote">'+esc(s.note||"")+'</textarea><div class="row" style="margin-top:12px"><button class="btn" id="eOk">حفظ</button><button class="btn bad" id="eDel">حذف الطالبة</button></div>');
+ m.querySelector("#eOk").onclick=function(){var n=m.querySelector("#eN").value.trim();if(n)s.name=n;s.note=m.querySelector("#eNote").value.trim();save("تم الحفظ");m.remove();render()};
+ m.querySelector("#eDel").onclick=function(){ask("حذف الطالبة وكل بياناتها؟",function(){c.students=c.students.filter(function(x){return x.id!==id});Object.keys(c.att).forEach(function(d){delete c.att[d][id]});Object.keys(c.marks).forEach(function(a){delete c.marks[a][id]});save("تم الحذف");m.remove();render()})}}
+function editClass(){var c=cls(),m=modal('<h2 style="margin-top:0">تعديل الفصل</h2><label class="l">الاسم</label><input type="text" id="cN" value="'+esc(c.name)+'"><label class="l">المادة</label><input type="text" id="cS" value="'+esc(c.subject)+'"><button class="btn full" id="cOk" style="margin-top:12px">حفظ</button>');
+ m.querySelector("#cOk").onclick=function(){var n=m.querySelector("#cN").value.trim();if(n)c.name=n;c.subject=m.querySelector("#cS").value.trim();save("تم الحفظ");m.remove();render()}}
+function addClass(){var m=modal('<h2 style="margin-top:0">فصل جديد</h2><label class="l">اسم الفصل</label><input type="text" id="nN" placeholder="مثال: الصف الثاني / أ"><label class="l">المادة (اختياري)</label><input type="text" id="nS"><button class="btn full" id="nOk" style="margin-top:12px">إنشاء</button>');
+ m.querySelector("#nOk").onclick=function(){var n=m.querySelector("#nN").value.trim();if(!n){toast("اكتبي اسم الفصل");return}newClass(n,m.querySelector("#nS").value.trim());m.remove();tab="stu";render()}}
+
+document.addEventListener("click",function(e){var t=e.target.closest("[data-tab],[data-go],[data-act],[data-star],[data-edit],[data-att],[data-dd],[data-wk],[data-delA],[data-rep]");if(!t)return;var c=cls();
+ if(t.dataset.tab){tab=t.dataset.tab;render();window.scrollTo(0,0);return}
+ if(t.dataset.go){tab=t.dataset.go;render();return}
+ if(t.dataset.star){var s=c.students.filter(function(x){return x.id===t.dataset.star})[0];s.stars=((s.stars||0)+1)%6;save();render();return}
+ if(t.dataset.edit){editStudent(t.dataset.edit);return}
+ if(t.dataset.att){var p=t.dataset.att.split(":");c.att[curDate]=c.att[curDate]||{};if(c.att[curDate][p[0]]===p[1])delete c.att[curDate][p[0]];else c.att[curDate][p[0]]=p[1];save();render();return}
+ if(t.dataset.dd){curDate=addDays(curDate,+t.dataset.dd);render();return}
+ if(t.dataset.wk){weekStart=addDays(weekStart,+t.dataset.wk);render();return}
+ if(t.dataset.delA){var did=t.dataset.delA;ask("حذف هذا التقييم ودرجاته؟",function(){c.assess=c.assess.filter(function(a){return a.id!==did});delete c.marks[did];save("تم الحذف");render()});return}
+ if(t.dataset.rep){doReport(t.dataset.rep);return}
+ var a=t.dataset.act;
+ if(a==="wCreate"){var n=document.getElementById("wName").value.trim();if(!n){toast("اكتبي اسم الفصل");return}newClass(n,document.getElementById("wSub").value.trim());tab="stu";render()}
+ if(a==="addOne"){var i=document.getElementById("sOne"),v=i.value.trim();if(!v)return;c.students.push({id:uid(),name:v,note:"",stars:0});save("تمت الإضافة");render();setTimeout(function(){var x=document.getElementById("sOne");x&&x.focus()},50)}
+ if(a==="addMany"){var ls=document.getElementById("sMany").value.split(/\n+/).map(function(x){return x.replace(/^[\s\d.\-–)(]+/,"").trim()}).filter(Boolean);if(!ls.length)return;ls.forEach(function(n){c.students.push({id:uid(),name:n,note:"",stars:0})});save("أُضيفت "+ls.length+" طالبة");render()}
+ if(a==="allP"){c.att[curDate]=c.att[curDate]||{};c.students.forEach(function(s){c.att[curDate][s.id]="p"});save("تم");render()}
+ if(a==="addAssess"){var an=document.getElementById("aName").value.trim(),am=parseFloat(document.getElementById("aMax").value);if(!an||!(am>0)){toast("اكتبي الاسم والدرجة الكاملة");return}c.assess.push({id:uid(),name:an,max:am});c.marks[c.assess[c.assess.length-1].id]={};save("تمت الإضافة");render()}
+ if(a==="editCls")editClass();
+ if(a==="delCls"){ask("حذف الفصل «"+c.name+"» بكل بياناته نهائيًا؟",function(){db.classes=db.classes.filter(function(x){return x.id!==c.id});db.cur=null;save("تم الحذف");render()})}
+ if(a==="backup"){var b=new Blob([JSON.stringify(db)],{type:"application/json"}),u=URL.createObjectURL(b),l=document.createElement("a");l.href=u;l.download="zad-teacher-backup-"+iso(new Date())+".json";document.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},2000);toast("تم تجهيز النسخة")}
+ if(a==="restore"){document.getElementById("rf").click()}
+});
+document.addEventListener("change",function(e){var t=e.target;
+ if(t.id==="clsSel"){db.cur=t.value;save();render();return}
+ if(t.id==="aDate"&&t.value){curDate=t.value;render();return}
+ if(t.id==="rMonth"){repMonth=t.value;return}
+ if(t.id==="rf"){var f=t.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(!d||!Array.isArray(d.classes))throw 0;ask("سيتم استبدال بياناتك الحالية بالنسخة المختارة. متأكدة؟",function(){db=d;save("تم الاسترجاع");render()})}catch(x){toast("الملف غير صالح")}};r.readAsText(f)}
+});
+document.addEventListener("input",function(e){var t=e.target,c=cls();if(!c)return;
+ if(t.dataset.mk){var p=t.dataset.mk.split(":"),a=c.assess.filter(function(x){return x.id===p[0]})[0];c.marks[p[0]]=c.marks[p[0]]||{};
+  if(t.value===""){delete c.marks[p[0]][p[1]]}else{var v=parseFloat(t.value);if(isNaN(v))return;if(v>a.max){v=a.max;t.value=v;toast("الدرجة الكاملة "+a.max)}if(v<0){v=0;t.value=0}c.marks[p[0]][p[1]]=v}
+  var tt=totals(c,p[1]),l=tt.pct===null?null:level(tt.pct),q=function(k){return document.querySelector("[data-"+k+'="'+p[1]+'"]')};
+  q("t").textContent=tt.max?r1(tt.got)+"/"+tt.max:"—";q("p").textContent=tt.pct===null?"—":r1(tt.pct)+"%";q("l").innerHTML=l?'<span class="pill '+l[1]+'">'+l[0]+'</span>':"—";saveSoon()}
+ if(t.dataset.pl){var q2=t.dataset.pl.split(":");c.plans[weekStart]=c.plans[weekStart]||{};c.plans[weekStart][q2[0]]=c.plans[weekStart][q2[0]]||{};c.plans[weekStart][q2[0]][q2[1]]=t.value;saveSoon()}
+});
+document.getElementById("addCls").onclick=addClass;
+window.addEventListener("pagehide",function(){save()});
+window.addEventListener("afterprint",function(){document.getElementById("print").innerHTML=""});
+render();
+})();
+</script>
+</body>
+</html>
