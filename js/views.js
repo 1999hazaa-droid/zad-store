@@ -1065,7 +1065,7 @@
             <nav class="hs-nav" aria-label="${esc(t("الأقسام"))}"><div class="wrap">
                 <a href="${ATHR.base()}games/">🎮 ${esc(t("ألعاب"))}</a>${list.length ? `<a href="#stories">📚 ${esc(t("قصص 3D"))}</a>` : ""}${nameBooks.length ? `<a href="#books">✏️ ${esc(t("كتب باسم طفلك"))}</a>` : ""}${kidsList.length ? `<a href="#kids">🎨 ${esc(t("تعليمي للأطفال"))}</a>` : ""}${stuList.length ? `<a href="#students">🎓 ${esc(t("الصفوف 1-4"))}</a>` : ""}
             </div></nav>
-            <section class="gm-banner-sec"><div class="wrap"><a class="gm-banner" href="${ATHR.base()}teacher/"><span class="gm-ic" aria-hidden="true">📒</span><span class="gm-tx"><b>${esc(t("لوحة المعلمة المجانية"))}</b><small>${esc(t("حضور ودرجات وتحضير وتقارير للطباعة"))}</small></span><span class="gm-go">${esc(t("جرّبيها"))} ←</span></a><a class="gm-banner" style="margin-top:10px" href="${ATHR.base()}games/"><span class="gm-ic" aria-hidden="true">🎮</span><span class="gm-tx"><b>${esc(t("ألعاب تعليمية مجانية"))}</b><small>${esc(t("العب وتعلّم الحروف والأرقام"))}</small></span><span class="gm-go">${esc(t("ابدأ اللعب"))} ←</span></a></div></section>
+            <section class="gm-banner-sec"><div class="wrap"><a class="gm-banner" href="${ATHR.base()}games/"><span class="gm-ic" aria-hidden="true">🎮</span><span class="gm-tx"><b>${esc(t("ألعاب تعليمية مجانية"))}</b><small>${esc(t("العب وتعلّم الحروف والأرقام"))}</small></span><span class="gm-go">${esc(t("ابدأ اللعب"))} ←</span></a></div></section>
             <section class="section ks-best" id="stories" aria-labelledby="best-t">
                 <div class="wrap">
                     <div class="section-head ks-head"><h2 id="best-t">${esc(list.length ? t("📚 قصص ثلاثية الأبعاد، طفلك بطلها") : t("قصصنا الجديدة قريباً"))}</h2></div>
@@ -1866,7 +1866,6 @@
         const bottom = [
             `© ${new Date().getFullYear()} ${esc(ATHR.storeName(cfg))}`,
             cfg.contact.policy_show ? `<a href="${ATHR.url.page("shipping")}">${esc(ct(v, "contact.policy_title"))}</a>` : "",
-            `<a href="${ATHR.base()}teacher/">${esc(t("لوحة المعلمة المجانية"))}</a>`,
             `<a href="${ATHR.url.page("privacy")}">${esc(t("سياسة الخصوصية"))}</a>`,
             cfg.contact.reviews_share_btn ? `<a href="${ATHR.url.page("review")}" rel="nofollow">${esc(ct(v, "contact.reviews_share_text"))}</a>` : ""
         ].filter(Boolean);
