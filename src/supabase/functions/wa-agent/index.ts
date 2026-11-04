@@ -150,8 +150,8 @@ function localMoney(ctx: Ctx, country: string, v: number) {
 }
 
 function siteUrl(ctx: Ctx) {
-  const s = "https://roa-om.com/huroof/"; // رابط متجر زاد الثابت (إعدادات القاعدة القديمة قد تحمل رابطاً قديماً)
-  return /^https?:\/\//.test(s) ? (s.endsWith("/") ? s : `${s}/`) : "https://roa-om.com/huroof/";
+  const s = "https://1999hazaa-droid.github.io/zad-store/"; // رابط متجر زاد الثابت (إعدادات القاعدة القديمة قد تحمل رابطاً قديماً)
+  return /^https?:\/\//.test(s) ? (s.endsWith("/") ? s : `${s}/`) : "https://1999hazaa-droid.github.io/zad-store/";
 }
 
 function absImage(ctx: Ctx, src: string) {
