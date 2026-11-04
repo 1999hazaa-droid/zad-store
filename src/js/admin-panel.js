@@ -261,7 +261,7 @@
         const [s, c, p, m] = await Promise.all([
             sb.from("store_settings").select("config,updated_at").eq("id", 1).maybeSingle(),
             sb.from("categories").select("id,name,name_en,slug,sort_order,description,description_en,image_url").order("sort_order", { ascending: true }),
-            sb.from("products").select("id,name,name_en,slug,price,old_price,category_id,image_url,is_available,is_visible,is_best_seller,is_new_arrival,description,description_en,color_id,sort_order,video_url,weight_g,stock,created_at,story").order("sort_order", { ascending: true }),
+            sb.from("products").select("id,name,name_en,slug,price,old_price,category_id,image_url,is_available,is_visible,is_best_seller,is_new_arrival,description,description_en,color_id,sort_order,video_url,file_url,weight_g,stock,created_at,story").order("sort_order", { ascending: true }),
             sb.from("product_media").select("product_id,media_type,media_url,sort_order").order("sort_order", { ascending: true })
         ]);
         const failed = [s, c, p, m].find((r) => r.error);
@@ -295,6 +295,7 @@
                 color_id: x.color_id || "",
                 story: x.story || "",
                 video_url: x.video_url || "",
+                file_url: x.file_url || "",
                 weight_g: x.weight_g === null || x.weight_g === undefined ? null : Number(x.weight_g),
                 stock: x.stock === null || x.stock === undefined ? null : Number(x.stock),
                 media: media.get(x.id) || []
@@ -728,6 +729,9 @@
                     </ul>
                     ${images.length < 5 ? uploadButton(`إضافة صور (${images.length} من 5)`, `data-media-add="${esc(p.id)}" multiple`) : `<small class="adm-muted">وصلت للحد الأقصى: 5 صور.</small>`}
                     <hr>
+                    <h3>ملف التحميل المجاني</h3>
+                    ${text(`${base}.file_url`, "رابط ملف PDF للتحميل", { dir: "ltr", placeholder: "files/free/اسم-الملف.pdf", help: "لو وضعت رابط ملف وسعر المنتج 0 يظهر للزبون زر «تحميل مجاني» يحمّل الملف مباشرة بدون سلة ولا طلب. ارفع الملف في مجلد files/free في مستودع المتجر." })}
+                    <hr>
                     <h3>فيديو المنتج</h3>
                     ${video ? `<video class="vid-prev" src="${esc(video.url)}" controls playsinline muted></video>` : ""}
                     <div class="inline">
@@ -835,7 +839,7 @@
 
     function priceNote(p) {
         const pct = pctOf(p);
-        if (!(Number(p.price) > 0)) return "اكتب السعر الأصلي للمنتج.";
+        if (!(Number(p.price) > 0)) return p.file_url ? "مجاني: يظهر للزبون زر «تحميل مجاني»." : "اكتب السعر الأصلي للمنتج.";
         return pct
             ? `<span class="tag sale">خصم ${pct}%</span> الزبون يرى: <b>${money(p.price)}</b> <s>${money(p.old_price)}</s>`
             : "بدون خصم. اكتب نسبة الخصم أو اختر من الأزرار، ويُحسب السعر الجديد تلقائياً.";
@@ -887,6 +891,7 @@
             description: "",
             color_id: cfg().colors[0]?.id || "",
             video_url: "",
+            file_url: "",
             weight_g: Number(cfg().order.default_weight_g) || 400,
             stock: null,
             media: []
@@ -5285,6 +5290,7 @@
                 color_id: p.color_id || null,
                 story: p.story || null,
                 video_url: p.video_url || null,
+                file_url: p.file_url || null,
                 weight_g: Number(p.weight_g) > 0 ? Math.round(Number(p.weight_g)) : null,
                 stock: ATHR.stockOf(p),
                 sort_order: i + 1

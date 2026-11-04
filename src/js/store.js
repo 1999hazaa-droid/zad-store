@@ -843,6 +843,7 @@
     function addToCart(id, qty = 1) {
         const product = productById(id);
         if (!product) return false;
+        if (ATHR.isFree(product)) { const a = document.createElement("a"); a.href = ATHR.fileHref(product); a.download = ""; document.body.appendChild(a); a.click(); a.remove(); return false; }
         if (product.is_available === false) {
             toast(C().texts.sold_out);
             return false;
@@ -959,7 +960,7 @@
     }
 
     async function fetchData() {
-        const productCols = "id,name,name_en,slug,price,old_price,category_id,image_url,thumb_url,is_available,is_visible,is_best_seller,is_new_arrival,description,description_en,color_id,sort_order,video_url,weight_g,stock,created_at,story";
+        const productCols = "id,name,name_en,slug,price,old_price,category_id,image_url,thumb_url,is_available,is_visible,is_best_seller,is_new_arrival,description,description_en,color_id,sort_order,video_url,file_url,weight_g,stock,created_at,story";
         const [settings, categories, products, reviews, proof] = await Promise.all([
             rest("store_settings?select=config&id=eq.1"),
             rest("categories?select=id,name,name_en,slug,sort_order,image_url,description,description_en&order=sort_order.asc"),
@@ -2210,8 +2211,8 @@
             if (p && p.is_available !== false && !buyBoxVisible) {
                 const inCart = cartQty(p.id);
                 html = `<div class="buybar-inner">
-                    <div class="bb-info"><b>${ATHR.isStory(p) && cartCustom(p.id) ? local(ATHR.storyUnit(p, cartCustom(p.id), C())) : local(p.price)}</b><small>${esc(V.label(v(), p))}</small></div>
-                    ${inCart
+                    <div class="bb-info"><b>${ATHR.isFree(p) ? esc(t("مجاني")) : ATHR.isStory(p) && cartCustom(p.id) ? local(ATHR.storyUnit(p, cartCustom(p.id), C())) : local(p.price)}</b><small>${esc(V.label(v(), p))}</small></div>
+                    ${ATHR.isFree(p) ? V.freeBtn(p) : inCart
                         ? `<a class="btn btn-primary" href="${BASE}checkout/">${esc(t("إتمام الطلب ({n})", { n: computeCart().count }))}</a>`
                         : ATHR.isStory(p)
                             ? `<button class="btn btn-primary" type="button" data-wiz="${esc(p.id)}">✏️ ${esc(t("خصص القصة لطفلك"))}</button>`

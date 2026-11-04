@@ -295,6 +295,7 @@
     // =====================================================
 
     V.priceHTML = function (v, p, { big = false } = {}) {
+        if (ATHR.isFree(p)) return `<div class="price${big ? " big" : ""}"><b class="free-tag">${esc(t("مجاني"))}</b></div>`;
         const old = Number(p.old_price) > Number(p.price);
         const save = old ? Number(p.old_price) - Number(p.price) : 0;
         return `<div class="price${big ? " big" : ""}">
@@ -341,12 +342,17 @@
         return v.cfg.sales.low_stock_show !== false && stock !== null && stock > 0 && limit > 0 && stock <= limit && p.is_available !== false ? stock : 0;
     };
 
+    V.freeBtn = function (p, { block = false } = {}) {
+        return `<a class="btn btn-primary free-dl${block ? " btn-block" : ""}" href="${esc(ATHR.fileHref(p))}" download="${esc((p.slug || "zad-file") + ".pdf")}" data-free-dl="${esc(p.id)}" rel="noopener">⬇ ${esc(t("تحميل مجاني"))}</a>`;
+    };
+
     V.cardAction = function (v, p) {
         if (p.is_available === false) {
             return v.cfg.sales.restock !== false
                 ? `<a class="btn btn-ghost notify-link" href="${ATHR.url.product(p)}#notify">${ICON.bell}${esc(t("أخبرني عند التوفر"))}</a>`
                 : `<button class="btn btn-ghost" type="button" disabled>${esc(ct(v, "texts.sold_out"))}</button>`;
         }
+        if (ATHR.isFree(p)) return V.freeBtn(p);
         const qty = v.cartQty(p.id);
         if (ATHR.isStory(p)) {
             return qty > 0
@@ -1611,6 +1617,7 @@
             }
             return `<div class="out-note" id="buyBox">${esc(ct(v, "texts.sold_out"))}. ${ATHR.isValidWhatsapp(cfg.order.whatsapp) ? esc(t("تواصل معنا لمعرفة موعد توفره.")) : ""}</div>`;
         }
+        if (ATHR.isFree(p)) return `<div class="buy single-qty free-box" id="buyBox">${V.freeBtn(p, { block: true })}<p class="free-note">${esc(t("ملف PDF جاهز للطباعة، يُحمَّل مباشرة على جهازك بدون تسجيل ولا دفع."))}</p></div>`;
         const wa = ATHR.isValidWhatsapp(cfg.order.whatsapp) && cfg.sales.wa_quick;
         const buyNow = cfg.sales.buy_now;
         const story = ATHR.isStory(p);
