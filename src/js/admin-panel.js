@@ -6236,6 +6236,11 @@
         return out;
     }
 
+    function shortCode() {
+        const a = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789", r = crypto.getRandomValues(new Uint8Array(8));
+        return Array.from(r, (b) => a[b % a.length]).join("");
+    }
+
     async function sendOrderFiles(id) {
         const o = A.orders.find((x) => x.id === id);
         if (!o) return;
@@ -6245,9 +6250,10 @@
             const lines = [];
             for (const { p, name } of list) {
                 const path = String(p.file_url).slice(8);
-                const { data, error } = await sb.storage.from("paid-files").createSignedUrl(path, 259200, { download: `${(p.slug || "zad-file")}.pdf` });
-                if (error || !data) throw error || new Error("signed url");
-                lines.push(`📄 ${name}\n${data.signedUrl}`);
+                const code = shortCode();
+                const { error } = await sb.from("dl_links").insert({ code, path, filename: `${(p.slug || "zad-file")}.pdf`, expires_at: new Date(Date.now() + 259200000).toISOString() });
+                if (error) throw error;
+                lines.push(`📄 ${name}\n${ATHR.base()}d/?${code}`);
             }
             const first = (o.customer_name || "").split(" ")[0];
             const text = `أهلاً ${first} 🌟\nشكراً لطلبك من ${ATHR.storeName(cfg())}. هذه روابط تحميل ملفاتك (تعمل 3 أيام، حمّلها واحفظها على جهازك):\n\n${lines.join("\n\n")}\n\nبالتوفيق لأطفالك 💜`;
