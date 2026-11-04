@@ -289,3 +289,7 @@ h2.cat { font-size: 17px; font-weight: 800; color: var(--ink); margin: 22px 2px 
 .gcard .ic .cal b { font-size: 16px !important; padding: 1px 0 2px; }
 .gcard .ic .cal.big { min-width: 0; }
 .gcard .ic .cal.big i { font-size: 8px; padding: 2px 1px; } .gcard .ic .cal.big b { font-size: 16px !important; padding: 1px 0 2px; }
+/* أيقونات الأقسام: ألوان ممتلئة تختلف عن بطاقات الألعاب الفاتحة */
+.catcard .ci { background: linear-gradient(145deg, var(--c), color-mix(in srgb, var(--c) 68%, #1b1040)); box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 40%, transparent), inset 0 1px 0 rgba(255,255,255,.35); border-radius: 18px; width: 58px; height: 58px; }
+.catcard .ci svg, .catcard .ci img { filter: drop-shadow(0 1px 1px rgba(0,0,0,.18)); }
+.cathead .ci, .cathead > span:first-child { background: linear-gradient(145deg, var(--c), color-mix(in srgb, var(--c) 68%, #1b1040)); }

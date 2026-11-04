@@ -115,38 +115,47 @@ function segment(t) {
 /* ---------- صوت حي لأي نص أو اسم (يُحفظ بعد أول مرة) ---------- */
 const LIVE_URL = "https://zcnwzpevehudhnsuljdy.supabase.co/functions/v1/wiam-tts";
 const LIVE = new Map(); let PEND = 0, SEQ = 0;
-const clean = (t) => String(t).replace(/[^؀-ۿ0-9 .!?,]/g, " ").replace(/\s+/g, " ").trim().slice(0, 90);
+const clean = (t) => String(t).replace(/[^؀-ۿ0-9 .!?,]/g, " ").replace(/\s+/g, " ").trim().replace(/[؟?!.،,\s]+$/, "").slice(0, 90);
+const SB = "https://zcnwzpevehudhnsuljdy.supabase.co/storage/v1/object/public/wiam/";
+let VSET = new Set();
+const VREADY = fetch(SB + "voice.json").then((r) => r.json()).then((a) => { VSET = new Set(a); }).catch(() => { /* */ });
+async function vpath(t) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("v2|" + t));
+  return [...new Uint8Array(b)].slice(0, 12).map((x) => x.toString(16).padStart(2, "0")).join("") + ".mp3";
+}
 function liveUrl(text) {
   text = clean(text); if (!text) return Promise.resolve(null);
   if (LIVE.has(text)) return LIVE.get(text);
-  const p = fetch(LIVE_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) })
-    .then((r) => (r.ok ? r.json() : null)).then((j) => (j && j.url) || null).catch(() => null);
-  LIVE.set(text, p); p.then((u) => { if (!u) LIVE.delete(text); });
+  const p = Promise.all([vpath(text), VREADY]).then(([h]) => {
+    if (VSET.has(h)) return SB + h;
+    return fetch(LIVE_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) })
+      .then((r) => (r.ok ? r.json() : null)).then((j) => (j && j.url) || null);
+  }).catch(() => null);
+  LIVE.set(text, p); p.then((u) => { if (!u) LIVE.delete(text); else warm(u); });
   return p;
 }
+const WARMED = new Set();
+function warm(u) { if (WARMED.has(u) || WARMED.size > 60) return; WARMED.add(u); try { const a = new Audio(); a.preload = "auto"; a.src = u; } catch { /* */ } }
 function planFor(text) {
   const raw = String(text).trim(); if (!AMAN) return { local: [] };
   const t = anorm(raw);
   const mm = raw.match(/(?:^|\s)يا\s+([^،.!؟?]+)/);
+  let fb = [];
   if (mm) {
-    const nm = mm[1].trim(), nn = anorm(nm), pre = t.split(" يا ")[0];
-    if (nn) {
-      if (/حاول|جرب|لا باس|تستطيع/.test(pre)) return { live: `حَاوِلْ مَرَّةً أُخْرَى يَا ${nm}!`, fallback: [AGEN["حاول مره اخري"]].filter(Boolean) };
-      if (/^مرحبا/.test(pre)) return { live: `مَرْحَبًا يَا ${nm}، هَيَّا نَلْعَبْ!`, fallback: [AGEN["هيا نلعب"]].filter(Boolean) };
-      if (/احسنت|بارك الله|ممتاز|رائع|شاطر|برافو|جميل|بطل/.test(pre)) {
-        const pk = AMAN.praise[nn] || AMAN.praise[nn.split(" ")[0]];
-        if (pk) return { local: [pk] };
-        const k = /وبارك|بارك الله/.test(pre) ? "احسنت وبارك الله فيك" : /ممتاز/.test(pre) ? "ممتاز" : /رائع/.test(pre) ? "رائع" : "احسنت";
-        return { live: `أَحْسَنْتَ يَا ${nm}!`, fallback: [AGEN[k]].filter(Boolean) };
-      }
+    const nn = anorm(mm[1].trim()), pre = t.split(" يا ")[0];
+    if (/حاول|جرب|لا باس|تستطيع/.test(pre)) fb = [AGEN["حاول مره اخري"]];
+    else if (/^مرحبا/.test(pre)) fb = [AGEN["هيا نلعب"]];
+    else if (/احسنت|بارك الله|ممتاز|رائع|شاطر|برافو|جميل|بطل/.test(pre)) {
+      const pk = AMAN.praise[nn] || AMAN.praise[nn.split(" ")[0]];
+      fb = pk ? [pk] : [AGEN[/وبارك|بارك الله/.test(pre) ? "احسنت وبارك الله فيك" : /ممتاز/.test(pre) ? "ممتاز" : /رائع/.test(pre) ? "رائع" : "احسنت"]];
     }
+    return { live: raw, fallback: fb.filter(Boolean) };
   }
-  if (AKEYS[t]) return { local: [AKEYS[t]] };
+  if (AKEYS[t]) return { live: raw, fallback: [AKEYS[t]] };
   const sg = segment(t);
-  if (sg.all && sg.out.length) return { local: sg.out };
   return { live: raw, fallback: sg.out };
 }
-function clipsFor(text) { const p = planFor(text); return p.local || p.fallback || []; }
+function clipsFor(text) { const p = planFor(text); return p.fallback || p.local || []; }
 const clipFor = (t) => clipsFor(t)[0] || null;
 window.__hg = { clipFor, clipsFor: (t) => clipsFor(t), planFor, speak: (t) => speak(t) };
 function prefetch(text) { try { const p = planFor(text); if (p.live) liveUrl(p.live); } catch { /* */ } }
@@ -177,7 +186,8 @@ function speak(text) {
   if (p.local) { playQ(p.local); return; }
   try { if (AEL) AEL.pause(); } catch { /* */ } AQ = [];
   PEND++;
-  liveUrl(p.live).then((u) => { PEND--; if (my !== SEQ || muted) return; playQ(u ? [u] : (p.fallback || [])); });
+  const lim = new Promise((res) => setTimeout(() => res(null), 3500));
+  Promise.race([liveUrl(p.live), lim]).then((u) => { PEND--; if (my !== SEQ || muted) return; playQ(u ? [u] : (p.fallback || [])); });
 }
 
 /* ---------- الاحتفال ---------- */
