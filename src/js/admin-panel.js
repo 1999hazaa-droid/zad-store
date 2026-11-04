@@ -6255,7 +6255,7 @@
                 const code = shortCode();
                 const { error } = await sb.from("dl_links").insert({ code, path, filename: `${(p.slug || "zad-file")}.pdf`, expires_at: new Date(Date.now() + 259200000).toISOString() });
                 if (error) throw error;
-                lines.push(`📄 ${name}\n${ATHR.base()}d/?${code}`);
+                lines.push(`📄 ${name}\n${location.origin}${ATHR.base()}d/?${code}`);
             }
             const first = (o.customer_name || "").split(" ")[0];
             const text = `أهلاً ${first} 🌟\nشكراً لطلبك من ${ATHR.storeName(cfg())}. هذه روابط تحميل ملفاتك (تعمل 3 أيام، حمّلها واحفظها على جهازك):\n\n${lines.join("\n\n")}\n\nبالتوفيق لأطفالك 💜`;
