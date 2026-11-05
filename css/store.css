@@ -3746,3 +3746,7 @@ img, video, svg { max-width: 100%; }
     .foot-acc summary { pointer-events: none; cursor: default; padding-top: 4px; }
     .foot-acc summary svg { display: none; }
 }
+
+/* مسافة بين بانر الألعاب وسطر الترتيب */
+.gm-banner.gm-home { margin-bottom: 22px; }
+.gm-banner.gm-home + .section-head { margin-top: 0; padding-top: 4px; }
