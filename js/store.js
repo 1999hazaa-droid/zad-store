@@ -4348,3 +4348,15 @@
     try { S.coupon = JSON.parse(session.get(KEYS.coupon) || "null"); } catch { S.coupon = null; }
     loadData().then(() => { captureCouponParam(); return checkAdmin(); });
 })();
+
+/* فتح أقسام التذييل تلقائياً على الشاشات الكبيرة */
+(function () {
+    try {
+        const mq = matchMedia("(min-width: 900px)");
+        let q = 0;
+        const run = () => { q = 0; if (mq.matches) document.querySelectorAll(".foot-acc:not([open])").forEach((d) => { d.open = true; }); };
+        const sched = () => { if (!q) q = requestAnimationFrame(run); };
+        new MutationObserver(sched).observe(document.body, { childList: true, subtree: true });
+        mq.addEventListener("change", sched); sched();
+    } catch (e) { /* */ }
+})();

@@ -468,3 +468,13 @@ h2.cat { font-size: 17px; font-weight: 800; color: var(--ink); margin: 22px 2px 
 .jr-hint { margin: 0 4px 8px; font-size: 13px; color: #6B5F8F; }
 .chr.off .ics { width: 30px; height: 30px; fill: none; stroke: #A99FC8; stroke-width: 2; margin: 8px 0; }
 .chr.off.nx { opacity: 1; outline: 2px dashed #F59E0B; } .chr.off.nx span { filter: grayscale(1) opacity(.55); }
+
+/* ===== v25: شاشات كبيرة (آيباد/لابتوب/كمبيوتر) ===== */
+@media (min-width: 900px) {
+  .bar, .stage, #dots, .pbar-wrap { max-width: 760px; margin-inline: auto; }
+  .bar { margin-bottom: 12px; }
+  .stage { padding: 28px 24px 30px; min-height: 420px; }
+}
+@media (min-width: 760px) and (max-width: 899px) {
+  .bar, .stage { max-width: 680px; margin-inline: auto; }
+}
