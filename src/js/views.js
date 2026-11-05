@@ -714,6 +714,13 @@
         ].filter(Boolean);
     };
 
+    // العنوان: الجزء الأول عادي، وبعد الفاصلة بلون الهوية في سطر مستقل
+    V.heroTitle = function (v) {
+        const raw = fill(v, ct(v, "texts.hero_title")) || "";
+        const m = raw.match(/^(.+?)\s*[،,]\s*(.+)$/);
+        return m ? `${esc(m[1])}<span class="hl">${esc(m[2])}</span>` : esc(raw);
+    };
+
     V.hero = function (v) {
         const cfg = v.cfg;
         if (!cfg.theme.hero_show) return `<h1 class="sr-only">${esc(ATHR.storeName(cfg))}</h1>`;
@@ -721,7 +728,7 @@
         if (cfg.theme.hero_compact !== false && !cfg.theme.hero_image) {
             return `<section class="hero hero-compact${cfg.theme.hero_pattern ? " pattern" : ""}">
             <div class="wrap hero-inner">
-                <h1>${esc(fill(v, ct(v, "texts.hero_title")))}</h1>
+                <h1>${V.heroTitle(v)}</h1>
                 <ul class="hero-mini">${V.storePoints(v).map(([ico, label]) => `<li>${ico}<span>${esc(label)}</span></li>`).join("")}</ul>
                 ${V.storeTotal(v) ? `<p class="hero-proof">${ICON.users}<span>${esc(V.storeTotal(v))}</span></p>` : ""}
             </div>
@@ -733,7 +740,7 @@
         return `<section class="hero${cfg.theme.hero_pattern ? " pattern" : ""}${image ? " has-image" : ""}">
             ${image ? `<div class="hero-bg"><img data-deferred-src="${esc(V.asset(image))}" alt=""></div>` : ""}
             <div class="wrap hero-inner">
-                <h1>${esc(fill(v, ct(v, "texts.hero_title")))}</h1>
+                <h1>${V.heroTitle(v)}</h1>
                 ${text ? `<p>${esc(fill(v, text))}</p>` : ""}
                 ${features ? `<ul class="hero-features">${features}</ul>` : ""}
                 ${V.storeTotal(v) ? `<p class="hero-proof">${ICON.users}<span>${esc(V.storeTotal(v))}</span></p>` : ""}
@@ -758,17 +765,28 @@
         return p ? V.img(p) : "";
     };
 
+    // أيقونات الأقسام: خطوط نظيفة بلون الهوية بدل الصور
+    V.catIcons = {
+        kids: '<path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.9 1.5-1.9-.4-1.2.3-2.1 1.5-2.1H17a4 4 0 0 0 4-4c0-5-4-10-9-10z"/><circle cx="7.6" cy="11.2" r="1"/><circle cx="10.2" cy="7.2" r="1"/><circle cx="15" cy="7.6" r="1"/>',
+        book: '<path d="M3 5.5c3-1 6-.8 9 1v13c-3-1.8-6-2-9-1z"/><path d="M21 5.5c-3-1-6-.8-9 1v13c3-1.8 6-2 9-1z"/>',
+        cap: '<path d="M2.5 9.5 12 5l9.5 4.5L12 14z"/><path d="M6.5 11.8V16c0 1.3 2.5 2.5 5.5 2.5s5.5-1.2 5.5-2.5v-4.2"/><path d="M21.5 9.5v5"/>',
+        board: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8M7 9h6M7 12h4"/>',
+        file: '<path d="M6.5 3.5h7.5l4 4v13h-11.5z"/><path d="M14 3.5v4h4M9.5 12h5M9.5 15.5h5"/>'
+    };
+    V.catIcon = function (c) {
+        const n = String((c && (c.name || c.name_en)) || "");
+        const k = /معلم|teacher/i.test(n) ? "board" : /طلاب|صف|student|grade/i.test(n) ? "cap" : /أنشطة|انشطة|كتب|book|activit/i.test(n) ? "book" : /أطفال|اطفال|kid|child/i.test(n) ? "kids" : "file";
+        return `<svg viewBox="0 0 24 24" aria-hidden="true">${V.catIcons[k]}</svg>`;
+    };
+
     V.tiles = function (v, current) {
         const cats = v.categories.filter((c) => v.counts.get(c.id));
         if (!cats.length) return "";
         return `<nav class="tiles wrap" aria-label="${esc(t("الأقسام"))}">
-            ${cats.map((c) => {
-                const img = V.categoryImage(v, c);
-                return `<a class="tile${current && current.id === c.id ? " on" : ""}" href="${ATHR.url.category(c)}"${current && current.id === c.id ? ' aria-current="page"' : ""}>
-                    <span class="tile-img">${img ? `<img src="${esc(img)}" alt="" loading="lazy" decoding="async" width="180" height="236">` : ""}</span>
+            ${cats.map((c) => `<a class="tile${current && current.id === c.id ? " on" : ""}" href="${ATHR.url.category(c)}"${current && current.id === c.id ? ' aria-current="page"' : ""}>
+                    <span class="tile-img">${V.catIcon(c)}</span>
                     <span class="tile-name">${esc(V.cname(c))}</span>
-                </a>`;
-            }).join("")}
+                </a>`).join("")}
         </nav>`;
     };
 
@@ -948,13 +966,7 @@
             : "";
         const curCat = current ? v.catById.get(current) : null;
         const gamesBanner = `<a class="gm-banner gm-home" href="${ATHR.base()}games/"><span class="gm-ic" aria-hidden="true">🎮</span><span class="gm-tx"><b>${esc(t("ألعاب تعليمية مجانية"))}</b><small>${esc(t("العب وتعلّم الحروف والأرقام"))}</small></span><span class="gm-go">${esc(t("ابدأ اللعب"))} ←</span></a>`;
-        const whyRow = current ? "" : `<section class="why-row" aria-label="${esc(t("لماذا ملفاتنا"))}">${[
-            ["🎯", t("جاهزة بدون بحث")],
-            ["✅", t("حلول كاملة")],
-            ["🎨", t("ملوّنة وجذابة")],
-            ["🖨️", t("اطبعه كل ما احتجت")]
-        ].map(([i, h]) => `<div class="why-c"><span aria-hidden="true">${i}</span><b>${esc(h)}</b></div>`).join("")}</section>`;
-        return `${whyRow}${gamesBanner}<div class="section-head">
+        return `${gamesBanner}<div class="section-head">
                 <h2 id="catalog-t">${esc(curCat ? V.cname(curCat) : t("كل المنتجات"))} <small class="muted">(${all.length})</small></h2>
                 ${V.sortSelect(v, sort)}
             </div>
