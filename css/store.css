@@ -3649,3 +3649,11 @@ html.tpl-apple .msg-sugs button, html.tpl-apple .sug { border: 0; background: va
 /* زر «أضف للسلة» في بطاقات المنتجات: مستطيل بنفسجي والكلام أبيض */
 .card-action .btn.btn-primary:not(.free-dl) { background: var(--primary); color: #fff; border: 0; }
 .card-action .btn.btn-primary:not(.free-dl):hover, .card-action .btn.btn-primary:not(.free-dl):active { background: var(--primary); color: #fff; filter: brightness(1.1); }
+
+/* زر السلة العائم بألوان الهوية */
+.cf-ring { background: conic-gradient(var(--primary) var(--p, 0%), color-mix(in srgb, var(--primary) 22%, var(--surface)) 0); box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 38%, transparent); }
+.cf-in { background: var(--primary); color: #fff; }
+.cf-count { background: #fff; color: var(--primary); border-color: var(--primary); }
+.cf-pill { background: var(--primary); color: #fff; border: 2px solid var(--surface); line-height: 1.3; }
+.cf-pill.ok { background: var(--ok); color: #fff; }
+html[data-mode="dark"] .cf-in { background: var(--primary); color: #fff; }
