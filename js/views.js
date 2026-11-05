@@ -965,7 +965,7 @@
             </div>`
             : "";
         const curCat = current ? v.catById.get(current) : null;
-        const gamesBanner = `<a class="gm-banner gm-home" href="${ATHR.base()}games/"><span class="gm-ic" aria-hidden="true">🎮</span><span class="gm-tx"><b>${esc(t("ألعاب تعليمية مجانية"))}</b><small>${esc(t("العب وتعلّم الحروف والأرقام"))}</small></span><span class="gm-go">${esc(t("ابدأ اللعب"))} ←</span></a>`;
+        const gamesBanner = `<a class="gm-banner gm-home" href="${ATHR.base()}games/"><span class="gm-ic" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8h10a4.5 4.5 0 0 1 4.4 3.6l.9 4.6A2.6 2.6 0 0 1 19.6 19c-.8 0-1.5-.4-2-1l-1.5-2H7.9L6.400 18c-.5.6-1.200 1-2 1a2.600 2.600 0 0 1-2.700-2.800l.9-4.600A4.500 4.500 0 0 1 7 8z"/><path d="M8 10.800v3M6.500 12.300h3"/><circle cx="15.800" cy="11.300" r=".9"/><circle cx="18" cy="13.300" r=".9"/></svg></span><span class="gm-tx"><b>${esc(t("ألعاب تعليمية مجانية"))}</b><small>${esc(t("العب وتعلّم الحروف والأرقام"))}</small></span><span class="gm-go">${esc(t("ابدأ اللعب"))} ←</span></a>`;
         return `${gamesBanner}<div class="section-head">
                 <h2 id="catalog-t">${esc(curCat ? V.cname(curCat) : t("كل المنتجات"))} <small class="muted">(${all.length})</small></h2>
                 ${V.sortSelect(v, sort)}
@@ -1083,7 +1083,7 @@
             <nav class="hs-nav" aria-label="${esc(t("الأقسام"))}"><div class="wrap">
                 <a href="${ATHR.base()}games/">🎮 ${esc(t("ألعاب"))}</a>${list.length ? `<a href="#stories">📚 ${esc(t("قصص 3D"))}</a>` : ""}${nameBooks.length ? `<a href="#books">✏️ ${esc(t("كتب باسم طفلك"))}</a>` : ""}${kidsList.length ? `<a href="#kids">🎨 ${esc(t("تعليمي للأطفال"))}</a>` : ""}${stuList.length ? `<a href="#students">🎓 ${esc(t("الصفوف 1-4"))}</a>` : ""}
             </div></nav>
-            <section class="gm-banner-sec"><div class="wrap"><a class="gm-banner" href="${ATHR.base()}games/"><span class="gm-ic" aria-hidden="true">🎮</span><span class="gm-tx"><b>${esc(t("ألعاب تعليمية مجانية"))}</b><small>${esc(t("العب وتعلّم الحروف والأرقام"))}</small></span><span class="gm-go">${esc(t("ابدأ اللعب"))} ←</span></a></div></section>
+            <section class="gm-banner-sec"><div class="wrap"><a class="gm-banner" href="${ATHR.base()}games/"><span class="gm-ic" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8h10a4.5 4.5 0 0 1 4.4 3.6l.9 4.6A2.6 2.6 0 0 1 19.6 19c-.8 0-1.5-.4-2-1l-1.5-2H7.9L6.400 18c-.5.6-1.200 1-2 1a2.600 2.600 0 0 1-2.700-2.800l.9-4.600A4.500 4.500 0 0 1 7 8z"/><path d="M8 10.800v3M6.500 12.300h3"/><circle cx="15.800" cy="11.300" r=".9"/><circle cx="18" cy="13.300" r=".9"/></svg></span><span class="gm-tx"><b>${esc(t("ألعاب تعليمية مجانية"))}</b><small>${esc(t("العب وتعلّم الحروف والأرقام"))}</small></span><span class="gm-go">${esc(t("ابدأ اللعب"))} ←</span></a></div></section>
             <section class="section ks-best" id="stories" aria-labelledby="best-t">
                 <div class="wrap">
                     <div class="section-head ks-head"><h2 id="best-t">${esc(list.length ? t("📚 قصص ثلاثية الأبعاد، طفلك بطلها") : t("قصصنا الجديدة قريباً"))}</h2></div>
