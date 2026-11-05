@@ -1,414 +1,19 @@
-/* =====================================================
-   حروف وألوان — لوحة التحكم ودفتر الطلبيات (للمالك فقط)
-   التعديلات تُحفظ مسودة على الجوال حتى تضغط «نشر التغييرات».
-===================================================== */
-
-(function () {
-    "use strict";
-
-    const esc = ATHR.escape;
-    const $ = (selector, root = document) => root.querySelector(selector);
-    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-    const sb = window.athrSupabase;
-    const BUCKET = "product-images";
-    const DRAFT_KEY = "huroof_admin_draft_v2";
-
-    const A = {
-        view: null,
-        server: null,
-        draft: null,
-        tab: "home",
-        rowMenu: null,
-        editing: null,
-        productFilter: "",
-        errors: [],
-        busy: false,
-        orders: [],
-        ordersLoaded: false,
-        filter: { q: "", status: "all", pay: "all" },
-        book: "orders",
-        reviews: [],
-        reviewsLoaded: false,
-        statsDays: 30,
-        stats: null,
-        prevTheme: null,
-        customers: [],
-        customersLoaded: false,
-        custFilter: { q: "", kind: "all" },
-        offer: null,
-        promo: null,
-        restockRun: null,
-        couponEdit: null,
-        productLow: false,
-        ai: null,
-        aiEditing: false,
-        importPending: null,
-        reward: null
-    };
-
-    const CHANNELS = {
-        direct: "مباشر",
-        instagram: "إنستغرام",
-        tiktok: "تيك توك",
-        whatsapp: "واتساب",
-        google: "جوجل",
-        snapchat: "سناب شات",
-        facebook: "فيسبوك",
-        x: "X (تويتر)",
-        offer: "عروض واتساب",
-        app: "📱 التطبيق",
-        push: "🔔 الإشعارات",
-        other: "مواقع أخرى"
-    };
-
-    const TABS = [
-        ["products", "المنتجات", "box", "إضافة وتعديل المنتجات والصور والأسعار"],
-        ["ad", "الإعلان", "megaphone", "صورة أو فيديو أعلى المتجر"],
-        ["catalog", "الأقسام والألوان", "grid", "أقسام المتجر وصورها وألوان المنتجات"],
-        ["templates", "القوالب", "layout", "قوالب جاهزة بضغطة: شكل كامل للمتجر"],
-        ["look", "المظهر", "palette", "الألوان والخطوط والشعار والوضع الداكن"],
-        ["texts", "النصوص", "text", "العناوين والجمل ورسائل واتساب"],
-        ["order", "الطلب والاستلام", "truck", "الاستلام والدفع والدول والعملات"],
-        ["sales", "المبيعات والعروض", "tag", "أكواد المؤثرين والخصومات والمفضلة"],
-        ["ads", "تتبع الإعلانات", "chart", "Meta Pixel و TikTok Pixel ونتائج إعلاناتك"],
-        ["contact", "التواصل والآراء", "chat", "واتساب والقائمة وآراء العملاء"]
-    ];
-
-    const ICONS = {
-        box: '<path d="M12 3.2 20 7.6v8.8l-8 4.4-8-4.4V7.6l8-4.4Z"/><path d="M4 7.6 12 12l8-4.4M12 12v8.8"/>',
-        megaphone: '<path d="M4 10.5v3a1.5 1.5 0 0 0 1.5 1.5H7l5 4V5L7 9H5.5A1.5 1.5 0 0 0 4 10.5Z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/>',
-        grid: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>',
-        palette: '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.3 0 1.9-.9 1.6-2-.3-1.3.5-2.3 1.8-2.3h1.9a3.2 3.2 0 0 0 3.2-3.2C20.5 7.2 16.7 3.5 12 3.5Z"/><circle cx="7.8" cy="11" r="1.1"/><circle cx="10.5" cy="7.5" r="1.1"/><circle cx="14.8" cy="7.8" r="1.1"/>',
-        text: '<path d="M5 6.5V5h14v1.5M12 5v14M9 19h6"/>',
-        truck: '<path d="M3 6.5h11v9H3zM14 9.5h3.6l3 3.2v2.8H14"/><circle cx="7" cy="17" r="1.8"/><circle cx="17" cy="17" r="1.8"/>',
-        tag: '<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.4 1.4 0 0 1 0 2l-6.7 6.7a1.4 1.4 0 0 1-2 0l-8.3-8.3Z"/><circle cx="8.2" cy="8.2" r="1.5"/>',
-        chat: '<path d="M4 5.5h16v10H9l-5 4v-14Z"/><path d="M8 9.5h8M8 12.5h5"/>',
-        receipt: '<path d="M6 3.5h12v17l-2.5-1.6-2 1.6-1.5-1.6-1.5 1.6-2-1.6L6 20.5v-17Z"/><path d="M9 8h6M9 11.5h6M9 15h4"/>',
-        plus: '<path d="M12 5v14M5 12h14"/>',
-        layout: '<rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M3.5 9h17M10 9v11"/>',
-        chart: '<path d="M4 19.5h16"/><path d="M7 16v-4M12 16V8M17 16v-6"/><path d="M6 9.5l5-4 3 2.5 5-4"/>',
-        sparkle: '<path d="M12 3.5l1.8 5 5 1.8-5 1.8-1.8 5-1.8-5-5-1.8 5-1.8 1.8-5Z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7.7-1.8Z"/>',
-        eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/>',
-        back: '<path d="M9.5 6l6 6-6 6"/>',
-        dots: '<circle cx="5.5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18.5" cy="12" r="1.4"/>',
-        shield: '<path d="M12 3.2 5 6v5.2c0 4.3 2.9 8 7 9.6 4.1-1.6 7-5.3 7-9.6V6l-7-2.8Z"/><path d="m9 12.2 2.1 2.1L15.2 10"/>',
-        users: '<circle cx="9" cy="8.5" r="3.3"/><path d="M3 19.5c.8-3.4 3.2-5 6-5s5.2 1.6 6 5"/><circle cx="17" cy="9.5" r="2.6"/><path d="M16 14.6c2.6 0 4.4 1.4 5 4.4"/>',
-        gift: '<rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V20h14v-7.5M12 8.5V20M12 8.5C10 4 6.5 5 7.5 7.2 8.2 8.5 12 8.5 12 8.5ZM12 8.5c2-4.5 5.5-3.5 4.5-1.3-.7 1.3-4.5 1.3-4.5 1.3Z"/>'
-    };
-    const icon = (key) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[key] || ""}</svg>`;
-
-    // خطوط بسيطة وواضحة ومشهورة تدعم العربي والإنجليزي
-    const SIMPLE_FONTS = ["IBM Plex Sans Arabic", "Cairo", "Tajawal", "Almarai", "Rubik", "Alexandria", "Vazirmatn", "Noto Sans Arabic", "Noto Kufi Arabic", "Noto Naskh Arabic", "Readex Pro", "Mada", "Changa", "Zain", "Baloo Bhaijaan 2"];
-    const HEAD_FONTS = [...SIMPLE_FONTS, "Reem Kufi", "El Messiri", "Amiri", "Lalezar", "system"];
-    const BODY_FONTS = [...SIMPLE_FONTS, "system"];
-
-    const storage = {
-        get(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } },
-        set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; } },
-        del(key) { try { localStorage.removeItem(key); } catch { /* ignore */ } }
-    };
-
-    const toast = (msg) => ATHR.store.toast(msg);
-    const asset = (src) => ATHR.views.asset(src);
-    const siteLink = (path) => new URL(path, location.origin).href;
-    const cfg = () => A.draft.config;
-    const money = (v) => ATHR.money(v, A.draft ? A.draft.config : ATHR.fullConfig({}));
-
-    // =====================================================
-    // ROOT / OPEN / CLOSE
-    // =====================================================
-
-    function root() {
-        let el = $("#adm");
-        if (!el) {
-            el = document.createElement("div");
-            el.id = "adm";
-            el.className = "adm";
-            el.setAttribute("role", "dialog");
-            el.setAttribute("aria-modal", "true");
-            el.setAttribute("aria-label", "لوحة التحكم");
-            el.setAttribute("dir", "rtl");
-            el.setAttribute("lang", "ar");
-            document.body.appendChild(el);
-            el.addEventListener("click", onClick);
-            el.addEventListener("input", onInput);
-            el.addEventListener("change", onChange);
-            el.addEventListener("submit", onSubmit);
-        }
-        return el;
-    }
-
-    // فتح اللوحة مرة وحدة حتى لو انطلب مرتين ورا بعض (تغيّر الرابط + الرجوع في المتصفح)
-    let opening = null;
-    function open(name) {
-        if (opening && opening.name === name) return opening.p;
-        const p = openNow(name).finally(() => { if (opening && opening.p === p) opening = null; });
-        opening = { name, p };
-        return p;
-    }
-
-    async function openNow(name) {
-        const el = root();
-        el.hidden = false;
-        document.body.classList.add("locked");
-        A.view = name;
-        if (!el.querySelector(".adm-shell, .adm-login")) el.innerHTML = `<div class="adm-loading">جاري تحميل لوحة التحكم...</div>`;
-
-        const { data } = await sb.auth.getSession();
-        if (!data || !data.session) {
-            renderLogin();
-            return;
-        }
-        // التحقق من الصلاحية وتحميل بيانات المتجر في نفس الوقت (أسرع)
-        const early = name !== "orders" && !A.server ? loadServer().then(() => null, (e) => e) : null;
-        const isAdmin = await verifyAdmin(data.session.user.id);
-        if (early) await early;
-        if (!isAdmin) {
-            A.server = null;
-            await sb.auth.signOut();
-            renderLogin("هذا الحساب ليس لديه صلاحية إدارة المتجر.");
-            return;
-        }
-        ATHR.store.setAdmin(true);
-
-        if (name === "orders") {
-            await openOrders();
-        } else {
-            await openPanel();
-        }
-        // أول دخول بكلمة مرور مؤقتة: نطلب كلمة مرور جديدة يختارها المالك بنفسه
-        const meta = (data.session.user && data.session.user.user_metadata) || {};
-        if (meta.must_change_password) openAccount({ first: true });
-    }
-
-    function close() {
-        const el = $("#adm");
-        if (el) {
-            el.hidden = true;
-            el.innerHTML = "";
-        }
-        document.body.classList.remove("locked");
-        A.view = null;
-        A.editing = null;
-        ATHR.store.closeOwner();
-    }
-
-    async function verifyAdmin(userId) {
-        const { data, error } = await sb.from("admin_users").select("id").eq("id", userId).maybeSingle();
-        return !error && Boolean(data);
-    }
-
-    // =====================================================
-    // LOGIN
-    // =====================================================
-
-    function renderLogin(error = "") {
-        const config = ATHR.store.state().config;
-        root().innerHTML = `
+(function(){"use strict";const d=ATHR.escape,b=(t,e=document)=>e.querySelector(t),at=(t,e=document)=>Array.from(e.querySelectorAll(t)),_=window.athrSupabase,Ja="product-images",Et="huroof_admin_draft_v2",i={view:null,server:null,draft:null,tab:"home",rowMenu:null,editing:null,productFilter:"",errors:[],busy:!1,orders:[],ordersLoaded:!1,filter:{q:"",status:"all",pay:"all"},book:"orders",reviews:[],reviewsLoaded:!1,statsDays:30,stats:null,prevTheme:null,customers:[],customersLoaded:!1,custFilter:{q:"",kind:"all"},offer:null,promo:null,restockRun:null,couponEdit:null,productLow:!1,ai:null,aiEditing:!1,importPending:null,reward:null},Te={direct:"مباشر",instagram:"إنستغرام",tiktok:"تيك توك",whatsapp:"واتساب",google:"جوجل",snapchat:"سناب شات",facebook:"فيسبوك",x:"X (تويتر)",offer:"عروض واتساب",app:"📱 التطبيق",push:"🔔 الإشعارات",other:"مواقع أخرى"},ta=[["products","المنتجات","box","إضافة وتعديل المنتجات والصور والأسعار"],["ad","الإعلان","megaphone","صورة أو فيديو أعلى المتجر"],["catalog","الأقسام والألوان","grid","أقسام المتجر وصورها وألوان المنتجات"],["templates","القوالب","layout","قوالب جاهزة بضغطة: شكل كامل للمتجر"],["look","المظهر","palette","الألوان والخطوط والشعار والوضع الداكن"],["texts","النصوص","text","العناوين والجمل ورسائل واتساب"],["order","الطلب والاستلام","truck","الاستلام والدفع والدول والعملات"],["sales","المبيعات والعروض","tag","أكواد المؤثرين والخصومات والمفضلة"],["ads","تتبع الإعلانات","chart","Meta Pixel و TikTok Pixel ونتائج إعلاناتك"],["contact","التواصل والآراء","chat","واتساب والقائمة وآراء العملاء"]],Nn={box:'<path d="M12 3.2 20 7.6v8.8l-8 4.4-8-4.4V7.6l8-4.4Z"/><path d="M4 7.6 12 12l8-4.4M12 12v8.8"/>',megaphone:'<path d="M4 10.5v3a1.5 1.5 0 0 0 1.5 1.5H7l5 4V5L7 9H5.5A1.5 1.5 0 0 0 4 10.5Z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/>',grid:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>',palette:'<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.3 0 1.9-.9 1.6-2-.3-1.3.5-2.3 1.8-2.3h1.9a3.2 3.2 0 0 0 3.2-3.2C20.5 7.2 16.7 3.5 12 3.5Z"/><circle cx="7.8" cy="11" r="1.1"/><circle cx="10.5" cy="7.5" r="1.1"/><circle cx="14.8" cy="7.8" r="1.1"/>',text:'<path d="M5 6.5V5h14v1.5M12 5v14M9 19h6"/>',truck:'<path d="M3 6.5h11v9H3zM14 9.5h3.6l3 3.2v2.8H14"/><circle cx="7" cy="17" r="1.8"/><circle cx="17" cy="17" r="1.8"/>',tag:'<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.4 1.4 0 0 1 0 2l-6.7 6.7a1.4 1.4 0 0 1-2 0l-8.3-8.3Z"/><circle cx="8.2" cy="8.2" r="1.5"/>',chat:'<path d="M4 5.5h16v10H9l-5 4v-14Z"/><path d="M8 9.5h8M8 12.5h5"/>',receipt:'<path d="M6 3.5h12v17l-2.5-1.6-2 1.6-1.5-1.6-1.5 1.6-2-1.6L6 20.5v-17Z"/><path d="M9 8h6M9 11.5h6M9 15h4"/>',plus:'<path d="M12 5v14M5 12h14"/>',layout:'<rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M3.5 9h17M10 9v11"/>',chart:'<path d="M4 19.5h16"/><path d="M7 16v-4M12 16V8M17 16v-6"/><path d="M6 9.5l5-4 3 2.5 5-4"/>',sparkle:'<path d="M12 3.5l1.8 5 5 1.8-5 1.8-1.8 5-1.8-5-5-1.8 5-1.8 1.8-5Z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7.7-1.8Z"/>',eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/>',back:'<path d="M9.5 6l6 6-6 6"/>',dots:'<circle cx="5.5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18.5" cy="12" r="1.4"/>',shield:'<path d="M12 3.2 5 6v5.2c0 4.3 2.9 8 7 9.6 4.1-1.6 7-5.3 7-9.6V6l-7-2.8Z"/><path d="m9 12.2 2.1 2.1L15.2 10"/>',users:'<circle cx="9" cy="8.5" r="3.3"/><path d="M3 19.5c.8-3.4 3.2-5 6-5s5.2 1.6 6 5"/><circle cx="17" cy="9.5" r="2.6"/><path d="M16 14.6c2.6 0 4.4 1.4 5 4.4"/>',gift:'<rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V20h14v-7.5M12 8.5V20M12 8.5C10 4 6.5 5 7.5 7.2 8.2 8.5 12 8.5 12 8.5ZM12 8.5c2-4.5 5.5-3.5 4.5-1.3-.7 1.3-4.5 1.3-4.5 1.3Z"/>'},V=t=>`<svg viewBox="0 0 24 24" aria-hidden="true">${Nn[t]||""}</svg>`,Ya=["IBM Plex Sans Arabic","Cairo","Tajawal","Almarai","Rubik","Alexandria","Vazirmatn","Noto Sans Arabic","Noto Kufi Arabic","Noto Naskh Arabic","Readex Pro","Mada","Changa","Zain","Baloo Bhaijaan 2"],Cn=[...Ya,"Reem Kufi","El Messiri","Amiri","Lalezar","system"],On=[...Ya,"system"],Q={get(t){try{return JSON.parse(localStorage.getItem(t))}catch{return null}},set(t,e){try{return localStorage.setItem(t,JSON.stringify(e)),!0}catch{return!1}},del(t){try{localStorage.removeItem(t)}catch{}}},y=t=>ATHR.store.toast(t),st=t=>ATHR.views.asset(t),Y=t=>new URL(t,location.origin).href,$=()=>i.draft.config,x=t=>ATHR.money(t,i.draft?i.draft.config:ATHR.fullConfig({}));function vt(){let t=b("#adm");return t||(t=document.createElement("div"),t.id="adm",t.className="adm",t.setAttribute("role","dialog"),t.setAttribute("aria-modal","true"),t.setAttribute("aria-label","لوحة التحكم"),t.setAttribute("dir","rtl"),t.setAttribute("lang","ar"),document.body.appendChild(t),t.addEventListener("click",Br),t.addEventListener("input",Fr),t.addEventListener("change",jr),t.addEventListener("submit",qr)),t}let Nt=null;function ft(t){if(Nt&&Nt.name===t)return Nt.p;const e=Ln(t).finally(()=>{Nt&&Nt.p===e&&(Nt=null)});return Nt={name:t,p:e},e}async function Ln(t){const e=vt();e.hidden=!1,document.body.classList.add("locked"),i.view=t,e.querySelector(".adm-shell, .adm-login")||(e.innerHTML='<div class="adm-loading">جاري تحميل لوحة التحكم...</div>');const{data:a}=await _.auth.getSession();if(!a||!a.session){ts();return}const s=t!=="orders"&&!i.server?Re().then(()=>null,r=>r):null,n=await Xa(a.session.user.id);if(s&&await s,!n){i.server=null,await _.auth.signOut(),ts("هذا الحساب ليس لديه صلاحية إدارة المتجر.");return}ATHR.store.setAdmin(!0),t==="orders"?await si():await In(),(a.session.user&&a.session.user.user_metadata||{}).must_change_password&&Ys({first:!0})}function Ae(){const t=b("#adm");t&&(t.hidden=!0,t.innerHTML=""),document.body.classList.remove("locked"),i.view=null,i.editing=null,ATHR.store.closeOwner()}async function Xa(t){const{data:e,error:a}=await _.from("admin_users").select("id").eq("id",t).maybeSingle();return!a&&!!e}function ts(t=""){const e=ATHR.store.state().config;vt().innerHTML=`
             <div class="adm-login">
                 <form class="adm-card adm-login-card" id="loginForm" novalidate>
-                    <div class="adm-login-logo"><img src="${esc(asset(config.logo_url || "images/logo.png"))}" alt=""></div>
+                    <div class="adm-login-logo"><img src="${d(st(e.logo_url||"images/logo.png"))}" alt=""></div>
                     <h1>لوحة التحكم</h1>
                     <p class="adm-muted">ادخل بحساب المتجر لتعديل المتجر ومتابعة الطلبات.</p>
                     <label class="af"><span>البريد الإلكتروني</span><input class="ai" id="loginEmail" type="email" autocomplete="email" dir="ltr" required></label>
                     <label class="af"><span>كلمة المرور</span><input class="ai" id="loginPass" type="password" autocomplete="current-password" dir="ltr" required></label>
-                    <p class="adm-error" id="loginError" role="alert">${esc(error)}</p>
+                    <p class="adm-error" id="loginError" role="alert">${d(t)}</p>
                     <button class="ab ab-primary ab-block" type="submit" id="loginBtn">دخول</button>
                     <button class="ab ab-ghost ab-block" type="button" data-a="close">رجوع للمتجر</button>
                 </form>
-            </div>`;
-        setTimeout(() => $("#loginEmail")?.focus(), 50);
-    }
-
-    async function doLogin() {
-        const email = $("#loginEmail").value.trim();
-        const password = $("#loginPass").value;
-        const err = $("#loginError");
-        const btn = $("#loginBtn");
-        if (!email || !password) {
-            err.textContent = "اكتب البريد الإلكتروني وكلمة المرور.";
-            return;
-        }
-        btn.disabled = true;
-        btn.textContent = "جاري الدخول...";
-        const { data, error } = await sb.auth.signInWithPassword({ email, password });
-        btn.disabled = false;
-        btn.textContent = "دخول";
-        if (error) {
-            err.textContent = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
-            return;
-        }
-        if (!(await verifyAdmin(data.user.id))) {
-            await sb.auth.signOut();
-            err.textContent = "هذا الحساب ليس لديه صلاحية إدارة المتجر.";
-            return;
-        }
-        open(A.view || "admin");
-    }
-
-    // =====================================================
-    // SERVER STATE & DRAFT
-    // =====================================================
-
-    // طلب واحد للبيانات حتى لو انطلبت من أكثر من مكان في نفس الوقت
-    let serverLoading = null;
-    function loadServer() {
-        if (!serverLoading) serverLoading = loadServerNow().finally(() => { serverLoading = null; });
-        return serverLoading;
-    }
-
-    async function loadServerNow() {
-        const [s, c, p, m] = await Promise.all([
-            sb.from("store_settings").select("config,updated_at").eq("id", 1).maybeSingle(),
-            sb.from("categories").select("id,name,name_en,slug,sort_order,description,description_en,image_url").order("sort_order", { ascending: true }),
-            sb.from("products").select("id,name,name_en,slug,price,old_price,category_id,image_url,is_available,is_visible,is_best_seller,is_new_arrival,description,description_en,color_id,sort_order,video_url,file_url,weight_g,stock,created_at,story").order("sort_order", { ascending: true }),
-            sb.from("product_media").select("product_id,media_type,media_url,sort_order").order("sort_order", { ascending: true })
-        ]);
-        const failed = [s, c, p, m].find((r) => r.error);
-        if (failed) throw failed.error;
-
-        const media = new Map();
-        (m.data || []).forEach((row) => {
-            if (!media.has(row.product_id)) media.set(row.product_id, []);
-            media.get(row.product_id).push({ type: row.media_type === "video" ? "video" : "image", url: row.media_url });
-        });
-
-        A.serverUpdated = Date.parse(s.data?.updated_at || "") || 0;
-        A.server = {
-            config: ATHR.fullConfig(s.data?.config || {}),
-            categories: (c.data || []).map((x) => ({ id: x.id, name: x.name, name_en: x.name_en || "", slug: x.slug, description: x.description || "", description_en: x.description_en || "", image_url: x.image_url || "" })),
-            products: (p.data || []).map((x) => ({
-                id: x.id,
-                name: x.name || "",
-                name_en: x.name_en || "",
-                slug: x.slug || "",
-                price: Number(x.price),
-                old_price: x.old_price === null ? null : Number(x.old_price),
-                category_id: x.category_id,
-                image_url: x.image_url || "",
-                is_available: x.is_available !== false,
-                is_visible: x.is_visible !== false,
-                is_best_seller: x.is_best_seller === true,
-                is_new_arrival: x.is_new_arrival === true,
-                description: x.description || "",
-                description_en: x.description_en || "",
-                color_id: x.color_id || "",
-                story: x.story || "",
-                video_url: x.video_url || "",
-                file_url: x.file_url || "",
-                weight_g: x.weight_g === null || x.weight_g === undefined ? null : Number(x.weight_g),
-                stock: x.stock === null || x.stock === undefined ? null : Number(x.stock),
-                media: media.get(x.id) || []
-            }))
-        };
-    }
-
-    function restoreDraft() {
-        const saved = storage.get(DRAFT_KEY);
-        // إن تغيّر المتجر بعد حفظ المسودة (من جهاز آخر)، نفتح آخر نسخة منشورة حتى لا تُرجع المسودة القديمة شيئًا
-        if (saved && saved.saved && A.serverUpdated && saved.saved < A.serverUpdated) {
-            storage.del(DRAFT_KEY);
-            A.draft = ATHR.clone(A.server);
-            setTimeout(() => toast("تم تحديث المتجر من مكان آخر، فتحنا لك آخر نسخة منشورة"), 300);
-            return;
-        }
-        if (saved && saved.data && saved.data.config) {
-            A.draft = saved.data;
-            A.draft.config = ATHR.fullConfig(A.draft.config);
-            // مسودة قديمة قبل المخزون: نأخذ الكمية من النسخة المنشورة
-            (A.draft.products || []).forEach((p) => {
-                if (!("stock" in p)) p.stock = (A.server.products.find((x) => x.id === p.id) || {}).stock ?? null;
-            });
-        } else {
-            A.draft = ATHR.clone(A.server);
-        }
-    }
-
-    function isDirty() {
-        return JSON.stringify(A.draft) !== JSON.stringify(A.server);
-    }
-
-    let saveTimer;
-    function saveDraft() {
-        A.errors = [];
-        clearTimeout(saveTimer);
-        saveTimer = setTimeout(() => {
-            if (isDirty()) storage.set(DRAFT_KEY, { saved: Date.now(), data: A.draft });
-            else storage.del(DRAFT_KEY);
-            renderStatus();
-        }, 250);
-        renderStatus();
-    }
-
-    function renderStatus() {
-        const el = $("#admStatus");
-        if (!el) return;
-        const dirty = isDirty();
-        el.textContent = dirty ? "تعديلات غير منشورة، محفوظة على جوالك" : "كل شيء منشور";
-        el.classList.toggle("dirty", dirty);
-        const pub = $("#publishBtn");
-        const dis = $("#discardBtn");
-        if (pub) pub.disabled = !dirty || A.busy;
-        if (dis) dis.disabled = !dirty || A.busy;
-    }
-
-    // ---------- paths: "config.texts.hero_title" / "products.#<id>.name" ----------
-
-    function resolve(path, create = false) {
-        const parts = String(path).split(".");
-        let obj = A.draft;
-        for (let i = 0; i < parts.length - 1; i++) {
-            let key = parts[i];
-            if (key.startsWith("#") && Array.isArray(obj)) {
-                obj = obj.find((x) => x && x.id === key.slice(1));
-            } else {
-                if (obj[key] === undefined && create) obj[key] = /^\d+$/.test(parts[i + 1]) ? [] : {};
-                obj = obj[key];
-            }
-            if (obj === undefined || obj === null) return { parent: null, key: null };
-        }
-        let last = parts[parts.length - 1];
-        if (last.startsWith("#") && Array.isArray(obj)) {
-            const idx = obj.findIndex((x) => x && x.id === last.slice(1));
-            last = idx;
-        }
-        return { parent: obj, key: last };
-    }
-
-    function getPath(path) {
-        const { parent, key } = resolve(path);
-        return parent ? parent[key] : undefined;
-    }
-
-    function setPath(path, value) {
-        const { parent, key } = resolve(path, true);
-        if (parent) parent[key] = value;
-    }
-
-    // =====================================================
-    // PANEL
-    // =====================================================
-
-    async function openPanel() {
-        root().innerHTML = `<div class="adm-loading">جاري تحميل لوحة التحكم...</div>`;
-        try {
-            if (!A.server) await loadServer();
-            if (!A.draft) restoreDraft();
-        } catch (error) {
-            console.error(error);
-            root().innerHTML = `<div class="adm-loading"><p>تعذر تحميل بيانات المتجر. تأكد من الإنترنت.</p><button class="ab ab-primary" data-a="retry">إعادة المحاولة</button> <button class="ab ab-ghost" data-a="close">إغلاق</button></div>`;
-            return;
-        }
-        renderPanel();
-    }
-
-    function renderPanel() {
-        root().innerHTML = `
+            </div>`,setTimeout(()=>b("#loginEmail")?.focus(),50)}async function Pn(){const t=b("#loginEmail").value.trim(),e=b("#loginPass").value,a=b("#loginError"),s=b("#loginBtn");if(!t||!e){a.textContent="اكتب البريد الإلكتروني وكلمة المرور.";return}s.disabled=!0,s.textContent="جاري الدخول...";const{data:n,error:o}=await _.auth.signInWithPassword({email:t,password:e});if(s.disabled=!1,s.textContent="دخول",o){a.textContent="البريد الإلكتروني أو كلمة المرور غير صحيحة.";return}if(!await Xa(n.user.id)){await _.auth.signOut(),a.textContent="هذا الحساب ليس لديه صلاحية إدارة المتجر.";return}ft(i.view||"admin")}let Se=null;function Re(){return Se||(Se=Dn().finally(()=>{Se=null})),Se}async function Dn(){const[t,e,a,s]=await Promise.all([_.from("store_settings").select("config,updated_at").eq("id",1).maybeSingle(),_.from("categories").select("id,name,name_en,slug,sort_order,description,description_en,image_url").order("sort_order",{ascending:!0}),_.from("products").select("id,name,name_en,slug,price,old_price,category_id,image_url,is_available,is_visible,is_best_seller,is_new_arrival,description,description_en,color_id,sort_order,video_url,file_url,weight_g,stock,created_at,story").order("sort_order",{ascending:!0}),_.from("product_media").select("product_id,media_type,media_url,sort_order").order("sort_order",{ascending:!0})]),n=[t,e,a,s].find(r=>r.error);if(n)throw n.error;const o=new Map;(s.data||[]).forEach(r=>{o.has(r.product_id)||o.set(r.product_id,[]),o.get(r.product_id).push({type:r.media_type==="video"?"video":"image",url:r.media_url})}),i.serverUpdated=Date.parse(t.data?.updated_at||"")||0,i.server={config:ATHR.fullConfig(t.data?.config||{}),categories:(e.data||[]).map(r=>({id:r.id,name:r.name,name_en:r.name_en||"",slug:r.slug,description:r.description||"",description_en:r.description_en||"",image_url:r.image_url||""})),products:(a.data||[]).map(r=>({id:r.id,name:r.name||"",name_en:r.name_en||"",slug:r.slug||"",price:Number(r.price),old_price:r.old_price===null?null:Number(r.old_price),category_id:r.category_id,image_url:r.image_url||"",is_available:r.is_available!==!1,is_visible:r.is_visible!==!1,is_best_seller:r.is_best_seller===!0,is_new_arrival:r.is_new_arrival===!0,description:r.description||"",description_en:r.description_en||"",color_id:r.color_id||"",story:r.story||"",video_url:r.video_url||"",file_url:r.file_url||"",weight_g:r.weight_g===null||r.weight_g===void 0?null:Number(r.weight_g),stock:r.stock===null||r.stock===void 0?null:Number(r.stock),media:o.get(r.id)||[]}))}}function es(){const t=Q.get(Et);if(t&&t.saved&&i.serverUpdated&&t.saved<i.serverUpdated){Q.del(Et),i.draft=ATHR.clone(i.server),setTimeout(()=>y("تم تحديث المتجر من مكان آخر، فتحنا لك آخر نسخة منشورة"),300);return}t&&t.data&&t.data.config?(i.draft=t.data,i.draft.config=ATHR.fullConfig(i.draft.config),(i.draft.products||[]).forEach(e=>{"stock"in e||(e.stock=(i.server.products.find(a=>a.id===e.id)||{}).stock??null)})):i.draft=ATHR.clone(i.server)}function He(){return JSON.stringify(i.draft)!==JSON.stringify(i.server)}let as;function nt(){i.errors=[],clearTimeout(as),as=setTimeout(()=>{He()?Q.set(Et,{saved:Date.now(),data:i.draft}):Q.del(Et),Vt()},250),Vt()}function Vt(){const t=b("#admStatus");if(!t)return;const e=He();t.textContent=e?"تعديلات غير منشورة، محفوظة على جوالك":"كل شيء منشور",t.classList.toggle("dirty",e);const a=b("#publishBtn"),s=b("#discardBtn");a&&(a.disabled=!e||i.busy),s&&(s.disabled=!e||i.busy)}function ss(t,e=!1){const a=String(t).split(".");let s=i.draft;for(let o=0;o<a.length-1;o++){let r=a[o];if(r.startsWith("#")&&Array.isArray(s)?s=s.find(l=>l&&l.id===r.slice(1)):(s[r]===void 0&&e&&(s[r]=/^\d+$/.test(a[o+1])?[]:{}),s=s[r]),s==null)return{parent:null,key:null}}let n=a[a.length-1];return n.startsWith("#")&&Array.isArray(s)&&(n=s.findIndex(r=>r&&r.id===n.slice(1))),{parent:s,key:n}}function X(t){const{parent:e,key:a}=ss(t);return e?e[a]:void 0}function oe(t,e){const{parent:a,key:s}=ss(t,!0);a&&(a[s]=e)}async function In(){vt().innerHTML='<div class="adm-loading">جاري تحميل لوحة التحكم...</div>';try{i.server||await Re(),i.draft||es()}catch(t){console.error(t),vt().innerHTML='<div class="adm-loading"><p>تعذر تحميل بيانات المتجر. تأكد من الإنترنت.</p><button class="ab ab-primary" data-a="retry">إعادة المحاولة</button> <button class="ab ab-ghost" data-a="close">إغلاق</button></div>';return}re()}function re(){vt().innerHTML=`
             <div class="adm-shell">
                 <header class="adm-top">
-                    ${A.tab === "home"
-                        ? `<h1>لوحة التحكم</h1>`
-                        : `<div class="adm-title"><button class="adm-back" type="button" data-tab="home" aria-label="رجوع للرئيسية">${icon("back")}<span>الرئيسية</span></button><h1>${esc(tabLabel(A.tab))}</h1></div>`}
+                    ${i.tab==="home"?"<h1>لوحة التحكم</h1>":`<div class="adm-title"><button class="adm-back" type="button" data-tab="home" aria-label="رجوع للرئيسية">${V("back")}<span>الرئيسية</span></button><h1>${d(ns(i.tab))}</h1></div>`}
                     <div class="adm-top-actions">
                         <button class="ab ab-light ab-sm" type="button" data-a="preview">معاينة المتجر</button>
                         <button class="adm-icon" type="button" data-a="account" aria-label="الحساب">
@@ -417,8 +22,8 @@
                         <button class="adm-icon" type="button" data-a="close" aria-label="إغلاق">×</button>
                     </div>
                 </header>
-                ${A.tab === "home" ? "" : `<nav class="adm-tabs adm-chips" role="tablist" aria-label="أقسام اللوحة">
-                    ${TABS.map(([id, label, ic]) => `<button type="button" role="tab" data-tab="${id}" aria-selected="${A.tab === id}">${icon(ic)}${label}</button>`).join("")}
+                ${i.tab==="home"?"":`<nav class="adm-tabs adm-chips" role="tablist" aria-label="أقسام اللوحة">
+                    ${ta.map(([t,e,a])=>`<button type="button" role="tab" data-tab="${t}" aria-selected="${i.tab===t}">${V(a)}${e}</button>`).join("")}
                 </nav>`}
                 <main class="adm-body" id="admBody"></main>
                 <footer class="adm-foot">
@@ -429,609 +34,255 @@
                     </div>
                 </footer>
             </div>
-            <div class="adm-sheet" id="admSheet" hidden></div>`;
-        renderTab();
-        renderStatus();
-        $(".adm-chips [aria-selected=true]")?.scrollIntoView({ block: "nearest", inline: "center" });
-    }
-
-    function renderTab({ keepScroll = false } = {}) {
-        const body = $("#admBody");
-        if (!body) return;
-        const scroll = body.scrollTop;
-        $$(".adm-tabs [data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === A.tab)));
-        const errors = A.errors.length ? `<div class="adm-errors" role="alert"><strong>لم يتم النشر. صحّح التالي:</strong><ul>${A.errors.map((e) => `<li><button type="button" class="adm-link" data-tab="${e.tab}">${esc(tabLabel(e.tab))}</button>: ${esc(e.msg)}</li>`).join("")}</ul></div>` : "";
-        const banner = isDirty() && !A.errors.length ? `<div class="adm-note">لديك تعديلات غير منشورة. لن يراها الزبائن حتى تضغط «نشر التغييرات».</div>` : "";
-        const views = { home: tabHome, products: tabProducts, ad: tabAd, catalog: tabCatalog, templates: tabTemplates, look: tabLook, texts: tabTexts, order: tabOrder, sales: tabSales, ads: tabAds, contact: tabContact };
-        body.innerHTML = errors + banner + views[A.tab]();
-        if (keepScroll) body.scrollTop = scroll;
-        else body.scrollTop = 0;
-        if (A.tab === "home") loadHomeCounts();
-    }
-
-    const tabLabel = (id) => (id === "home" ? "الرئيسية" : (TABS.find((t) => t[0] === id) || [id, id])[1]);
-
-    // =====================================================
-    // HOME: صفحة رئيسية واضحة بمربعات كبيرة واختصارات سريعة
-    // =====================================================
-
-    function tabHome() {
-        const products = A.draft.products;
-        const hidden = products.filter((p) => !p.is_visible).length;
-        const out = products.filter((p) => !p.is_available).length;
-        const quick = [
-            ["data-a", "add-product", "plus", "إضافة منتج"],
-            ["data-tab", "templates", "layout", "قوالب المتجر"],
-            ["data-a", "preview", "eye", "معاينة المتجر"]
-        ];
-        return `
+            <div class="adm-sheet" id="admSheet" hidden></div>`,B(),Vt(),b(".adm-chips [aria-selected=true]")?.scrollIntoView({block:"nearest",inline:"center"})}function B({keepScroll:t=!1}={}){const e=b("#admBody");if(!e)return;const a=e.scrollTop;at(".adm-tabs [data-tab]").forEach(r=>r.setAttribute("aria-selected",String(r.dataset.tab===i.tab)));const s=i.errors.length?`<div class="adm-errors" role="alert"><strong>لم يتم النشر. صحّح التالي:</strong><ul>${i.errors.map(r=>`<li><button type="button" class="adm-link" data-tab="${r.tab}">${d(ns(r.tab))}</button>: ${d(r.msg)}</li>`).join("")}</ul></div>`:"",n=He()&&!i.errors.length?'<div class="adm-note">لديك تعديلات غير منشورة. لن يراها الزبائن حتى تضغط «نشر التغييرات».</div>':"",o={home:Fn,products:Bn,ad:Zn,catalog:Jn,templates:eo,look:oo,texts:ro,order:lo,sales:co,ads:Er,contact:Cr};e.innerHTML=s+n+o[i.tab](),t?e.scrollTop=a:e.scrollTop=0,i.tab==="home"&&jn()}const ns=t=>t==="home"?"الرئيسية":(ta.find(e=>e[0]===t)||[t,t])[1];function Fn(){const t=i.draft.products,e=t.filter(n=>!n.is_visible).length,a=t.filter(n=>!n.is_available).length,s=[["data-a","add-product","plus","إضافة منتج"],["data-tab","templates","layout","قوالب المتجر"],["data-a","preview","eye","معاينة المتجر"]];return`
             <button class="adm-orders-tile" type="button" data-a="open-orders">
-                <span class="aot-ico">${icon("receipt")}</span>
+                <span class="aot-ico">${V("receipt")}</span>
                 <span class="aot-txt"><b>الطلبات والتقييمات والأداء</b><small id="homeOrders">دفتر الطلبيات</small></span>
-                <span class="aot-go">${icon("back")}</span>
+                <span class="aot-go">${V("back")}</span>
             </button>
             <button class="adm-orders-tile asst-tile" type="button" data-a="asst-open">
                 <span class="aot-ico" aria-hidden="true">✨</span>
                 <span class="aot-txt"><b>مساعدك الذكي</b><small>اسأل متجرك: كم بعت؟ مين أفضل عملائك؟ ويسوّي لك أكواد الخصم</small></span>
-                <span class="aot-go">${icon("back")}</span>
+                <span class="aot-go">${V("back")}</span>
             </button>
             <button class="adm-orders-tile alt wa-tile" type="button" data-a="wa-open">
                 <span class="aot-ico" aria-hidden="true">🤖</span>
                 <span class="aot-txt"><b>وكيل واتساب</b><small id="homeWa">يرد على زبائنك 24 ساعة ويسجّل طلباتهم</small></span>
-                <span class="aot-go">${icon("back")}</span>
+                <span class="aot-go">${V("back")}</span>
             </button>
             <button class="adm-orders-tile alt fin-tile" type="button" data-a="fin-open">
                 <span class="aot-ico" aria-hidden="true">💰</span>
                 <span class="aot-txt"><b>المبيعات والمصاريف</b><small>ربحك لكل شهر تلقائياً، وسجّل مصاريفك</small></span>
-                <span class="aot-go">${icon("back")}</span>
+                <span class="aot-go">${V("back")}</span>
             </button>
             <button class="adm-orders-tile alt" type="button" data-a="open-customers">
-                <span class="aot-ico">${icon("users")}</span>
+                <span class="aot-ico">${V("users")}</span>
                 <span class="aot-txt"><b>العملاء والعروض</b><small>أسماء وأرقام زبائنك، وأرسل لهم الخصومات</small></span>
-                <span class="aot-go">${icon("back")}</span>
+                <span class="aot-go">${V("back")}</span>
             </button>
             <button class="adm-orders-tile alt" type="button" data-a="backup-open">
-                <span class="aot-ico">${icon("shield")}</span>
-                <span class="aot-txt"><b>النسخ الاحتياطي</b>${backupHint()}</span>
-                <span class="aot-go">${icon("back")}</span>
+                <span class="aot-ico">${V("shield")}</span>
+                <span class="aot-txt"><b>النسخ الاحتياطي</b>${Rs()}</span>
+                <span class="aot-go">${V("back")}</span>
             </button>
-            ${lowStockProducts().length ? `<button class="adm-orders-tile warn-tile" type="button" data-a="products-low-open">
+            ${de().length?`<button class="adm-orders-tile warn-tile" type="button" data-a="products-low-open">
                 <span class="aot-ico">📦</span>
-                <span class="aot-txt"><b>${lowStockProducts().length === 1 ? "منتج واحد قرب يخلص" : `${lowStockProducts().length} منتجات قربت تخلص`}</b><small>${esc(lowStockProducts().slice(0, 3).map((p) => `${p.name} (${ATHR.stockOf(p)})`).join("، "))}</small></span>
-                <span class="aot-go">${icon("back")}</span>
-            </button>` : ""}
-            <div class="adm-quick">${quick.map(([attr, a, ic, label]) => `<button class="aq" type="button" ${attr}="${a}">${icon(ic)}<span>${label}</span></button>`).join("")}</div>
+                <span class="aot-txt"><b>${de().length===1?"منتج واحد قرب يخلص":`${de().length} منتجات قربت تخلص`}</b><small>${d(de().slice(0,3).map(n=>`${n.name} (${ATHR.stockOf(n)})`).join("، "))}</small></span>
+                <span class="aot-go">${V("back")}</span>
+            </button>`:""}
+            <div class="adm-quick">${s.map(([n,o,r,l])=>`<button class="aq" type="button" ${n}="${o}">${V(r)}<span>${l}</span></button>`).join("")}</div>
             <h2 class="adm-sec">أقسام المتجر</h2>
-            <div class="adm-grid">${TABS.map(([id, label, ic, hint]) => `<button class="ag" type="button" data-tab="${id}">
-                <span class="ag-ico">${icon(ic)}</span>
-                <b>${label}</b>
-                <small>${id === "products" ? `${products.length} منتج${hidden ? ` · ${hidden} مخفي` : ""}${out ? ` · ${out} نفد` : ""}` : hint}</small>
+            <div class="adm-grid">${ta.map(([n,o,r,l])=>`<button class="ag" type="button" data-tab="${n}">
+                <span class="ag-ico">${V(r)}</span>
+                <b>${o}</b>
+                <small>${n==="products"?`${t.length} منتج${e?` · ${e} مخفي`:""}${a?` · ${a} نفد`:""}`:l}</small>
             </button>`).join("")}</div>
             <div class="adm-home-foot">
                 <button class="ab-mini" type="button" data-a="account">الحساب وكلمة المرور</button>
                 <button class="ab-mini" type="button" data-a="signout">تسجيل الخروج</button>
-            </div>`;
-    }
-
-    async function loadHomeCounts() {
-        loadWaHome();
-        try {
-            const { data, error } = await sb.from("orders").select("id,status,hidden").eq("status", "new").limit(500);
-            const el = $("#homeOrders");
-            if (error || !el) return;
-            const n = (data || []).filter((o) => !o.hidden).length;
-            el.textContent = n ? `${n === 1 ? "طلب جديد واحد" : n === 2 ? "طلبان جديدان" : `${n} طلبات جديدة`} بانتظارك` : "لا توجد طلبات جديدة الآن";
-            el.classList.toggle("hot", n > 0);
-        } catch {
-            /* العدد اختياري */
-        }
-    }
-
-    // ---------- form helpers ----------
-
-    function text(path, label, { placeholder = "", help = "", type = "text", dir = "", max = "" } = {}) {
-        const value = getPath(path);
-        return `<label class="af"><span>${label}</span><input class="ai" type="${type}" data-bind="${path}" value="${esc(value ?? "")}"${placeholder ? ` placeholder="${esc(placeholder)}"` : ""}${dir ? ` dir="${dir}"` : ""}${max ? ` maxlength="${max}"` : ""}>${help ? `<small>${help}</small>` : ""}</label>`;
-    }
-
-    function number(path, label, { step = "0.001", min = "0", help = "", placeholder = "" } = {}) {
-        const value = getPath(path);
-        return `<label class="af"><span>${label}</span><input class="ai" type="number" inputmode="decimal" step="${step}" min="${min}" data-bind="${path}" data-type="number" value="${value === null || value === undefined ? "" : esc(value)}"${placeholder ? ` placeholder="${esc(placeholder)}"` : ""}>${help ? `<small>${help}</small>` : ""}</label>`;
-    }
-
-    function area(path, label, { rows = 3, help = "", placeholder = "" } = {}) {
-        return `<label class="af"><span>${label}</span><textarea class="ai" rows="${rows}" data-bind="${path}"${placeholder ? ` placeholder="${esc(placeholder)}"` : ""}>${esc(getPath(path) ?? "")}</textarea>${help ? `<small>${help}</small>` : ""}</label>`;
-    }
-
-    function toggle(path, label, { help = "", rerender = false } = {}) {
-        return `<label class="at"><input type="checkbox" data-bind="${path}" data-type="bool"${getPath(path) ? " checked" : ""}${rerender ? " data-rerender" : ""}><span class="at-ui" aria-hidden="true"></span><span class="at-text"><b>${label}</b>${help ? `<small>${help}</small>` : ""}</span></label>`;
-    }
-
-    function select(path, label, options, { rerender = false, type = "", help = "" } = {}) {
-        const value = String(getPath(path) ?? "");
-        return `<label class="af"><span>${label}</span><select class="ai" data-bind="${path}"${type ? ` data-type="${type}"` : ""}${rerender ? " data-rerender" : ""}>${options.map(([v, l]) => `<option value="${esc(v)}"${String(v) === value ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>${help ? `<small>${help}</small>` : ""}</label>`;
-    }
-
-    function colorField(path, label) {
-        const value = getPath(path) || "#000000";
-        return `<label class="af af-color"><span>${label}</span><span class="ac"><input type="color" data-bind="${path}" value="${esc(value)}"><code dir="ltr">${esc(value)}</code></span></label>`;
-    }
-
-    function countryChecks(path, label, help = "") {
-        const value = getPath(path);
-        const list = Array.isArray(value) && value.length ? value : ATHR_COUNTRIES.map((c) => c.code);
-        return `<div class="af"><span>${label}</span><div class="cchecks">${ATHR_COUNTRIES.map((c) => `<label class="cchip"><input type="checkbox" data-country-path="${path}" value="${c.code}"${list.includes(c.code) ? " checked" : ""}><span>${c.flag} ${esc(c.name)}</span></label>`).join("")}</div>${help ? `<small>${help}</small>` : ""}</div>`;
-    }
-
-    // معاينة الخطين المختارين بدون نشر
-    function fontSample() {
-        const t = cfg().theme;
-        const href = ATHR.fontHref(cfg());
-        let link = document.getElementById("admFontPreview");
-        if (href) {
-            if (!link) {
-                link = document.createElement("link");
-                link.id = "admFontPreview";
-                link.rel = "stylesheet";
-                document.head.appendChild(link);
-            }
-            if (link.getAttribute("href") !== href) link.setAttribute("href", href);
-        }
-        const fam = (f) => (ATHR.FONT_PARAMS[f] ? `"${f}", system-ui` : "system-ui");
-        return `<div class="font-sample">
-            <b style="font-family:${esc(fam(t.font_head))}">ملفات تعليمية جاهزة للطباعة · Printable learning files</b>
-            <span style="font-family:${esc(fam(t.font_body))}">حروف عربية للتلوين، السعر 1.000 ر.ع · Arabic letters coloring 1.000 OMR</span>
-        </div>`;
-    }
-
-    function card(title, body, help = "") {
-        return `<section class="adm-card"><h2>${title}</h2>${help ? `<p class="adm-muted">${help}</p>` : ""}<div class="af-stack">${body}</div></section>`;
-    }
-
-    function listControls(path, i, length) {
-        return `<div class="row-ctrl">
-            <button type="button" class="ab-mini" data-move="${path}" data-i="${i}" data-dir="-1" aria-label="تحريك للأعلى"${i === 0 ? " disabled" : ""}>▲</button>
-            <button type="button" class="ab-mini" data-move="${path}" data-i="${i}" data-dir="1" aria-label="تحريك للأسفل"${i === length - 1 ? " disabled" : ""}>▼</button>
-            <button type="button" class="ab-mini danger" data-del="${path}" data-i="${i}" aria-label="حذف">حذف</button>
-        </div>`;
-    }
-
-    function uploadButton(label, attrs, { accept = "image/*", current = "", remove = "" } = {}) {
-        return `<div class="up">
-            ${current ? `<div class="up-prev">${/\.(mp4|webm|mov)(\?|$)/i.test(current) ? `<video src="${esc(asset(current))}" muted playsinline></video>` : `<img src="${esc(asset(current))}" alt="">`}</div>` : ""}
-            <label class="ab ab-soft ab-sm">${label}<input type="file" accept="${accept}" ${attrs} hidden></label>
-            ${remove ? `<button type="button" class="ab-mini danger" ${remove}>إزالة</button>` : ""}
-        </div>`;
-    }
-
-    // =====================================================
-    // TAB 1: PRODUCTS
-    // =====================================================
-
-    function tabProducts() {
-        const products = A.draft.products;
-        promoMaybeLoad();
-        const q = A.productFilter.trim().toLowerCase();
-        const catName = (id) => (A.draft.categories.find((c) => c.id === id) || {}).name || "بدون قسم";
-        const lowLimit = Number(cfg().sales.low_stock) || 0;
-        const isLow = (p) => ATHR.stockOf(p) !== null && ATHR.stockOf(p) <= lowLimit;
-        const lowCount = products.filter((p) => p.is_visible && isLow(p)).length;
-        const list = products.map((p, i) => ({ p, i }))
-            .filter(({ p }) => !A.productLow || isLow(p))
-            .filter(({ p }) => !q || p.name.toLowerCase().includes(q) || catName(p.category_id).toLowerCase().includes(q));
-        const noDesc = products.filter((p) => !String(p.description || "").trim()).length;
-
-        return `
+            </div>`}async function jn(){pl();try{const{data:t,error:e}=await _.from("orders").select("id,status,hidden").eq("status","new").limit(500),a=b("#homeOrders");if(e||!a)return;const s=(t||[]).filter(n=>!n.hidden).length;a.textContent=s?`${s===1?"طلب جديد واحد":s===2?"طلبان جديدان":`${s} طلبات جديدة`} بانتظارك`:"لا توجد طلبات جديدة الآن",a.classList.toggle("hot",s>0)}catch{}}function T(t,e,{placeholder:a="",help:s="",type:n="text",dir:o="",max:r=""}={}){const l=X(t);return`<label class="af"><span>${e}</span><input class="ai" type="${n}" data-bind="${t}" value="${d(l??"")}"${a?` placeholder="${d(a)}"`:""}${o?` dir="${o}"`:""}${r?` maxlength="${r}"`:""}>${s?`<small>${s}</small>`:""}</label>`}function J(t,e,{step:a="0.001",min:s="0",help:n="",placeholder:o=""}={}){const r=X(t);return`<label class="af"><span>${e}</span><input class="ai" type="number" inputmode="decimal" step="${a}" min="${s}" data-bind="${t}" data-type="number" value="${r==null?"":d(r)}"${o?` placeholder="${d(o)}"`:""}>${n?`<small>${n}</small>`:""}</label>`}function G(t,e,{rows:a=3,help:s="",placeholder:n=""}={}){return`<label class="af"><span>${e}</span><textarea class="ai" rows="${a}" data-bind="${t}"${n?` placeholder="${d(n)}"`:""}>${d(X(t)??"")}</textarea>${s?`<small>${s}</small>`:""}</label>`}function H(t,e,{help:a="",rerender:s=!1}={}){return`<label class="at"><input type="checkbox" data-bind="${t}" data-type="bool"${X(t)?" checked":""}${s?" data-rerender":""}><span class="at-ui" aria-hidden="true"></span><span class="at-text"><b>${e}</b>${a?`<small>${a}</small>`:""}</span></label>`}function q(t,e,a,{rerender:s=!1,type:n="",help:o=""}={}){const r=String(X(t)??"");return`<label class="af"><span>${e}</span><select class="ai" data-bind="${t}"${n?` data-type="${n}"`:""}${s?" data-rerender":""}>${a.map(([l,c])=>`<option value="${d(l)}"${String(l)===r?" selected":""}>${d(c)}</option>`).join("")}</select>${o?`<small>${o}</small>`:""}</label>`}function tt(t,e){const a=X(t)||"#000000";return`<label class="af af-color"><span>${e}</span><span class="ac"><input type="color" data-bind="${t}" value="${d(a)}"><code dir="ltr">${d(a)}</code></span></label>`}function ea(t,e,a=""){const s=X(t),n=Array.isArray(s)&&s.length?s:ATHR_COUNTRIES.map(o=>o.code);return`<div class="af"><span>${e}</span><div class="cchecks">${ATHR_COUNTRIES.map(o=>`<label class="cchip"><input type="checkbox" data-country-path="${t}" value="${o.code}"${n.includes(o.code)?" checked":""}><span>${o.flag} ${d(o.name)}</span></label>`).join("")}</div>${a?`<small>${a}</small>`:""}</div>`}function Un(){const t=$().theme,e=ATHR.fontHref($());let a=document.getElementById("admFontPreview");e&&(a||(a=document.createElement("link"),a.id="admFontPreview",a.rel="stylesheet",document.head.appendChild(a)),a.getAttribute("href")!==e&&a.setAttribute("href",e));const s=n=>ATHR.FONT_PARAMS[n]?`"${n}", system-ui`:"system-ui";return`<div class="font-sample">
+            <b style="font-family:${d(s(t.font_head))}">ملفات تعليمية جاهزة للطباعة · Printable learning files</b>
+            <span style="font-family:${d(s(t.font_body))}">حروف عربية للتلوين، السعر 1.000 ر.ع · Arabic letters coloring 1.000 OMR</span>
+        </div>`}function N(t,e,a=""){return`<section class="adm-card"><h2>${t}</h2>${a?`<p class="adm-muted">${a}</p>`:""}<div class="af-stack">${e}</div></section>`}function bt(t,e,a){return`<div class="row-ctrl">
+            <button type="button" class="ab-mini" data-move="${t}" data-i="${e}" data-dir="-1" aria-label="تحريك للأعلى"${e===0?" disabled":""}>▲</button>
+            <button type="button" class="ab-mini" data-move="${t}" data-i="${e}" data-dir="1" aria-label="تحريك للأسفل"${e===a-1?" disabled":""}>▼</button>
+            <button type="button" class="ab-mini danger" data-del="${t}" data-i="${e}" aria-label="حذف">حذف</button>
+        </div>`}function wt(t,e,{accept:a="image/*",current:s="",remove:n=""}={}){return`<div class="up">
+            ${s?`<div class="up-prev">${/\.(mp4|webm|mov)(\?|$)/i.test(s)?`<video src="${d(st(s))}" muted playsinline></video>`:`<img src="${d(st(s))}" alt="">`}</div>`:""}
+            <label class="ab ab-soft ab-sm">${t}<input type="file" accept="${a}" ${e} hidden></label>
+            ${n?`<button type="button" class="ab-mini danger" ${n}>إزالة</button>`:""}
+        </div>`}function Bn(){const t=i.draft.products;hs();const e=i.productFilter.trim().toLowerCase(),a=c=>(i.draft.categories.find(p=>p.id===c)||{}).name||"بدون قسم",s=Number($().sales.low_stock)||0,n=c=>ATHR.stockOf(c)!==null&&ATHR.stockOf(c)<=s,o=t.filter(c=>c.is_visible&&n(c)).length,r=t.map((c,p)=>({p:c,i:p})).filter(({p:c})=>!i.productLow||n(c)).filter(({p:c})=>!e||c.name.toLowerCase().includes(e)||a(c.category_id).toLowerCase().includes(e)),l=t.filter(c=>!String(c.description||"").trim()).length;return`
             <section class="adm-card">
                 <div class="adm-row-between">
-                    <h2>المنتجات <small class="adm-muted">(${products.length})</small></h2>
+                    <h2>المنتجات <small class="adm-muted">(${t.length})</small></h2>
                     <button class="ab ab-primary ab-sm" type="button" data-a="add-product">+ إضافة منتج</button>
                 </div>
-                <input class="ai" type="search" id="productFilter" placeholder="ابحث باسم المنتج أو القسم" value="${esc(A.productFilter)}">
-                ${lowCount || A.productLow ? `<div class="pct-chips"><button type="button" class="ab-mini${A.productLow ? " on" : ""}" data-a="products-low" aria-pressed="${Boolean(A.productLow)}">📦 قربت تخلص (${lowCount})</button></div>` : ""}
+                <input class="ai" type="search" id="productFilter" placeholder="ابحث باسم المنتج أو القسم" value="${d(i.productFilter)}">
+                ${o||i.productLow?`<div class="pct-chips"><button type="button" class="ab-mini${i.productLow?" on":""}" data-a="products-low" aria-pressed="${!!i.productLow}">📦 قربت تخلص (${o})</button></div>`:""}
                 <ul class="plist">
-                    ${list.map(({ p, i }) => `
-                        <li class="prow${p.is_visible ? "" : " is-hidden"}${A.rowMenu === p.id ? " open" : ""}">
-                            <button type="button" class="prow-main" data-edit="${esc(p.id)}">
-                                <img src="${esc(ATHR.thumb(p.image_url, "s") || asset("images/logo2.jpeg"))}" alt="" loading="lazy">
+                    ${r.map(({p:c,i:p})=>`
+                        <li class="prow${c.is_visible?"":" is-hidden"}${i.rowMenu===c.id?" open":""}">
+                            <button type="button" class="prow-main" data-edit="${d(c.id)}">
+                                <img src="${d(ATHR.thumb(c.image_url,"s")||st("images/logo2.jpeg"))}" alt="" loading="lazy">
                                 <span class="prow-info">
-                                    <b>${esc(p.name || "منتج بدون اسم")}</b>
-                                    <span class="adm-muted">${money(p.price)} · ${esc(catName(p.category_id))}</span>
-                                    ${p.is_visible && p.is_available && !pctOf(p) && !promoFavs(p.id) && !promoWaiting(p.id) && ATHR.stockOf(p) === null ? "" : `<span class="prow-tags">${pctOf(p) ? `<span class="tag sale">خصم ${pctOf(p)}%</span>` : ""}${p.is_visible ? "" : `<span class="tag">مخفي</span>`}${p.is_available ? "" : `<span class="tag warn">نفد</span>`}${promoFavs(p.id) ? `<span class="tag fav" title="أضافه زبائن للمفضلة">❤️ ${promoFavs(p.id)}</span>` : ""}${promoWaiting(p.id) ? `<span class="tag bell" title="ينتظرون توفره">🔔 ${promoWaiting(p.id)}</span>` : ""}${ATHR.stockOf(p) !== null ? `<span class="tag stock${ATHR.stockOf(p) === 0 ? " out" : isLow(p) ? " low" : ""}" title="الكمية في المخزون">📦 ${ATHR.stockOf(p)}</span>` : ""}</span>`}
+                                    <b>${d(c.name||"منتج بدون اسم")}</b>
+                                    <span class="adm-muted">${x(c.price)} · ${d(a(c.category_id))}</span>
+                                    ${c.is_visible&&c.is_available&&!et(c)&&!la(c.id)&&!ca(c.id)&&ATHR.stockOf(c)===null?"":`<span class="prow-tags">${et(c)?`<span class="tag sale">خصم ${et(c)}%</span>`:""}${c.is_visible?"":'<span class="tag">مخفي</span>'}${c.is_available?"":'<span class="tag warn">نفد</span>'}${la(c.id)?`<span class="tag fav" title="أضافه زبائن للمفضلة">❤️ ${la(c.id)}</span>`:""}${ca(c.id)?`<span class="tag bell" title="ينتظرون توفره">🔔 ${ca(c.id)}</span>`:""}${ATHR.stockOf(c)!==null?`<span class="tag stock${ATHR.stockOf(c)===0?" out":n(c)?" low":""}" title="الكمية في المخزون">📦 ${ATHR.stockOf(c)}</span>`:""}</span>`}
                                 </span>
                             </button>
-                            <button type="button" class="vis-switch" role="switch" aria-checked="${p.is_visible}" data-toggle-visible="${esc(p.id)}" title="${p.is_visible ? "ظاهر في المتجر — اضغط للإخفاء" : "مخفي — اضغط للإظهار"}" aria-label="ظاهر في المتجر"><span></span></button>
-                            <button type="button" class="ab-mini prow-more" data-row-menu="${esc(p.id)}" aria-expanded="${A.rowMenu === p.id}" aria-label="خيارات أخرى">${icon("dots")}</button>
-                            ${A.rowMenu === p.id ? `<div class="prow-menu">
-                                ${q ? "" : `<button type="button" class="ab-mini" data-move="products" data-i="${i}" data-dir="-1"${i === 0 ? " disabled" : ""}>▲ للأعلى</button>
-                                <button type="button" class="ab-mini" data-move="products" data-i="${i}" data-dir="1"${i === products.length - 1 ? " disabled" : ""}>▼ للأسفل</button>`}
-                                <button type="button" class="ab-mini" data-copy-product="${esc(p.id)}">نسخ</button>
-                                <button type="button" class="ab-mini danger" data-del-product="${esc(p.id)}">حذف</button>
-                            </div>` : ""}
-                        </li>`).join("") || `<li class="adm-empty">لا توجد منتجات مطابقة.</li>`}
+                            <button type="button" class="vis-switch" role="switch" aria-checked="${c.is_visible}" data-toggle-visible="${d(c.id)}" title="${c.is_visible?"ظاهر في المتجر — اضغط للإخفاء":"مخفي — اضغط للإظهار"}" aria-label="ظاهر في المتجر"><span></span></button>
+                            <button type="button" class="ab-mini prow-more" data-row-menu="${d(c.id)}" aria-expanded="${i.rowMenu===c.id}" aria-label="خيارات أخرى">${V("dots")}</button>
+                            ${i.rowMenu===c.id?`<div class="prow-menu">
+                                ${e?"":`<button type="button" class="ab-mini" data-move="products" data-i="${p}" data-dir="-1"${p===0?" disabled":""}>▲ للأعلى</button>
+                                <button type="button" class="ab-mini" data-move="products" data-i="${p}" data-dir="1"${p===t.length-1?" disabled":""}>▼ للأسفل</button>`}
+                                <button type="button" class="ab-mini" data-copy-product="${d(c.id)}">نسخ</button>
+                                <button type="button" class="ab-mini danger" data-del-product="${d(c.id)}">حذف</button>
+                            </div>`:""}
+                        </li>`).join("")||'<li class="adm-empty">لا توجد منتجات مطابقة.</li>'}
                 </ul>
                 <p class="adm-muted">اضغط على المنتج لتعديله. المفتاح يُظهر أو يخفي المنتج، و«⋯» للترتيب والنسخ والحذف.</p>
             </section>
-            ${bulkCard()}
-            ${card("✨ وصف المنتجات بالذكاء الاصطناعي", `
-                <p class="adm-sentence">${noDesc ? `${noDesc} منتج بدون وصف خاص (يظهر لها وصف القسم).` : "كل المنتجات لها وصف خاص ✓"}</p>
-                ${noDesc ? `<button class="ab ab-primary ab-sm" type="button" data-a="ai-bulk">✨ اكتب وصفاً لـ ${noDesc} منتج</button>` : ""}
+            ${Zr()}
+            ${N("✨ وصف المنتجات بالذكاء الاصطناعي",`
+                <p class="adm-sentence">${l?`${l} منتج بدون وصف خاص (يظهر لها وصف القسم).`:"كل المنتجات لها وصف خاص ✓"}</p>
+                ${l?`<button class="ab ab-primary ab-sm" type="button" data-a="ai-bulk">✨ اكتب وصفاً لـ ${l} منتج</button>`:""}
                 <small class="adm-muted">يكتب وصفاً قصيراً بالعربي والإنجليزي من اسم المنتج وقسمه ولونه، ويضعه في المسودة لتراجعه ثم تنشر. يحتاج مفتاح الذكاء الاصطناعي من تبويب «النصوص».</small>`)}
-            ${card("📥 Excel: تنزيل ورفع المنتجات", `
+            ${N("📥 Excel: تنزيل ورفع المنتجات",`
                 <div class="inline">
                     <button class="ab ab-soft ab-sm" type="button" data-a="xlsx-products">⬇️ تنزيل المنتجات (Excel)</button>
                     <label class="ab ab-ghost ab-sm">⬆️ رفع ملف معدّل<input type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" data-import-products hidden></label>
                 </div>
-                <small class="adm-muted">نزّل الملف، وعدّل فيه السعر أو الخصم أو الكمية أو الإظهار من تطبيق Excel أو Google Sheets، ثم ارفعه هنا. نعرض لك التغييرات قبل تطبيقها، وتُحفظ في المسودة حتى تنشر.</small>`)}`;
-    }
-
-    function productEditor(id) {
-        const p = A.draft.products.find((x) => x.id === id);
-        if (!p) return "";
-        const base = `products.#${p.id}`;
-        const images = p.media.filter((m) => m.type === "image");
-        const video = p.media.find((m) => m.type === "video");
-        const cats = [["", "بدون قسم"], ...A.draft.categories.map((c) => [c.id, c.name || "قسم بدون اسم"])];
-        const colors = [["", "بدون لون"], ...cfg().colors.map((c) => [c.id, c.name || "لون بدون اسم"])];
-
-        return `
+                <small class="adm-muted">نزّل الملف، وعدّل فيه السعر أو الخصم أو الكمية أو الإظهار من تطبيق Excel أو Google Sheets، ثم ارفعه هنا. نعرض لك التغييرات قبل تطبيقها، وتُحفظ في المسودة حتى تنشر.</small>`)}`}function os(t){const e=i.draft.products.find(l=>l.id===t);if(!e)return"";const a=`products.#${e.id}`,s=e.media.filter(l=>l.type==="image"),n=e.media.find(l=>l.type==="video"),o=[["","بدون قسم"],...i.draft.categories.map(l=>[l.id,l.name||"قسم بدون اسم"])],r=[["","بدون لون"],...$().colors.map(l=>[l.id,l.name||"لون بدون اسم"])];return`
             <div class="adm-sheet-head">
-                <h2>${esc(p.name || "منتج جديد")}</h2>
+                <h2>${d(e.name||"منتج جديد")}</h2>
                 <button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button>
             </div>
             <div class="af-stack">
                 <div class="adm-card flat">
                     <h3>صورة المنتج</h3>
-                    ${uploadButton(p.image_url ? "تغيير الصورة" : "اختيار صورة", `data-upload="${base}.image_url" data-kind="product"`, { current: p.image_url })}
+                    ${wt(e.image_url?"تغيير الصورة":"اختيار صورة",`data-upload="${a}.image_url" data-kind="product"`,{current:e.image_url})}
                     <small class="adm-muted">يفضّل صورة عمودية بنسبة 4:5 بخلفية نظيفة وإضاءة جيدة.</small>
                 </div>
-                ${text(`${base}.name`, "اسم المنتج", { max: 120 })}
-                ${text(`${base}.name_en`, "اسم المنتج بالإنجليزي (لزوار المتجر بالإنجليزي)", { max: 160, dir: "ltr", placeholder: "Real Madrid Cup" })}
+                ${T(`${a}.name`,"اسم المنتج",{max:120})}
+                ${T(`${a}.name_en`,"اسم المنتج بالإنجليزي (لزوار المتجر بالإنجليزي)",{max:160,dir:"ltr",placeholder:"Real Madrid Cup"})}
                 <div class="adm-card flat price-box">
                     <div class="two">
-                        <label class="af"><span>السعر الأصلي</span><input class="ai" type="number" inputmode="decimal" step="0.001" min="0" data-price-base="${esc(p.id)}" value="${basePrice(p) === null || basePrice(p) === undefined ? "" : esc(basePrice(p))}"></label>
-                        <label class="af"><span>الخصم %</span><input class="ai" type="number" inputmode="decimal" step="1" min="0" max="90" data-price-pct="${esc(p.id)}" value="${pctOf(p) || ""}" placeholder="بدون خصم"></label>
+                        <label class="af"><span>السعر الأصلي</span><input class="ai" type="number" inputmode="decimal" step="0.001" min="0" data-price-base="${d(e.id)}" value="${Wt(e)===null||Wt(e)===void 0?"":d(Wt(e))}"></label>
+                        <label class="af"><span>الخصم %</span><input class="ai" type="number" inputmode="decimal" step="1" min="0" max="90" data-price-pct="${d(e.id)}" value="${et(e)||""}" placeholder="بدون خصم"></label>
                     </div>
-                    <div class="pct-chips">${[10, 15, 20, 25, 30, 50].map((n) => `<button type="button" class="ab-mini${pctOf(p) === n ? " on" : ""}" data-price-quick="${n}" data-id="${esc(p.id)}">${n}%</button>`).join("")}${pctOf(p) ? `<button type="button" class="ab-mini danger" data-price-quick="0" data-id="${esc(p.id)}">إزالة الخصم</button>` : ""}</div>
-                    <p class="price-note" id="priceNote">${priceNote(p)}</p>
+                    <div class="pct-chips">${[10,15,20,25,30,50].map(l=>`<button type="button" class="ab-mini${et(e)===l?" on":""}" data-price-quick="${l}" data-id="${d(e.id)}">${l}%</button>`).join("")}${et(e)?`<button type="button" class="ab-mini danger" data-price-quick="0" data-id="${d(e.id)}">إزالة الخصم</button>`:""}</div>
+                    <p class="price-note" id="priceNote">${ls(e)}</p>
                 </div>
                 <div class="two">
-                    ${select(`${base}.category_id`, "القسم", cats)}
-                    ${cfg().colors.length ? select(`${base}.color_id`, "لون الكاسة", colors) : select(`${base}.story`, "قصة باسم الطفل", [["", "لا (ملف عادي)"], ...STORY_OPTS])}
+                    ${q(`${a}.category_id`,"القسم",o)}
+                    ${$().colors.length?q(`${a}.color_id`,"لون الكاسة",r):q(`${a}.story`,"قصة باسم الطفل",[["","لا (ملف عادي)"],...We])}
                 </div>
-                ${cfg().colors.length ? select(`${base}.story`, "قصة باسم الطفل", [["", "لا (ملف عادي)"], ...STORY_OPTS], { help: "إذا اخترت قصة: الزبون يكتب اسم طفله في صفحة المنتج، وتصنع الملف من الطلب." }) : `<small class="adm-muted">قصة باسم الطفل: الزبون يكتب اسم طفله وعمره في صفحة المنتج، وتصنع ملف القصة PDF من الطلب بضغطة.</small>`}
-                ${area(`${base}.description`, "الوصف", { rows: 3, placeholder: (A.draft.categories.find((c) => c.id === p.category_id) || {}).description ? `إذا تركته فارغاً يظهر وصف القسم: ${(A.draft.categories.find((c) => c.id === p.category_id) || {}).description}` : "" })}
-                <button class="ab ab-soft ab-sm ai-btn" type="button" data-ai-desc="${esc(p.id)}">✨ اكتب الوصف بالذكاء الاصطناعي</button>
-                ${area(`${base}.description_en`, "الوصف بالإنجليزي (اختياري)", { rows: 2 })}
-                ${cfg().order.delivery.some((d) => d.enabled && d.pricing === "per_kg") ? number(`${base}.weight_g`, "الوزن مع التغليف (غرام)", { step: "10", min: "1", help: "يُستخدم لحساب التوصيل بالكيلو." }) : ""}
-                ${toggle(`${base}.is_visible`, "ظاهر في المتجر")}
-                ${toggle(`${base}.is_best_seller`, "من «الأكثر طلباً»", { help: "يظهر في قسم الأكثر طلباً أعلى الصفحة الرئيسية مع شارة على صورته (يحتاج منتجين على الأقل)." })}
-                ${toggle(`${base}.is_new_arrival`, "من «وصل حديثاً»")}
+                ${$().colors.length?q(`${a}.story`,"قصة باسم الطفل",[["","لا (ملف عادي)"],...We],{help:"إذا اخترت قصة: الزبون يكتب اسم طفله في صفحة المنتج، وتصنع الملف من الطلب."}):'<small class="adm-muted">قصة باسم الطفل: الزبون يكتب اسم طفله وعمره في صفحة المنتج، وتصنع ملف القصة PDF من الطلب بضغطة.</small>'}
+                ${G(`${a}.description`,"الوصف",{rows:3,placeholder:(i.draft.categories.find(l=>l.id===e.category_id)||{}).description?`إذا تركته فارغاً يظهر وصف القسم: ${(i.draft.categories.find(l=>l.id===e.category_id)||{}).description}`:""})}
+                <button class="ab ab-soft ab-sm ai-btn" type="button" data-ai-desc="${d(e.id)}">✨ اكتب الوصف بالذكاء الاصطناعي</button>
+                ${G(`${a}.description_en`,"الوصف بالإنجليزي (اختياري)",{rows:2})}
+                ${$().order.delivery.some(l=>l.enabled&&l.pricing==="per_kg")?J(`${a}.weight_g`,"الوزن مع التغليف (غرام)",{step:"10",min:"1",help:"يُستخدم لحساب التوصيل بالكيلو."}):""}
+                ${H(`${a}.is_visible`,"ظاهر في المتجر")}
+                ${H(`${a}.is_best_seller`,"من «الأكثر طلباً»",{help:"يظهر في قسم الأكثر طلباً أعلى الصفحة الرئيسية مع شارة على صورته (يحتاج منتجين على الأقل)."})}
+                ${H(`${a}.is_new_arrival`,"من «وصل حديثاً»")}
                 <div class="adm-card flat stock-box">
-                    <label class="af"><span>📦 الكمية في المخزون</span><input class="ai" type="number" inputmode="numeric" step="1" min="0" data-stock="${esc(p.id)}" value="${ATHR.stockOf(p) === null ? "" : ATHR.stockOf(p)}" placeholder="بدون حد (لا أتابع الكمية)">
+                    <label class="af"><span>📦 الكمية في المخزون</span><input class="ai" type="number" inputmode="numeric" step="1" min="0" data-stock="${d(e.id)}" value="${ATHR.stockOf(e)===null?"":ATHR.stockOf(e)}" placeholder="بدون حد (لا أتابع الكمية)">
                         <small>تنقص تلقائياً مع كل طلب، وعند الصفر يصير المنتج «نفد» وحده. اتركها فارغة إذا ما تتابع الكمية.</small></label>
-                    ${ATHR.stockOf(p) === null
-                        ? `<label class="at"><input type="checkbox" data-sold-out="${esc(p.id)}"${p.is_available ? "" : " checked"}><span class="at-ui" aria-hidden="true"></span><span class="at-text"><b>نفد من المخزون</b><small>يبقى ظاهرًا مع شارة «نفد المخزون» ولا يمكن طلبه.</small></span></label>`
-                        : `<p class="stock-state ${ATHR.stockOf(p) > 0 ? (ATHR.stockOf(p) <= (Number(cfg().sales.low_stock) || 0) ? "low" : "ok") : "out"}">${ATHR.stockOf(p) > 0 ? `متوفر: ${ATHR.stockOf(p)} قطعة${ATHR.stockOf(p) <= (Number(cfg().sales.low_stock) || 0) ? " · قربت تخلص" : ""}` : "نفد من المخزون (0)"}</p>`}
+                    ${ATHR.stockOf(e)===null?`<label class="at"><input type="checkbox" data-sold-out="${d(e.id)}"${e.is_available?"":" checked"}><span class="at-ui" aria-hidden="true"></span><span class="at-text"><b>نفد من المخزون</b><small>يبقى ظاهرًا مع شارة «نفد المخزون» ولا يمكن طلبه.</small></span></label>`:`<p class="stock-state ${ATHR.stockOf(e)>0?ATHR.stockOf(e)<=(Number($().sales.low_stock)||0)?"low":"ok":"out"}">${ATHR.stockOf(e)>0?`متوفر: ${ATHR.stockOf(e)} قطعة${ATHR.stockOf(e)<=(Number($().sales.low_stock)||0)?" · قربت تخلص":""}`:"نفد من المخزون (0)"}</p>`}
                 </div>
 
                 <div class="adm-card flat">
                     <h3>صور وفيديو إضافية</h3>
                     <ul class="media-list">
-                        ${images.map((m, i) => `<li>
-                            <img src="${esc(m.url)}" alt="">
+                        ${s.map((l,c)=>`<li>
+                            <img src="${d(l.url)}" alt="">
                             <div class="row-ctrl">
-                                <button type="button" class="ab-mini" data-media-move="${esc(p.id)}" data-i="${i}" data-dir="-1"${i === 0 ? " disabled" : ""} aria-label="تحريك للأعلى">▲</button>
-                                <button type="button" class="ab-mini" data-media-move="${esc(p.id)}" data-i="${i}" data-dir="1"${i === images.length - 1 ? " disabled" : ""} aria-label="تحريك للأسفل">▼</button>
-                                <button type="button" class="ab-mini danger" data-media-del="${esc(p.id)}" data-i="${i}">حذف</button>
+                                <button type="button" class="ab-mini" data-media-move="${d(e.id)}" data-i="${c}" data-dir="-1"${c===0?" disabled":""} aria-label="تحريك للأعلى">▲</button>
+                                <button type="button" class="ab-mini" data-media-move="${d(e.id)}" data-i="${c}" data-dir="1"${c===s.length-1?" disabled":""} aria-label="تحريك للأسفل">▼</button>
+                                <button type="button" class="ab-mini danger" data-media-del="${d(e.id)}" data-i="${c}">حذف</button>
                             </div>
                         </li>`).join("")}
                     </ul>
-                    ${images.length < 5 ? uploadButton(`إضافة صور (${images.length} من 5)`, `data-media-add="${esc(p.id)}" multiple`) : `<small class="adm-muted">وصلت للحد الأقصى: 5 صور.</small>`}
+                    ${s.length<5?wt(`إضافة صور (${s.length} من 5)`,`data-media-add="${d(e.id)}" multiple`):'<small class="adm-muted">وصلت للحد الأقصى: 5 صور.</small>'}
                     <hr>
                     <h3>ملف المنتج (PDF)</h3>
-                    ${String(p.file_url || "").startsWith("private:")
-                        ? `<p class="adm-muted">✅ ملف خاص مرفوع. يصل العميل برابط مؤقت على واتساب من بطاقة الطلب (زر «أرسل الملفات»).</p>
+                    ${String(e.file_url||"").startsWith("private:")?`<p class="adm-muted">✅ ملف خاص مرفوع. يصل العميل برابط مؤقت على واتساب من بطاقة الطلب (زر «أرسل الملفات»).</p>
                            <div class="inline">
-                               <label class="ab ab-soft ab-sm">استبدال الملف<input type="file" accept="application/pdf" data-paidfile-for="${esc(p.id)}" hidden></label>
-                               <button type="button" class="ab-mini danger" data-paidfile-del="${esc(p.id)}">إزالة الملف</button>
-                           </div>`
-                        : `<p class="adm-muted">ارفع ملف PDF الخاص بهذا المنتج. لا يراه أحد من المتجر، وتُرسله أنت للعميل بعد الدفع.</p>
-                           <div class="inline"><label class="ab ab-soft ab-sm">رفع ملف PDF (خاص)<input type="file" accept="application/pdf" data-paidfile-for="${esc(p.id)}" hidden></label></div>
-                           ${text(`${base}.file_url`, "أو رابط ملف مجاني للتحميل المباشر", { dir: "ltr", placeholder: "files/free/اسم-الملف.pdf", help: "للملفات المجانية فقط: ضع سعر المنتج 0 ورابط الملف، فيظهر للزبون زر «تحميل مجاني»." })}`}
+                               <label class="ab ab-soft ab-sm">استبدال الملف<input type="file" accept="application/pdf" data-paidfile-for="${d(e.id)}" hidden></label>
+                               <button type="button" class="ab-mini danger" data-paidfile-del="${d(e.id)}">إزالة الملف</button>
+                           </div>`:`<p class="adm-muted">ارفع ملف PDF الخاص بهذا المنتج. لا يراه أحد من المتجر، وتُرسله أنت للعميل بعد الدفع.</p>
+                           <div class="inline"><label class="ab ab-soft ab-sm">رفع ملف PDF (خاص)<input type="file" accept="application/pdf" data-paidfile-for="${d(e.id)}" hidden></label></div>
+                           ${T(`${a}.file_url`,"أو رابط ملف مجاني للتحميل المباشر",{dir:"ltr",placeholder:"files/free/اسم-الملف.pdf",help:"للملفات المجانية فقط: ضع سعر المنتج 0 ورابط الملف، فيظهر للزبون زر «تحميل مجاني»."})}`}
                     <hr>
                     <h3>فيديو المنتج</h3>
-                    ${video ? `<video class="vid-prev" src="${esc(video.url)}" controls playsinline muted></video>` : ""}
+                    ${n?`<video class="vid-prev" src="${d(n.url)}" controls playsinline muted></video>`:""}
                     <div class="inline">
-                        <label class="ab ab-soft ab-sm">${video ? "استبدال الفيديو" : "رفع فيديو"}<input type="file" accept="video/*" data-video-for="${esc(p.id)}" hidden></label>
-                        ${video ? `<button type="button" class="ab-mini danger" data-video-del="${esc(p.id)}">إزالة الفيديو</button>` : ""}
+                        <label class="ab ab-soft ab-sm">${n?"استبدال الفيديو":"رفع فيديو"}<input type="file" accept="video/*" data-video-for="${d(e.id)}" hidden></label>
+                        ${n?`<button type="button" class="ab-mini danger" data-video-del="${d(e.id)}">إزالة الفيديو</button>`:""}
                     </div>
-                    ${videoQuality("productVideoQuality", "720")}
-                    ${text(`${base}.video_url`, "رابط فيديو خارجي (اختياري)", { dir: "ltr", placeholder: "https://", help: "لفيديو طويل ضع رابط يوتيوب أو إنستغرام، فيظهر زر «شاهد فيديو المنتج»." })}
+                    ${rs("productVideoQuality","720")}
+                    ${T(`${a}.video_url`,"رابط فيديو خارجي (اختياري)",{dir:"ltr",placeholder:"https://",help:"لفيديو طويل ضع رابط يوتيوب أو إنستغرام، فيظهر زر «شاهد فيديو المنتج»."})}
                 </div>
-                ${productLinkBox(p)}
+                ${qn(e)}
                 <button class="ab ab-primary ab-block" type="button" data-a="close-sheet">تم</button>
-            </div>`;
-    }
-
-    // رابط صفحة المنتج للمشاركة في إنستغرام وتيك توك وواتساب
-    function productLinkBox(p) {
-        const published = A.server && A.server.products.some((x) => x.id === p.id) && p.slug;
-        if (!published) return `<p class="adm-muted">بعد النشر يصبح لهذا المنتج رابط خاص تشاركه في إنستغرام وتيك توك وواتساب، ويظهر في جوجل.</p>`;
-        const url = siteLink(ATHR.url.product(p));
-        return `<div class="adm-card flat">
+            </div>`}function qn(t){if(!(i.server&&i.server.products.some(s=>s.id===t.id)&&t.slug))return'<p class="adm-muted">بعد النشر يصبح لهذا المنتج رابط خاص تشاركه في إنستغرام وتيك توك وواتساب، ويظهر في جوجل.</p>';const a=Y(ATHR.url.product(t));return`<div class="adm-card flat">
             <h3>رابط المنتج</h3>
-            <code class="adm-link-box" dir="ltr">${esc(decodeURI(url))}</code>
+            <code class="adm-link-box" dir="ltr">${d(decodeURI(a))}</code>
             <div class="inline">
-                <button class="ab ab-soft ab-sm" type="button" data-copy-text="${esc(url)}">نسخ الرابط</button>
-                <a class="ab ab-ghost ab-sm" href="${esc(url)}" target="_blank" rel="noopener">فتح الصفحة</a>
+                <button class="ab ab-soft ab-sm" type="button" data-copy-text="${d(a)}">نسخ الرابط</button>
+                <a class="ab ab-ghost ab-sm" href="${d(a)}" target="_blank" rel="noopener">فتح الصفحة</a>
             </div>
             <small class="adm-muted">للإعلانات: أضف في آخر الرابط <code dir="ltr">?ref=instagram</code> أو <code dir="ltr">?ref=tiktok</code> لتعرف من أين جاءت الطلبات.</small>
-        </div>`;
-    }
-
-    function videoQuality(id, def) {
-        const current = storage.get(id) || def;
-        const opts = [["0", "الأصلية (بدون ضغط)"], ["1080", "عالية 1080p"], ["720", "متوسطة 720p"], ["480", "خفيفة 480p"]];
-        return `<label class="af"><span>جودة الفيديو</span><select class="ai" data-pref="${id}">${opts.map(([v, l]) => `<option value="${v}"${v === String(current) ? " selected" : ""}>${l}</option>`).join("")}</select><small>الجودة الأخف ترفع أسرع ويفتحها الزبون أسرع.</small></label>`;
-    }
-
-    function openSheet(html) {
-        const sheet = $("#admSheet");
-        sheet.innerHTML = `<div class="adm-sheet-backdrop" data-a="close-sheet"></div><div class="adm-sheet-panel" role="dialog" aria-modal="true">${html}</div>`;
-        sheet.hidden = false;
-    }
-
-    function refreshSheet() {
-        const panel = $("#admSheet .adm-sheet-panel");
-        if (!panel || !A.editing) return;
-        const scroll = panel.scrollTop;
-        panel.innerHTML = productEditor(A.editing);
-        panel.scrollTop = scroll;
-    }
-
-    function closeSheet() {
-        const sheet = $("#admSheet");
-        if (!sheet) return;
-        sheet.hidden = true;
-        sheet.innerHTML = "";
-        if (A.editing) {
-            A.editing = null;
-            renderTab({ keepScroll: true });
-        } else if (A.restockRun || A.couponEdit) {
-            A.restockRun = null;
-            A.couponEdit = null;
-            renderTab({ keepScroll: true });
-        }
-    }
-
-    function editProduct(id) {
-        A.editing = id;
-        openSheet(productEditor(id));
-    }
-
-    function addProduct() {
-        const p = newProduct();
-        A.draft.products.unshift(p);
-        A.productFilter = "";
-        saveDraft();
-        renderTab();
-        editProduct(p.id);
-    }
-
-    // ---------- خصم المنتج: تكتب النسبة ويُحسب السعر الجديد تلقائياً ----------
-    function pctOf(p) {
-        return Number(p.old_price) > Number(p.price) && Number(p.old_price) > 0 ? Math.round((1 - p.price / p.old_price) * 1000) / 10 : 0;
-    }
-
-    function basePrice(p) {
-        return Number(p.old_price) > Number(p.price) ? Number(p.old_price) : p.price;
-    }
-
-    function applyDiscount(p, base, pct) {
-        const decimals = Number.isInteger(Number(cfg().order.decimals)) ? Number(cfg().order.decimals) : 3;
-        const f = 10 ** decimals;
-        if (!(base > 0)) {
-            p.price = base > 0 || base === 0 ? base : null;
-            p.old_price = null;
-            return;
-        }
-        if (pct > 0 && pct <= 90) {
-            p.old_price = Math.round(base * f) / f;
-            p.price = Math.round(base * (1 - pct / 100) * f) / f;
-        } else {
-            p.price = Math.round(base * f) / f;
-            p.old_price = null;
-        }
-    }
-
-    function priceNote(p) {
-        const pct = pctOf(p);
-        if (!(Number(p.price) > 0)) return p.file_url ? "مجاني: يظهر للزبون زر «تحميل مجاني»." : "اكتب السعر الأصلي للمنتج.";
-        return pct
-            ? `<span class="tag sale">خصم ${pct}%</span> الزبون يرى: <b>${money(p.price)}</b> <s>${money(p.old_price)}</s>`
-            : "بدون خصم. اكتب نسبة الخصم أو اختر من الأزرار، ويُحسب السعر الجديد تلقائياً.";
-    }
-
-    function priceFromSheet(id, pctOverride) {
-        const p = A.draft.products.find((x) => x.id === id);
-        if (!p) return;
-        const baseEl = $(`#admSheet [data-price-base="${id}"]`);
-        const pctEl = $(`#admSheet [data-price-pct="${id}"]`);
-        const base = baseEl && baseEl.value !== "" ? Number(ATHR.digits(baseEl.value)) : null;
-        let pct = pctOverride !== undefined ? pctOverride : pctEl && pctEl.value !== "" ? Number(ATHR.digits(pctEl.value)) : 0;
-        if (pct > 90) {
-            pct = 90;
-            toast("أقصى خصم 90%");
-        }
-        if (pct < 0 || Number.isNaN(pct)) pct = 0;
-        if (pctEl && pctOverride !== undefined) pctEl.value = pct ? String(pct) : "";
-        applyDiscount(p, base, pct);
-        const note = $("#priceNote");
-        if (note) note.innerHTML = priceNote(p);
-        $$("#admSheet [data-price-quick]").forEach((b) => b.classList.toggle("on", Number(b.dataset.priceQuick) === pct && pct > 0));
-        saveDraft();
-    }
-
-    // الكمية في المخزون: فارغ = بدون حد، والرقم يحدد «متوفر/نفد» تلقائياً
-    function setStock(id, raw) {
-        const p = A.draft.products.find((x) => x.id === id);
-        if (!p) return;
-        const txt = String(ATHR.digits(raw ?? "")).trim();
-        p.stock = txt === "" ? null : Math.max(0, Math.floor(Number(txt) || 0));
-        if (p.stock !== null) p.is_available = p.stock > 0;
-        saveDraft();
-    }
-
-    function newProduct() {
-        return {
-            id: crypto.randomUUID(),
-            name: "",
-            price: null,
-            old_price: null,
-            category_id: A.draft.categories[0]?.id || null,
-            image_url: "",
-            is_available: true,
-            is_visible: true,
-            is_best_seller: false,
-            is_new_arrival: true,
-            slug: "",
-            description: "",
-            color_id: cfg().colors[0]?.id || "",
-            video_url: "",
-            file_url: "",
-            weight_g: Number(cfg().order.default_weight_g) || 400,
-            stock: null,
-            media: []
-        };
-    }
-
-
-    // =====================================================
-    // TAB: GIFT — تحكم كامل في الهدية وبطاقة الإهداء
-    // =====================================================
-
-    const GIFT_FONTS = ["Aref Ruqaa", "Reem Kufi", "Amiri", "El Messiri", "Lalezar", "Rakkas", "Lemonada", "Marhey", "Cairo", "Tajawal", "Changa", "IBM Plex Sans Arabic"];
-    const GIFT_SAMPLE = { to: "سارة", from: "مريم", msg: "كل عام وأنت بخير يا أغلى الناس ❤️", occasion: "birthday" };
-
-    function giftFontLink() {
-        const param = ATHR.FONT_PARAMS[cfg().gift.font];
-        let link = document.getElementById("admGiftFont");
-        if (!param) return;
-        const href = `https://fonts.googleapis.com/css2?family=${param}&display=swap`;
-        if (!link) {
-            link = document.createElement("link");
-            link.id = "admGiftFont";
-            link.rel = "stylesheet";
-            document.head.appendChild(link);
-        }
-        if (link.getAttribute("href") !== href) link.setAttribute("href", href);
-    }
-
-    function giftMini(gender = "") {
-        const g = cfg().gift;
-        return `<div class="gift-mini gift-page" id="giftMini${gender ? `-${gender}` : ""}" style="${esc(ATHR.views.giftStyle({ cfg: cfg() }, gender))}">
+        </div>`}function rs(t,e){const a=Q.get(t)||e;return`<label class="af"><span>جودة الفيديو</span><select class="ai" data-pref="${t}">${[["0","الأصلية (بدون ضغط)"],["1080","عالية 1080p"],["720","متوسطة 720p"],["480","خفيفة 480p"]].map(([n,o])=>`<option value="${n}"${n===String(a)?" selected":""}>${o}</option>`).join("")}</select><small>الجودة الأخف ترفع أسرع ويفتحها الزبون أسرع.</small></label>`}function ot(t){const e=b("#admSheet");e.innerHTML=`<div class="adm-sheet-backdrop" data-a="close-sheet"></div><div class="adm-sheet-panel" role="dialog" aria-modal="true">${t}</div>`,e.hidden=!1}function ie(){const t=b("#admSheet .adm-sheet-panel");if(!t||!i.editing)return;const e=t.scrollTop;t.innerHTML=os(i.editing),t.scrollTop=e}function At(){const t=b("#admSheet");t&&(t.hidden=!0,t.innerHTML="",i.editing?(i.editing=null,B({keepScroll:!0})):(i.restockRun||i.couponEdit)&&(i.restockRun=null,i.couponEdit=null,B({keepScroll:!0})))}function aa(t){i.editing=t,ot(os(t))}function Vn(){const t=Wn();i.draft.products.unshift(t),i.productFilter="",nt(),B(),aa(t.id)}function et(t){return Number(t.old_price)>Number(t.price)&&Number(t.old_price)>0?Math.round((1-t.price/t.old_price)*1e3)/10:0}function Wt(t){return Number(t.old_price)>Number(t.price)?Number(t.old_price):t.price}function is(t,e,a){const n=10**(Number.isInteger(Number($().order.decimals))?Number($().order.decimals):3);if(!(e>0)){t.price=e>0||e===0?e:null,t.old_price=null;return}a>0&&a<=90?(t.old_price=Math.round(e*n)/n,t.price=Math.round(e*(1-a/100)*n)/n):(t.price=Math.round(e*n)/n,t.old_price=null)}function ls(t){const e=et(t);return Number(t.price)>0?e?`<span class="tag sale">خصم ${e}%</span> الزبون يرى: <b>${x(t.price)}</b> <s>${x(t.old_price)}</s>`:"بدون خصم. اكتب نسبة الخصم أو اختر من الأزرار، ويُحسب السعر الجديد تلقائياً.":t.file_url?"مجاني: يظهر للزبون زر «تحميل مجاني».":"اكتب السعر الأصلي للمنتج."}function sa(t,e){const a=i.draft.products.find(c=>c.id===t);if(!a)return;const s=b(`#admSheet [data-price-base="${t}"]`),n=b(`#admSheet [data-price-pct="${t}"]`),o=s&&s.value!==""?Number(ATHR.digits(s.value)):null;let r=e!==void 0?e:n&&n.value!==""?Number(ATHR.digits(n.value)):0;r>90&&(r=90,y("أقصى خصم 90%")),(r<0||Number.isNaN(r))&&(r=0),n&&e!==void 0&&(n.value=r?String(r):""),is(a,o,r);const l=b("#priceNote");l&&(l.innerHTML=ls(a)),at("#admSheet [data-price-quick]").forEach(c=>c.classList.toggle("on",Number(c.dataset.priceQuick)===r&&r>0)),nt()}function cs(t,e){const a=i.draft.products.find(n=>n.id===t);if(!a)return;const s=String(ATHR.digits(e??"")).trim();a.stock=s===""?null:Math.max(0,Math.floor(Number(s)||0)),a.stock!==null&&(a.is_available=a.stock>0),nt()}function Wn(){return{id:crypto.randomUUID(),name:"",price:null,old_price:null,category_id:i.draft.categories[0]?.id||null,image_url:"",is_available:!0,is_visible:!0,is_best_seller:!1,is_new_arrival:!0,slug:"",description:"",color_id:$().colors[0]?.id||"",video_url:"",file_url:"",weight_g:Number($().order.default_weight_g)||400,stock:null,media:[]}}const Gn=["Aref Ruqaa","Reem Kufi","Amiri","El Messiri","Lalezar","Rakkas","Lemonada","Marhey","Cairo","Tajawal","Changa","IBM Plex Sans Arabic"],Ct={to:"سارة",from:"مريم",msg:"كل عام وأنت بخير يا أغلى الناس ❤️",occasion:"birthday"};function zn(){const t=ATHR.FONT_PARAMS[$().gift.font];let e=document.getElementById("admGiftFont");if(!t)return;const a=`https://fonts.googleapis.com/css2?family=${t}&display=swap`;e||(e=document.createElement("link"),e.id="admGiftFont",e.rel="stylesheet",document.head.appendChild(e)),e.getAttribute("href")!==a&&e.setAttribute("href",a)}function na(t=""){const e=$().gift;return`<div class="gift-mini gift-page" id="giftMini${t?`-${t}`:""}" style="${d(ATHR.views.giftStyle({cfg:$()},t))}">
             <div class="gm-stage">
                 <div class="gm-box"><span class="gm-lid"></span><span class="gm-body"></span></div>
-                <b class="gm-title">${esc(ATHR.giftFill(g.title, { to: GIFT_SAMPLE.to, from: GIFT_SAMPLE.from, store: ATHR.storeName(cfg()) }))}</b>
+                <b class="gm-title">${d(ATHR.giftFill(e.title,{to:Ct.to,from:Ct.from,store:ATHR.storeName($())}))}</b>
             </div>
             <div class="gm-card">
-                <small>${esc("إلى")}</small>
-                <b class="gm-name">${esc(GIFT_SAMPLE.to)}</b>
-                <span class="gm-msg">${esc(GIFT_SAMPLE.msg)}</span>
-                <small>${esc(g.closing)} <b class="gm-from">${esc(GIFT_SAMPLE.from)}</b></small>
+                <small>${d("إلى")}</small>
+                <b class="gm-name">${d(Ct.to)}</b>
+                <span class="gm-msg">${d(Ct.msg)}</span>
+                <small>${d(e.closing)} <b class="gm-from">${d(Ct.from)}</b></small>
             </div>
-        </div>`;
-    }
-
-    function giftWaSample() {
-        return ATHR.withLang("ar", () => ATHR.giftWhatsApp({
-            ...GIFT_SAMPLE,
-            link: siteLink(`${ATHR.base()}gift/?c=…`),
-            store: ATHR.storeName(cfg()),
-            config: cfg()
-        }));
-    }
-
-    function refreshGiftPreview() {
-        ["", "boy", "girl"].forEach((g) => {
-            const mini = document.getElementById(`giftMini${g ? `-${g}` : ""}`);
-            if (mini) mini.outerHTML = giftMini(g);
-        });
-        const wa = $("#giftWaPreview");
-        if (wa) wa.textContent = giftWaSample();
-    }
-
-    function tabGift() {
-        const s = cfg().sales;
-        const D = ATHR_DEFAULTS.gift;
-        giftFontLink();
-        const occ = ATHR.GIFT_OCCASIONS.map((o) => {
-            const base = `config.gift.occasions.${o.id}`;
-            return `<li class="item-card">
-                ${o.id === "other" ? `<b>${o.emoji} ${esc(o.name)} <small class="adm-muted">(يظهر دائماً)</small></b>` : toggle(`${base}.enabled`, `${o.emoji} ${o.name}`)}
+        </div>`}function ds(){return ATHR.withLang("ar",()=>ATHR.giftWhatsApp({...Ct,link:Y(`${ATHR.base()}gift/?c=…`),store:ATHR.storeName($()),config:$()}))}function Kn(){["","boy","girl"].forEach(e=>{const a=document.getElementById(`giftMini${e?`-${e}`:""}`);a&&(a.outerHTML=na(e))});const t=b("#giftWaPreview");t&&(t.textContent=ds())}function hl(){const t=$().sales,e=ATHR_DEFAULTS.gift;zn();const a=ATHR.GIFT_OCCASIONS.map(s=>{const n=`config.gift.occasions.${s.id}`;return`<li class="item-card">
+                ${s.id==="other"?`<b>${s.emoji} ${d(s.name)} <small class="adm-muted">(يظهر دائماً)</small></b>`:H(`${n}.enabled`,`${s.emoji} ${s.name}`)}
                 <div class="two">
-                    ${text(`${base}.emoji`, "الرمز", { placeholder: o.emoji, max: 8 })}
-                    ${text(`${base}.name`, "الاسم في صفحة الطلب", { placeholder: o.name, max: 30 })}
+                    ${T(`${n}.emoji`,"الرمز",{placeholder:s.emoji,max:8})}
+                    ${T(`${n}.name`,"الاسم في صفحة الطلب",{placeholder:s.name,max:30})}
                 </div>
-                ${text(`${base}.title`, "العنوان في البطاقة", { placeholder: o.title, max: 40 })}
-                ${o.id === "other" ? "" : text(`${base}.for`, "سطر المناسبة في رسالة واتساب", { placeholder: o.for, max: 60 })}
-                ${area(`${base}.msgs`, "رسائل مقترحة للزبون (كل سطر رسالة)", { rows: 2, placeholder: o.msgs.join("\n") })}
-            </li>`;
-        }).join("");
-        return `
+                ${T(`${n}.title`,"العنوان في البطاقة",{placeholder:s.title,max:40})}
+                ${s.id==="other"?"":T(`${n}.for`,"سطر المناسبة في رسالة واتساب",{placeholder:s.for,max:60})}
+                ${G(`${n}.msgs`,"رسائل مقترحة للزبون (كل سطر رسالة)",{rows:2,placeholder:s.msgs.join(`
+`)})}
+            </li>`}).join("");return`
             <section class="adm-card gift-top">
                 <div class="adm-row-between">
                     <div><h2>🎁 الهدية وبطاقة الإهداء</h2><p class="adm-muted">غيّر الشكل والألوان والخط والنصوص والرسالة، ثم شاهدها قبل النشر.</p></div>
                 </div>
-                ${giftMini()}
+                ${na()}
                 <button class="ab ab-primary ab-block" type="button" data-a="gift-preview">👁️ معاينة البطاقة كاملة (قبل النشر)</button>
             </section>
-            ${card("التشغيل", `
-                ${toggle("config.sales.gift_enabled", "تفعيل «هدية لشخص» في إتمام الطلب", { rerender: true, help: "يختار الزبون «لي» أو «هدية لشخص»، ويكتب رقمه ورقم المُهدى إليه وولايته وعنوانه ورسالة الهدية." })}
-                ${s.gift_enabled ? `${toggle("config.sales.gift_card", "بطاقة إهداء رقمية للمُهدى إليه", { help: "صفحة الصندوق والبطاقة التي تتحكم في شكلها هنا. يرسلها صاحب الهدية بعد الطلب، ورابطها يصلك في رسالة الطلب." })}
-                ${toggle("config.sales.gift_banner", "بنر «أرسلها هدية» في الصفحة الرئيسية")}
-                ${toggle("config.sales.gift_button", "زر «أرسله هدية» في صفحة المنتج والسلة")}
-                ${toggle("config.sales.gift_prepaid", "الهدايا بالدفع المسبق فقط", { help: "يُخفي «الدفع عند الاستلام» في طلبات الهدايا حتى لا يُطلب المبلغ من المُهدى إليه." })}` : ""}`)}
-            ${card("👦 ولد أو 👧 بنت", `
-                ${toggle("config.gift.genders.enabled", "الزبون يختار: الهدية لولد أو لبنت", { rerender: true, help: "خانة إجبارية في طلب الهدية. بطاقة الإهداء والصندوق يتلوّنان حسب الاختيار، ويظهر في رسالة الطلب حتى تغلّف الهدية بنفس اللون." })}
-                ${cfg().gift.genders.enabled === false ? "" : ["boy", "girl"].map((id) => {
-                    const base = `config.gift.genders.${id}`;
-                    const D = ATHR_DEFAULTS.gift.genders[id];
-                    return `<div class="item-card gfor-admin ${id}">
-                        <b>${D.emoji} ${id === "boy" ? "الولد — أزرق وأبيض" : "البنت — وردي وأبيض"}</b>
-                        ${giftMini(id)}
+            ${N("التشغيل",`
+                ${H("config.sales.gift_enabled","تفعيل «هدية لشخص» في إتمام الطلب",{rerender:!0,help:"يختار الزبون «لي» أو «هدية لشخص»، ويكتب رقمه ورقم المُهدى إليه وولايته وعنوانه ورسالة الهدية."})}
+                ${t.gift_enabled?`${H("config.sales.gift_card","بطاقة إهداء رقمية للمُهدى إليه",{help:"صفحة الصندوق والبطاقة التي تتحكم في شكلها هنا. يرسلها صاحب الهدية بعد الطلب، ورابطها يصلك في رسالة الطلب."})}
+                ${H("config.sales.gift_banner","بنر «أرسلها هدية» في الصفحة الرئيسية")}
+                ${H("config.sales.gift_button","زر «أرسله هدية» في صفحة المنتج والسلة")}
+                ${H("config.sales.gift_prepaid","الهدايا بالدفع المسبق فقط",{help:"يُخفي «الدفع عند الاستلام» في طلبات الهدايا حتى لا يُطلب المبلغ من المُهدى إليه."})}`:""}`)}
+            ${N("👦 ولد أو 👧 بنت",`
+                ${H("config.gift.genders.enabled","الزبون يختار: الهدية لولد أو لبنت",{rerender:!0,help:"خانة إجبارية في طلب الهدية. بطاقة الإهداء والصندوق يتلوّنان حسب الاختيار، ويظهر في رسالة الطلب حتى تغلّف الهدية بنفس اللون."})}
+                ${$().gift.genders.enabled===!1?"":["boy","girl"].map(s=>{const n=`config.gift.genders.${s}`,o=ATHR_DEFAULTS.gift.genders[s];return`<div class="item-card gfor-admin ${s}">
+                        <b>${o.emoji} ${s==="boy"?"الولد — أزرق وأبيض":"البنت — وردي وأبيض"}</b>
+                        ${na(s)}
                         <div class="two">
-                            ${text(`${base}.label`, "الاسم في صفحة الطلب", { placeholder: D.label, max: 20 })}
-                            ${text(`${base}.emoji`, "الرمز", { placeholder: D.emoji, max: 8 })}
+                            ${T(`${n}.label`,"الاسم في صفحة الطلب",{placeholder:o.label,max:20})}
+                            ${T(`${n}.emoji`,"الرمز",{placeholder:o.emoji,max:8})}
                         </div>
                         <div class="two">
-                            ${colorField(`${base}.colors.bg`, "خلفية الصفحة")}
-                            ${colorField(`${base}.colors.box`, "لون الصندوق")}
+                            ${tt(`${n}.colors.bg`,"خلفية الصفحة")}
+                            ${tt(`${n}.colors.box`,"لون الصندوق")}
                         </div>
                         <div class="two">
-                            ${colorField(`${base}.colors.ribbon`, "لون الشريطة")}
-                            ${colorField(`${base}.colors.accent`, "لون الاسم")}
+                            ${tt(`${n}.colors.ribbon`,"لون الشريطة")}
+                            ${tt(`${n}.colors.accent`,"لون الاسم")}
                         </div>
                         <div class="inline">
-                            <button class="ab ab-ghost ab-sm" type="button" data-a="gift-preview" data-gender="${id}">👁️ معاينة بطاقة ${id === "boy" ? "الولد" : "البنت"}</button>
-                            <button class="ab-mini" type="button" data-gfor-reset="${id}">الألوان الأصلية</button>
+                            <button class="ab ab-ghost ab-sm" type="button" data-a="gift-preview" data-gender="${s}">👁️ معاينة بطاقة ${s==="boy"?"الولد":"البنت"}</button>
+                            <button class="ab-mini" type="button" data-gfor-reset="${s}">الألوان الأصلية</button>
                         </div>
-                    </div>`;
-                }).join("")}`, "الولد أزرق مع أبيض، والبنت وردي مع أبيض. تقدر تغيّر أي لون.")}
-            ${card("الألوان العامة", `
-                <p class="adm-muted" style="margin:0">${cfg().gift.genders.enabled === false ? "ألوان بطاقة الإهداء." : "تُستخدم فقط إذا أطفأت اختيار الولد والبنت."}</p>
+                    </div>`}).join("")}`,"الولد أزرق مع أبيض، والبنت وردي مع أبيض. تقدر تغيّر أي لون.")}
+            ${N("الألوان العامة",`
+                <p class="adm-muted" style="margin:0">${$().gift.genders.enabled===!1?"ألوان بطاقة الإهداء.":"تُستخدم فقط إذا أطفأت اختيار الولد والبنت."}</p>
                 <div class="two">
-                    ${colorField("config.gift.colors.bg", "خلفية الصفحة")}
-                    ${colorField("config.gift.colors.box", "لون الصندوق")}
+                    ${tt("config.gift.colors.bg","خلفية الصفحة")}
+                    ${tt("config.gift.colors.box","لون الصندوق")}
                 </div>
                 <div class="two">
-                    ${colorField("config.gift.colors.ribbon", "لون الشريطة والذهبي")}
-                    ${colorField("config.gift.colors.paper", "لون ورقة البطاقة")}
+                    ${tt("config.gift.colors.ribbon","لون الشريطة والذهبي")}
+                    ${tt("config.gift.colors.paper","لون ورقة البطاقة")}
                 </div>
                 <div class="two">
-                    ${colorField("config.gift.colors.ink", "لون الكتابة")}
-                    ${colorField("config.gift.colors.accent", "لون الاسم")}
+                    ${tt("config.gift.colors.ink","لون الكتابة")}
+                    ${tt("config.gift.colors.accent","لون الاسم")}
                 </div>
                 <div class="inline">
                     <button class="ab-mini" type="button" data-gift-theme="classic">عنابي وذهبي</button>
@@ -1039,1650 +290,404 @@
                     <button class="ab-mini" type="button" data-gift-theme="rose">وردي ناعم</button>
                     <button class="ab-mini" type="button" data-gift-theme="green">أخضر ملكي</button>
                     <button class="ab-mini" type="button" data-gift-theme="black">أسود فاخر</button>
-                </div>`, "اختر ألواناً جاهزة أو لوّن كل جزء بنفسك.")}
-            ${card("الخط", `
-                ${select("config.gift.font", "خط الاسم والعنوان والرسالة", [...GIFT_FONTS.map((f) => [f, f === "Aref Ruqaa" ? "Aref Ruqaa (رقعة مزخرف)" : f]), ["system", "خط الجوال العادي"]], { rerender: true })}`)}
-            ${card("المؤثرات", `
-                ${toggle("config.gift.stars", "نجوم تلمع في الخلفية")}
-                ${toggle("config.gift.confetti", "قصاصات ملونة عند الفتح")}
-                ${toggle("config.gift.tag", "بطاقة صغيرة باسم المُهدى إليه على الصندوق")}
-                ${toggle("config.gift.vibrate", "اهتزاز خفيف للجوال عند الفتح")}`)}
-            ${card("نصوص صفحة البطاقة", `
-                ${text("config.gift.kicker", "الجملة الصغيرة فوق العنوان", { placeholder: D.kicker, max: 60 })}
-                ${text("config.gift.title", "العنوان", { placeholder: D.title, max: 80 })}
-                ${text("config.gift.button", "زر الفتح", { placeholder: D.button, max: 30 })}
-                ${text("config.gift.hint", "التلميح تحت الزر", { placeholder: D.hint, max: 60 })}
-                ${text("config.gift.closing", "قبل اسم صاحب الهدية", { placeholder: D.closing, max: 40 })}
-                ${text("config.gift.empty_msg", "الرسالة إذا لم يكتب الزبون رسالة", { placeholder: D.empty_msg, max: 120 })}
-                ${text("config.gift.footer", "السطر الأخير في البطاقة", { placeholder: D.footer, max: 80 })}`,
-                "{to} = اسم المُهدى إليه · {from} = اسم صاحب الهدية · {store} = اسم المتجر")}
-            ${card("رسالة واتساب للمُهدى إليه", `
-                ${area("config.gift.wa", "نص الرسالة", { rows: 12, placeholder: D.wa })}
-                <div class="offer-preview"><small class="adm-muted">هكذا تصل (مثال):</small><pre id="giftWaPreview">${esc(giftWaSample())}</pre></div>
-                <button class="ab-mini" type="button" data-gift-wa-reset>الرجوع للرسالة الأصلية</button>`,
-                "{to} المُهدى إليه · {from} صاحب الهدية · {occasion} سطر المناسبة · {message} رسالة صاحب الهدية · {link} رابط البطاقة · {store} المتجر. السطر الذي قيمته فارغة يُحذف تلقائياً، والكلام بين *نجمتين* يظهر عريضاً في واتساب.")}
-            ${card("المناسبات", `
-                ${toggle("config.gift.custom_occasion", "✏️ الزبون يكتب مناسبة أخرى بنفسه", { help: "يظهر زر «مناسبة أخرى» في صفحة الطلب، فيكتب الزبون اسمها (مثل: عيد الأم، ترقية، نجاح). يظهر الاسم في بطاقة الإهداء ورسالة واتساب ورسالة الطلب." })}
-                <ul class="items">${occ}</ul>`, "اترك الخانة فارغة لتبقى على النص الأصلي. أطفئ أي مناسبة لا تريدها في صفحة الطلب.")}
-            ${card("البنر وزر الهدية", `
-                ${text("config.gift.banner_title", "عنوان البنر في الصفحة الرئيسية", { placeholder: D.banner_title, max: 60 })}
-                ${text("config.gift.banner_text", "النص تحت العنوان", { placeholder: D.banner_text, max: 120 })}
-                ${text("config.gift.banner_button", "زر البنر", { placeholder: D.banner_button, max: 20 })}
-                ${text("config.gift.cta_title", "زر الهدية في صفحة المنتج", { placeholder: D.cta_title, max: 30 })}
-                ${text("config.gift.cta_sub", "السطر الصغير تحت زر الهدية", { placeholder: D.cta_sub, max: 80 })}`)}`;
-    }
-
-    const GIFT_THEMES = {
-        classic: { bg: "#4A0A14", box: "#8E1A2C", ribbon: "#F2C964", paper: "#FFF8EC", ink: "#3B2A20", accent: "#8E1A2C" },
-        night: { bg: "#0E1B33", box: "#1F3B70", ribbon: "#D9DEE8", paper: "#F7F8FB", ink: "#1F2A3D", accent: "#1F3B70" },
-        rose: { bg: "#7A2E4A", box: "#E07A9A", ribbon: "#FFE1A8", paper: "#FFF5F7", ink: "#4A2533", accent: "#C24D74" },
-        green: { bg: "#0D3B2E", box: "#16664F", ribbon: "#E8C66A", paper: "#FBF8EE", ink: "#21342C", accent: "#16664F" },
-        black: { bg: "#111111", box: "#222222", ribbon: "#D4AF37", paper: "#FFFDF7", ink: "#1E1E1E", accent: "#8C6A12" }
-    };
-
-    // =====================================================
-    // TAB 2: AD
-    // =====================================================
-
-    // الإعلان الأول محفوظ في config.ad نفسه، والإضافية في config.ad.more (نفس الحقول)
-    const adPath = (i) => (i === 0 ? "config.ad" : `config.ad.more.${i - 1}`);
-
-    function tabAd() {
-        const ad = cfg().ad;
-        if (!Array.isArray(ad.more)) ad.more = [];
-        const n = 1 + ad.more.length;
-        let top = toggle("config.ad.show", "إظهار الإعلانات في المتجر");
-        if (n > 1) top += toggle("config.ad.auto", "تقليب تلقائي", { help: "يتغيّر الإعلان كل 5 ثواني، ويوقف لما الزبون يلمسه." });
-        top += `<p class="adm-muted">${n > 1
-            ? `عندك ${n} إعلانات. الزبون يسحب الإعلان يمين ويسار ويتغيّر، وتحته نقاط توضح كم إعلان.`
-            : "تقدر تضيف أكثر من إعلان، والزبون يسحب الشاشة ويتغيّر الإعلان."}</p>`;
-        let html = card("الإعلانات", top, "مستطيل يظهر أعلى الصفحة الرئيسية قبل الواجهة.");
-        for (let i = 0; i < n; i++) html += adSlideCard(i, n);
-        html += `<button class="ab ab-soft ab-block ad-add" type="button" data-a="ad-add">+ إضافة إعلان</button>`;
-        if (n > 1) html += `<p class="adm-muted ad-tip">💡 خلّ كل الإعلانات بنفس المقاس (نفس الطول والعرض) عشان يطلع الشريط مرتّب.</p>`;
-        return html;
-    }
-
-    function adSlideCard(i, n) {
-        const base = adPath(i);
-        const ad = getPath(base) || {};
-        const tools = n > 1 ? `<div class="ad-tools">
-                ${i > 0 ? `<button class="ab-mini" type="button" data-a="ad-move" data-i="${i}" data-dir="-1" aria-label="قدّم الإعلان ${i + 1}">⬆️ قبل</button>` : ""}
-                ${i < n - 1 ? `<button class="ab-mini" type="button" data-a="ad-move" data-i="${i}" data-dir="1" aria-label="أخّر الإعلان ${i + 1}">⬇️ بعد</button>` : ""}
-                <button class="ab-mini danger" type="button" data-a="ad-del" data-i="${i}" aria-label="حذف الإعلان ${i + 1}">🗑️ حذف</button>
-            </div>` : "";
-        let body = tools + select(`${base}.type`, "نوع الإعلان", [["image", "صورة جاهزة (تصميمي الخاص)"], ["video", "فيديو جاهز"], ["text", "تصميم نصي أعدّله هنا"]], { rerender: true });
-        if (ad.type === "image") {
-            body += `<div class="af"><span>صورة الإعلان</span>${uploadButton(ad.image_url ? "تغيير الصورة" : "اختيار صورة", `data-upload="${base}.image_url" data-kind="ad"`, { current: ad.image_url, remove: ad.image_url ? `data-clear="${base}.image_url"` : "" })}</div>`;
-            body += text(`${base}.image_alt`, "وصف قصير للصورة (للقارئات الصوتية)");
-        } else if (ad.type === "video") {
-            body += `<div class="af"><span>فيديو الإعلان</span>${uploadButton(ad.video_url ? "استبدال الفيديو" : "رفع فيديو", `data-upload="${base}.video_url" data-kind="adVideo"`, { accept: "video/*", current: ad.video_url, remove: ad.video_url ? `data-clear="${base}.video_url"` : "" })}</div>`;
-            body += videoQuality("adVideoQuality", "480");
-            body += `<small class="adm-muted">الإعلان يظهر أول الصفحة، لذلك الأفضل جودة خفيفة ومدة قصيرة. يعمل تلقائياً بدون صوت وبتكرار.</small>`;
-            body += text(`${base}.video_alt`, "وصف قصير للفيديو (للقارئات الصوتية)");
-        } else {
-            body += text(`${base}.title`, "العنوان", { max: 80 });
-            body += area(`${base}.text`, "النص تحت العنوان", { rows: 2 });
-            body += text(`${base}.button`, "نص الزر (اختياري)", { max: 30 });
-            body += colorField(`${base}.bg`, "لون خلفية الإعلان");
-        }
-        body += text(`${base}.link`, "رابط عند الضغط على الإعلان (اختياري)", {
-            dir: "ltr",
-            placeholder: "https://  أو  c/clubs/",
-            help: ad.type === "text" ? "إن لم تكتب رابطاً، يفتح الزر قسم المنتجات. لرابط قسم اكتب مثلاً c/clubs/" : "لرابط قسم اكتب مثلاً c/clubs/ ولمنتج انسخ رابطه من صفحة المنتج."
-        });
-        return card(n > 1 ? `الإعلان ${i + 1}` : "الإعلان", body);
-    }
-
-    // نسخ حقول إعلان وكتابتها (عشان التقديم والتأخير والحذف بين الأول والإضافية)
-    function adGet(i) {
-        const src = getPath(adPath(i)) || {};
-        const out = {};
-        ATHR.AD_FIELDS.forEach((k) => { out[k] = src[k] ?? ""; });
-        return out;
-    }
-    function adPut(i, slide) {
-        const dst = getPath(adPath(i));
-        if (dst) ATHR.AD_FIELDS.forEach((k) => { dst[k] = slide[k] ?? ""; });
-    }
-
-    // =====================================================
-    // TAB 3: CATEGORIES & COLORS
-    // =====================================================
-
-    function tabCatalog() {
-        const counts = new Map();
-        A.draft.products.forEach((p) => counts.set(p.category_id, (counts.get(p.category_id) || 0) + 1));
-        const cats = A.draft.categories;
-        const colorCounts = new Map();
-        A.draft.products.forEach((p) => colorCounts.set(p.color_id, (colorCounts.get(p.color_id) || 0) + 1));
-        const colors = cfg().colors;
-
-        return card("الأقسام", `
-            <ul class="items">${cats.map((c, i) => `<li class="item-card">
+                </div>`,"اختر ألواناً جاهزة أو لوّن كل جزء بنفسك.")}
+            ${N("الخط",`
+                ${q("config.gift.font","خط الاسم والعنوان والرسالة",[...Gn.map(s=>[s,s==="Aref Ruqaa"?"Aref Ruqaa (رقعة مزخرف)":s]),["system","خط الجوال العادي"]],{rerender:!0})}`)}
+            ${N("المؤثرات",`
+                ${H("config.gift.stars","نجوم تلمع في الخلفية")}
+                ${H("config.gift.confetti","قصاصات ملونة عند الفتح")}
+                ${H("config.gift.tag","بطاقة صغيرة باسم المُهدى إليه على الصندوق")}
+                ${H("config.gift.vibrate","اهتزاز خفيف للجوال عند الفتح")}`)}
+            ${N("نصوص صفحة البطاقة",`
+                ${T("config.gift.kicker","الجملة الصغيرة فوق العنوان",{placeholder:e.kicker,max:60})}
+                ${T("config.gift.title","العنوان",{placeholder:e.title,max:80})}
+                ${T("config.gift.button","زر الفتح",{placeholder:e.button,max:30})}
+                ${T("config.gift.hint","التلميح تحت الزر",{placeholder:e.hint,max:60})}
+                ${T("config.gift.closing","قبل اسم صاحب الهدية",{placeholder:e.closing,max:40})}
+                ${T("config.gift.empty_msg","الرسالة إذا لم يكتب الزبون رسالة",{placeholder:e.empty_msg,max:120})}
+                ${T("config.gift.footer","السطر الأخير في البطاقة",{placeholder:e.footer,max:80})}`,"{to} = اسم المُهدى إليه · {from} = اسم صاحب الهدية · {store} = اسم المتجر")}
+            ${N("رسالة واتساب للمُهدى إليه",`
+                ${G("config.gift.wa","نص الرسالة",{rows:12,placeholder:e.wa})}
+                <div class="offer-preview"><small class="adm-muted">هكذا تصل (مثال):</small><pre id="giftWaPreview">${d(ds())}</pre></div>
+                <button class="ab-mini" type="button" data-gift-wa-reset>الرجوع للرسالة الأصلية</button>`,"{to} المُهدى إليه · {from} صاحب الهدية · {occasion} سطر المناسبة · {message} رسالة صاحب الهدية · {link} رابط البطاقة · {store} المتجر. السطر الذي قيمته فارغة يُحذف تلقائياً، والكلام بين *نجمتين* يظهر عريضاً في واتساب.")}
+            ${N("المناسبات",`
+                ${H("config.gift.custom_occasion","✏️ الزبون يكتب مناسبة أخرى بنفسه",{help:"يظهر زر «مناسبة أخرى» في صفحة الطلب، فيكتب الزبون اسمها (مثل: عيد الأم، ترقية، نجاح). يظهر الاسم في بطاقة الإهداء ورسالة واتساب ورسالة الطلب."})}
+                <ul class="items">${a}</ul>`,"اترك الخانة فارغة لتبقى على النص الأصلي. أطفئ أي مناسبة لا تريدها في صفحة الطلب.")}
+            ${N("البنر وزر الهدية",`
+                ${T("config.gift.banner_title","عنوان البنر في الصفحة الرئيسية",{placeholder:e.banner_title,max:60})}
+                ${T("config.gift.banner_text","النص تحت العنوان",{placeholder:e.banner_text,max:120})}
+                ${T("config.gift.banner_button","زر البنر",{placeholder:e.banner_button,max:20})}
+                ${T("config.gift.cta_title","زر الهدية في صفحة المنتج",{placeholder:e.cta_title,max:30})}
+                ${T("config.gift.cta_sub","السطر الصغير تحت زر الهدية",{placeholder:e.cta_sub,max:80})}`)}`}const us={classic:{bg:"#4A0A14",box:"#8E1A2C",ribbon:"#F2C964",paper:"#FFF8EC",ink:"#3B2A20",accent:"#8E1A2C"},night:{bg:"#0E1B33",box:"#1F3B70",ribbon:"#D9DEE8",paper:"#F7F8FB",ink:"#1F2A3D",accent:"#1F3B70"},rose:{bg:"#7A2E4A",box:"#E07A9A",ribbon:"#FFE1A8",paper:"#FFF5F7",ink:"#4A2533",accent:"#C24D74"},green:{bg:"#0D3B2E",box:"#16664F",ribbon:"#E8C66A",paper:"#FBF8EE",ink:"#21342C",accent:"#16664F"},black:{bg:"#111111",box:"#222222",ribbon:"#D4AF37",paper:"#FFFDF7",ink:"#1E1E1E",accent:"#8C6A12"}},oa=t=>t===0?"config.ad":`config.ad.more.${t-1}`;function Zn(){const t=$().ad;Array.isArray(t.more)||(t.more=[]);const e=1+t.more.length;let a=H("config.ad.show","إظهار الإعلانات في المتجر");e>1&&(a+=H("config.ad.auto","تقليب تلقائي",{help:"يتغيّر الإعلان كل 5 ثواني، ويوقف لما الزبون يلمسه."})),a+=`<p class="adm-muted">${e>1?`عندك ${e} إعلانات. الزبون يسحب الإعلان يمين ويسار ويتغيّر، وتحته نقاط توضح كم إعلان.`:"تقدر تضيف أكثر من إعلان، والزبون يسحب الشاشة ويتغيّر الإعلان."}</p>`;let s=N("الإعلانات",a,"مستطيل يظهر أعلى الصفحة الرئيسية قبل الواجهة.");for(let n=0;n<e;n++)s+=Qn(n,e);return s+='<button class="ab ab-soft ab-block ad-add" type="button" data-a="ad-add">+ إضافة إعلان</button>',e>1&&(s+='<p class="adm-muted ad-tip">💡 خلّ كل الإعلانات بنفس المقاس (نفس الطول والعرض) عشان يطلع الشريط مرتّب.</p>'),s}function Qn(t,e){const a=oa(t),s=X(a)||{};let o=(e>1?`<div class="ad-tools">
+                ${t>0?`<button class="ab-mini" type="button" data-a="ad-move" data-i="${t}" data-dir="-1" aria-label="قدّم الإعلان ${t+1}">⬆️ قبل</button>`:""}
+                ${t<e-1?`<button class="ab-mini" type="button" data-a="ad-move" data-i="${t}" data-dir="1" aria-label="أخّر الإعلان ${t+1}">⬇️ بعد</button>`:""}
+                <button class="ab-mini danger" type="button" data-a="ad-del" data-i="${t}" aria-label="حذف الإعلان ${t+1}">🗑️ حذف</button>
+            </div>`:"")+q(`${a}.type`,"نوع الإعلان",[["image","صورة جاهزة (تصميمي الخاص)"],["video","فيديو جاهز"],["text","تصميم نصي أعدّله هنا"]],{rerender:!0});return s.type==="image"?(o+=`<div class="af"><span>صورة الإعلان</span>${wt(s.image_url?"تغيير الصورة":"اختيار صورة",`data-upload="${a}.image_url" data-kind="ad"`,{current:s.image_url,remove:s.image_url?`data-clear="${a}.image_url"`:""})}</div>`,o+=T(`${a}.image_alt`,"وصف قصير للصورة (للقارئات الصوتية)")):s.type==="video"?(o+=`<div class="af"><span>فيديو الإعلان</span>${wt(s.video_url?"استبدال الفيديو":"رفع فيديو",`data-upload="${a}.video_url" data-kind="adVideo"`,{accept:"video/*",current:s.video_url,remove:s.video_url?`data-clear="${a}.video_url"`:""})}</div>`,o+=rs("adVideoQuality","480"),o+='<small class="adm-muted">الإعلان يظهر أول الصفحة، لذلك الأفضل جودة خفيفة ومدة قصيرة. يعمل تلقائياً بدون صوت وبتكرار.</small>',o+=T(`${a}.video_alt`,"وصف قصير للفيديو (للقارئات الصوتية)")):(o+=T(`${a}.title`,"العنوان",{max:80}),o+=G(`${a}.text`,"النص تحت العنوان",{rows:2}),o+=T(`${a}.button`,"نص الزر (اختياري)",{max:30}),o+=tt(`${a}.bg`,"لون خلفية الإعلان")),o+=T(`${a}.link`,"رابط عند الضغط على الإعلان (اختياري)",{dir:"ltr",placeholder:"https://  أو  c/clubs/",help:s.type==="text"?"إن لم تكتب رابطاً، يفتح الزر قسم المنتجات. لرابط قسم اكتب مثلاً c/clubs/":"لرابط قسم اكتب مثلاً c/clubs/ ولمنتج انسخ رابطه من صفحة المنتج."}),N(e>1?`الإعلان ${t+1}`:"الإعلان",o)}function ra(t){const e=X(oa(t))||{},a={};return ATHR.AD_FIELDS.forEach(s=>{a[s]=e[s]??""}),a}function ia(t,e){const a=X(oa(t));a&&ATHR.AD_FIELDS.forEach(s=>{a[s]=e[s]??""})}function Jn(){const t=new Map;i.draft.products.forEach(n=>t.set(n.category_id,(t.get(n.category_id)||0)+1));const e=i.draft.categories,a=new Map;i.draft.products.forEach(n=>a.set(n.color_id,(a.get(n.color_id)||0)+1));const s=$().colors;return N("الأقسام",`
+            <ul class="items">${e.map((n,o)=>`<li class="item-card">
                 <div class="lst-row">
-                    <input class="ai" data-bind="categories.#${esc(c.id)}.name" value="${esc(c.name)}" placeholder="اسم القسم" aria-label="اسم القسم">
-                    <input class="ai" data-bind="categories.#${esc(c.id)}.name_en" value="${esc(c.name_en || "")}" placeholder="English name" aria-label="اسم القسم بالإنجليزي" dir="ltr">
-                    <span class="adm-muted nowrap">${counts.get(c.id) || 0} منتج</span>
+                    <input class="ai" data-bind="categories.#${d(n.id)}.name" value="${d(n.name)}" placeholder="اسم القسم" aria-label="اسم القسم">
+                    <input class="ai" data-bind="categories.#${d(n.id)}.name_en" value="${d(n.name_en||"")}" placeholder="English name" aria-label="اسم القسم بالإنجليزي" dir="ltr">
+                    <span class="adm-muted nowrap">${t.get(n.id)||0} منتج</span>
                 </div>
-                <div class="af"><span>صورة القسم</span>${uploadButton(c.image_url ? "تغيير الصورة" : "اختيار صورة", `data-upload="categories.#${esc(c.id)}.image_url" data-kind="category"`, { current: c.image_url ? ATHR.thumb(c.image_url, "s") : "", remove: c.image_url ? `data-clear="categories.#${esc(c.id)}.image_url"` : "" })}<small>تظهر في أعلى المتجر وفي القائمة. الأفضل صورة عمودية بنسبة 3:4 بخلفية بيج مثل باقي الأقسام.</small></div>
-                <label class="af"><span>وصف القسم (يظهر في صفحته وفي جوجل)</span><textarea class="ai" rows="2" maxlength="300" data-bind="categories.#${esc(c.id)}.description" placeholder="مثال: صفحات تلوين برسومات أصلية بخطوط واضحة، جاهزة للطباعة بمقاس A4.">${esc(c.description || "")}</textarea></label>
-                <label class="af"><span>وصف القسم بالإنجليزي (اختياري)</span><textarea class="ai" rows="2" maxlength="600" dir="ltr" data-bind="categories.#${esc(c.id)}.description_en">${esc(c.description_en || "")}</textarea></label>
-                ${c.slug ? `<small class="adm-muted" dir="ltr">${esc(decodeURI(siteLink(ATHR.url.category(c))))}</small>` : ""}
-                ${listControls("categories", i, cats.length)}
+                <div class="af"><span>صورة القسم</span>${wt(n.image_url?"تغيير الصورة":"اختيار صورة",`data-upload="categories.#${d(n.id)}.image_url" data-kind="category"`,{current:n.image_url?ATHR.thumb(n.image_url,"s"):"",remove:n.image_url?`data-clear="categories.#${d(n.id)}.image_url"`:""})}<small>تظهر في أعلى المتجر وفي القائمة. الأفضل صورة عمودية بنسبة 3:4 بخلفية بيج مثل باقي الأقسام.</small></div>
+                <label class="af"><span>وصف القسم (يظهر في صفحته وفي جوجل)</span><textarea class="ai" rows="2" maxlength="300" data-bind="categories.#${d(n.id)}.description" placeholder="مثال: صفحات تلوين برسومات أصلية بخطوط واضحة، جاهزة للطباعة بمقاس A4.">${d(n.description||"")}</textarea></label>
+                <label class="af"><span>وصف القسم بالإنجليزي (اختياري)</span><textarea class="ai" rows="2" maxlength="600" dir="ltr" data-bind="categories.#${d(n.id)}.description_en">${d(n.description_en||"")}</textarea></label>
+                ${n.slug?`<small class="adm-muted" dir="ltr">${d(decodeURI(Y(ATHR.url.category(n))))}</small>`:""}
+                ${bt("categories",o,e.length)}
             </li>`).join("")}</ul>
-            <button class="ab ab-ghost ab-sm" type="button" data-a="add-category">+ إضافة قسم</button>`, "رتّبها كما تريد ظهورها في المتجر. حذف قسم لا يحذف منتجاته، تصبح بدون قسم. اكتب لكل قسم وصفاً قصيراً بالكلمات التي يبحث بها الناس، فيساعد على الظهور في جوجل.")
-        + card("ألوان الكاسات", `
-            <ul class="lst">${colors.map((c, i) => `<li class="lst-row">
-                <input type="color" data-bind="config.colors.${i}.hex" value="${esc(c.hex || "#ffffff")}" aria-label="درجة اللون">
-                <input class="ai" data-bind="config.colors.${i}.name" value="${esc(c.name)}" placeholder="اسم اللون" aria-label="اسم اللون">
-                <input class="ai sm" data-bind="config.colors.${i}.name_en" value="${esc(c.name_en || "")}" placeholder="English" aria-label="اسم اللون بالإنجليزي" dir="ltr">
-                <span class="adm-muted nowrap">${colorCounts.get(c.id) || 0}</span>
-                ${listControls("config.colors", i, colors.length)}
+            <button class="ab ab-ghost ab-sm" type="button" data-a="add-category">+ إضافة قسم</button>`,"رتّبها كما تريد ظهورها في المتجر. حذف قسم لا يحذف منتجاته، تصبح بدون قسم. اكتب لكل قسم وصفاً قصيراً بالكلمات التي يبحث بها الناس، فيساعد على الظهور في جوجل.")+N("ألوان الكاسات",`
+            <ul class="lst">${s.map((n,o)=>`<li class="lst-row">
+                <input type="color" data-bind="config.colors.${o}.hex" value="${d(n.hex||"#ffffff")}" aria-label="درجة اللون">
+                <input class="ai" data-bind="config.colors.${o}.name" value="${d(n.name)}" placeholder="اسم اللون" aria-label="اسم اللون">
+                <input class="ai sm" data-bind="config.colors.${o}.name_en" value="${d(n.name_en||"")}" placeholder="English" aria-label="اسم اللون بالإنجليزي" dir="ltr">
+                <span class="adm-muted nowrap">${a.get(n.id)||0}</span>
+                ${bt("config.colors",o,s.length)}
             </li>`).join("")}</ul>
-            <button class="ab ab-ghost ab-sm" type="button" data-a="add-color">+ إضافة لون</button>`, "يظهر اسم اللون ودائرته على بطاقة المنتج.");
-    }
-
-    // =====================================================
-    // TEMPLATES: قوالب جاهزة للمتجر (معاينة مصغّرة + تطبيق + تراجع)
-    // =====================================================
-
-    const TPL_RADIUS = { sharp: "3px", medium: "8px", round: "15px" };
-
-    function loadTemplateFonts() {
-        const families = [...new Set(ATHR.TEMPLATES.flatMap((tp) => [tp.theme.font_head, tp.theme.font_body]))].filter((f) => ATHR.FONT_PARAMS[f]);
-        const href = `https://fonts.googleapis.com/css2?${families.map((f) => `family=${ATHR.FONT_PARAMS[f]}`).join("&")}&display=swap`;
-        let link = document.getElementById("admTplFonts");
-        if (!link) {
-            link = document.createElement("link");
-            link.id = "admTplFonts";
-            link.rel = "stylesheet";
-            document.head.appendChild(link);
-        }
-        if (link.getAttribute("href") !== href) link.setAttribute("href", href);
-    }
-
-    function templateMock(tp) {
-        const t = tp.theme;
-        const c = cfg();
-        const logo = c.logo_url || ATHR_DEFAULTS.logo_url;
-        const photo = !/logo\.png$/.test(logo);
-        const thumb = (url) => ATHR.thumb(url, "s") || asset(url);
-        const prods = A.draft.products.filter((p) => p.is_visible && p.image_url);
-        const imgs = prods.slice(0, 3).map((p) => thumb(p.image_url));
-        while (imgs.length < 3) imgs.push(asset("images/logo2.jpeg"));
-        const cats = A.draft.categories.map((cat) => {
-            const p = prods.find((x) => x.category_id === cat.id);
-            const img = cat.image_url ? thumb(cat.image_url) : p ? thumb(p.image_url) : "";
-            return img && cat.name ? { name: cat.name, img } : null;
-        }).filter(Boolean).slice(0, 4);
-        const vars = `--p:${t.primary};--h:${t.hero};--b:${t.bg};--t:${t.text};--op:${ATHR.onColor(t.primary)};--fh:'${t.font_head}';--fb:'${t.font_body}';--rr:${TPL_RADIUS[t.radius] || "8px"}`;
-        const title = (c.texts && c.texts.hero_title) || ATHR_DEFAULTS.texts.hero_title;
-        const card = (src) => `<div class="tm-card"><span class="tm-img"><img src="${esc(src)}" alt="" loading="lazy"><i class="tm-plus">+</i></span><span class="tm-info"><span class="tm-name"></span><span class="tm-price">${esc(money(3.5))}</span><span class="tm-add">أضف للسلة</span></span></div>`;
-        return `<div class="tm tm-${tp.id}${t.header === "light" ? " tm-light" : ""}" style="${esc(vars)}" aria-hidden="true">
-            <div class="tm-top"><i class="tm-ic tm-menu"></i><i class="tm-ic tm-ic1"></i><span class="tm-logo${photo ? " photo" : ""}"><img src="${esc(asset(logo))}" alt=""></span><i class="tm-ic tm-ic2"></i><i class="tm-ic tm-cart"></i><span class="tm-search"></span></div>
-            <div class="tm-hero${t.hero_pattern ? " pat" : ""}"><div class="tm-ht"><b>${esc(title)}</b><span class="tm-chips"><i></i><i></i></span><span class="tm-shots">${imgs.map((src) => `<img src="${esc(src)}" alt="" loading="lazy">`).join("")}</span></div></div>
-            ${cats.length ? `<div class="tm-tiles">${cats.map((x, i) => `<span class="tm-tile${i === 0 ? " on" : ""}"><img src="${esc(x.img)}" alt="" loading="lazy"><i>${esc(x.name)}</i></span>`).join("")}</div>` : ""}
-            <div class="tm-grid">${imgs.map(card).join("")}</div>
-        </div>`;
-    }
-
-    function tabTemplates() {
-        loadTemplateFonts();
-        const c = cfg();
-        const cur = ATHR.template(c);
-        const edited = ATHR.templateEdited(c);
-        return `
-            ${A.prevTheme
-                ? `<div class="adm-note tpl-undo"><span>✓ طبّقت قالب «${esc(cur.name)}»</span><button class="ab-mini" type="button" data-a="tpl-undo">تراجع</button></div>`
-                : `<p class="adm-sentence">اختر شكلاً جاهزاً لمتجرك. القالب يغيّر الألوان والخطوط وشكل البطاقات والشريط العلوي، ومنتجاتك وصورك ونصوصك تبقى كما هي.</p>`}
-            <div class="tpl-grid">${ATHR.TEMPLATES.map((tp) => {
-                const on = tp.id === cur.id;
-                const t = tp.theme;
-                return `<article class="tpl-card${on ? " on" : ""}">
-                    ${templateMock(tp)}
+            <button class="ab ab-ghost ab-sm" type="button" data-a="add-color">+ إضافة لون</button>`,"يظهر اسم اللون ودائرته على بطاقة المنتج.")}const Yn={sharp:"3px",medium:"8px",round:"15px"};function Xn(){const e=`https://fonts.googleapis.com/css2?${[...new Set(ATHR.TEMPLATES.flatMap(s=>[s.theme.font_head,s.theme.font_body]))].filter(s=>ATHR.FONT_PARAMS[s]).map(s=>`family=${ATHR.FONT_PARAMS[s]}`).join("&")}&display=swap`;let a=document.getElementById("admTplFonts");a||(a=document.createElement("link"),a.id="admTplFonts",a.rel="stylesheet",document.head.appendChild(a)),a.getAttribute("href")!==e&&a.setAttribute("href",e)}function to(t){const e=t.theme,a=$(),s=a.logo_url||ATHR_DEFAULTS.logo_url,n=!/logo\.png$/.test(s),o=h=>ATHR.thumb(h,"s")||st(h),r=i.draft.products.filter(h=>h.is_visible&&h.image_url),l=r.slice(0,3).map(h=>o(h.image_url));for(;l.length<3;)l.push(st("images/logo2.jpeg"));const c=i.draft.categories.map(h=>{const M=r.find(S=>S.category_id===h.id),L=h.image_url?o(h.image_url):M?o(M.image_url):"";return L&&h.name?{name:h.name,img:L}:null}).filter(Boolean).slice(0,4),p=`--p:${e.primary};--h:${e.hero};--b:${e.bg};--t:${e.text};--op:${ATHR.onColor(e.primary)};--fh:'${e.font_head}';--fb:'${e.font_body}';--rr:${Yn[e.radius]||"8px"}`,u=a.texts&&a.texts.hero_title||ATHR_DEFAULTS.texts.hero_title,m=h=>`<div class="tm-card"><span class="tm-img"><img src="${d(h)}" alt="" loading="lazy"><i class="tm-plus">+</i></span><span class="tm-info"><span class="tm-name"></span><span class="tm-price">${d(x(3.5))}</span><span class="tm-add">أضف للسلة</span></span></div>`;return`<div class="tm tm-${t.id}${e.header==="light"?" tm-light":""}" style="${d(p)}" aria-hidden="true">
+            <div class="tm-top"><i class="tm-ic tm-menu"></i><i class="tm-ic tm-ic1"></i><span class="tm-logo${n?" photo":""}"><img src="${d(st(s))}" alt=""></span><i class="tm-ic tm-ic2"></i><i class="tm-ic tm-cart"></i><span class="tm-search"></span></div>
+            <div class="tm-hero${e.hero_pattern?" pat":""}"><div class="tm-ht"><b>${d(u)}</b><span class="tm-chips"><i></i><i></i></span><span class="tm-shots">${l.map(h=>`<img src="${d(h)}" alt="" loading="lazy">`).join("")}</span></div></div>
+            ${c.length?`<div class="tm-tiles">${c.map((h,M)=>`<span class="tm-tile${M===0?" on":""}"><img src="${d(h.img)}" alt="" loading="lazy"><i>${d(h.name)}</i></span>`).join("")}</div>`:""}
+            <div class="tm-grid">${l.map(m).join("")}</div>
+        </div>`}function eo(){Xn();const t=$(),e=ATHR.template(t),a=ATHR.templateEdited(t);return`
+            ${i.prevTheme?`<div class="adm-note tpl-undo"><span>✓ طبّقت قالب «${d(e.name)}»</span><button class="ab-mini" type="button" data-a="tpl-undo">تراجع</button></div>`:'<p class="adm-sentence">اختر شكلاً جاهزاً لمتجرك. القالب يغيّر الألوان والخطوط وشكل البطاقات والشريط العلوي، ومنتجاتك وصورك ونصوصك تبقى كما هي.</p>'}
+            <div class="tpl-grid">${ATHR.TEMPLATES.map(s=>{const n=s.id===e.id,o=s.theme;return`<article class="tpl-card${n?" on":""}">
+                    ${to(s)}
                     <div class="tpl-info">
-                        <h3>${esc(tp.name)}${on ? ` <span class="tag ok">${edited ? "الحالي (معدّل)" : "الحالي"}</span>` : ""}</h3>
-                        <p>${esc(tp.desc)}</p>
-                        <div class="tpl-meta">${[t.primary, t.hero, t.bg].map((x) => `<span class="tpl-dot" style="background:${esc(x)}"></span>`).join("")}<small>${esc(t.font_head)}</small></div>
+                        <h3>${d(s.name)}${n?` <span class="tag ok">${a?"الحالي (معدّل)":"الحالي"}</span>`:""}</h3>
+                        <p>${d(s.desc)}</p>
+                        <div class="tpl-meta">${[o.primary,o.hero,o.bg].map(r=>`<span class="tpl-dot" style="background:${d(r)}"></span>`).join("")}<small>${d(o.font_head)}</small></div>
                         <div class="inline">
-                            ${on && !edited
-                                ? `<button class="ab ab-soft ab-sm" type="button" disabled>✓ مطبّق</button>`
-                                : `<button class="ab ab-primary ab-sm" type="button" data-a="tpl-apply" data-id="${tp.id}">${on ? "إرجاع ألوانه الأصلية" : "تطبيق القالب"}</button>`}
-                            <button class="ab ab-ghost ab-sm" type="button" data-a="tpl-preview" data-id="${tp.id}">${icon("eye")} معاينة</button>
+                            ${n&&!a?'<button class="ab ab-soft ab-sm" type="button" disabled>✓ مطبّق</button>':`<button class="ab ab-primary ab-sm" type="button" data-a="tpl-apply" data-id="${s.id}">${n?"إرجاع ألوانه الأصلية":"تطبيق القالب"}</button>`}
+                            <button class="ab ab-ghost ab-sm" type="button" data-a="tpl-preview" data-id="${s.id}">${V("eye")} معاينة</button>
                         </div>
                     </div>
-                </article>`;
-            }).join("")}</div>
-            <p class="adm-muted">بعد التطبيق تقدر تغيّر أي لون أو خط من «المظهر». لن يرى الزبائن أي تغيير حتى تضغط «نشر التغييرات».</p>`;
-    }
-
-    function templateTheme(id, base) {
-        const tp = ATHR.TEMPLATES.find((x) => x.id === id);
-        if (!tp) return null;
-        return { ...ATHR.clone(base), ...ATHR.clone(tp.theme), template: tp.id };
-    }
-
-    function applyTemplate(id) {
-        const next = templateTheme(id, cfg().theme);
-        if (!next) return;
-        if (!A.prevTheme) A.prevTheme = ATHR.clone(cfg().theme);
-        cfg().theme = next;
-        saveDraft();
-        renderTab();
-        toast(`طُبّق قالب «${ATHR.template(cfg()).name}» ✓ — اضغط «نشر التغييرات» ليظهر للزبائن`);
-    }
-
-    function undoTemplate() {
-        if (!A.prevTheme) return;
-        cfg().theme = A.prevTheme;
-        A.prevTheme = null;
-        saveDraft();
-        renderTab({ keepScroll: true });
-        toast("رجع الشكل السابق");
-    }
-
-    function previewTemplate(id) {
-        const theme = templateTheme(id, cfg().theme);
-        if (!theme) return;
-        preview(undefined, { ...cfg(), theme });
-    }
-
-    // =====================================================
-    // TAB 4: LOOK
-    // =====================================================
-
-    function tabLook() {
-        const c = cfg();
-        const tp = ATHR.template(c);
-        return `<button class="adm-orders-tile alt look-tpl" type="button" data-tab="templates">
-                <span class="aot-ico">${icon("layout")}</span>
-                <span class="aot-txt"><b>القالب: ${esc(tp.name)}${ATHR.templateEdited(c) ? " (معدّل)" : ""}</b><small>غيّر شكل المتجر كاملاً بضغطة من «القوالب»</small></span>
-                <span class="aot-go">${icon("back")}</span>
-            </button>`
-            + card("الألوان", `
+                </article>`}).join("")}</div>
+            <p class="adm-muted">بعد التطبيق تقدر تغيّر أي لون أو خط من «المظهر». لن يرى الزبائن أي تغيير حتى تضغط «نشر التغييرات».</p>`}function ps(t,e){const a=ATHR.TEMPLATES.find(s=>s.id===t);return a?{...ATHR.clone(e),...ATHR.clone(a.theme),template:a.id}:null}function ao(t){const e=ps(t,$().theme);e&&(i.prevTheme||(i.prevTheme=ATHR.clone($().theme)),$().theme=e,nt(),B(),y(`طُبّق قالب «${ATHR.template($()).name}» ✓ — اضغط «نشر التغييرات» ليظهر للزبائن`))}function so(){i.prevTheme&&($().theme=i.prevTheme,i.prevTheme=null,nt(),B({keepScroll:!0}),y("رجع الشكل السابق"))}function no(t){const e=ps(t,$().theme);e&&Ra(void 0,{...$(),theme:e})}function oo(){const t=$(),e=ATHR.template(t);return`<button class="adm-orders-tile alt look-tpl" type="button" data-tab="templates">
+                <span class="aot-ico">${V("layout")}</span>
+                <span class="aot-txt"><b>القالب: ${d(e.name)}${ATHR.templateEdited(t)?" (معدّل)":""}</b><small>غيّر شكل المتجر كاملاً بضغطة من «القوالب»</small></span>
+                <span class="aot-go">${V("back")}</span>
+            </button>`+N("الألوان",`
                 <div class="two">
-                    ${colorField("config.theme.primary", "اللون الأساسي")}
-                    ${colorField("config.theme.hero", "لون الواجهة الرئيسية (الهيرو)")}
-                    ${colorField("config.theme.bg", "لون خلفية الصفحة")}
-                    ${colorField("config.theme.text", "لون النصوص")}
+                    ${tt("config.theme.primary","اللون الأساسي")}
+                    ${tt("config.theme.hero","لون الواجهة الرئيسية (الهيرو)")}
+                    ${tt("config.theme.bg","لون خلفية الصفحة")}
+                    ${tt("config.theme.text","لون النصوص")}
                 </div>
-                ${select("config.theme.mode", "وضع العرض", [["auto", "تلقائي حسب جهاز الزائر"], ["light", "فاتح دائماً"], ["dark", "داكن دائماً"]], { help: "في الوضع الداكن تُستخدم خلفية ونصوص داكنة تلقائياً مع لونك الأساسي." })}
-                <button class="ab ab-ghost ab-sm" type="button" data-a="reset-colors">إرجاع ألوان حروف وألوان الأصلية</button>`)
-            + card("الاسم والشعار", `
-                ${text("config.name", "اسم المتجر", { max: 40 })}
-                <div class="af"><span>الشعار</span>${uploadButton("تغيير الشعار", `data-upload="config.logo_url" data-kind="logo"`, { current: c.logo_url })}<small>الشعار الحالي أبيض بخلفية شفافة ويظهر على اللون الأساسي.</small>${c.logo_url !== ATHR_DEFAULTS.logo_url ? `<button class="ab-mini" type="button" data-reset-logo>الرجوع للشعار الأصلي</button>` : ""}</div>
-                ${toggle("config.show_name", "إظهار اسم المتجر بجانب الشعار", { help: "أوقفه إذا كان الشعار نفسه فيه اسم المتجر. يبقى الاسم في جوجل ورسائل الطلب." })}
-                ${select("config.logo_shape", "شكل الشعار", [["rounded", "زوايا مدوّرة"], ["circle", "دائري"], ["square", "مربع"]])}`)
-            + card("الشكل العام", `
-                ${select("config.theme.header", "الشريط العلوي", [["color", "بلون المتجر الأساسي"], ["light", "أبيض فاتح (الشعار يصير غامقاً)"]])}
-                ${select("config.theme.radius", "استدارة الزوايا", [["sharp", "حادة"], ["medium", "متوسطة"], ["round", "مدوّرة كثيراً"]])}
-                ${select("config.theme.grid_mobile", "عدد المنتجات في الصف على الجوال", [["2", "منتجان"], ["1", "منتج واحد"]], { type: "number" })}
-                ${toggle("config.theme.show_search", "إظهار البحث")}
-                ${text("config.texts.search_placeholder", "الكلمة داخل خانة البحث", { placeholder: "ابحث", max: 40 })}
-                ${toggle("config.theme.visitor_mode", "زر المظهر للزائر (فاتح / داكن / تلقائي) في قائمة النقاط الثلاث", { help: "الزائر يختار ما يريحه، ويُحفظ اختياره على جهازه. «وضع العرض» أعلاه هو الافتراضي لمن لم يختر." })}
-                ${toggle("config.theme.show_sort", "إظهار الترتيب حسب السعر")}
-                ${toggle("config.theme.home_filter", "أزرار الأقسام السريعة فوق المنتجات في الرئيسية", { help: "الزائر يضغط على القسم فتظهر منتجاته فوراً بدون ما يتنقل." })}
-                ${select("config.theme.page_size", "عدد المنتجات قبل زر «عرض المزيد»", [["8", "8 منتجات"], ["12", "12 منتجاً"], ["16", "16 منتجاً"], ["24", "24 منتجاً"], ["0", "الكل بدون زر (صفحة طويلة)"]], { type: "number", help: "صفحة أخف وأسرع على الجوال. الزائر يضغط «عرض المزيد» ليكمل." })}`)
-            + card("الخطوط", `
-                ${select("config.theme.font_head", "خط العناوين", HEAD_FONTS.map((f) => [f, f === "system" ? "خط الجهاز" : f]), { rerender: true })}
-                ${select("config.theme.font_body", "خط النصوص", BODY_FONTS.map((f) => [f, f === "system" ? "خط الجهاز" : f]), { rerender: true })}
-                ${fontSample()}`, "كلها خطوط مجانية من Google تدعم العربي والإنجليزي. الأولى في القائمة هي الأبسط والأوضح للقراءة.")
-            + card("الواجهة الرئيسية", `
-                ${toggle("config.theme.hero_show", "إظهار الواجهة الرئيسية")}
-                ${toggle("config.theme.hero_compact", "واجهة مختصرة وصغيرة", { help: "العنوان وسطر واحد فيه: التوصيل المجاني، الدفع عند الاستلام، والتوصيل للخليج (من إعدادات التوصيل والدفع). أطفئه لترجع للواجهة الكبيرة بالنص والمزايا." })}
-                ${toggle("config.theme.hero_pattern", "زخرفة المعيّنات في الخلفية")}
-                <div class="af"><span>صورة خلفية للواجهة (اختياري)</span>${uploadButton(c.theme.hero_image ? "تغيير الصورة" : "اختيار صورة", `data-upload="config.theme.hero_image" data-kind="hero"`, { current: c.theme.hero_image, remove: c.theme.hero_image ? `data-clear="config.theme.hero_image"` : "" })}<small>تظهر خلف النص مع طبقة من لون الواجهة حتى يبقى النص واضحاً.</small></div>`);
-    }
-
-    // =====================================================
-    // TAB 5: TEXTS
-    // =====================================================
-
-    function tabTexts() {
-        const t = cfg().texts;
-        const d = ATHR_DEFAULTS.texts;
-        const tip = `<p class="adm-tokens">يمكنك كتابة هذه الرموز فتتحدّث تلقائياً: <code>{free}</code> حد التوصيل المجاني، <code>{ship}</code> سعر التوصيل، <code>{name}</code> اسم المتجر، <code>{phone}</code> رقم الواتساب.</p>`;
-        return aiCard() + tip
-            + card("شريط الإعلان أعلى الصفحة", `
-                ${toggle("config.texts.announce_show", "إظهار شريط الإعلان")}
-                ${text("config.texts.announce_text", "نص الإعلان", { placeholder: "مثال: خصم 20% على ملفات التلوين حتى نهاية الأسبوع", max: 140 })}`)
-            + card("الواجهة الرئيسية", `
-                ${text("config.texts.hero_title", "العنوان الرئيسي", { placeholder: d.hero_title, max: 60 })}
-                ${area("config.texts.hero_text", "النص التعريفي", { rows: 3, placeholder: d.hero_text })}
+                ${q("config.theme.mode","وضع العرض",[["auto","تلقائي حسب جهاز الزائر"],["light","فاتح دائماً"],["dark","داكن دائماً"]],{help:"في الوضع الداكن تُستخدم خلفية ونصوص داكنة تلقائياً مع لونك الأساسي."})}
+                <button class="ab ab-ghost ab-sm" type="button" data-a="reset-colors">إرجاع ألوان حروف وألوان الأصلية</button>`)+N("الاسم والشعار",`
+                ${T("config.name","اسم المتجر",{max:40})}
+                <div class="af"><span>الشعار</span>${wt("تغيير الشعار",'data-upload="config.logo_url" data-kind="logo"',{current:t.logo_url})}<small>الشعار الحالي أبيض بخلفية شفافة ويظهر على اللون الأساسي.</small>${t.logo_url!==ATHR_DEFAULTS.logo_url?'<button class="ab-mini" type="button" data-reset-logo>الرجوع للشعار الأصلي</button>':""}</div>
+                ${H("config.show_name","إظهار اسم المتجر بجانب الشعار",{help:"أوقفه إذا كان الشعار نفسه فيه اسم المتجر. يبقى الاسم في جوجل ورسائل الطلب."})}
+                ${q("config.logo_shape","شكل الشعار",[["rounded","زوايا مدوّرة"],["circle","دائري"],["square","مربع"]])}`)+N("الشكل العام",`
+                ${q("config.theme.header","الشريط العلوي",[["color","بلون المتجر الأساسي"],["light","أبيض فاتح (الشعار يصير غامقاً)"]])}
+                ${q("config.theme.radius","استدارة الزوايا",[["sharp","حادة"],["medium","متوسطة"],["round","مدوّرة كثيراً"]])}
+                ${q("config.theme.grid_mobile","عدد المنتجات في الصف على الجوال",[["2","منتجان"],["1","منتج واحد"]],{type:"number"})}
+                ${H("config.theme.show_search","إظهار البحث")}
+                ${T("config.texts.search_placeholder","الكلمة داخل خانة البحث",{placeholder:"ابحث",max:40})}
+                ${H("config.theme.visitor_mode","زر المظهر للزائر (فاتح / داكن / تلقائي) في قائمة النقاط الثلاث",{help:"الزائر يختار ما يريحه، ويُحفظ اختياره على جهازه. «وضع العرض» أعلاه هو الافتراضي لمن لم يختر."})}
+                ${H("config.theme.show_sort","إظهار الترتيب حسب السعر")}
+                ${H("config.theme.home_filter","أزرار الأقسام السريعة فوق المنتجات في الرئيسية",{help:"الزائر يضغط على القسم فتظهر منتجاته فوراً بدون ما يتنقل."})}
+                ${q("config.theme.page_size","عدد المنتجات قبل زر «عرض المزيد»",[["8","8 منتجات"],["12","12 منتجاً"],["16","16 منتجاً"],["24","24 منتجاً"],["0","الكل بدون زر (صفحة طويلة)"]],{type:"number",help:"صفحة أخف وأسرع على الجوال. الزائر يضغط «عرض المزيد» ليكمل."})}`)+N("الخطوط",`
+                ${q("config.theme.font_head","خط العناوين",Cn.map(a=>[a,a==="system"?"خط الجهاز":a]),{rerender:!0})}
+                ${q("config.theme.font_body","خط النصوص",On.map(a=>[a,a==="system"?"خط الجهاز":a]),{rerender:!0})}
+                ${Un()}`,"كلها خطوط مجانية من Google تدعم العربي والإنجليزي. الأولى في القائمة هي الأبسط والأوضح للقراءة.")+N("الواجهة الرئيسية",`
+                ${H("config.theme.hero_show","إظهار الواجهة الرئيسية")}
+                ${H("config.theme.hero_compact","واجهة مختصرة وصغيرة",{help:"العنوان وسطر واحد فيه: التوصيل المجاني، الدفع عند الاستلام، والتوصيل للخليج (من إعدادات التوصيل والدفع). أطفئه لترجع للواجهة الكبيرة بالنص والمزايا."})}
+                ${H("config.theme.hero_pattern","زخرفة المعيّنات في الخلفية")}
+                <div class="af"><span>صورة خلفية للواجهة (اختياري)</span>${wt(t.theme.hero_image?"تغيير الصورة":"اختيار صورة",'data-upload="config.theme.hero_image" data-kind="hero"',{current:t.theme.hero_image,remove:t.theme.hero_image?'data-clear="config.theme.hero_image"':""})}<small>تظهر خلف النص مع طبقة من لون الواجهة حتى يبقى النص واضحاً.</small></div>`)}function ro(){const t=$().texts,e=ATHR_DEFAULTS.texts;return Fo()+'<p class="adm-tokens">يمكنك كتابة هذه الرموز فتتحدّث تلقائياً: <code>{free}</code> حد التوصيل المجاني، <code>{ship}</code> سعر التوصيل، <code>{name}</code> اسم المتجر، <code>{phone}</code> رقم الواتساب.</p>'+N("شريط الإعلان أعلى الصفحة",`
+                ${H("config.texts.announce_show","إظهار شريط الإعلان")}
+                ${T("config.texts.announce_text","نص الإعلان",{placeholder:"مثال: خصم 20% على ملفات التلوين حتى نهاية الأسبوع",max:140})}`)+N("الواجهة الرئيسية",`
+                ${T("config.texts.hero_title","العنوان الرئيسي",{placeholder:e.hero_title,max:60})}
+                ${G("config.texts.hero_text","النص التعريفي",{rows:3,placeholder:e.hero_text})}
                 <div class="af"><span>المزايا الصغيرة تحت النص (حتى 4)</span>
-                    <ul class="lst">${t.hero_features.map((f, i) => `<li class="lst-row">
-                        <input class="ai" data-bind="config.texts.hero_features.${i}" value="${esc(f)}" aria-label="ميزة ${i + 1}" maxlength="40">
-                        ${listControls("config.texts.hero_features", i, t.hero_features.length)}
+                    <ul class="lst">${t.hero_features.map((s,n)=>`<li class="lst-row">
+                        <input class="ai" data-bind="config.texts.hero_features.${n}" value="${d(s)}" aria-label="ميزة ${n+1}" maxlength="40">
+                        ${bt("config.texts.hero_features",n,t.hero_features.length)}
                     </li>`).join("")}</ul>
-                    ${t.hero_features.length < 4 ? `<button class="ab ab-ghost ab-sm" type="button" data-add-item="config.texts.hero_features">+ إضافة ميزة</button>` : ""}
-                </div>`)
-            + card("المنتجات والبحث", `
-                ${text("config.texts.add_to_cart", "نص زر الإضافة للسلة", { placeholder: d.add_to_cart })}
-                ${text("config.texts.sold_out", "نص «نفد المخزون»", { placeholder: d.sold_out })}`)
-            + card("أسفل الصفحة", `
-                ${area("config.texts.about", "نبذة عن المتجر", { rows: 2, placeholder: d.about })}
-                ${text("config.texts.footer_delivery_title", "عنوان قسم التوصيل", { placeholder: d.footer_delivery_title })}
-                ${area("config.texts.footer_delivery_text", "نص التوصيل والدفع", { rows: 3, help: "كل سطر فقرة مستقلة. اتركه فارغاً ليُكتب تلقائياً من أسعار التوصيل وطرق الدفع." })}
-                ${text("config.texts.footer_contact_title", "عنوان قسم التواصل", { placeholder: d.footer_contact_title })}
+                    ${t.hero_features.length<4?'<button class="ab ab-ghost ab-sm" type="button" data-add-item="config.texts.hero_features">+ إضافة ميزة</button>':""}
+                </div>`)+N("المنتجات والبحث",`
+                ${T("config.texts.add_to_cart","نص زر الإضافة للسلة",{placeholder:e.add_to_cart})}
+                ${T("config.texts.sold_out","نص «نفد المخزون»",{placeholder:e.sold_out})}`)+N("أسفل الصفحة",`
+                ${G("config.texts.about","نبذة عن المتجر",{rows:2,placeholder:e.about})}
+                ${T("config.texts.footer_delivery_title","عنوان قسم التوصيل",{placeholder:e.footer_delivery_title})}
+                ${G("config.texts.footer_delivery_text","نص التوصيل والدفع",{rows:3,help:"كل سطر فقرة مستقلة. اتركه فارغاً ليُكتب تلقائياً من أسعار التوصيل وطرق الدفع."})}
+                ${T("config.texts.footer_contact_title","عنوان قسم التواصل",{placeholder:e.footer_contact_title})}
                 <div class="af"><span>روابط التواصل الاجتماعي</span>
-                    <ul class="lst">${t.socials.map((s, i) => `<li class="lst-row wrap">
-                        <input class="ai sm" data-bind="config.texts.socials.${i}.name" value="${esc(s.name)}" placeholder="الاسم" aria-label="الاسم">
-                        <input class="ai" data-bind="config.texts.socials.${i}.url" value="${esc(s.url)}" placeholder="https://" dir="ltr" aria-label="الرابط">
-                        ${listControls("config.texts.socials", i, t.socials.length)}
+                    <ul class="lst">${t.socials.map((s,n)=>`<li class="lst-row wrap">
+                        <input class="ai sm" data-bind="config.texts.socials.${n}.name" value="${d(s.name)}" placeholder="الاسم" aria-label="الاسم">
+                        <input class="ai" data-bind="config.texts.socials.${n}.url" value="${d(s.url)}" placeholder="https://" dir="ltr" aria-label="الرابط">
+                        ${bt("config.texts.socials",n,t.socials.length)}
                     </li>`).join("")}</ul>
                     <button class="ab ab-ghost ab-sm" type="button" data-add-item="config.texts.socials">+ إضافة رابط</button>
-                </div>`)
-            + card("رسالة الطلب", `
-                ${area("config.texts.thanks_text", "نص الخطوة الأخيرة بعد إتمام الطلب", { rows: 2, placeholder: d.thanks_text })}
-                ${text("config.texts.wa_first_line", "أول سطر في رسالة واتساب", { placeholder: d.wa_first_line })}
-                ${area("config.texts.wa_last_line", "آخر سطر في رسالة واتساب (اختياري)", { rows: 2, placeholder: "مثال: شكراً لتسوقكم من حروف وألوان ✨" })}`)
-            + tabTextsEn();
-    }
-
-    // نصوص المتجر للزائر الذي يحوّل اللغة إلى الإنجليزي (الفارغ يُكتب تلقائياً)
-    function tabTextsEn() {
-        const en = cfg().en || {};
-        const feats = (cfg().texts.hero_features || []).filter(Boolean).slice(0, 4);
-        const enFeats = (en.texts && en.texts.hero_features) || [];
-        const ex = (path) => ATHR.withLang("en", () => ATHR.ct({ ...cfg(), en: {} }, path)) || "";
-        const ltr = (path, label, opts = {}) => text(path, label, { dir: "ltr", ...opts });
-        return card("النصوص بالإنجليزي", `
-                ${ltr("config.en.name", "اسم المتجر بالإنجليزي", { placeholder: "ATHR", max: 40 })}
-                ${ltr("config.en.texts.hero_title", "العنوان الرئيسي", { placeholder: ex("texts.hero_title"), max: 60 })}
-                ${area("config.en.texts.hero_text", "النص التعريفي", { rows: 2, placeholder: ex("texts.hero_text") })}
+                </div>`)+N("رسالة الطلب",`
+                ${G("config.texts.thanks_text","نص الخطوة الأخيرة بعد إتمام الطلب",{rows:2,placeholder:e.thanks_text})}
+                ${T("config.texts.wa_first_line","أول سطر في رسالة واتساب",{placeholder:e.wa_first_line})}
+                ${G("config.texts.wa_last_line","آخر سطر في رسالة واتساب (اختياري)",{rows:2,placeholder:"مثال: شكراً لتسوقكم من حروف وألوان ✨"})}`)+io()}function io(){const t=$().en||{},e=($().texts.hero_features||[]).filter(Boolean).slice(0,4),a=t.texts&&t.texts.hero_features||[],s=o=>ATHR.withLang("en",()=>ATHR.ct({...$(),en:{}},o))||"",n=(o,r,l={})=>T(o,r,{dir:"ltr",...l});return N("النصوص بالإنجليزي",`
+                ${n("config.en.name","اسم المتجر بالإنجليزي",{placeholder:"ATHR",max:40})}
+                ${n("config.en.texts.hero_title","العنوان الرئيسي",{placeholder:s("texts.hero_title"),max:60})}
+                ${G("config.en.texts.hero_text","النص التعريفي",{rows:2,placeholder:s("texts.hero_text")})}
                 <div class="af"><span>المزايا الصغيرة تحت النص</span>
-                    ${feats.map((f, i) => `<input class="ai" dir="ltr" data-bind="config.en.texts.hero_features.${i}" value="${esc(enFeats[i] || "")}" placeholder="${esc(f)}" aria-label="ميزة ${i + 1} بالإنجليزي">`).join("")}
+                    ${e.map((o,r)=>`<input class="ai" dir="ltr" data-bind="config.en.texts.hero_features.${r}" value="${d(a[r]||"")}" placeholder="${d(o)}" aria-label="ميزة ${r+1} بالإنجليزي">`).join("")}
                 </div>
-                ${area("config.en.texts.about", "نبذة عن المتجر", { rows: 2, placeholder: ex("texts.about") })}
-                ${ltr("config.en.texts.announce_text", "نص شريط الإعلان", { max: 140 })}
-                ${(cfg().sales.trust_custom || []).filter(Boolean).map((tc, i) => ltr(`config.en.sales.trust_custom.${i}`, `شارة الثقة ${i + 1}`, { placeholder: tc, max: 80 })).join("")}
-                ${ltr("config.en.seo.home_title", "عنوان المتجر في جوجل بالإنجليزي", { max: 70 })}`,
-            "يظهر للزائر عندما يضغط زر EN أعلى المتجر. أسماء المنتجات والأقسام بالإنجليزي تكتبها في تفاصيل كل منتج وفي «الأقسام والألوان». رسائل الطلب تصلك بالعربي دائماً.");
-    }
-
-    // =====================================================
-    // TAB 6: ORDER & DELIVERY
-    // =====================================================
-
-    function tabOrder() {
-        const o = cfg().order;
-        const live = window.ATHR_RATES && window.ATHR_RATES.rates ? window.ATHR_RATES : null;
-        const deliveries = o.delivery.map((d, i) => `<li class="item-card${d.enabled ? "" : " off"}">
-            ${toggle(`config.order.delivery.${i}.enabled`, d.enabled ? "مفعّلة" : "متوقفة", { rerender: true })}
-            ${text(`config.order.delivery.${i}.name`, "الاسم الذي يراه العميل")}
+                ${G("config.en.texts.about","نبذة عن المتجر",{rows:2,placeholder:s("texts.about")})}
+                ${n("config.en.texts.announce_text","نص شريط الإعلان",{max:140})}
+                ${($().sales.trust_custom||[]).filter(Boolean).map((o,r)=>n(`config.en.sales.trust_custom.${r}`,`شارة الثقة ${r+1}`,{placeholder:o,max:80})).join("")}
+                ${n("config.en.seo.home_title","عنوان المتجر في جوجل بالإنجليزي",{max:70})}`,"يظهر للزائر عندما يضغط زر EN أعلى المتجر. أسماء المنتجات والأقسام بالإنجليزي تكتبها في تفاصيل كل منتج وفي «الأقسام والألوان». رسائل الطلب تصلك بالعربي دائماً.")}function lo(){const t=$().order,e=window.ATHR_RATES&&window.ATHR_RATES.rates?window.ATHR_RATES:null,a=t.delivery.map((n,o)=>`<li class="item-card${n.enabled?"":" off"}">
+            ${H(`config.order.delivery.${o}.enabled`,n.enabled?"مفعّلة":"متوقفة",{rerender:!0})}
+            ${T(`config.order.delivery.${o}.name`,"الاسم الذي يراه العميل")}
             <div class="two">
-                ${select(`config.order.delivery.${i}.type`, "النوع", [["digital", "ملفات تصل على واتساب (بدون عنوان)"], ["home", "توصيل إلى بيت العميل"], ["office", "استلام من مكتب"]])}
-                ${select(`config.order.delivery.${i}.pricing`, "طريقة السعر", [["fixed", "سعر ثابت للطلب"], ["per_kg", "لكل كيلو (حسب الوزن)"]], { rerender: true })}
+                ${q(`config.order.delivery.${o}.type`,"النوع",[["digital","ملفات تصل على واتساب (بدون عنوان)"],["home","توصيل إلى بيت العميل"],["office","استلام من مكتب"]])}
+                ${q(`config.order.delivery.${o}.pricing`,"طريقة السعر",[["fixed","سعر ثابت للطلب"],["per_kg","لكل كيلو (حسب الوزن)"]],{rerender:!0})}
             </div>
-            ${number(`config.order.delivery.${i}.price`, d.pricing === "per_kg" ? "السعر لكل كيلو" : "السعر", { help: d.pricing === "per_kg" ? "يُقرَّب الوزن لأعلى كيلو، والحد الأدنى كيلو واحد." : "" })}
-            ${countryChecks(`config.order.delivery.${i}.countries`, "متاحة لـ")}
-            ${text(`config.order.delivery.${i}.note`, "شرح قصير (اختياري)")}
+            ${J(`config.order.delivery.${o}.price`,n.pricing==="per_kg"?"السعر لكل كيلو":"السعر",{help:n.pricing==="per_kg"?"يُقرَّب الوزن لأعلى كيلو، والحد الأدنى كيلو واحد.":""})}
+            ${ea(`config.order.delivery.${o}.countries`,"متاحة لـ")}
+            ${T(`config.order.delivery.${o}.note`,"شرح قصير (اختياري)")}
             <div class="two">
-                ${text(`config.order.delivery.${i}.name_en`, "الاسم بالإنجليزي", { dir: "ltr" })}
-                ${text(`config.order.delivery.${i}.note_en`, "الشرح بالإنجليزي", { dir: "ltr" })}
+                ${T(`config.order.delivery.${o}.name_en`,"الاسم بالإنجليزي",{dir:"ltr"})}
+                ${T(`config.order.delivery.${o}.note_en`,"الشرح بالإنجليزي",{dir:"ltr"})}
             </div>
-            ${text(`config.order.delivery.${i}.duration`, "مدة التوصيل (اختياري)", { placeholder: "مثال: 2 إلى 4 أيام" })}
-            ${listControls("config.order.delivery", i, o.delivery.length)}
-        </li>`).join("");
-
-        const payments = o.payments.map((p, i) => {
-            const base = `config.order.payments.${i}`;
-            let extra = "";
-            if (p.type === "bank") {
-                extra = `<div class="two">
-                    ${text(`${base}.bank.number`, "الرقم المفعّل للتحويل", { dir: "ltr" })}
-                    ${text(`${base}.bank.bank`, "اسم البنك")}
-                    ${text(`${base}.bank.holder`, "اسم صاحب الحساب")}
-                    ${text(`${base}.bank.account`, "رقم الحساب", { dir: "ltr" })}
-                    ${text(`${base}.bank.swift`, "رمز SWIFT", { dir: "ltr" })}
-                    ${text(`${base}.bank.iban`, "IBAN", { dir: "ltr" })}
-                </div><small class="adm-muted">اترك ما لا تريده فارغاً فلا يظهر للعميل.</small>`;
-            } else if (p.type === "online") {
-                extra = text(`${base}.link`, "رابط الدفع الإلكتروني", { dir: "ltr", placeholder: "https://", help: "لا تُفعّل الطريقة قبل كتابة الرابط." });
-            }
-            return `<li class="item-card${p.enabled ? "" : " off"}">
-                ${toggle(`${base}.enabled`, p.enabled ? "مفعّلة" : "متوقفة", { rerender: true })}
+            ${T(`config.order.delivery.${o}.duration`,"مدة التوصيل (اختياري)",{placeholder:"مثال: 2 إلى 4 أيام"})}
+            ${bt("config.order.delivery",o,t.delivery.length)}
+        </li>`).join(""),s=t.payments.map((n,o)=>{const r=`config.order.payments.${o}`;let l="";return n.type==="bank"?l=`<div class="two">
+                    ${T(`${r}.bank.number`,"الرقم المفعّل للتحويل",{dir:"ltr"})}
+                    ${T(`${r}.bank.bank`,"اسم البنك")}
+                    ${T(`${r}.bank.holder`,"اسم صاحب الحساب")}
+                    ${T(`${r}.bank.account`,"رقم الحساب",{dir:"ltr"})}
+                    ${T(`${r}.bank.swift`,"رمز SWIFT",{dir:"ltr"})}
+                    ${T(`${r}.bank.iban`,"IBAN",{dir:"ltr"})}
+                </div><small class="adm-muted">اترك ما لا تريده فارغاً فلا يظهر للعميل.</small>`:n.type==="online"&&(l=T(`${r}.link`,"رابط الدفع الإلكتروني",{dir:"ltr",placeholder:"https://",help:"لا تُفعّل الطريقة قبل كتابة الرابط."})),`<li class="item-card${n.enabled?"":" off"}">
+                ${H(`${r}.enabled`,n.enabled?"مفعّلة":"متوقفة",{rerender:!0})}
                 <div class="two">
-                    ${text(`${base}.name`, "الاسم")}
-                    ${select(`${base}.type`, "نوع الطريقة", [["cod", "عند الاستلام"], ["bank", "تحويل بنكي"], ["online", "دفع إلكتروني"], ["other", "أخرى"]], { rerender: true })}
+                    ${T(`${r}.name`,"الاسم")}
+                    ${q(`${r}.type`,"نوع الطريقة",[["cod","عند الاستلام"],["bank","تحويل بنكي"],["online","دفع إلكتروني"],["other","أخرى"]],{rerender:!0})}
                 </div>
-                ${area(`${base}.note`, "الشرح الذي يظهر للعميل", { rows: 2 })}
+                ${G(`${r}.note`,"الشرح الذي يظهر للعميل",{rows:2})}
                 <div class="two">
-                    ${text(`${base}.name_en`, "الاسم بالإنجليزي", { dir: "ltr" })}
-                    ${text(`${base}.note_en`, "الشرح بالإنجليزي", { dir: "ltr" })}
+                    ${T(`${r}.name_en`,"الاسم بالإنجليزي",{dir:"ltr"})}
+                    ${T(`${r}.note_en`,"الشرح بالإنجليزي",{dir:"ltr"})}
                 </div>
-                ${countryChecks(`${base}.countries`, "متاحة لـ")}
-                ${extra}
-                ${listControls("config.order.payments", i, o.payments.length)}
-            </li>`;
-        }).join("");
-
-        return card("واتساب", text("config.order.whatsapp", "رقم واتساب الذي تصلك عليه الطلبات", { dir: "ltr", type: "tel", help: "اكتبه مع رمز الدولة. إن كتبت 8 أرقام فقط يُضاف رمز عُمان 968." }))
-            + card("العملة", `<div class="two">
-                ${text("config.order.currency", "رمز العملة", { max: 8 })}
-                ${select("config.order.decimals", "عدد الخانات العشرية", [["3", "3 خانات (مثل 3.500)"], ["2", "خانتان"], ["1", "خانة واحدة"], ["0", "بدون كسور"]], { type: "number" })}
-            </div>`)
-            + card("دول الخليج والعملات", `
-                ${toggle("config.order.auto_rates", "تحديث أسعار الصرف تلقائياً كل يوم", { rerender: true, help: "تتغير أسعار العملات في المتجر حسب السوق بدون أي تدخل منك. أطفئه إذا تريد تكتب الأسعار بنفسك." })}
-                ${o.auto_rates !== false ? `<p class="adm-sentence">${live ? `آخر تحديث للأسعار: <b dir="ltr">${esc(live.date || "")}</b>` : "تُجلب الأسعار مع التحديث القادم للمتجر (خلال ساعة)."}</p>` : ""}
-                <ul class="items">${o.countries.map((c, i) => {
-                    const base = ATHR_COUNTRIES.find((x) => x.code === c.code) || c;
-                    const liveRate = live && live.rates[base.currency];
-                    return `<li class="item-card">
-                    <b class="ctitle">${c.flag} ${esc(c.name)} <small class="adm-muted">${esc(c.currency_name)} (${esc(c.currency)})</small></b>
-                    ${c.code === "OM" ? `<small class="adm-muted">العملة الأساسية للمتجر، والطلبات تُحسب بها.</small>` : `
-                    ${toggle(`config.order.countries.${i}.enabled`, "متاحة في المتجر", { rerender: true })}
+                ${ea(`${r}.countries`,"متاحة لـ")}
+                ${l}
+                ${bt("config.order.payments",o,t.payments.length)}
+            </li>`}).join("");return N("واتساب",T("config.order.whatsapp","رقم واتساب الذي تصلك عليه الطلبات",{dir:"ltr",type:"tel",help:"اكتبه مع رمز الدولة. إن كتبت 8 أرقام فقط يُضاف رمز عُمان 968."}))+N("العملة",`<div class="two">
+                ${T("config.order.currency","رمز العملة",{max:8})}
+                ${q("config.order.decimals","عدد الخانات العشرية",[["3","3 خانات (مثل 3.500)"],["2","خانتان"],["1","خانة واحدة"],["0","بدون كسور"]],{type:"number"})}
+            </div>`)+N("دول الخليج والعملات",`
+                ${H("config.order.auto_rates","تحديث أسعار الصرف تلقائياً كل يوم",{rerender:!0,help:"تتغير أسعار العملات في المتجر حسب السوق بدون أي تدخل منك. أطفئه إذا تريد تكتب الأسعار بنفسك."})}
+                ${t.auto_rates!==!1?`<p class="adm-sentence">${e?`آخر تحديث للأسعار: <b dir="ltr">${d(e.date||"")}</b>`:"تُجلب الأسعار مع التحديث القادم للمتجر (خلال ساعة)."}</p>`:""}
+                <ul class="items">${t.countries.map((n,o)=>{const r=ATHR_COUNTRIES.find(c=>c.code===n.code)||n,l=e&&e.rates[r.currency];return`<li class="item-card">
+                    <b class="ctitle">${n.flag} ${d(n.name)} <small class="adm-muted">${d(n.currency_name)} (${d(n.currency)})</small></b>
+                    ${n.code==="OM"?'<small class="adm-muted">العملة الأساسية للمتجر، والطلبات تُحسب بها.</small>':`
+                    ${H(`config.order.countries.${o}.enabled`,"متاحة في المتجر",{rerender:!0})}
                     <div class="two">
-                        ${text(`config.order.countries.${i}.symbol`, "رمز العملة", { max: 6 })}
-                        ${o.auto_rates !== false && liveRate
-                            ? `<div class="af"><span>سعر الصرف اليوم (تلقائي)</span><div class="adm-rate" dir="ltr">1 OMR = ${esc(String(liveRate))} ${esc(base.currency)}</div></div>`
-                            : number(`config.order.countries.${i}.rate`, `سعر الصرف: 1 ر.ع = ؟ ${esc(c.symbol)}`, { step: "0.0001" })}
+                        ${T(`config.order.countries.${o}.symbol`,"رمز العملة",{max:6})}
+                        ${t.auto_rates!==!1&&l?`<div class="af"><span>سعر الصرف اليوم (تلقائي)</span><div class="adm-rate" dir="ltr">1 OMR = ${d(String(l))} ${d(r.currency)}</div></div>`:J(`config.order.countries.${o}.rate`,`سعر الصرف: 1 ر.ع = ؟ ${d(n.symbol)}`,{step:"0.0001"})}
                     </div>`}
-                </li>`;
-                }).join("")}</ul>`, "الزبون يختار دولته من أعلى المتجر فتظهر الأسعار بعملتها تقريباً، وتظهر له طرق التوصيل والدفع المتاحة لدولته فقط.")
-            + card("الاستلام والتوصيل", `
-                <ul class="items">${deliveries}</ul>
+                </li>`}).join("")}</ul>`,"الزبون يختار دولته من أعلى المتجر فتظهر الأسعار بعملتها تقريباً، وتظهر له طرق التوصيل والدفع المتاحة لدولته فقط.")+N("الاستلام والتوصيل",`
+                <ul class="items">${a}</ul>
                 <button class="ab ab-ghost ab-sm" type="button" data-add-item="config.order.delivery">+ إضافة طريقة استلام أو توصيل</button>
                 <hr>
-                ${toggle("config.order.free_enabled", "توصيل مجاني عند حد معيّن", { rerender: true })}
-                ${o.free_enabled ? number("config.order.free_min", "حد التوصيل المجاني (قيمة الطلب)", { help: "يُطبَّق على كل طرق التوصيل في الدول المختارة." }) + countryChecks("config.order.free_countries", "التوصيل المجاني متاح لـ") : ""}
-`)
-            + card("نموذج الطلب", `
-                ${number("config.order.max_qty", "أقصى كمية من المنتج الواحد", { step: "1", min: "1" })}
-                ${toggle("config.order.show_wilaya", "إظهار حقل الولاية", { rerender: true })}
-                ${o.show_wilaya ? toggle("config.order.wilaya_required", "جعل الولاية إلزامية على العميل") : ""}
-                ${toggle("config.order.show_notes", "إظهار حقل الملاحظات")}`)
-            + card("طرق الدفع", `
-                <ul class="items">${payments}</ul>
-                <button class="ab ab-ghost ab-sm" type="button" data-add-item="config.order.payments">+ إضافة طريقة دفع</button>`);
-    }
-
-    // =====================================================
-    // TAB 7: SALES
-    // =====================================================
-
-    function tabSales() {
-        const s = cfg().sales;
-        const d = ATHR_DEFAULTS.sales;
-        const productOptions = [["", "اختر منتجاً"], ...A.draft.products.map((p) => [p.id, ATHR.productLabel(p, cfg()) + (p.is_visible ? "" : " (مخفي)")])];
-        const name = (id) => {
-            const p = A.draft.products.find((x) => x.id === id);
-            return p ? ATHR.productLabel(p, cfg()) : "";
-        };
-        const bundles = s.bundles.map((b, i) => `<li class="item-card${b.enabled ? "" : " off"}">
-            ${toggle(`config.sales.bundles.${i}.enabled`, b.enabled ? "مفعّلة" : "متوقفة", { rerender: true })}
-            ${select(`config.sales.bundles.${i}.a`, "المنتج الأول (يشتريه العميل)", productOptions, { rerender: true })}
-            ${select(`config.sales.bundles.${i}.b`, "المنتج الثاني (يحصل على الخصم)", productOptions, { rerender: true })}
-            ${number(`config.sales.bundles.${i}.pct`, "نسبة الخصم على المنتج الثاني (%)", { step: "1", min: "1" })}
-            ${b.a && b.b && b.a !== b.b ? `<p class="adm-sentence">اشترِ «${esc(name(b.a))}» واحصل على «${esc(name(b.b))}» بخصم ${esc(b.pct || 0)}%</p>` : ""}
-            ${listControls("config.sales.bundles", i, s.bundles.length)}
-        </li>`).join("");
-
-        const vol = s.volume || { enabled: false, tiers: [] };
-        const tiers = (vol.tiers || []).map((t, i) => `<li class="lst-row">
-            <label class="af sm"><span>من عدد قطع</span><input class="ai" type="number" inputmode="numeric" step="1" min="2" data-bind="config.sales.volume.tiers.${i}.min" data-type="number" value="${esc(t.min ?? "")}"></label>
-            <label class="af sm"><span>الخصم %</span><input class="ai" type="number" inputmode="numeric" step="1" min="1" max="90" data-bind="config.sales.volume.tiers.${i}.pct" data-type="number" value="${esc(t.pct ?? "")}"></label>
-            ${listControls("config.sales.volume.tiers", i, vol.tiers.length)}
-        </li>`).join("");
-        const volText = ATHR.volumeTiers(cfg()).map((t) => `${ATHR.piecesText(t.min)} خصم ${t.pct}%`).join("، ");
-
-        promoMaybeLoad();
-        const sc = ATHR.storyCfg(cfg());
-        const storiesCard = card("📖 القصص: المؤلفة خصيصاً والمطبوعة", `
-                ${toggle("config.stories.photo_upload", "رفع صورة الطفل في صفحة القصة", { help: "الزبون يرفع صورة طفله وهو يخصّص القصة، وتظهر على الغلاف في المعاينة. الصورة في مخزن خاص لا يراه أحد غيرك، وتفتحها من بطاقة الطلب." })}
-                ${toggle("config.stories.ded_enabled", "إهداء مجاني في أول صفحة", { help: "الزبون يختار إهداءً جاهزاً أو يكتب إهداءه، ويُطبع في صفحة خاصة بعد الغلاف." })}
-                ${toggle("config.stories.wrap_enabled", "تغليف هدية مجاني للقصة المطبوعة")}
-                ${toggle("config.stories.pro_enabled", "القصة المؤلفة خصيصاً بوجه الطفل (من صورته)", { rerender: true, help: "ترسم القصة بوجه الطفل من صورته المرفوعة مع الطلب. متاحة الآن لقصة «رحلة إلى الفضاء»." })}
-                ${sc.pro_enabled ? number("config.stories.pro_price", "سعر الإضافة للقصة المؤلفة خصيصاً (ر.ع)", { step: "0.5", min: "0", placeholder: "5" }) : ""}
-                ${sc.pro_enabled ? text("config.stories.pro_time", "مدة تجهيز القصة المؤلفة خصيصاً", { placeholder: "خلال 48 ساعة من وصول الصورة" }) : ""}
-                ${toggle("config.stories.print_enabled", "النسخة المطبوعة بغلاف مقوّى", { rerender: true, help: "تحتاج طريقة توصيل للبيت مفعّلة في «الطلب والتوصيل» (مثل «توصيل القصة المطبوعة»)، ويظهر الخيار فقط للدول اللي فيها هذي الطريقة." })}
-                ${sc.print_enabled ? number("config.stories.print_price", "سعر الإضافة للنسخة المطبوعة (ر.ع)", { step: "0.5", min: "0", placeholder: "6", help: "فوق سعر القصة، وسعر التوصيل يُضاف من طريقة التوصيل." }) : ""}
-                ${sc.print_enabled ? text("config.stories.print_time", "مدة الطباعة والتوصيل", { placeholder: "3 إلى 5 أيام داخل عُمان" }) : ""}
-                ${toggle("config.stories.guarantee", "إظهار «ضمان الرضا: نعدّل القصة مجاناً أو نرجّع المبلغ»")}`,
-                "الأسعار تُضاف فوق سعر كل قصة، والخادم يحسبها بنفسه في كل طلب.");
-        return storiesCard + couponsCard() + stockCard() + restockCard() + favCard()
-            + card("خصم الكمية (يرفع قيمة الطلب)", `
-                ${toggle("config.sales.volume.enabled", "تفعيل خصم الكمية", { rerender: true })}
-                <ul class="lst">${tiers}</ul>
-                ${(vol.tiers || []).length < 4 ? `<button class="ab ab-ghost ab-sm" type="button" data-add-item="config.sales.volume.tiers">+ إضافة شريحة</button>` : ""}
-                ${vol.enabled && volText ? `<p class="adm-sentence">${esc(volText)} — يُطبَّق تلقائياً في السلة على كل المنتجات.</p>` : ""}`,
-                "الخصم على مجموع الطلب حسب عدد القطع. لا يجتمع مع خصم الباقات، ويُطبَّق تلقائياً الأفضل للزبون. يظهر للزبون في صفحة المنتج وفي السلة («أضف قطعة ووفّر 10%»).")
-            + card("بعد الإضافة للسلة", `
-                ${toggle("config.sales.cart_float", "زر السلة العائم في كل صفحات المتجر", { help: "دائرة السلة مع عدد القطع، وحلقة خضراء تمتلئ كلما اقترب الزبون من الشحن المجاني، ثم «شحن مجاني» عند الوصول. والزبون يقدر يسحبه لأي مكان في الشاشة ويبقى في مكانه." })}
-                ${toggle("config.sales.upsell_show", "نافذة «أُضيف إلى سلتك» بعد الضغط على «أضف للسلة»", { help: "مفعّلة: تظهر نافذة فيها اقتراحات وإكمال الطقم وكم بقي للتوصيل المجاني. متوقفة: يُضاف المنتج للسلة بهدوء مع رسالة صغيرة «أُضيف إلى السلة ✓» ونبضة في زر السلة، والزبون يكمل تسوقه بدون مقاطعة." })}`)
-            + card("👥 الإثبات الاجتماعي", `
+                ${H("config.order.free_enabled","توصيل مجاني عند حد معيّن",{rerender:!0})}
+                ${t.free_enabled?J("config.order.free_min","حد التوصيل المجاني (قيمة الطلب)",{help:"يُطبَّق على كل طرق التوصيل في الدول المختارة."})+ea("config.order.free_countries","التوصيل المجاني متاح لـ"):""}
+`)+N("نموذج الطلب",`
+                ${J("config.order.max_qty","أقصى كمية من المنتج الواحد",{step:"1",min:"1"})}
+                ${H("config.order.show_wilaya","إظهار حقل الولاية",{rerender:!0})}
+                ${t.show_wilaya?H("config.order.wilaya_required","جعل الولاية إلزامية على العميل"):""}
+                ${H("config.order.show_notes","إظهار حقل الملاحظات")}`)+N("طرق الدفع",`
+                <ul class="items">${s}</ul>
+                <button class="ab ab-ghost ab-sm" type="button" data-add-item="config.order.payments">+ إضافة طريقة دفع</button>`)}function co(){const t=$().sales,e=ATHR_DEFAULTS.sales,a=[["","اختر منتجاً"],...i.draft.products.map(u=>[u.id,ATHR.productLabel(u,$())+(u.is_visible?"":" (مخفي)")])],s=u=>{const m=i.draft.products.find(h=>h.id===u);return m?ATHR.productLabel(m,$()):""},n=t.bundles.map((u,m)=>`<li class="item-card${u.enabled?"":" off"}">
+            ${H(`config.sales.bundles.${m}.enabled`,u.enabled?"مفعّلة":"متوقفة",{rerender:!0})}
+            ${q(`config.sales.bundles.${m}.a`,"المنتج الأول (يشتريه العميل)",a,{rerender:!0})}
+            ${q(`config.sales.bundles.${m}.b`,"المنتج الثاني (يحصل على الخصم)",a,{rerender:!0})}
+            ${J(`config.sales.bundles.${m}.pct`,"نسبة الخصم على المنتج الثاني (%)",{step:"1",min:"1"})}
+            ${u.a&&u.b&&u.a!==u.b?`<p class="adm-sentence">اشترِ «${d(s(u.a))}» واحصل على «${d(s(u.b))}» بخصم ${d(u.pct||0)}%</p>`:""}
+            ${bt("config.sales.bundles",m,t.bundles.length)}
+        </li>`).join(""),o=t.volume||{enabled:!1,tiers:[]},r=(o.tiers||[]).map((u,m)=>`<li class="lst-row">
+            <label class="af sm"><span>من عدد قطع</span><input class="ai" type="number" inputmode="numeric" step="1" min="2" data-bind="config.sales.volume.tiers.${m}.min" data-type="number" value="${d(u.min??"")}"></label>
+            <label class="af sm"><span>الخصم %</span><input class="ai" type="number" inputmode="numeric" step="1" min="1" max="90" data-bind="config.sales.volume.tiers.${m}.pct" data-type="number" value="${d(u.pct??"")}"></label>
+            ${bt("config.sales.volume.tiers",m,o.tiers.length)}
+        </li>`).join(""),l=ATHR.volumeTiers($()).map(u=>`${ATHR.piecesText(u.min)} خصم ${u.pct}%`).join("، ");hs();const c=ATHR.storyCfg($());return N("📖 القصص: المؤلفة خصيصاً والمطبوعة",`
+                ${H("config.stories.photo_upload","رفع صورة الطفل في صفحة القصة",{help:"الزبون يرفع صورة طفله وهو يخصّص القصة، وتظهر على الغلاف في المعاينة. الصورة في مخزن خاص لا يراه أحد غيرك، وتفتحها من بطاقة الطلب."})}
+                ${H("config.stories.ded_enabled","إهداء مجاني في أول صفحة",{help:"الزبون يختار إهداءً جاهزاً أو يكتب إهداءه، ويُطبع في صفحة خاصة بعد الغلاف."})}
+                ${H("config.stories.wrap_enabled","تغليف هدية مجاني للقصة المطبوعة")}
+                ${H("config.stories.pro_enabled","القصة المؤلفة خصيصاً بوجه الطفل (من صورته)",{rerender:!0,help:"ترسم القصة بوجه الطفل من صورته المرفوعة مع الطلب. متاحة الآن لقصة «رحلة إلى الفضاء»."})}
+                ${c.pro_enabled?J("config.stories.pro_price","سعر الإضافة للقصة المؤلفة خصيصاً (ر.ع)",{step:"0.5",min:"0",placeholder:"5"}):""}
+                ${c.pro_enabled?T("config.stories.pro_time","مدة تجهيز القصة المؤلفة خصيصاً",{placeholder:"خلال 48 ساعة من وصول الصورة"}):""}
+                ${H("config.stories.print_enabled","النسخة المطبوعة بغلاف مقوّى",{rerender:!0,help:"تحتاج طريقة توصيل للبيت مفعّلة في «الطلب والتوصيل» (مثل «توصيل القصة المطبوعة»)، ويظهر الخيار فقط للدول اللي فيها هذي الطريقة."})}
+                ${c.print_enabled?J("config.stories.print_price","سعر الإضافة للنسخة المطبوعة (ر.ع)",{step:"0.5",min:"0",placeholder:"6",help:"فوق سعر القصة، وسعر التوصيل يُضاف من طريقة التوصيل."}):""}
+                ${c.print_enabled?T("config.stories.print_time","مدة الطباعة والتوصيل",{placeholder:"3 إلى 5 أيام داخل عُمان"}):""}
+                ${H("config.stories.guarantee","إظهار «ضمان الرضا: نعدّل القصة مجاناً أو نرجّع المبلغ»")}`,"الأسعار تُضاف فوق سعر كل قصة، والخادم يحسبها بنفسه في كل طلب.")+fo()+Lo()+vo()+xo()+N("خصم الكمية (يرفع قيمة الطلب)",`
+                ${H("config.sales.volume.enabled","تفعيل خصم الكمية",{rerender:!0})}
+                <ul class="lst">${r}</ul>
+                ${(o.tiers||[]).length<4?'<button class="ab ab-ghost ab-sm" type="button" data-add-item="config.sales.volume.tiers">+ إضافة شريحة</button>':""}
+                ${o.enabled&&l?`<p class="adm-sentence">${d(l)} — يُطبَّق تلقائياً في السلة على كل المنتجات.</p>`:""}`,"الخصم على مجموع الطلب حسب عدد القطع. لا يجتمع مع خصم الباقات، ويُطبَّق تلقائياً الأفضل للزبون. يظهر للزبون في صفحة المنتج وفي السلة («أضف قطعة ووفّر 10%»).")+N("بعد الإضافة للسلة",`
+                ${H("config.sales.cart_float","زر السلة العائم في كل صفحات المتجر",{help:"دائرة السلة مع عدد القطع، وحلقة خضراء تمتلئ كلما اقترب الزبون من الشحن المجاني، ثم «شحن مجاني» عند الوصول. والزبون يقدر يسحبه لأي مكان في الشاشة ويبقى في مكانه."})}
+                ${H("config.sales.upsell_show","نافذة «أُضيف إلى سلتك» بعد الضغط على «أضف للسلة»",{help:"مفعّلة: تظهر نافذة فيها اقتراحات وإكمال الطقم وكم بقي للتوصيل المجاني. متوقفة: يُضاف المنتج للسلة بهدوء مع رسالة صغيرة «أُضيف إلى السلة ✓» ونبضة في زر السلة، والزبون يكمل تسوقه بدون مقاطعة."})}`)+N("👥 الإثبات الاجتماعي",`
                 <p class="adm-sentence">كل الأرقام تُحسب تلقائياً من طلباتك وتقييماتك الحقيقية، ولا يظهر أي رقم قبل أن يوصل للحد الأدنى اللي تحدده هنا.</p>
-                ${toggle("config.proof.counts", "«5 عملاء طلبوه» على بطاقة المنتج وفي صفحته", { help: "العميل يُحسب مرة واحدة حتى لو طلب أكثر من لون من نفس التصميم." })}
-                ${number("config.proof.min_buyers", "أقل عدد عملاء لإظهار الرقم", { step: "1", min: "1", placeholder: "3" })}
-                ${toggle("config.proof.last", "«آخر طلب قبل 3 ساعات» في صفحة المنتج")}
-                ${toggle("config.proof.favs", "«أضافه 8 أشخاص للمفضلة» في صفحة المنتج")}
-                ${number("config.proof.min_favs", "أقل عدد لإظهار رقم المفضلة", { step: "1", min: "1", placeholder: "5" })}
-                ${toggle("config.proof.popup", "إشعار صغير: «أحد العملاء طلب ملف …»", { help: "من آخر الطلبات الحقيقية فقط: الولاية ووقت الطلب، بدون اسم أو رقم. يظهر 3 مرات كحد أقصى في الزيارة، ولا يظهر في السلة وصفحة إتمام الطلب، والزائر يقدر يقفله." })}
-                ${number("config.proof.recent_days", "أقدم طلب يظهر في الإشعار و«آخر طلب» (بالأيام)", { step: "1", min: "1", placeholder: "7" })}
-                ${toggle("config.proof.total", "«25 عميلاً طلبوا من حروف وألوان» أعلى الصفحة الرئيسية")}
-                ${number("config.proof.min_total", "أقل عدد عملاء لإظهار هذا السطر", { step: "1", min: "1", placeholder: "20" })}
-                ${toggle("config.proof.verified", "شارة «مشتري موثّق» على التقييمات", { help: "تظهر تلقائياً إذا أرسل العميل التقييم من رابط «اطلب تقييم» في بطاقة طلبه (فيه رقم طلبه) وكان المنتج ضمن طلبه." })}`,
-                "الطلبات التجريبية: أخفها من دفتر الطلبات حتى لا تدخل في الأرقام. أسرع طريقة تجمع تقييمات: بعد التسليم اضغط «اطلب تقييم» في بطاقة الطلب.")
-            + card("👥 العملاء والعروض", `
-                ${toggle("config.sales.marketing_default", "خيار «أرسلوا لي العروض والخصومات» مفعّل تلقائياً للزبون", { help: "يظهر للزبون في صفحة الطلب، ويقدر يطفئه. من يطفئه لا يدخل في إرسال العروض." })}
-                <button class="ab ab-soft ab-sm" type="button" data-a="open-customers">فتح قائمة العملاء</button>`,
-                "كل زبون يطلب يُحفظ اسمه ورقمه تلقائياً في «العملاء»، وتقدر ترسل له العروض والخصومات عبر واتساب.")
-            + card("عناوين أقسام الصفحة الرئيسية", `
-                ${text("config.sales.best_title", "عنوان الأكثر طلباً", { placeholder: d.best_title })}
-                ${text("config.sales.sets_title", "عنوان الأطقم", { placeholder: d.sets_title })}
-                ${text("config.sales.new_title", "عنوان وصل حديثاً", { placeholder: d.new_title })}`,
-                "حدّد «الأكثر طلباً» و«وصل حديثاً» من تفاصيل كل منتج. الأطقم تظهر من الباقات المفعّلة.")
-            + card("شريط الشحن المجاني", `
-                ${toggle("config.sales.free_bar_show", "إظهار شريط الشحن المجاني أعلى المتجر")}
-                ${text("config.sales.free_before", "الجملة قبل أن يضيف الزائر شيئاً", { placeholder: d.free_before })}
-                ${text("config.sales.free_during", "الجملة أثناء التسوق", { placeholder: d.free_during, help: "{left} المبلغ المتبقي." })}
-                ${text("config.sales.free_done", "الجملة عند بلوغ الحد", { placeholder: d.free_done })}`,
-                cfg().order.free_enabled ? "" : "التوصيل المجاني متوقف من تبويب «الطلب والتوصيل»، لذلك لن يظهر الشريط.")
-            + card("الباقات والخصومات", `
-                <ul class="items">${bundles}</ul>
-                ${s.bundles.length < 12 ? `<button class="ab ab-ghost ab-sm" type="button" data-add-item="config.sales.bundles">+ إضافة باقة</button>` : ""}`,
-                "الخصم يُطبَّق تلقائياً في السلة ويدخل في رسالة واتساب، ويُحسب قبل حد التوصيل المجاني.")
-            + card("منتجات قد تعجبك", `
-                ${toggle("config.sales.related_show", "إظهار قسم «منتجات قد تعجبك»")}
-                ${text("config.sales.related_title", "عنوان القسم", { placeholder: d.related_title })}
-                ${select("config.sales.related_count", "عدد المنتجات المقترحة", [["2", "2"], ["3", "3"], ["4", "4"], ["6", "6"]], { type: "number" })}`)
-            + card("الطلب السريع", `
-                ${toggle("config.sales.buy_now", "زر «اشترِ الآن» داخل المنتج")}
-                ${toggle("config.sales.wa_quick", "زر «اطلب عبر واتساب» بنقرة واحدة")}
-                ${toggle("config.sales.remember_customer", "تذكّر بيانات الزائر على جهازه لتسريع طلبه القادم", { help: "تُحفظ على جهاز الزائر وحده، ولا تصلك ولا تصل لأحد غيره." })}`)
-            + card("السلات غير المكتملة", `
-                ${toggle("config.sales.abandoned_show", "تذكير الزائر العائد بسلته غير المكتملة")}
-                ${text("config.sales.abandoned_text", "نص التذكير", { placeholder: d.abandoned_text, help: "{n} عدد المنتجات في السلة." })}
-                ${area("config.sales.reminder_msg", "رسالة تذكير الطلبات في دفتر الطلبيات", { rows: 3, placeholder: d.reminder_msg, help: "{client} اسم العميل، {no} رقم الطلب، {total} المبلغ." })}
-                ${area("config.sales.review_request_msg", "رسالة طلب التقييم بعد التسليم", { rows: 3, placeholder: d.review_request_msg, help: "{client} اسم العميل، {link} رابط صفحة التقييم." })}`)
-            + card("شارات الثقة", `
-                ${toggle("config.sales.pdp_perks", "شريط المزايا تحت صورة المنتج", { help: "«✓ شحن مجاني فوق 20 ر.ع | ✓ الدفع عند الاستلام». يُكتب تلقائياً من إعدادات التوصيل والدفع، ويصير «✓ الشحن مجاناً» للمنتج الذي سعره فوق حد التوصيل المجاني." })}
-                ${toggle("config.sales.trust_show", "إظهار شارات الثقة تحت أزرار الشراء")}
+                ${H("config.proof.counts","«5 عملاء طلبوه» على بطاقة المنتج وفي صفحته",{help:"العميل يُحسب مرة واحدة حتى لو طلب أكثر من لون من نفس التصميم."})}
+                ${J("config.proof.min_buyers","أقل عدد عملاء لإظهار الرقم",{step:"1",min:"1",placeholder:"3"})}
+                ${H("config.proof.last","«آخر طلب قبل 3 ساعات» في صفحة المنتج")}
+                ${H("config.proof.favs","«أضافه 8 أشخاص للمفضلة» في صفحة المنتج")}
+                ${J("config.proof.min_favs","أقل عدد لإظهار رقم المفضلة",{step:"1",min:"1",placeholder:"5"})}
+                ${H("config.proof.popup","إشعار صغير: «أحد العملاء طلب ملف …»",{help:"من آخر الطلبات الحقيقية فقط: الولاية ووقت الطلب، بدون اسم أو رقم. يظهر 3 مرات كحد أقصى في الزيارة، ولا يظهر في السلة وصفحة إتمام الطلب، والزائر يقدر يقفله."})}
+                ${J("config.proof.recent_days","أقدم طلب يظهر في الإشعار و«آخر طلب» (بالأيام)",{step:"1",min:"1",placeholder:"7"})}
+                ${H("config.proof.total","«25 عميلاً طلبوا من حروف وألوان» أعلى الصفحة الرئيسية")}
+                ${J("config.proof.min_total","أقل عدد عملاء لإظهار هذا السطر",{step:"1",min:"1",placeholder:"20"})}
+                ${H("config.proof.verified","شارة «مشتري موثّق» على التقييمات",{help:"تظهر تلقائياً إذا أرسل العميل التقييم من رابط «اطلب تقييم» في بطاقة طلبه (فيه رقم طلبه) وكان المنتج ضمن طلبه."})}`,"الطلبات التجريبية: أخفها من دفتر الطلبات حتى لا تدخل في الأرقام. أسرع طريقة تجمع تقييمات: بعد التسليم اضغط «اطلب تقييم» في بطاقة الطلب.")+N("👥 العملاء والعروض",`
+                ${H("config.sales.marketing_default","خيار «أرسلوا لي العروض والخصومات» مفعّل تلقائياً للزبون",{help:"يظهر للزبون في صفحة الطلب، ويقدر يطفئه. من يطفئه لا يدخل في إرسال العروض."})}
+                <button class="ab ab-soft ab-sm" type="button" data-a="open-customers">فتح قائمة العملاء</button>`,"كل زبون يطلب يُحفظ اسمه ورقمه تلقائياً في «العملاء»، وتقدر ترسل له العروض والخصومات عبر واتساب.")+N("عناوين أقسام الصفحة الرئيسية",`
+                ${T("config.sales.best_title","عنوان الأكثر طلباً",{placeholder:e.best_title})}
+                ${T("config.sales.sets_title","عنوان الأطقم",{placeholder:e.sets_title})}
+                ${T("config.sales.new_title","عنوان وصل حديثاً",{placeholder:e.new_title})}`,"حدّد «الأكثر طلباً» و«وصل حديثاً» من تفاصيل كل منتج. الأطقم تظهر من الباقات المفعّلة.")+N("شريط الشحن المجاني",`
+                ${H("config.sales.free_bar_show","إظهار شريط الشحن المجاني أعلى المتجر")}
+                ${T("config.sales.free_before","الجملة قبل أن يضيف الزائر شيئاً",{placeholder:e.free_before})}
+                ${T("config.sales.free_during","الجملة أثناء التسوق",{placeholder:e.free_during,help:"{left} المبلغ المتبقي."})}
+                ${T("config.sales.free_done","الجملة عند بلوغ الحد",{placeholder:e.free_done})}`,$().order.free_enabled?"":"التوصيل المجاني متوقف من تبويب «الطلب والتوصيل»، لذلك لن يظهر الشريط.")+N("الباقات والخصومات",`
+                <ul class="items">${n}</ul>
+                ${t.bundles.length<12?'<button class="ab ab-ghost ab-sm" type="button" data-add-item="config.sales.bundles">+ إضافة باقة</button>':""}`,"الخصم يُطبَّق تلقائياً في السلة ويدخل في رسالة واتساب، ويُحسب قبل حد التوصيل المجاني.")+N("منتجات قد تعجبك",`
+                ${H("config.sales.related_show","إظهار قسم «منتجات قد تعجبك»")}
+                ${T("config.sales.related_title","عنوان القسم",{placeholder:e.related_title})}
+                ${q("config.sales.related_count","عدد المنتجات المقترحة",[["2","2"],["3","3"],["4","4"],["6","6"]],{type:"number"})}`)+N("الطلب السريع",`
+                ${H("config.sales.buy_now","زر «اشترِ الآن» داخل المنتج")}
+                ${H("config.sales.wa_quick","زر «اطلب عبر واتساب» بنقرة واحدة")}
+                ${H("config.sales.remember_customer","تذكّر بيانات الزائر على جهازه لتسريع طلبه القادم",{help:"تُحفظ على جهاز الزائر وحده، ولا تصلك ولا تصل لأحد غيره."})}`)+N("السلات غير المكتملة",`
+                ${H("config.sales.abandoned_show","تذكير الزائر العائد بسلته غير المكتملة")}
+                ${T("config.sales.abandoned_text","نص التذكير",{placeholder:e.abandoned_text,help:"{n} عدد المنتجات في السلة."})}
+                ${G("config.sales.reminder_msg","رسالة تذكير الطلبات في دفتر الطلبيات",{rows:3,placeholder:e.reminder_msg,help:"{client} اسم العميل، {no} رقم الطلب، {total} المبلغ."})}
+                ${G("config.sales.review_request_msg","رسالة طلب التقييم بعد التسليم",{rows:3,placeholder:e.review_request_msg,help:"{client} اسم العميل، {link} رابط صفحة التقييم."})}`)+N("شارات الثقة",`
+                ${H("config.sales.pdp_perks","شريط المزايا تحت صورة المنتج",{help:"«✓ شحن مجاني فوق 20 ر.ع | ✓ الدفع عند الاستلام». يُكتب تلقائياً من إعدادات التوصيل والدفع، ويصير «✓ الشحن مجاناً» للمنتج الذي سعره فوق حد التوصيل المجاني."})}
+                ${H("config.sales.trust_show","إظهار شارات الثقة تحت أزرار الشراء")}
                 <p class="adm-muted">شارات تلقائية تُبنى من إعداداتك لدولة الزائر: الدفع عند الاستلام، التحويل البنكي، التوصيل لدول الخليج، التواصل عبر واتساب.</p>
                 <div class="af"><span>شارات تكتبها بنفسك (حتى 3)</span>
-                    <ul class="lst">${s.trust_custom.map((t, i) => `<li class="lst-row">
-                        <input class="ai" data-bind="config.sales.trust_custom.${i}" value="${esc(t)}" maxlength="50" aria-label="شارة ${i + 1}">
-                        ${listControls("config.sales.trust_custom", i, s.trust_custom.length)}
+                    <ul class="lst">${t.trust_custom.map((u,m)=>`<li class="lst-row">
+                        <input class="ai" data-bind="config.sales.trust_custom.${m}" value="${d(u)}" maxlength="50" aria-label="شارة ${m+1}">
+                        ${bt("config.sales.trust_custom",m,t.trust_custom.length)}
                     </li>`).join("")}</ul>
-                    ${s.trust_custom.length < 3 ? `<button class="ab ab-ghost ab-sm" type="button" data-add-item="config.sales.trust_custom">+ إضافة شارة</button>` : ""}
-                </div>`);
-    }
+                    ${t.trust_custom.length<3?'<button class="ab ab-ghost ab-sm" type="button" data-add-item="config.sales.trust_custom">+ إضافة شارة</button>':""}
+                </div>`)}const ms=[["pct","نسبة %"],["fixed","مبلغ ثابت"],["ship","توصيل مجاني"]],fs="huroof_restock_msg",uo=`هلا {name} 👋
 
-    // =====================================================
-    // أكواد المؤثرين + المفضلة + «أخبرني عند التوفر»
-    // تُحفظ في قاعدة البيانات مباشرة (بدون «نشر»)
-    // =====================================================
+🎉 رجع *{product}* في {store}
+💰 السعر: *{price}*
 
-    const COUPON_KINDS = [["pct", "نسبة %"], ["fixed", "مبلغ ثابت"], ["ship", "توصيل مجاني"]];
-    const RESTOCK_KEY = "huroof_restock_msg";
-    const RESTOCK_MSG = "هلا {name} 👋\n\n🎉 رجع *{product}* في {store}\n💰 السعر: *{price}*\n\nطلبت منّا نخبرك أول ما يتوفر، احجز قطعتك قبل لا يخلص 👇\n{link}";
-    const TRANSLIT = { "ا": "A", "أ": "A", "إ": "I", "آ": "A", "ب": "B", "ت": "T", "ث": "TH", "ج": "J", "ح": "H", "خ": "KH", "د": "D", "ذ": "TH", "ر": "R", "ز": "Z", "س": "S", "ش": "SH", "ص": "S", "ض": "D", "ط": "T", "ظ": "Z", "ع": "A", "غ": "GH", "ف": "F", "ق": "Q", "ك": "K", "ل": "L", "م": "M", "ن": "N", "ه": "H", "ة": "A", "و": "W", "ي": "Y", "ى": "A", "ئ": "E", "ؤ": "O" };
-
-    const promoFavs = (id) => (A.promo && A.promo.favs ? A.promo.favs[id] || 0 : 0);
-    const promoWaiting = (id) => (A.promo && A.promo.restock ? A.promo.restock.filter((r) => r.product_id === id && !r.notified_at).length : 0);
-    const findCoupon = (code) => ((A.promo && A.promo.coupons) || []).find((k) => k.code === code) || null;
-    const waitText = (n) => (n === 1 ? "شخص واحد ينتظر" : n === 2 ? "شخصان ينتظران" : `${n} ينتظرون`);
-    const couponLink = (code) => `${siteLink(ATHR.base())}?code=${encodeURIComponent(code)}`;
-
-    // نحمّل البيانات عند فتح القسم، ونحدّثها إذا مرّت دقيقة
-    function promoMaybeLoad() {
-        const st = A.promo;
-        if (!st || (!st.loading && Date.now() - (st.at || 0) > 60000)) loadPromo();
-    }
-
-    async function loadPromo() {
-        A.promo = { ...(A.promo || {}), loading: true };
-        try {
-            const [k, o, f, r] = await Promise.all([
-                sb.from("coupons").select("*").order("created_at", { ascending: false }),
-                sb.from("orders").select("coupon,total,coupon_discount,hidden").not("coupon", "is", null).limit(5000),
-                sb.from("product_stats").select("product_id,favs").gt("favs", 0),
-                sb.from("restock_requests").select("*").order("created_at", { ascending: true }).limit(3000)
-            ]);
-            const failed = [k, o, f, r].find((x) => x.error);
-            if (failed) throw failed.error;
-            const uses = {};
-            (o.data || []).forEach((x) => {
-                if (x.hidden || !x.coupon) return;
-                const u = uses[x.coupon] || (uses[x.coupon] = { orders: 0, sales: 0, disc: 0 });
-                u.orders++;
-                u.sales += Number(x.total || 0);
-                u.disc += Number(x.coupon_discount || 0);
-            });
-            A.promo = {
-                at: Date.now(),
-                coupons: k.data || [],
-                uses,
-                favs: Object.fromEntries((f.data || []).map((x) => [x.product_id, Number(x.favs) || 0])),
-                restock: r.data || []
-            };
-        } catch (error) {
-            console.warn("Promo data failed:", error);
-            A.promo = { ...(A.promo || {}), loading: false, error: true, at: Date.now() };
-        }
-        refreshPromoTab();
-    }
-
-    function refreshPromoTab() {
-        if (A.view !== "admin" || !["sales", "products"].includes(A.tab)) return;
-        const active = document.activeElement;
-        const keep = active && active.id === "productFilter" ? active.selectionStart : null;
-        renderTab({ keepScroll: true });
-        if (keep !== null) {
-            const input = $("#productFilter");
-            if (input) {
-                input.focus();
-                try { input.setSelectionRange(keep, keep); } catch { /* ignore */ }
-            }
-        }
-    }
-
-    function promoState(empty) {
-        const st = A.promo || {};
-        if (st.error && !st.coupons) return `<p class="adm-note">تعذر التحميل. تأكد من الإنترنت. <button class="ab-mini" type="button" data-a="promo-reload">إعادة المحاولة</button></p>`;
-        if (!st.coupons) return `<p class="adm-muted">جاري التحميل...</p>`;
-        return empty;
-    }
-
-    // ---------- 🎟️ أكواد الخصم ----------
-
-    function couponState(k) {
-        const used = ((A.promo && A.promo.uses) || {})[k.code];
-        if (!k.enabled) return ["", "متوقف"];
-        if (k.ends_at && new Date(k.ends_at).getTime() <= Date.now()) return ["warn", "انتهى"];
-        if (k.max_uses && used && used.orders >= k.max_uses) return ["warn", "اكتمل العدد"];
-        return ["ok", "فعّال"];
-    }
-
-    function couponsCard() {
-        const st = A.promo || {};
-        const rewards = (st.coupons || []).filter((k) => k.phone);
-        const list = (st.coupons || []).filter((k) => !k.phone);
-        const uses = st.uses || {};
-        const sum = list.reduce((a, k) => {
-            const u = uses[k.code];
-            if (u) { a.orders += u.orders; a.sales += u.sales; }
-            return a;
-        }, { orders: 0, sales: 0 });
-        const rows = list.map((k) => {
-            const u = uses[k.code] || { orders: 0, sales: 0, disc: 0 };
-            const [cls, label] = couponState(k);
-            const bits = [k.owner ? `👤 ${esc(k.owner)}` : "", esc(ATHR.couponText(k, cfg())), Number(k.min_total) > 0 ? `للطلبات من ${money(k.min_total)}` : "", k.ends_at ? `حتى ${esc(ATHR.muscatParts(k.ends_at).date)}` : "", k.max_uses ? `${u.orders} من ${k.max_uses} استخدام` : ""].filter(Boolean).join(" · ");
-            return `<li class="cp-row${k.enabled ? "" : " off"}">
+طلبت منّا نخبرك أول ما يتوفر، احجز قطعتك قبل لا يخلص 👇
+{link}`,po={ا:"A",أ:"A",إ:"I",آ:"A",ب:"B",ت:"T",ث:"TH",ج:"J",ح:"H",خ:"KH",د:"D",ذ:"TH",ر:"R",ز:"Z",س:"S",ش:"SH",ص:"S",ض:"D",ط:"T",ظ:"Z",ع:"A",غ:"GH",ف:"F",ق:"Q",ك:"K",ل:"L",م:"M",ن:"N",ه:"H",ة:"A",و:"W",ي:"Y",ى:"A",ئ:"E",ؤ:"O"},la=t=>i.promo&&i.promo.favs&&i.promo.favs[t]||0,ca=t=>i.promo&&i.promo.restock?i.promo.restock.filter(e=>e.product_id===t&&!e.notified_at).length:0,da=t=>(i.promo&&i.promo.coupons||[]).find(e=>e.code===t)||null,ua=t=>t===1?"شخص واحد ينتظر":t===2?"شخصان ينتظران":`${t} ينتظرون`,bs=t=>`${Y(ATHR.base())}?code=${encodeURIComponent(t)}`;function hs(){const t=i.promo;(!t||!t.loading&&Date.now()-(t.at||0)>6e4)&&Gt()}async function Gt(){i.promo={...i.promo||{},loading:!0};try{const[t,e,a,s]=await Promise.all([_.from("coupons").select("*").order("created_at",{ascending:!1}),_.from("orders").select("coupon,total,coupon_discount,hidden").not("coupon","is",null).limit(5e3),_.from("product_stats").select("product_id,favs").gt("favs",0),_.from("restock_requests").select("*").order("created_at",{ascending:!0}).limit(3e3)]),n=[t,e,a,s].find(r=>r.error);if(n)throw n.error;const o={};(e.data||[]).forEach(r=>{if(r.hidden||!r.coupon)return;const l=o[r.coupon]||(o[r.coupon]={orders:0,sales:0,disc:0});l.orders++,l.sales+=Number(r.total||0),l.disc+=Number(r.coupon_discount||0)}),i.promo={at:Date.now(),coupons:t.data||[],uses:o,favs:Object.fromEntries((a.data||[]).map(r=>[r.product_id,Number(r.favs)||0])),restock:s.data||[]}}catch(t){console.warn("Promo data failed:",t),i.promo={...i.promo||{},loading:!1,error:!0,at:Date.now()}}le()}function le(){if(i.view!=="admin"||!["sales","products"].includes(i.tab))return;const t=document.activeElement,e=t&&t.id==="productFilter"?t.selectionStart:null;if(B({keepScroll:!0}),e!==null){const a=b("#productFilter");if(a){a.focus();try{a.setSelectionRange(e,e)}catch{}}}}function pa(t){const e=i.promo||{};return e.error&&!e.coupons?'<p class="adm-note">تعذر التحميل. تأكد من الإنترنت. <button class="ab-mini" type="button" data-a="promo-reload">إعادة المحاولة</button></p>':e.coupons?t:'<p class="adm-muted">جاري التحميل...</p>'}function mo(t){const e=(i.promo&&i.promo.uses||{})[t.code];return t.enabled?t.ends_at&&new Date(t.ends_at).getTime()<=Date.now()?["warn","انتهى"]:t.max_uses&&e&&e.orders>=t.max_uses?["warn","اكتمل العدد"]:["ok","فعّال"]:["","متوقف"]}function fo(){const t=i.promo||{},e=(t.coupons||[]).filter(l=>l.phone),a=(t.coupons||[]).filter(l=>!l.phone),s=t.uses||{},n=a.reduce((l,c)=>{const p=s[c.code];return p&&(l.orders+=p.orders,l.sales+=p.sales),l},{orders:0,sales:0}),o=a.map(l=>{const c=s[l.code]||{orders:0,sales:0,disc:0},[p,u]=mo(l),m=[l.owner?`👤 ${d(l.owner)}`:"",d(ATHR.couponText(l,$())),Number(l.min_total)>0?`للطلبات من ${x(l.min_total)}`:"",l.ends_at?`حتى ${d(ATHR.muscatParts(l.ends_at).date)}`:"",l.max_uses?`${c.orders} من ${l.max_uses} استخدام`:""].filter(Boolean).join(" · ");return`<li class="cp-row${l.enabled?"":" off"}">
                 <div class="cp-top">
-                    <div class="cp-main"><span class="cp-code"><b dir="ltr">${esc(k.code)}</b> <span class="tag ${cls}">${label}</span></span><small>${bits}</small></div>
-                    <button type="button" class="vis-switch" role="switch" aria-checked="${Boolean(k.enabled)}" data-cp-toggle="${esc(k.code)}" aria-label="تفعيل الكود ${esc(k.code)}"><span></span></button>
+                    <div class="cp-main"><span class="cp-code"><b dir="ltr">${d(l.code)}</b> <span class="tag ${p}">${u}</span></span><small>${m}</small></div>
+                    <button type="button" class="vis-switch" role="switch" aria-checked="${!!l.enabled}" data-cp-toggle="${d(l.code)}" aria-label="تفعيل الكود ${d(l.code)}"><span></span></button>
                 </div>
-                <div class="cp-stats"><span><small>طلبات</small><b>${u.orders}</b></span><span><small>مبيعات</small><b>${money(u.sales)}</b></span><span><small>خصومات</small><b>${money(u.disc)}</b></span></div>
+                <div class="cp-stats"><span><small>طلبات</small><b>${c.orders}</b></span><span><small>مبيعات</small><b>${x(c.sales)}</b></span><span><small>خصومات</small><b>${x(c.disc)}</b></span></div>
                 <div class="cp-btns">
-                    <button type="button" class="ab-mini" data-cp-link="${esc(k.code)}">🔗 نسخ الرابط</button>
-                    <button type="button" class="ab-mini wa" data-cp-msg="${esc(k.code)}">💬 رسالة للمؤثر</button>
-                    <button type="button" class="ab-mini" data-cp-edit="${esc(k.code)}">تعديل</button>
+                    <button type="button" class="ab-mini" data-cp-link="${d(l.code)}">🔗 نسخ الرابط</button>
+                    <button type="button" class="ab-mini wa" data-cp-msg="${d(l.code)}">💬 رسالة للمؤثر</button>
+                    <button type="button" class="ab-mini" data-cp-edit="${d(l.code)}">تعديل</button>
                 </div>
-            </li>`;
-        }).join("");
-        const off = cfg().sales.coupons === false;
-        return card("🎟️ أكواد الخصم والمؤثرين", `
-            ${toggle("config.sales.coupons", "خانة «عندك كود خصم؟» في صفحة الطلب", { rerender: true, help: "أوقفها لإخفاء الخانة وإيقاف كل الأكواد عند الزبائن (تحتاج «نشر التغييرات»)." })}
-            ${off ? `<p class="adm-note">الخانة متوقفة، فلن تعمل الأكواد عند الزبائن حتى تفعّلها وتنشر.</p>` : ""}
-            ${promoState(`${list.length ? `<div class="ob-stats cp-sum"><div><small>طلبات بالأكواد</small><b>${sum.orders}</b></div><div><small>مبيعاتها</small><b>${money(sum.sales)}</b></div></div>
-                <ul class="cp-list">${rows}</ul>` : `<p class="adm-muted cp-empty">لا توجد أكواد بعد. أنشئ أول كود لمؤثر، مثل SARA10.</p>`}
-                ${rewards.length ? `<p class="adm-muted">⭐ أكواد مكافآت الولاء: ${rewards.length} (استُخدم منها ${rewards.filter((k) => ((st.uses || {})[k.code] || {}).orders).length}). تُنشأ من «العملاء» وتعمل لرقم صاحبها فقط.</p>` : ""}
-                <button class="ab ab-primary ab-sm" type="button" data-a="coupon-new">+ كود جديد</button>`)}`,
-            "أعطِ كل مؤثر كوداً باسمه (مثل SARA10) ورابطاً يفعّل الكود تلقائياً، وتعرف كم طلب ومبيعات جاب كل واحد. الخصم يُحسب بعد خصومات المتجر، والخادم يتحقق منه فلا يمكن التلاعب به. الأكواد تُحفظ فوراً بدون «نشر».");
-    }
-
-    function suggestCode(owner, kind, value) {
-        const raw = String(owner || "").trim().replace(/^@/, "").split(/\s+/)[0] || "";
-        const base = (/[a-z]/i.test(raw) ? raw.toUpperCase().replace(/[^A-Z0-9]/g, "") : [...raw].map((ch) => TRANSLIT[ch] || "").join("")).slice(0, 12);
-        if (!base) return "";
-        const n = Math.round(Number(ATHR.digits(String(value || ""))) || 0);
-        return (base + (kind === "ship" ? "FREE" : n > 0 ? String(n) : "")).slice(0, 20);
-    }
-
-    function couponSummary(form) {
-        const get = (n) => String((form.elements.namedItem(n) || {}).value || "");
-        const kind = (form.querySelector("input[name=kind]:checked") || {}).value || "pct";
-        const code = ATHR.couponCode(get("code")) || "…";
-        const who = get("owner").trim();
-        const min = Number(ATHR.digits(get("min_total"))) || 0;
-        const ends = get("ends");
-        const what = ATHR.couponText({ kind, value: Number(ATHR.digits(get("value"))) || 0 }, cfg());
-        return `${who ? `متابعو ${who} يكتبون` : "الزبون يكتب"} ${code} ${who ? "فيحصلون" : "فيحصل"} على ${what}${min > 0 ? ` للطلبات من ${money(min)}` : ""}${ends ? ` حتى ${ends.split("-").reverse().join("/")}` : ""}.`;
-    }
-
-    function couponSheet(k) {
-        const isNew = !k;
-        const c = k || { code: "", owner: "", kind: "pct", value: 10, min_total: 0, ends_at: null, max_uses: null, enabled: true };
-        A.couponEdit = { orig: isNew ? null : c.code, auto: isNew };
-        const ends = c.ends_at ? toMuscatInputs(c.ends_at).date : "";
-        openSheet(`
-            <div class="adm-sheet-head"><h2>${isNew ? "🎟️ كود خصم جديد" : `تعديل الكود <span dir="ltr">${esc(c.code)}</span>`}</h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>
+            </li>`}).join(""),r=$().sales.coupons===!1;return N("🎟️ أكواد الخصم والمؤثرين",`
+            ${H("config.sales.coupons","خانة «عندك كود خصم؟» في صفحة الطلب",{rerender:!0,help:"أوقفها لإخفاء الخانة وإيقاف كل الأكواد عند الزبائن (تحتاج «نشر التغييرات»)."})}
+            ${r?'<p class="adm-note">الخانة متوقفة، فلن تعمل الأكواد عند الزبائن حتى تفعّلها وتنشر.</p>':""}
+            ${pa(`${a.length?`<div class="ob-stats cp-sum"><div><small>طلبات بالأكواد</small><b>${n.orders}</b></div><div><small>مبيعاتها</small><b>${x(n.sales)}</b></div></div>
+                <ul class="cp-list">${o}</ul>`:'<p class="adm-muted cp-empty">لا توجد أكواد بعد. أنشئ أول كود لمؤثر، مثل SARA10.</p>'}
+                ${e.length?`<p class="adm-muted">⭐ أكواد مكافآت الولاء: ${e.length} (استُخدم منها ${e.filter(l=>((t.uses||{})[l.code]||{}).orders).length}). تُنشأ من «العملاء» وتعمل لرقم صاحبها فقط.</p>`:""}
+                <button class="ab ab-primary ab-sm" type="button" data-a="coupon-new">+ كود جديد</button>`)}`,"أعطِ كل مؤثر كوداً باسمه (مثل SARA10) ورابطاً يفعّل الكود تلقائياً، وتعرف كم طلب ومبيعات جاب كل واحد. الخصم يُحسب بعد خصومات المتجر، والخادم يتحقق منه فلا يمكن التلاعب به. الأكواد تُحفظ فوراً بدون «نشر».")}function bo(t,e,a){const s=String(t||"").trim().replace(/^@/,"").split(/\s+/)[0]||"",n=(/[a-z]/i.test(s)?s.toUpperCase().replace(/[^A-Z0-9]/g,""):[...s].map(r=>po[r]||"").join("")).slice(0,12);if(!n)return"";const o=Math.round(Number(ATHR.digits(String(a||"")))||0);return(n+(e==="ship"?"FREE":o>0?String(o):"")).slice(0,20)}function gs(t){const e=c=>String((t.elements.namedItem(c)||{}).value||""),a=(t.querySelector("input[name=kind]:checked")||{}).value||"pct",s=ATHR.couponCode(e("code"))||"…",n=e("owner").trim(),o=Number(ATHR.digits(e("min_total")))||0,r=e("ends"),l=ATHR.couponText({kind:a,value:Number(ATHR.digits(e("value")))||0},$());return`${n?`متابعو ${n} يكتبون`:"الزبون يكتب"} ${s} ${n?"فيحصلون":"فيحصل"} على ${l}${o>0?` للطلبات من ${x(o)}`:""}${r?` حتى ${r.split("-").reverse().join("/")}`:""}.`}function $s(t){const e=!t,a=t||{code:"",owner:"",kind:"pct",value:10,min_total:0,ends_at:null,max_uses:null,enabled:!0};i.couponEdit={orig:e?null:a.code,auto:e};const s=a.ends_at?Ba(a.ends_at).date:"";ot(`
+            <div class="adm-sheet-head"><h2>${e?"🎟️ كود خصم جديد":`تعديل الكود <span dir="ltr">${d(a.code)}</span>`}</h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>
             <form class="af-stack" id="couponForm" novalidate>
-                <label class="af"><span>اسم المؤثر أو صاحب الكود</span><input class="ai" name="owner" maxlength="80" value="${esc(c.owner || "")}" placeholder="مثال: سارة"><small>لتعرف مبيعات كل مؤثر.</small></label>
-                <label class="af"><span>الكود</span><input class="ai cp-input" name="code" dir="ltr" maxlength="20" autocapitalize="characters" autocomplete="off" spellcheck="false" value="${esc(c.code)}" placeholder="SARA10"${isNew ? "" : " readonly"}>
-                    <small>${isNew ? "حروف إنجليزية وأرقام فقط (3 إلى 20)، مثل SARA10. الزبون يكتبه في صفحة الطلب، أو يفتح رابط المؤثر فيتفعّل وحده." : "لا يتغيّر الكود بعد إنشائه حتى لا تضيع مبيعاته. لكود مختلف أنشئ كوداً جديداً."}</small></label>
-                <div class="af"><span>نوع الخصم</span><div class="cp-kind" role="radiogroup" aria-label="نوع الخصم">${COUPON_KINDS.map(([v, l]) => `<label><input type="radio" name="kind" value="${v}"${c.kind === v ? " checked" : ""}><span>${l}</span></label>`).join("")}</div></div>
-                <label class="af" id="cpValueBox"${c.kind === "ship" ? " hidden" : ""}><span id="cpValueLabel">${c.kind === "fixed" ? "المبلغ (ر.ع)" : "النسبة %"}</span><input class="ai" name="value" id="cpValue" type="number" inputmode="decimal" step="${c.kind === "fixed" ? "0.001" : "1"}" min="0" value="${c.kind === "ship" ? "" : esc(c.value ?? "")}"></label>
+                <label class="af"><span>اسم المؤثر أو صاحب الكود</span><input class="ai" name="owner" maxlength="80" value="${d(a.owner||"")}" placeholder="مثال: سارة"><small>لتعرف مبيعات كل مؤثر.</small></label>
+                <label class="af"><span>الكود</span><input class="ai cp-input" name="code" dir="ltr" maxlength="20" autocapitalize="characters" autocomplete="off" spellcheck="false" value="${d(a.code)}" placeholder="SARA10"${e?"":" readonly"}>
+                    <small>${e?"حروف إنجليزية وأرقام فقط (3 إلى 20)، مثل SARA10. الزبون يكتبه في صفحة الطلب، أو يفتح رابط المؤثر فيتفعّل وحده.":"لا يتغيّر الكود بعد إنشائه حتى لا تضيع مبيعاته. لكود مختلف أنشئ كوداً جديداً."}</small></label>
+                <div class="af"><span>نوع الخصم</span><div class="cp-kind" role="radiogroup" aria-label="نوع الخصم">${ms.map(([n,o])=>`<label><input type="radio" name="kind" value="${n}"${a.kind===n?" checked":""}><span>${o}</span></label>`).join("")}</div></div>
+                <label class="af" id="cpValueBox"${a.kind==="ship"?" hidden":""}><span id="cpValueLabel">${a.kind==="fixed"?"المبلغ (ر.ع)":"النسبة %"}</span><input class="ai" name="value" id="cpValue" type="number" inputmode="decimal" step="${a.kind==="fixed"?"0.001":"1"}" min="0" value="${a.kind==="ship"?"":d(a.value??"")}"></label>
                 <div class="two">
-                    <label class="af"><span>أقل مبلغ للطلب</span><input class="ai" name="min_total" type="number" inputmode="decimal" step="0.001" min="0" value="${Number(c.min_total) > 0 ? esc(c.min_total) : ""}" placeholder="بدون حد"></label>
-                    <label class="af"><span>عدد مرات الاستخدام</span><input class="ai" name="max_uses" type="number" inputmode="numeric" step="1" min="1" value="${c.max_uses ? esc(c.max_uses) : ""}" placeholder="بلا حد"></label>
+                    <label class="af"><span>أقل مبلغ للطلب</span><input class="ai" name="min_total" type="number" inputmode="decimal" step="0.001" min="0" value="${Number(a.min_total)>0?d(a.min_total):""}" placeholder="بدون حد"></label>
+                    <label class="af"><span>عدد مرات الاستخدام</span><input class="ai" name="max_uses" type="number" inputmode="numeric" step="1" min="1" value="${a.max_uses?d(a.max_uses):""}" placeholder="بلا حد"></label>
                 </div>
-                <label class="af"><span>ينتهي في (اختياري)</span><input class="ai" name="ends" type="date" value="${esc(ends)}"><small>آخر يوم يعمل فيه الكود، بتوقيت مسقط.</small></label>
-                <label class="at"><input type="checkbox" name="enabled"${c.enabled ? " checked" : ""}><span class="at-ui" aria-hidden="true"></span><span class="at-text"><b>الكود مفعّل</b></span></label>
+                <label class="af"><span>ينتهي في (اختياري)</span><input class="ai" name="ends" type="date" value="${d(s)}"><small>آخر يوم يعمل فيه الكود، بتوقيت مسقط.</small></label>
+                <label class="at"><input type="checkbox" name="enabled"${a.enabled?" checked":""}><span class="at-ui" aria-hidden="true"></span><span class="at-text"><b>الكود مفعّل</b></span></label>
                 <p class="adm-sentence" id="cpSum"></p>
                 <p class="adm-error" id="cpErr" role="alert"></p>
-                <button class="ab ab-primary ab-block" type="submit">${isNew ? "إنشاء الكود" : "حفظ"}</button>
-                ${isNew ? "" : `<button class="ab ab-ghost ab-block danger cp-del" type="button" data-a="coupon-delete">حذف الكود</button>`}
-            </form>`);
-        $("#cpSum").textContent = couponSummary($("#couponForm"));
-    }
-
-    function couponFormInput(t) {
-        const form = $("#couponForm");
-        const ed = A.couponEdit;
-        if (!form || !ed) return;
-        if (t.name === "code") {
-            const clean = ATHR.couponCode(ATHR.digits(t.value)).replace(/[^A-Z0-9_-]/g, "");
-            if (clean !== t.value) t.value = clean;
-            ed.auto = !clean;
-        }
-        const kind = (form.querySelector("input[name=kind]:checked") || {}).value || "pct";
-        const value = form.elements.namedItem("value");
-        if (t.name === "kind") {
-            $("#cpValueBox").hidden = kind === "ship";
-            $("#cpValueLabel").textContent = kind === "fixed" ? "المبلغ (ر.ع)" : "النسبة %";
-            value.step = kind === "fixed" ? "0.001" : "1";
-            if (kind !== "ship" && !value.value) value.value = kind === "fixed" ? "1" : "10";
-        }
-        if (ed.auto && !ed.orig && ["owner", "kind", "value"].includes(t.name)) {
-            form.elements.namedItem("code").value = suggestCode(form.elements.namedItem("owner").value, kind, value.value);
-        }
-        $("#cpSum").textContent = couponSummary(form);
-    }
-
-    async function saveCoupon(form) {
-        const f = Object.fromEntries(new FormData(form).entries());
-        const err = $("#cpErr");
-        const fail = (msg) => { err.textContent = msg; return false; };
-        const ed = A.couponEdit || {};
-        const num = (x) => (String(x ?? "").trim() === "" ? null : Number(ATHR.digits(String(x))));
-        const code = ed.orig || ATHR.couponCode(ATHR.digits(f.code || ""));
-        const kind = COUPON_KINDS.some(([v]) => v === f.kind) ? f.kind : "pct";
-        const value = kind === "ship" ? 0 : num(f.value);
-        const minTotal = num(f.min_total) || 0;
-        const maxUses = num(f.max_uses);
-        if (!ATHR.couponValid(code)) return fail("اكتب الكود بالحروف الإنجليزية والأرقام فقط (3 إلى 20)، مثل SARA10.");
-        if (kind === "pct" && !(value >= 1 && value <= 90)) return fail("اكتب نسبة الخصم بين 1% و 90%.");
-        if (kind === "fixed" && !(value > 0)) return fail("اكتب مبلغ الخصم.");
-        if (!(minTotal >= 0)) return fail("أقل مبلغ للطلب غير صحيح.");
-        if (maxUses !== null && !(Number.isInteger(maxUses) && maxUses > 0)) return fail("عدد مرات الاستخدام رقم صحيح أكبر من صفر.");
-        const row = {
-            owner: String(f.owner || "").trim().slice(0, 80) || null,
-            kind,
-            value: Math.round(value * 1000) / 1000,
-            min_total: Math.round(minTotal * 1000) / 1000,
-            ends_at: /^\d{4}-\d{2}-\d{2}$/.test(f.ends || "") ? `${f.ends}T23:59:59+04:00` : null,
-            max_uses: maxUses,
-            enabled: Boolean(f.enabled)
-        };
-        err.textContent = "";
-        const btn = form.querySelector("button[type=submit]");
-        btn.disabled = true;
-        const { error } = ed.orig ? await sb.from("coupons").update(row).eq("code", code) : await sb.from("coupons").insert({ code, ...row });
-        btn.disabled = false;
-        if (error) {
-            if (error.code === "23505") return fail("هذا الكود موجود من قبل. اختر كوداً آخر.");
-            console.warn("Coupon save failed:", error);
-            return fail("تعذر الحفظ. تأكد من الإنترنت وحاول مرة أخرى.");
-        }
-        A.couponEdit = null;
-        closeSheet();
-        toast(ed.orig ? "حُفظ الكود ✓" : `أُنشئ الكود ${code} ✓ انسخ رابطه أو رسالته للمؤثر`);
-        await loadPromo();
-        return true;
-    }
-
-    async function toggleCoupon(code) {
-        const k = findCoupon(code);
-        if (!k) return;
-        k.enabled = !k.enabled;
-        refreshPromoTab();
-        const { error } = await sb.from("coupons").update({ enabled: k.enabled }).eq("code", code);
-        if (error) {
-            k.enabled = !k.enabled;
-            refreshPromoTab();
-            toast("تعذر الحفظ. تأكد من الإنترنت.");
-        } else toast(k.enabled ? `الكود ${code} مفعّل` : `أُوقف الكود ${code}`);
-    }
-
-    async function deleteCoupon() {
-        const code = A.couponEdit && A.couponEdit.orig;
-        if (!code) return;
-        const used = (((A.promo && A.promo.uses) || {})[code] || {}).orders || 0;
-        if (!confirm(used ? `حذف الكود ${code}؟ عليه ${used} طلب، وبعد الحذف تختفي أرقامه من هنا. الأفضل «إيقافه» بالمفتاح.` : `حذف الكود ${code}؟`)) return;
-        const { error } = await sb.from("coupons").delete().eq("code", code);
-        if (error) {
-            toast("تعذر الحذف. تأكد من الإنترنت.");
-            return;
-        }
-        A.couponEdit = null;
-        closeSheet();
-        toast(`حُذف الكود ${code}`);
-        await loadPromo();
-    }
-
-    // رسالة جاهزة للمؤثر: كوده، ورابطه، ونص للستوري
-    function couponMessage(k) {
-        const store = ATHR.storeName(cfg());
-        const link = couponLink(k.code);
-        const what = ATHR.couponText(k, cfg());
-        const first = String(k.owner || "").trim().split(/\s+/)[0];
-        const cond = [Number(k.min_total) > 0 ? `للطلبات من ${money(k.min_total)}` : "على كل الطلبات", k.ends_at ? `حتى ${ATHR.muscatParts(k.ends_at).date}` : ""].filter(Boolean).join(" ");
-        return [
-            `هلا${first ? ` ${first}` : ""} 👋`,
-            `هذا كود الخصم الخاص فيك من ${store} 🎟️`,
-            "",
-            `الكود: *${k.code}*`,
-            `يعطي متابعينك ${what} ${cond}`,
-            "",
-            "🔗 رابطك الخاص (الكود يتفعّل تلقائياً عند الطلب):",
-            link,
-            "",
-            "✨ نص جاهز للستوري:",
-            `كود خصم لمتابعيني من ${store} 😍`,
-            `استخدموا الكود ${k.code} واحصلوا على ${what}`,
-            "اطلبوا من هنا 👇",
-            link
-        ].join("\n");
-    }
-
-    // ---------- 🔔 أخبرني عند التوفر ----------
-
-    // المنتج كما هو منشور الآن (لأن الرابط يجب أن يعمل عند الزبون)
-    function publishedProduct(id) {
-        const visible = (A.server ? A.server.products : []).filter((p) => p.is_visible !== false);
-        return ATHR.assignSlugs(visible, cfg()).find((p) => p.id === id) || null;
-    }
-
-    function restockGroups() {
-        const map = new Map();
-        ((A.promo && A.promo.restock) || []).forEach((r) => {
-            const g = map.get(r.product_id) || { pid: r.product_id, wait: [], done: 0 };
-            if (r.notified_at) g.done++;
-            else g.wait.push(r);
-            map.set(r.product_id, g);
-        });
-        return [...map.values()]
-            .map((g) => ({ ...g, p: A.draft.products.find((x) => x.id === g.pid), live: publishedProduct(g.pid) }))
-            .filter((g) => g.p)
-            .sort((a, b) => b.wait.length - a.wait.length);
-    }
-
-    function restockCard() {
-        const groups = restockGroups();
-        const waiting = groups.reduce((n, g) => n + g.wait.length, 0);
-        const rows = groups.map((g) => {
-            const ready = g.live && g.live.is_available !== false;
-            const [cls, label] = ready ? ["ok", "✅ متوفر الآن"] : !g.live ? ["", "مخفي"] : g.p.is_available !== false ? ["warn", "انشر التغييرات ثم أرسل"] : ["", "ما زال نافداً"];
-            return `<li class="rs-row">
-                <img src="${esc(ATHR.thumb(g.p.image_url, "s") || asset("images/logo2.jpeg"))}" alt="" loading="lazy">
-                <span class="op-info"><b>${esc(g.p.name)}</b><small>${g.wait.length ? `🔔 ${waitText(g.wait.length)}` : "لا أحد ينتظر"}${g.done ? ` · أُبلغ ${g.done}` : ""}</small><span><span class="tag ${cls}">${label}</span></span></span>
+                <button class="ab ab-primary ab-block" type="submit">${e?"إنشاء الكود":"حفظ"}</button>
+                ${e?"":'<button class="ab ab-ghost ab-block danger cp-del" type="button" data-a="coupon-delete">حذف الكود</button>'}
+            </form>`),b("#cpSum").textContent=gs(b("#couponForm"))}function ys(t){const e=b("#couponForm"),a=i.couponEdit;if(!e||!a)return;if(t.name==="code"){const o=ATHR.couponCode(ATHR.digits(t.value)).replace(/[^A-Z0-9_-]/g,"");o!==t.value&&(t.value=o),a.auto=!o}const s=(e.querySelector("input[name=kind]:checked")||{}).value||"pct",n=e.elements.namedItem("value");t.name==="kind"&&(b("#cpValueBox").hidden=s==="ship",b("#cpValueLabel").textContent=s==="fixed"?"المبلغ (ر.ع)":"النسبة %",n.step=s==="fixed"?"0.001":"1",s!=="ship"&&!n.value&&(n.value=s==="fixed"?"1":"10")),a.auto&&!a.orig&&["owner","kind","value"].includes(t.name)&&(e.elements.namedItem("code").value=bo(e.elements.namedItem("owner").value,s,n.value)),b("#cpSum").textContent=gs(e)}async function ho(t){const e=Object.fromEntries(new FormData(t).entries()),a=b("#cpErr"),s=L=>(a.textContent=L,!1),n=i.couponEdit||{},o=L=>String(L??"").trim()===""?null:Number(ATHR.digits(String(L))),r=n.orig||ATHR.couponCode(ATHR.digits(e.code||"")),l=ms.some(([L])=>L===e.kind)?e.kind:"pct",c=l==="ship"?0:o(e.value),p=o(e.min_total)||0,u=o(e.max_uses);if(!ATHR.couponValid(r))return s("اكتب الكود بالحروف الإنجليزية والأرقام فقط (3 إلى 20)، مثل SARA10.");if(l==="pct"&&!(c>=1&&c<=90))return s("اكتب نسبة الخصم بين 1% و 90%.");if(l==="fixed"&&!(c>0))return s("اكتب مبلغ الخصم.");if(!(p>=0))return s("أقل مبلغ للطلب غير صحيح.");if(u!==null&&!(Number.isInteger(u)&&u>0))return s("عدد مرات الاستخدام رقم صحيح أكبر من صفر.");const m={owner:String(e.owner||"").trim().slice(0,80)||null,kind:l,value:Math.round(c*1e3)/1e3,min_total:Math.round(p*1e3)/1e3,ends_at:/^\d{4}-\d{2}-\d{2}$/.test(e.ends||"")?`${e.ends}T23:59:59+04:00`:null,max_uses:u,enabled:!!e.enabled};a.textContent="";const h=t.querySelector("button[type=submit]");h.disabled=!0;const{error:M}=n.orig?await _.from("coupons").update(m).eq("code",r):await _.from("coupons").insert({code:r,...m});return h.disabled=!1,M?M.code==="23505"?s("هذا الكود موجود من قبل. اختر كوداً آخر."):(console.warn("Coupon save failed:",M),s("تعذر الحفظ. تأكد من الإنترنت وحاول مرة أخرى.")):(i.couponEdit=null,At(),y(n.orig?"حُفظ الكود ✓":`أُنشئ الكود ${r} ✓ انسخ رابطه أو رسالته للمؤثر`),await Gt(),!0)}async function go(t){const e=da(t);if(!e)return;e.enabled=!e.enabled,le();const{error:a}=await _.from("coupons").update({enabled:e.enabled}).eq("code",t);a?(e.enabled=!e.enabled,le(),y("تعذر الحفظ. تأكد من الإنترنت.")):y(e.enabled?`الكود ${t} مفعّل`:`أُوقف الكود ${t}`)}async function $o(){const t=i.couponEdit&&i.couponEdit.orig;if(!t)return;const e=((i.promo&&i.promo.uses||{})[t]||{}).orders||0;if(!confirm(e?`حذف الكود ${t}؟ عليه ${e} طلب، وبعد الحذف تختفي أرقامه من هنا. الأفضل «إيقافه» بالمفتاح.`:`حذف الكود ${t}؟`))return;const{error:a}=await _.from("coupons").delete().eq("code",t);if(a){y("تعذر الحذف. تأكد من الإنترنت.");return}i.couponEdit=null,At(),y(`حُذف الكود ${t}`),await Gt()}function yo(t){const e=ATHR.storeName($()),a=bs(t.code),s=ATHR.couponText(t,$()),n=String(t.owner||"").trim().split(/\s+/)[0],o=[Number(t.min_total)>0?`للطلبات من ${x(t.min_total)}`:"على كل الطلبات",t.ends_at?`حتى ${ATHR.muscatParts(t.ends_at).date}`:""].filter(Boolean).join(" ");return[`هلا${n?` ${n}`:""} 👋`,`هذا كود الخصم الخاص فيك من ${e} 🎟️`,"",`الكود: *${t.code}*`,`يعطي متابعينك ${s} ${o}`,"","🔗 رابطك الخاص (الكود يتفعّل تلقائياً عند الطلب):",a,"","✨ نص جاهز للستوري:",`كود خصم لمتابعيني من ${e} 😍`,`استخدموا الكود ${t.code} واحصلوا على ${s}`,"اطلبوا من هنا 👇",a].join(`
+`)}function vs(t){const e=(i.server?i.server.products:[]).filter(a=>a.is_visible!==!1);return ATHR.assignSlugs(e,$()).find(a=>a.id===t)||null}function ma(){const t=new Map;return(i.promo&&i.promo.restock||[]).forEach(e=>{const a=t.get(e.product_id)||{pid:e.product_id,wait:[],done:0};e.notified_at?a.done++:a.wait.push(e),t.set(e.product_id,a)}),[...t.values()].map(e=>({...e,p:i.draft.products.find(a=>a.id===e.pid),live:vs(e.pid)})).filter(e=>e.p).sort((e,a)=>a.wait.length-e.wait.length)}function vo(){const t=ma(),e=t.reduce((s,n)=>s+n.wait.length,0),a=t.map(s=>{const n=s.live&&s.live.is_available!==!1,[o,r]=n?["ok","✅ متوفر الآن"]:s.live?s.p.is_available!==!1?["warn","انشر التغييرات ثم أرسل"]:["","ما زال نافداً"]:["","مخفي"];return`<li class="rs-row">
+                <img src="${d(ATHR.thumb(s.p.image_url,"s")||st("images/logo2.jpeg"))}" alt="" loading="lazy">
+                <span class="op-info"><b>${d(s.p.name)}</b><small>${s.wait.length?`🔔 ${ua(s.wait.length)}`:"لا أحد ينتظر"}${s.done?` · أُبلغ ${s.done}`:""}</small><span><span class="tag ${o}">${r}</span></span></span>
                 <span class="rs-btns">
-                    ${ready && g.wait.length ? `<button class="ab ab-primary ab-sm" type="button" data-restock-send="${esc(g.pid)}">أرسل لهم (${g.wait.length})</button>` : ""}
-                    ${g.live && g.p.is_available === false && g.wait.length ? `<button class="ab-mini" type="button" data-restock-avail="${esc(g.pid)}">صار متوفراً</button>` : ""}
-                    ${g.done ? `<button class="ab-mini" type="button" data-restock-clear="${esc(g.pid)}">مسح من أُبلغوا</button>` : ""}
+                    ${n&&s.wait.length?`<button class="ab ab-primary ab-sm" type="button" data-restock-send="${d(s.pid)}">أرسل لهم (${s.wait.length})</button>`:""}
+                    ${s.live&&s.p.is_available===!1&&s.wait.length?`<button class="ab-mini" type="button" data-restock-avail="${d(s.pid)}">صار متوفراً</button>`:""}
+                    ${s.done?`<button class="ab-mini" type="button" data-restock-clear="${d(s.pid)}">مسح من أُبلغوا</button>`:""}
                 </span>
-            </li>`;
-        }).join("");
-        return card(`🔔 أخبرني عند التوفر${waiting ? ` <span class="tag warn">${waitText(waiting)}</span>` : ""}`, `
-            ${toggle("config.sales.restock", "زر «أخبرني عند التوفر» على المنتجات النافدة", { help: "الزبون يترك اسمه ورقمه، وأول ما يتوفر المنتج ترسل له رسالة واتساب جاهزة بضغطة." })}
-            ${promoState(groups.length ? `<ul class="rs-list">${rows}</ul>` : `<p class="adm-muted">لا أحد ينتظر منتجاً الآن. يظهر هنا كل من يضغط «أخبرني عند التوفر».</p>`)}`,
-            "عند توفر المنتج: أطفئ «نفد من المخزون» (أو اضغط «صار متوفراً» هنا) ثم «نشر التغييرات»، وبعدها «أرسل لهم».");
-    }
-
-    function restockText(st, r) {
-        const first = String((r && r.name) || "").trim().split(/\s+/)[0] || "";
-        const p = st.product;
-        return fillOffer(st.text, { name: first, store: ATHR.storeName(cfg()), product: p.name, price: money(p.price), link: `${siteLink(ATHR.url.product(p))}?ref=whatsapp`, old: "", pct: "", save: "", ends: "" });
-    }
-
-    function openRestock(pid) {
-        const g = restockGroups().find((x) => x.pid === pid);
-        if (!g || !g.live || !g.wait.length) return;
-        A.restockRun = { pid, product: g.live, list: g.wait.slice(), i: 0, sent: 0, step: "compose", text: storage.get(RESTOCK_KEY) || RESTOCK_MSG };
-        renderRestock();
-    }
-
-    function renderRestock() {
-        const st = A.restockRun;
-        if (!st) return;
-        const p = st.product;
-        const head = (title) => `<div class="adm-sheet-head"><h2>${title}</h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>`;
-        if (st.step === "compose") {
-            openSheet(`${head("🔔 أخبرهم أنه رجع")}
+            </li>`}).join("");return N(`🔔 أخبرني عند التوفر${e?` <span class="tag warn">${ua(e)}</span>`:""}`,`
+            ${H("config.sales.restock","زر «أخبرني عند التوفر» على المنتجات النافدة",{help:"الزبون يترك اسمه ورقمه، وأول ما يتوفر المنتج ترسل له رسالة واتساب جاهزة بضغطة."})}
+            ${pa(t.length?`<ul class="rs-list">${a}</ul>`:'<p class="adm-muted">لا أحد ينتظر منتجاً الآن. يظهر هنا كل من يضغط «أخبرني عند التوفر».</p>')}`,"عند توفر المنتج: أطفئ «نفد من المخزون» (أو اضغط «صار متوفراً» هنا) ثم «نشر التغييرات»، وبعدها «أرسل لهم».")}function Me(t,e){const a=String(e&&e.name||"").trim().split(/\s+/)[0]||"",s=t.product;return Pa(t.text,{name:a,store:ATHR.storeName($()),product:s.name,price:x(s.price),link:`${Y(ATHR.url.product(s))}?ref=whatsapp`,old:"",pct:"",save:"",ends:""})}function wo(t){const e=ma().find(a=>a.pid===t);!e||!e.live||!e.wait.length||(i.restockRun={pid:t,product:e.live,list:e.wait.slice(),i:0,sent:0,step:"compose",text:Q.get(fs)||uo},ce())}function ce(){const t=i.restockRun;if(!t)return;const e=t.product,a=o=>`<div class="adm-sheet-head"><h2>${o}</h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>`;if(t.step==="compose"){ot(`${a("🔔 أخبرهم أنه رجع")}
                 <div class="af-stack">
-                    <div class="op-chosen"><img src="${esc(ATHR.thumb(p.image_url, "s") || asset(p.image_url))}" alt=""><span class="op-info"><b>${esc(p.name)}</b><small>${waitText(st.list.length)} · ${money(p.price)}</small></span></div>
-                    <label class="af"><span>نص الرسالة (تقدر تعدّله)</span><textarea class="ai" id="restockText" rows="8">${esc(st.text)}</textarea><small>{name} اسم الزبون · {product} المنتج · {price} السعر · {link} رابط المنتج.</small></label>
-                    <div class="af"><span>👀 هكذا تصل الرسالة</span><div id="restockPreview">${waBubble(restockText(st, st.list[0]), st)}</div></div>
-                    <button class="ab ab-primary ab-block" type="button" data-a="restock-start">ابدأ الإرسال (${st.list.length})</button>
+                    <div class="op-chosen"><img src="${d(ATHR.thumb(e.image_url,"s")||st(e.image_url))}" alt=""><span class="op-info"><b>${d(e.name)}</b><small>${ua(t.list.length)} · ${x(e.price)}</small></span></div>
+                    <label class="af"><span>نص الرسالة (تقدر تعدّله)</span><textarea class="ai" id="restockText" rows="8">${d(t.text)}</textarea><small>{name} اسم الزبون · {product} المنتج · {price} السعر · {link} رابط المنتج.</small></label>
+                    <div class="af"><span>👀 هكذا تصل الرسالة</span><div id="restockPreview">${Dt(Me(t,t.list[0]),t)}</div></div>
+                    <button class="ab ab-primary ab-block" type="button" data-a="restock-start">ابدأ الإرسال (${t.list.length})</button>
                     <p class="adm-muted">تضغط «أرسل» لكل شخص وننقلك للتالي تلقائياً. من تُرسل له يُعلَّم «أُبلغ» حتى لا تكرر عليه.</p>
-                </div>`);
-            return;
-        }
-        const r = st.list[st.i];
-        if (!r) {
-            openSheet(`${head("تم ✅")}
+                </div>`);return}const s=t.list[t.i];if(!s){ot(`${a("تم ✅")}
                 <div class="af-stack">
-                    <div class="offer-done"><span aria-hidden="true">🎉</span><p class="adm-sentence">أبلغت <b>${st.sent}</b> من ${st.list.length} أن «${esc(p.name)}» رجع.</p></div>
+                    <div class="offer-done"><span aria-hidden="true">🎉</span><p class="adm-sentence">أبلغت <b>${t.sent}</b> من ${t.list.length} أن «${d(e.name)}» رجع.</p></div>
                     <button class="ab ab-primary ab-block" type="button" data-a="close-sheet">إغلاق</button>
-                </div>`);
-            return;
-        }
-        const first = String(r.name || "").trim().split(/\s+/)[0];
-        openSheet(`${head("🔔 إرسال التنبيه")}
+                </div>`);return}const n=String(s.name||"").trim().split(/\s+/)[0];ot(`${a("🔔 إرسال التنبيه")}
             <div class="af-stack offer-run">
-                <div class="offer-progress"><span style="width:${Math.round((st.i / st.list.length) * 100)}%"></span></div>
-                <p class="adm-muted">الشخص ${st.i + 1} من ${st.list.length} · أُرسل ${st.sent}</p>
-                <div class="offer-who"><b>${esc(r.name || "بدون اسم")}</b><span dir="ltr">+${esc(r.phone)}</span></div>
-                ${waBubble(restockText(st, r), st)}
-                <button class="ab ab-primary ab-block offer-send" type="button" data-a="restock-send">${ATHR.views.waIcon()}أرسل${first ? ` لـ${esc(first)}` : ""} في واتساب</button>
+                <div class="offer-progress"><span style="width:${Math.round(t.i/t.list.length*100)}%"></span></div>
+                <p class="adm-muted">الشخص ${t.i+1} من ${t.list.length} · أُرسل ${t.sent}</p>
+                <div class="offer-who"><b>${d(s.name||"بدون اسم")}</b><span dir="ltr">+${d(s.phone)}</span></div>
+                ${Dt(Me(t,s),t)}
+                <button class="ab ab-primary ab-block offer-send" type="button" data-a="restock-send">${ATHR.views.waIcon()}أرسل${n?` لـ${d(n)}`:""} في واتساب</button>
                 <div class="inline"><button class="ab-mini" type="button" data-a="restock-skip">تخطي</button><button class="ab-mini" type="button" data-a="restock-stop">إيقاف</button></div>
-            </div>`);
-    }
-
-    function restockSend() {
-        const st = A.restockRun;
-        const r = st && st.list[st.i];
-        if (!r) return;
-        window.open(ATHR.waLink(r.phone, restockText(st, r)), "_blank", "noopener");
-        st.sent++;
-        st.i++;
-        const at = new Date().toISOString();
-        r.notified_at = at;
-        sb.from("restock_requests").update({ notified_at: at }).eq("product_id", r.product_id).eq("phone", r.phone).then(() => {}, () => {});
-        renderRestock();
-    }
-
-    async function clearRestock(pid) {
-        const g = restockGroups().find((x) => x.pid === pid);
-        if (!g || !g.done || !confirm(`مسح ${g.done} ممن أُبلغوا عن «${g.p.name}» من القائمة؟`)) return;
-        const { error } = await sb.from("restock_requests").delete().eq("product_id", pid).not("notified_at", "is", null);
-        if (error) {
-            toast("تعذر المسح. تأكد من الإنترنت.");
-            return;
-        }
-        A.promo.restock = A.promo.restock.filter((r) => r.product_id !== pid || !r.notified_at);
-        refreshPromoTab();
-        toast("مُسحت القائمة");
-    }
-
-    // ---------- ❤️ المفضلة ----------
-
-    function favCard() {
-        const favs = (A.promo && A.promo.favs) || {};
-        const top = Object.entries(favs)
-            .map(([pid, n]) => ({ p: A.draft.products.find((x) => x.id === pid), n }))
-            .filter((x) => x.p && x.n > 0)
-            .sort((a, b) => b.n - a.n)
-            .slice(0, 8);
-        const offerIds = new Set(offerProducts().map((p) => p.id));
-        const rows = top.map(({ p, n }, i) => `<li class="ft-row">
-            <span class="ft-rank">${i + 1}</span>
-            <img src="${esc(ATHR.thumb(p.image_url, "s") || asset("images/logo2.jpeg"))}" alt="" loading="lazy">
-            <span class="op-info"><b>${esc(p.name)}</b><small>${money(p.price)}${p.is_available === false ? " · نفد" : ""}</small></span>
-            <span class="ft-n">❤️ ${n}</span>
-            ${offerIds.has(p.id) ? `<button class="ab-mini gift" type="button" data-fav-offer="${esc(p.id)}">📣 عرض</button>` : ""}
-        </li>`).join("");
-        return card("❤️ المفضلة", `
-            ${toggle("config.sales.favorites", "زر القلب ♥ على المنتجات وصفحة «المفضلة»", { help: "الزبون يحفظ التصاميم التي أعجبته ويرجع لها من القائمة أو من الصفحة الرئيسية." })}
-            ${promoState(top.length ? `<p class="adm-muted ft-head">الأكثر إعجاباً عند زبائنك:</p><ol class="ft-list">${rows}</ol>` : `<p class="adm-muted">لم يُضف أحد منتجاً للمفضلة بعد.</p>`)}`,
-            "نعرض لك عدد الإعجابات فقط، بدون أي بيانات عن الزوار. أرسل عرضاً على التصميم الأكثر إعجاباً، أو استخدمه في إعلانك القادم.");
-    }
-
-    // فتح استوديو العروض على منتج من المفضلة مباشرة
-    async function offerFor(pid) {
-        A.book = "customers";
-        location.hash = "#orders";
-        await open("orders");
-        if (A.view !== "orders") return;
-        if (!A.customersLoaded) {
-            try {
-                await loadCustomers();
-                renderCustomers();
-            } catch {
-                return;
-            }
-        }
-        openOffer();
-        offerChoose(pid);
-    }
-
-    async function promoClick(d) {
-        const st = A.restockRun;
-        switch (d.a) {
-            case "coupon-new": couponSheet(null); return;
-            case "coupon-delete": await deleteCoupon(); return;
-            case "promo-reload": loadPromo(); refreshPromoTab(); return;
-            case "restock-start": if (st) { st.step = "run"; renderRestock(); } return;
-            case "restock-send": restockSend(); return;
-            case "restock-skip": if (st) { st.i++; renderRestock(); } return;
-            case "restock-stop": if (st) { st.i = st.list.length; renderRestock(); } return;
-            default: break;
-        }
-        if (d.cpToggle) { toggleCoupon(d.cpToggle); return; }
-        if (d.cpEdit) { const k = findCoupon(d.cpEdit); if (k) couponSheet(k); return; }
-        if (d.cpLink) { ATHR.store.copyText(couponLink(d.cpLink), "نُسخ رابط الكود ✓"); return; }
-        if (d.cpMsg) { const k = findCoupon(d.cpMsg); if (k) ATHR.store.copyText(couponMessage(k), "نُسخت رسالة المؤثر ✓ الصقها له في واتساب أو إنستغرام"); return; }
-        if (d.restockSend) { openRestock(d.restockSend); return; }
-        if (d.restockClear) { clearRestock(d.restockClear); return; }
-        if (d.restockAvail) {
-            const p = A.draft.products.find((x) => x.id === d.restockAvail);
-            if (p && ATHR.stockOf(p) !== null) {
-                editProduct(p.id);
-                toast("اكتب الكمية الجديدة في «الكمية في المخزون» ثم «نشر التغييرات».");
-                return;
-            }
-            if (p) {
-                p.is_available = true;
-                afterChange();
-                toast("صار متوفراً في المسودة. اضغط «نشر التغييرات» ثم «أرسل لهم».");
-            }
-            return;
-        }
-        if (d.favOffer) offerFor(d.favOffer);
-    }
-
-    // =====================================================
-    // Excel: كتابة وقراءة ملفات xlsx بدون مكتبات خارجية (و CSV)
-    // =====================================================
-
-    const XL = (() => {
-        const enc = new TextEncoder();
-        const dec = new TextDecoder();
-        const table = (() => {
-            const t = new Uint32Array(256);
-            for (let n = 0; n < 256; n++) {
-                let c = n;
-                for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
-                t[n] = c >>> 0;
-            }
-            return t;
-        })();
-        const crc32 = (u8) => {
-            let c = 0xFFFFFFFF;
-            for (let i = 0; i < u8.length; i++) c = table[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
-            return (c ^ 0xFFFFFFFF) >>> 0;
-        };
-        const xesc = (v) => String(v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-        const colName = (i) => {
-            let s = "";
-            for (let n = i + 1; n > 0; n = Math.floor((n - 1) / 26)) s = String.fromCharCode(65 + ((n - 1) % 26)) + s;
-            return s;
-        };
-        const colIndex = (letters) => letters.split("").reduce((n, ch) => n * 26 + (ch.charCodeAt(0) - 64), 0) - 1;
-
-        function zip(files) {
-            const parts = [];
-            const central = [];
-            let offset = 0;
-            files.forEach((f) => {
-                const name = enc.encode(f.name);
-                const data = f.data;
-                const crc = crc32(data);
-                const lh = new DataView(new ArrayBuffer(30));
-                lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
-                lh.setUint16(10, 0, true); lh.setUint16(12, 0x21, true); lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true);
-                lh.setUint32(22, data.length, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
-                parts.push(new Uint8Array(lh.buffer), name, data);
-                const ch = new DataView(new ArrayBuffer(46));
-                ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
-                ch.setUint16(12, 0, true); ch.setUint16(14, 0x21, true); ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true);
-                ch.setUint16(28, name.length, true); ch.setUint32(42, offset, true);
-                central.push(new Uint8Array(ch.buffer), name);
-                offset += 30 + name.length + data.length;
-            });
-            const size = central.reduce((n, c) => n + c.length, 0);
-            const end = new DataView(new ArrayBuffer(22));
-            end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
-            end.setUint32(12, size, true); end.setUint32(16, offset, true);
-            return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        }
-
-        function sheetXml(rows, widths) {
-            const body = rows.map((r, ri) => `<row r="${ri + 1}">${r.map((v, ci) => {
-                if (v === null || v === undefined || v === "") return "";
-                const ref = colName(ci) + (ri + 1);
-                const st = ri === 0 ? ' s="1"' : "";
-                if (typeof v === "number" && Number.isFinite(v)) return `<c r="${ref}"${st}><v>${v}</v></c>`;
-                return `<c r="${ref}" t="inlineStr"${st}><is><t xml:space="preserve">${xesc(v)}</t></is></c>`;
-            }).join("")}</row>`).join("");
-            const cols = widths && widths.length ? `<cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>` : "";
-            return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0" rightToLeft="1"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>${cols}<sheetData>${body}</sheetData></worksheet>`;
-        }
-
-        // sheets: [{ name, rows: [[...]], widths: [..] }]
-        function workbook(sheets) {
-            const files = [];
-            const add = (name, text) => files.push({ name, data: enc.encode(text) });
-            const safe = (n, i) => String(n || `Sheet${i + 1}`).replace(/[\[\]:*?/\\]/g, " ").slice(0, 31);
-            add("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`);
-            add("_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
-            add("xl/workbook.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s, i) => `<sheet name="${xesc(safe(s.name, i))}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("")}</sheets></workbook>`);
-            add("xl/_rels/workbook.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("")}<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
-            add("xl/styles.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="11"/><name val="Arial"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`);
-            sheets.forEach((s, i) => add(`xl/worksheets/sheet${i + 1}.xml`, sheetXml(s.rows, s.widths)));
-            return zip(files);
-        }
-
-        async function unzip(buf) {
-            const u8 = new Uint8Array(buf);
-            const dv = new DataView(buf);
-            let eocd = -1;
-            for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) {
-                if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
-            }
-            if (eocd < 0) throw new Error("not-zip");
-            const count = dv.getUint16(eocd + 10, true);
-            let p = dv.getUint32(eocd + 16, true);
-            const entries = new Map();
-            for (let n = 0; n < count && dv.getUint32(p, true) === 0x02014b50; n++) {
-                const method = dv.getUint16(p + 10, true);
-                const csize = dv.getUint32(p + 20, true);
-                const nlen = dv.getUint16(p + 28, true);
-                const xlen = dv.getUint16(p + 30, true);
-                const clen = dv.getUint16(p + 32, true);
-                const off = dv.getUint32(p + 42, true);
-                const name = dec.decode(u8.subarray(p + 46, p + 46 + nlen));
-                const start = off + 30 + dv.getUint16(off + 26, true) + dv.getUint16(off + 28, true);
-                entries.set(name, { method, raw: u8.subarray(start, start + csize) });
-                p += 46 + nlen + xlen + clen;
-            }
-            return async (name) => {
-                const e = entries.get(name);
-                if (!e) return null;
-                if (e.method === 0) return dec.decode(e.raw);
-                if (e.method !== 8 || typeof DecompressionStream === "undefined") throw new Error("zip-method");
-                const out = await new Response(new Blob([e.raw]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer();
-                return dec.decode(out);
-            };
-        }
-
-        async function readXlsx(buf) {
-            const read = await unzip(buf);
-            const parse = (t) => new DOMParser().parseFromString(t, "application/xml");
-            const shared = [];
-            const ss = await read("xl/sharedStrings.xml");
-            if (ss) parse(ss).querySelectorAll("si").forEach((si) => shared.push(Array.from(si.querySelectorAll("t")).map((x) => x.textContent).join("")));
-            let path = "xl/worksheets/sheet1.xml";
-            const wb = await read("xl/workbook.xml");
-            const rels = await read("xl/_rels/workbook.xml.rels");
-            if (wb && rels) {
-                const first = parse(wb).querySelector("sheet");
-                const rid = first && (first.getAttribute("r:id") || first.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"));
-                const rel = rid && Array.from(parse(rels).querySelectorAll("Relationship")).find((r) => r.getAttribute("Id") === rid);
-                if (rel) {
-                    const target = rel.getAttribute("Target") || "";
-                    path = target.startsWith("/") ? target.slice(1) : `xl/${target.replace(/^\.\//, "")}`;
-                }
-            }
-            const sx = await read(path);
-            if (!sx) throw new Error("no-sheet");
-            const rows = [];
-            parse(sx).querySelectorAll("sheetData row").forEach((row) => {
-                const r = [];
-                row.querySelectorAll("c").forEach((c) => {
-                    const ref = (c.getAttribute("r") || "").replace(/\d+/g, "");
-                    const t = c.getAttribute("t");
-                    const v = c.querySelector("v");
-                    let val = "";
-                    if (t === "s") val = shared[Number(v && v.textContent)] ?? "";
-                    else if (t === "inlineStr") val = Array.from(c.querySelectorAll("t")).map((x) => x.textContent).join("");
-                    else val = v ? v.textContent : "";
-                    r[ref ? colIndex(ref) : r.length] = val;
-                });
-                const idx = Number(row.getAttribute("r")) - 1;
-                rows[idx >= 0 ? idx : rows.length] = Array.from(r, (x) => (x === undefined ? "" : x));
-            });
-            return Array.from(rows, (x) => x || []);
-        }
-
-        function readCsv(text) {
-            const src = String(text).replace(/^﻿/, "");
-            const first = src.split(/\r?\n/)[0] || "";
-            const delim = (first.match(/;/g) || []).length > (first.match(/,/g) || []).length ? ";" : (first.includes("\t") && !first.includes(",") ? "\t" : ",");
-            const rows = [];
-            let row = [];
-            let cur = "";
-            let q = false;
-            for (let i = 0; i < src.length; i++) {
-                const ch = src[i];
-                if (q) {
-                    if (ch === '"') {
-                        if (src[i + 1] === '"') { cur += '"'; i++; } else q = false;
-                    } else cur += ch;
-                } else if (ch === '"') q = true;
-                else if (ch === delim) { row.push(cur); cur = ""; }
-                else if (ch === "\n" || ch === "\r") {
-                    if (ch === "\r" && src[i + 1] === "\n") i++;
-                    row.push(cur); rows.push(row); row = []; cur = "";
-                } else cur += ch;
-            }
-            if (cur || row.length) { row.push(cur); rows.push(row); }
-            return rows;
-        }
-
-        async function readFile(file) {
-            const buf = await file.arrayBuffer();
-            const head = new Uint8Array(buf.slice(0, 4));
-            if (head[0] === 0x50 && head[1] === 0x4b) return readXlsx(buf);
-            return readCsv(new TextDecoder().decode(buf));
-        }
-
-        function download(blob, filename) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 4000);
-        }
-
-        return { workbook, readFile, download };
-    })();
-
-    const today = () => new Date(Date.now() + 4 * 36e5).toISOString().slice(0, 10);
-    const numOf = (v) => {
-        const txt = ATHR.digits(String(v ?? "")).replace(/[٫,]/g, ".").replace(/[^\d.\-]/g, "").trim();
-        return txt === "" ? null : Number(txt);
-    };
-    const yesNo = (v) => {
-        const s = String(v ?? "").trim().toLowerCase();
-        if (/^(نعم|ايوه|اي|yes|y|true|1|ظاهر)$/.test(s)) return true;
-        if (/^(لا|no|n|false|0|مخفي)$/.test(s)) return false;
-        return null;
-    };
-
-    // ---------- تنزيل ورفع المنتجات ----------
-    const PRODUCT_HEAD = ["المعرّف (لا تغيّره)", "الاسم", "القسم", "اللون", "السعر الأصلي", "الخصم %", "السعر بعد الخصم", "الكمية في المخزون (فارغ = بدون حد)", "ظاهر في المتجر (نعم/لا)", "رابط المنتج"];
-
-    function productsWorkbook() {
-        const c = cfg();
-        const catName = (id) => (A.draft.categories.find((x) => x.id === id) || {}).name || "";
-        const colorName = (id) => (c.colors.find((x) => x.id === id) || {}).name || "";
-        const live = new Set((A.server ? A.server.products : []).map((p) => p.id));
-        const rows = [PRODUCT_HEAD, ...A.draft.products.map((p) => [
-            p.id, p.name || "", catName(p.category_id), colorName(p.color_id),
-            Number(basePrice(p)) || 0, pctOf(p) || 0, Number(p.price) || 0,
-            ATHR.stockOf(p) === null ? "" : ATHR.stockOf(p),
-            p.is_visible !== false ? "نعم" : "لا",
-            live.has(p.id) && p.slug ? siteLink(ATHR.url.product(p)) : ""
-        ])];
-        return XL.workbook([{ name: "المنتجات", rows, widths: [38, 30, 18, 10, 13, 10, 15, 24, 18, 60] }]);
-    }
-
-    async function importProducts(file) {
-        let rows;
-        try {
-            rows = await XL.readFile(file);
-        } catch (error) {
-            console.warn("Import failed:", error);
-            toast("تعذر قراءة الملف. ارفع ملف Excel (.xlsx) أو CSV.");
-            return;
-        }
-        const head = (rows[0] || []).map((h) => String(h || "").trim());
-        const col = (re) => head.findIndex((h) => re.test(h));
-        const ix = { id: col(/المعر|^id$/i), name: col(/^الاسم|^name$/i), base: col(/السعر الأصلي|base|original/i), pct: col(/الخصم|discount/i), stock: col(/الكمية|المخزون|stock/i), visible: col(/ظاهر|visible/i) };
-        if (ix.id < 0) {
-            toast("الملف لا يحتوي عمود «المعرّف». نزّل ملف المنتجات من هنا ثم عدّله.");
-            return;
-        }
-        const changes = [];
-        let unknown = 0;
-        const fmt = (v) => (v === null || v === undefined ? "بدون حد" : String(v));
-        rows.slice(1).forEach((r) => {
-            const id = String(r[ix.id] || "").trim();
-            if (!id) return;
-            const p = A.draft.products.find((x) => x.id === id);
-            if (!p) { unknown++; return; }
-            const ch = { p, set: {}, text: [] };
-            if (ix.name >= 0) {
-                const name = String(r[ix.name] || "").trim();
-                if (name && name !== p.name) { ch.set.name = name.slice(0, 120); ch.text.push(`الاسم: ${name}`); }
-            }
-            if (ix.base >= 0 || ix.pct >= 0) {
-                const base = ix.base >= 0 ? numOf(r[ix.base]) : Number(basePrice(p));
-                const pct = ix.pct >= 0 ? (numOf(r[ix.pct]) || 0) : pctOf(p);
-                // نفس القيم التي نزّلناها = لا تغيير (حتى لا تتغير الأسعار بسبب تقريب النسبة)
-                const same = base !== null && Math.abs(base - Number(basePrice(p) || 0)) < 0.0005 && Math.abs(pct - (pctOf(p) || 0)) < 0.05;
-                if (!same && base !== null && base >= 0 && pct >= 0 && pct <= 90) {
-                    const tmp = { ...p };
-                    applyDiscount(tmp, base, pct);
-                    if (tmp.price !== p.price || (tmp.old_price ?? null) !== (p.old_price ?? null)) {
-                        ch.set.price = tmp.price;
-                        ch.set.old_price = tmp.old_price;
-                        ch.text.push(`السعر: ${money(p.price)} ← ${money(tmp.price)}${pct ? ` (خصم ${pct}%)` : ""}`);
-                    }
-                }
-            }
-            if (ix.stock >= 0) {
-                const raw = String(r[ix.stock] ?? "").trim();
-                const stock = raw === "" ? null : Math.max(0, Math.floor(numOf(raw) || 0));
-                if (stock !== ATHR.stockOf(p)) { ch.set.stock = stock; ch.text.push(`الكمية: ${fmt(ATHR.stockOf(p))} ← ${fmt(stock)}`); }
-            }
-            if (ix.visible >= 0) {
-                const vis = yesNo(r[ix.visible]);
-                if (vis !== null && vis !== (p.is_visible !== false)) { ch.set.is_visible = vis; ch.text.push(vis ? "يظهر في المتجر" : "يُخفى من المتجر"); }
-            }
-            if (ch.text.length) changes.push(ch);
-        });
-        A.importPending = changes;
-        openSheet(`
+            </div>`)}function _o(){const t=i.restockRun,e=t&&t.list[t.i];if(!e)return;window.open(ATHR.waLink(e.phone,Me(t,e)),"_blank","noopener"),t.sent++,t.i++;const a=new Date().toISOString();e.notified_at=a,_.from("restock_requests").update({notified_at:a}).eq("product_id",e.product_id).eq("phone",e.phone).then(()=>{},()=>{}),ce()}async function ko(t){const e=ma().find(s=>s.pid===t);if(!e||!e.done||!confirm(`مسح ${e.done} ممن أُبلغوا عن «${e.p.name}» من القائمة؟`))return;const{error:a}=await _.from("restock_requests").delete().eq("product_id",t).not("notified_at","is",null);if(a){y("تعذر المسح. تأكد من الإنترنت.");return}i.promo.restock=i.promo.restock.filter(s=>s.product_id!==t||!s.notified_at),le(),y("مُسحت القائمة")}function xo(){const t=i.promo&&i.promo.favs||{},e=Object.entries(t).map(([n,o])=>({p:i.draft.products.find(r=>r.id===n),n:o})).filter(n=>n.p&&n.n>0).sort((n,o)=>o.n-n.n).slice(0,8),a=new Set(qe().map(n=>n.id)),s=e.map(({p:n,n:o},r)=>`<li class="ft-row">
+            <span class="ft-rank">${r+1}</span>
+            <img src="${d(ATHR.thumb(n.image_url,"s")||st("images/logo2.jpeg"))}" alt="" loading="lazy">
+            <span class="op-info"><b>${d(n.name)}</b><small>${x(n.price)}${n.is_available===!1?" · نفد":""}</small></span>
+            <span class="ft-n">❤️ ${o}</span>
+            ${a.has(n.id)?`<button class="ab-mini gift" type="button" data-fav-offer="${d(n.id)}">📣 عرض</button>`:""}
+        </li>`).join("");return N("❤️ المفضلة",`
+            ${H("config.sales.favorites","زر القلب ♥ على المنتجات وصفحة «المفضلة»",{help:"الزبون يحفظ التصاميم التي أعجبته ويرجع لها من القائمة أو من الصفحة الرئيسية."})}
+            ${pa(e.length?`<p class="adm-muted ft-head">الأكثر إعجاباً عند زبائنك:</p><ol class="ft-list">${s}</ol>`:'<p class="adm-muted">لم يُضف أحد منتجاً للمفضلة بعد.</p>')}`,"نعرض لك عدد الإعجابات فقط، بدون أي بيانات عن الزوار. أرسل عرضاً على التصميم الأكثر إعجاباً، أو استخدمه في إعلانك القادم.")}async function To(t){if(i.book="customers",location.hash="#orders",await ft("orders"),i.view==="orders"){if(!i.customersLoaded)try{await Fe(),gt()}catch{return}Ca(),Oa(t)}}async function Ao(t){const e=i.restockRun;switch(t.a){case"coupon-new":$s(null);return;case"coupon-delete":await $o();return;case"promo-reload":Gt(),le();return;case"restock-start":e&&(e.step="run",ce());return;case"restock-send":_o();return;case"restock-skip":e&&(e.i++,ce());return;case"restock-stop":e&&(e.i=e.list.length,ce());return;default:break}if(t.cpToggle){go(t.cpToggle);return}if(t.cpEdit){const a=da(t.cpEdit);a&&$s(a);return}if(t.cpLink){ATHR.store.copyText(bs(t.cpLink),"نُسخ رابط الكود ✓");return}if(t.cpMsg){const a=da(t.cpMsg);a&&ATHR.store.copyText(yo(a),"نُسخت رسالة المؤثر ✓ الصقها له في واتساب أو إنستغرام");return}if(t.restockSend){wo(t.restockSend);return}if(t.restockClear){ko(t.restockClear);return}if(t.restockAvail){const a=i.draft.products.find(s=>s.id===t.restockAvail);if(a&&ATHR.stockOf(a)!==null){aa(a.id),y("اكتب الكمية الجديدة في «الكمية في المخزون» ثم «نشر التغييرات».");return}a&&(a.is_available=!0,F(),y("صار متوفراً في المسودة. اضغط «نشر التغييرات» ثم «أرسل لهم»."));return}t.favOffer&&To(t.favOffer)}const _t=(()=>{const t=new TextEncoder,e=new TextDecoder,a=(()=>{const S=new Uint32Array(256);for(let E=0;E<256;E++){let R=E;for(let D=0;D<8;D++)R=R&1?3988292384^R>>>1:R>>>1;S[E]=R>>>0}return S})(),s=S=>{let E=4294967295;for(let R=0;R<S.length;R++)E=a[(E^S[R])&255]^E>>>8;return(E^4294967295)>>>0},n=S=>String(S).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"),o=S=>{let E="";for(let R=S+1;R>0;R=Math.floor((R-1)/26))E=String.fromCharCode(65+(R-1)%26)+E;return E},r=S=>S.split("").reduce((E,R)=>E*26+(R.charCodeAt(0)-64),0)-1;function l(S){const E=[],R=[];let D=0;S.forEach(k=>{const v=t.encode(k.name),f=k.data,w=s(f),C=new DataView(new ArrayBuffer(30));C.setUint32(0,67324752,!0),C.setUint16(4,20,!0),C.setUint16(6,2048,!0),C.setUint16(8,0,!0),C.setUint16(10,0,!0),C.setUint16(12,33,!0),C.setUint32(14,w,!0),C.setUint32(18,f.length,!0),C.setUint32(22,f.length,!0),C.setUint16(26,v.length,!0),C.setUint16(28,0,!0),E.push(new Uint8Array(C.buffer),v,f);const O=new DataView(new ArrayBuffer(46));O.setUint32(0,33639248,!0),O.setUint16(4,20,!0),O.setUint16(6,20,!0),O.setUint16(8,2048,!0),O.setUint16(10,0,!0),O.setUint16(12,0,!0),O.setUint16(14,33,!0),O.setUint32(16,w,!0),O.setUint32(20,f.length,!0),O.setUint32(24,f.length,!0),O.setUint16(28,v.length,!0),O.setUint32(42,D,!0),R.push(new Uint8Array(O.buffer),v),D+=30+v.length+f.length});const P=R.reduce((k,v)=>k+v.length,0),A=new DataView(new ArrayBuffer(22));return A.setUint32(0,101010256,!0),A.setUint16(8,S.length,!0),A.setUint16(10,S.length,!0),A.setUint32(12,P,!0),A.setUint32(16,D,!0),new Blob([...E,...R,new Uint8Array(A.buffer)],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})}function c(S,E){const R=S.map((P,A)=>`<row r="${A+1}">${P.map((k,v)=>{if(k==null||k==="")return"";const f=o(v)+(A+1),w=A===0?' s="1"':"";return typeof k=="number"&&Number.isFinite(k)?`<c r="${f}"${w}><v>${k}</v></c>`:`<c r="${f}" t="inlineStr"${w}><is><t xml:space="preserve">${n(k)}</t></is></c>`}).join("")}</row>`).join("");return`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0" rightToLeft="1"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>${E&&E.length?`<cols>${E.map((P,A)=>`<col min="${A+1}" max="${A+1}" width="${P}" customWidth="1"/>`).join("")}</cols>`:""}<sheetData>${R}</sheetData></worksheet>`}function p(S){const E=[],R=(P,A)=>E.push({name:P,data:t.encode(A)}),D=(P,A)=>String(P||`Sheet${A+1}`).replace(/[\[\]:*?/\\]/g," ").slice(0,31);return R("[Content_Types].xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${S.map((P,A)=>`<Override PartName="/xl/worksheets/sheet${A+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`),R("_rels/.rels",'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'),R("xl/workbook.xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${S.map((P,A)=>`<sheet name="${n(D(P.name,A))}" sheetId="${A+1}" r:id="rId${A+1}"/>`).join("")}</sheets></workbook>`),R("xl/_rels/workbook.xml.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${S.map((P,A)=>`<Relationship Id="rId${A+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${A+1}.xml"/>`).join("")}<Relationship Id="rId${S.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`),R("xl/styles.xml",'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="11"/><name val="Arial"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'),S.forEach((P,A)=>R(`xl/worksheets/sheet${A+1}.xml`,c(P.rows,P.widths))),l(E)}async function u(S){const E=new Uint8Array(S),R=new DataView(S);let D=-1;for(let v=E.length-22;v>=Math.max(0,E.length-65557);v--)if(R.getUint32(v,!0)===101010256){D=v;break}if(D<0)throw new Error("not-zip");const P=R.getUint16(D+10,!0);let A=R.getUint32(D+16,!0);const k=new Map;for(let v=0;v<P&&R.getUint32(A,!0)===33639248;v++){const f=R.getUint16(A+10,!0),w=R.getUint32(A+20,!0),C=R.getUint16(A+28,!0),O=R.getUint16(A+30,!0),Z=R.getUint16(A+32,!0),W=R.getUint32(A+42,!0),Ut=e.decode(E.subarray(A+46,A+46+C)),Bt=W+30+R.getUint16(W+26,!0)+R.getUint16(W+28,!0);k.set(Ut,{method:f,raw:E.subarray(Bt,Bt+w)}),A+=46+C+O+Z}return async v=>{const f=k.get(v);if(!f)return null;if(f.method===0)return e.decode(f.raw);if(f.method!==8||typeof DecompressionStream>"u")throw new Error("zip-method");const w=await new Response(new Blob([f.raw]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer();return e.decode(w)}}async function m(S){const E=await u(S),R=C=>new DOMParser().parseFromString(C,"application/xml"),D=[],P=await E("xl/sharedStrings.xml");P&&R(P).querySelectorAll("si").forEach(C=>D.push(Array.from(C.querySelectorAll("t")).map(O=>O.textContent).join("")));let A="xl/worksheets/sheet1.xml";const k=await E("xl/workbook.xml"),v=await E("xl/_rels/workbook.xml.rels");if(k&&v){const C=R(k).querySelector("sheet"),O=C&&(C.getAttribute("r:id")||C.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships","id")),Z=O&&Array.from(R(v).querySelectorAll("Relationship")).find(W=>W.getAttribute("Id")===O);if(Z){const W=Z.getAttribute("Target")||"";A=W.startsWith("/")?W.slice(1):`xl/${W.replace(/^\.\//,"")}`}}const f=await E(A);if(!f)throw new Error("no-sheet");const w=[];return R(f).querySelectorAll("sheetData row").forEach(C=>{const O=[];C.querySelectorAll("c").forEach(W=>{const Ut=(W.getAttribute("r")||"").replace(/\d+/g,""),Bt=W.getAttribute("t"),qt=W.querySelector("v");let $t="";Bt==="s"?$t=D[Number(qt&&qt.textContent)]??"":Bt==="inlineStr"?$t=Array.from(W.querySelectorAll("t")).map(Qa=>Qa.textContent).join(""):$t=qt?qt.textContent:"",O[Ut?r(Ut):O.length]=$t});const Z=Number(C.getAttribute("r"))-1;w[Z>=0?Z:w.length]=Array.from(O,W=>W===void 0?"":W)}),Array.from(w,C=>C||[])}function h(S){const E=String(S).replace(/^﻿/,""),R=E.split(/\r?\n/)[0]||"",D=(R.match(/;/g)||[]).length>(R.match(/,/g)||[]).length?";":R.includes("	")&&!R.includes(",")?"	":",",P=[];let A=[],k="",v=!1;for(let f=0;f<E.length;f++){const w=E[f];v?w==='"'?E[f+1]==='"'?(k+='"',f++):v=!1:k+=w:w==='"'?v=!0:w===D?(A.push(k),k=""):w===`
+`||w==="\r"?(w==="\r"&&E[f+1]===`
+`&&f++,A.push(k),P.push(A),A=[],k=""):k+=w}return(k||A.length)&&(A.push(k),P.push(A)),P}async function M(S){const E=await S.arrayBuffer(),R=new Uint8Array(E.slice(0,4));return R[0]===80&&R[1]===75?m(E):h(new TextDecoder().decode(E))}function L(S,E){const R=URL.createObjectURL(S),D=document.createElement("a");D.href=R,D.download=E,document.body.appendChild(D),D.click(),D.remove(),setTimeout(()=>URL.revokeObjectURL(R),4e3)}return{workbook:p,readFile:M,download:L}})(),fa=()=>new Date(Date.now()+4*36e5).toISOString().slice(0,10),ba=t=>{const e=ATHR.digits(String(t??"")).replace(/[٫,]/g,".").replace(/[^\d.\-]/g,"").trim();return e===""?null:Number(e)},So=t=>{const e=String(t??"").trim().toLowerCase();return/^(نعم|ايوه|اي|yes|y|true|1|ظاهر)$/.test(e)?!0:/^(لا|no|n|false|0|مخفي)$/.test(e)?!1:null},Ro=["المعرّف (لا تغيّره)","الاسم","القسم","اللون","السعر الأصلي","الخصم %","السعر بعد الخصم","الكمية في المخزون (فارغ = بدون حد)","ظاهر في المتجر (نعم/لا)","رابط المنتج"];function Ho(){const t=$(),e=o=>(i.draft.categories.find(r=>r.id===o)||{}).name||"",a=o=>(t.colors.find(r=>r.id===o)||{}).name||"",s=new Set((i.server?i.server.products:[]).map(o=>o.id)),n=[Ro,...i.draft.products.map(o=>[o.id,o.name||"",e(o.category_id),a(o.color_id),Number(Wt(o))||0,et(o)||0,Number(o.price)||0,ATHR.stockOf(o)===null?"":ATHR.stockOf(o),o.is_visible!==!1?"نعم":"لا",s.has(o.id)&&o.slug?Y(ATHR.url.product(o)):""])];return _t.workbook([{name:"المنتجات",rows:n,widths:[38,30,18,10,13,10,15,24,18,60]}])}async function Mo(t){let e;try{e=await _t.readFile(t)}catch(c){console.warn("Import failed:",c),y("تعذر قراءة الملف. ارفع ملف Excel (.xlsx) أو CSV.");return}const a=(e[0]||[]).map(c=>String(c||"").trim()),s=c=>a.findIndex(p=>c.test(p)),n={id:s(/المعر|^id$/i),name:s(/^الاسم|^name$/i),base:s(/السعر الأصلي|base|original/i),pct:s(/الخصم|discount/i),stock:s(/الكمية|المخزون|stock/i),visible:s(/ظاهر|visible/i)};if(n.id<0){y("الملف لا يحتوي عمود «المعرّف». نزّل ملف المنتجات من هنا ثم عدّله.");return}const o=[];let r=0;const l=c=>c==null?"بدون حد":String(c);e.slice(1).forEach(c=>{const p=String(c[n.id]||"").trim();if(!p)return;const u=i.draft.products.find(h=>h.id===p);if(!u){r++;return}const m={p:u,set:{},text:[]};if(n.name>=0){const h=String(c[n.name]||"").trim();h&&h!==u.name&&(m.set.name=h.slice(0,120),m.text.push(`الاسم: ${h}`))}if(n.base>=0||n.pct>=0){const h=n.base>=0?ba(c[n.base]):Number(Wt(u)),M=n.pct>=0?ba(c[n.pct])||0:et(u);if(!(h!==null&&Math.abs(h-Number(Wt(u)||0))<5e-4&&Math.abs(M-(et(u)||0))<.05)&&h!==null&&h>=0&&M>=0&&M<=90){const S={...u};is(S,h,M),(S.price!==u.price||(S.old_price??null)!==(u.old_price??null))&&(m.set.price=S.price,m.set.old_price=S.old_price,m.text.push(`السعر: ${x(u.price)} ← ${x(S.price)}${M?` (خصم ${M}%)`:""}`))}}if(n.stock>=0){const h=String(c[n.stock]??"").trim(),M=h===""?null:Math.max(0,Math.floor(ba(h)||0));M!==ATHR.stockOf(u)&&(m.set.stock=M,m.text.push(`الكمية: ${l(ATHR.stockOf(u))} ← ${l(M)}`))}if(n.visible>=0){const h=So(c[n.visible]);h!==null&&h!==(u.is_visible!==!1)&&(m.set.is_visible=h,m.text.push(h?"يظهر في المتجر":"يُخفى من المتجر"))}m.text.length&&o.push(m)}),i.importPending=o,ot(`
             <div class="adm-sheet-head"><h2>📥 التغييرات من الملف</h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>
             <div class="af-stack">
-                <p class="adm-sentence">${changes.length ? `سيتغيّر ${changes.length} منتج` : "لا توجد تغييرات في الملف"}${unknown ? ` · ${unknown} صف لم نجد منتجه (تُتجاهل)` : ""}</p>
-                ${changes.length ? `<ul class="imp-list">${changes.slice(0, 60).map((c) => `<li><b>${esc(c.p.name)}</b><small>${c.text.map(esc).join(" · ")}</small></li>`).join("")}</ul>
-                ${changes.length > 60 ? `<p class="adm-muted">و${changes.length - 60} منتج آخر…</p>` : ""}
-                <button class="ab ab-primary ab-block" type="button" data-a="import-apply">تطبيق التغييرات (${changes.length})</button>` : ""}
+                <p class="adm-sentence">${o.length?`سيتغيّر ${o.length} منتج`:"لا توجد تغييرات في الملف"}${r?` · ${r} صف لم نجد منتجه (تُتجاهل)`:""}</p>
+                ${o.length?`<ul class="imp-list">${o.slice(0,60).map(c=>`<li><b>${d(c.p.name)}</b><small>${c.text.map(d).join(" · ")}</small></li>`).join("")}</ul>
+                ${o.length>60?`<p class="adm-muted">و${o.length-60} منتج آخر…</p>`:""}
+                <button class="ab ab-primary ab-block" type="button" data-a="import-apply">تطبيق التغييرات (${o.length})</button>`:""}
                 <p class="adm-muted">تُحفظ التغييرات في المسودة، وتظهر للزبائن بعد «نشر التغييرات».</p>
-            </div>`);
-    }
-
-    function applyImport() {
-        const changes = A.importPending || [];
-        changes.forEach(({ p, set }) => {
-            Object.assign(p, set);
-            if ("stock" in set && set.stock !== null) p.is_available = set.stock > 0;
-        });
-        A.importPending = null;
-        closeSheet();
-        afterChange();
-        toast(`طُبّقت التغييرات على ${changes.length} منتج ✓ راجعها ثم «نشر التغييرات»`);
-    }
-
-    // ---------- تنزيل الطلبات ----------
-    function ordersRows(list) {
-        const status = { new: "جديد", delivered: "تم التسليم" };
-        const pay = { bank: "تحويل بنكي", cod: "عند الاستلام", online: "دفع إلكتروني", other: "أخرى" };
-        return [
-            ["رقم الطلب", "التاريخ", "الوقت", "العميل", "الهاتف", "الدولة", "المحافظة", "الولاية", "المنتجات", "القطع", "المجموع", "الخصم", "كود الخصم", "خصم الكود", "التوصيل", "الإجمالي", "الدفع", "الحالة", "المصدر", "هدية"],
-            ...list.map((o) => {
-                const when = ATHR.muscatParts(o.ordered_at);
-                const items = (o.items || []).map((it) => `${it.label || it.name} × ${it.qty}`).join("، ") || String(o.items_text || "").replace(/\n/g, "، ");
-                return [o.order_no, when.date, when.time, o.customer_name || "", o.phone ? `+${ATHR.customerWhatsapp(o.phone, o.country || "OM")}` : "", countryLabel(o.country).replace(/^\S+\s/, ""),
-                    o.governorate || "", o.wilaya || "", items, (o.items || []).reduce((n, it) => n + (Number(it.qty) || 0), 0),
-                    Number(o.subtotal) || 0, Number(o.discount) || 0, o.coupon || "", Number(o.coupon_discount) || 0, Number(o.delivery_price) || 0, Number(o.total) || 0,
-                    pay[o.payment_type] || o.payment_name || "", status[o.status] || o.status || "", o.source === "web" ? (CHANNELS[o.channel] || "المتجر") : o.source === "paste" ? "واتساب" : "يدوي", o.gift ? "نعم" : ""];
-            })
-        ];
-    }
-
-    function downloadOrders() {
-        const list = filteredOrders();
-        XL.download(XL.workbook([{ name: "الطلبات", rows: ordersRows(list), widths: [12, 12, 10, 22, 16, 12, 14, 14, 50, 8, 10, 9, 12, 10, 9, 10, 14, 12, 14, 7] }]), `huroof-orders-${today()}.xlsx`);
-        toast(`نُزّل ملف ${list.length} طلب`);
-    }
-
-    // ---------- تقرير المبيعات ----------
-    function salesReport(orders) {
-        const byProduct = new Map();
-        const byCat = new Map();
-        const catOf = (id) => {
-            const p = A.draft.products.find((x) => x.id === id);
-            return (p && (A.draft.categories.find((c) => c.id === p.category_id) || {}).name) || "غير محدد";
-        };
-        orders.forEach((o) => (o.items || []).forEach((it) => {
-            const key = it.label || it.name;
-            if (!key) return;
-            const qty = Number(it.qty) || 0;
-            const total = Number(it.total) || 0;
-            const a = byProduct.get(key) || { qty: 0, total: 0, orders: 0 };
-            a.qty += qty; a.total += total; a.orders++;
-            byProduct.set(key, a);
-            const cn = catOf(it.id);
-            const b = byCat.get(cn) || { qty: 0, total: 0 };
-            b.qty += qty; b.total += total;
-            byCat.set(cn, b);
-        }));
-        return {
-            products: Array.from(byProduct.entries()).sort((a, b) => b[1].total - a[1].total),
-            cats: Array.from(byCat.entries()).sort((a, b) => b[1].total - a[1].total)
-        };
-    }
-
-    function monthlySales() {
-        const months = [];
-        const now = new Date(Date.now() + 4 * 36e5);
-        for (let i = 5; i >= 0; i--) {
-            const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
-            months.push({ key: d.toISOString().slice(0, 7), label: new Intl.DateTimeFormat("ar-OM", { month: "long", timeZone: "UTC" }).format(d), orders: 0, total: 0 });
-        }
-        A.orders.filter((o) => !o.hidden).forEach((o) => {
-            const key = new Date(new Date(o.ordered_at).getTime() + 4 * 36e5).toISOString().slice(0, 7);
-            const m = months.find((x) => x.key === key);
-            if (m) { m.orders++; m.total += Number(o.total) || 0; }
-        });
-        return months;
-    }
-
-    function downloadReport() {
-        const days = A.statsDays;
-        const since = new Date(`${new Date(Date.now() - (days - 1) * 864e5 + 4 * 36e5).toISOString().slice(0, 10)}T00:00:00+04:00`).getTime();
-        const inRange = A.orders.filter((o) => !o.hidden && new Date(o.ordered_at).getTime() >= since);
-        const rep = salesReport(inRange);
-        const months = monthlySales();
-        XL.download(XL.workbook([
-            { name: "المنتجات", rows: [["المنتج", "القطع المباعة", "عدد الطلبات", "المبيعات (ر.ع)"], ...rep.products.map(([n, c]) => [n, c.qty, c.orders, Math.round(c.total * 1000) / 1000])], widths: [36, 14, 12, 16] },
-            { name: "الأقسام", rows: [["القسم", "القطع المباعة", "المبيعات (ر.ع)"], ...rep.cats.map(([n, c]) => [n, c.qty, Math.round(c.total * 1000) / 1000])], widths: [26, 14, 16] },
-            { name: "الأشهر", rows: [["الشهر", "عدد الطلبات", "المبيعات (ر.ع)"], ...months.map((m) => [`${m.label} ${m.key.slice(0, 4)}`, m.orders, Math.round(m.total * 1000) / 1000])], widths: [20, 12, 16] },
-            { name: "الطلبات", rows: ordersRows(inRange), widths: [12, 12, 10, 22, 16, 12, 14, 14, 50, 8, 10, 9, 12, 10, 9, 10, 14, 12, 14, 7] }
-        ]), `huroof-report-${days}d-${today()}.xlsx`);
-        toast("نُزّل تقرير المبيعات");
-    }
-
-    function reportSections(inRange) {
-        const rep = salesReport(inRange);
-        const months = monthlySales();
-        const max = Math.max(1, ...months.map((m) => m.total));
-        return `
+            </div>`)}function Eo(){const t=i.importPending||[];t.forEach(({p:e,set:a})=>{Object.assign(e,a),"stock"in a&&a.stock!==null&&(e.is_available=a.stock>0)}),i.importPending=null,At(),F(),y(`طُبّقت التغييرات على ${t.length} منتج ✓ راجعها ثم «نشر التغييرات»`)}function ws(t){const e={new:"جديد",delivered:"تم التسليم"},a={bank:"تحويل بنكي",cod:"عند الاستلام",online:"دفع إلكتروني",other:"أخرى"};return[["رقم الطلب","التاريخ","الوقت","العميل","الهاتف","الدولة","المحافظة","الولاية","المنتجات","القطع","المجموع","الخصم","كود الخصم","خصم الكود","التوصيل","الإجمالي","الدفع","الحالة","المصدر","هدية"],...t.map(s=>{const n=ATHR.muscatParts(s.ordered_at),o=(s.items||[]).map(r=>`${r.label||r.name} × ${r.qty}`).join("، ")||String(s.items_text||"").replace(/\n/g,"، ");return[s.order_no,n.date,n.time,s.customer_name||"",s.phone?`+${ATHR.customerWhatsapp(s.phone,s.country||"OM")}`:"",Ve(s.country).replace(/^\S+\s/,""),s.governorate||"",s.wilaya||"",o,(s.items||[]).reduce((r,l)=>r+(Number(l.qty)||0),0),Number(s.subtotal)||0,Number(s.discount)||0,s.coupon||"",Number(s.coupon_discount)||0,Number(s.delivery_price)||0,Number(s.total)||0,a[s.payment_type]||s.payment_name||"",e[s.status]||s.status||"",s.source==="web"?Te[s.channel]||"المتجر":s.source==="paste"?"واتساب":"يدوي",s.gift?"نعم":""]})]}function No(){const t=rn();_t.download(_t.workbook([{name:"الطلبات",rows:ws(t),widths:[12,12,10,22,16,12,14,14,50,8,10,9,12,10,9,10,14,12,14,7]}]),`huroof-orders-${fa()}.xlsx`),y(`نُزّل ملف ${t.length} طلب`)}function _s(t){const e=new Map,a=new Map,s=n=>{const o=i.draft.products.find(r=>r.id===n);return o&&(i.draft.categories.find(r=>r.id===o.category_id)||{}).name||"غير محدد"};return t.forEach(n=>(n.items||[]).forEach(o=>{const r=o.label||o.name;if(!r)return;const l=Number(o.qty)||0,c=Number(o.total)||0,p=e.get(r)||{qty:0,total:0,orders:0};p.qty+=l,p.total+=c,p.orders++,e.set(r,p);const u=s(o.id),m=a.get(u)||{qty:0,total:0};m.qty+=l,m.total+=c,a.set(u,m)})),{products:Array.from(e.entries()).sort((n,o)=>o[1].total-n[1].total),cats:Array.from(a.entries()).sort((n,o)=>o[1].total-n[1].total)}}function ks(){const t=[],e=new Date(Date.now()+144e5);for(let a=5;a>=0;a--){const s=new Date(Date.UTC(e.getUTCFullYear(),e.getUTCMonth()-a,1));t.push({key:s.toISOString().slice(0,7),label:new Intl.DateTimeFormat("ar-OM",{month:"long",timeZone:"UTC"}).format(s),orders:0,total:0})}return i.orders.filter(a=>!a.hidden).forEach(a=>{const s=new Date(new Date(a.ordered_at).getTime()+144e5).toISOString().slice(0,7),n=t.find(o=>o.key===s);n&&(n.orders++,n.total+=Number(a.total)||0)}),t}function Co(){const t=i.statsDays,e=new Date(`${new Date(Date.now()-(t-1)*864e5+4*36e5).toISOString().slice(0,10)}T00:00:00+04:00`).getTime(),a=i.orders.filter(o=>!o.hidden&&new Date(o.ordered_at).getTime()>=e),s=_s(a),n=ks();_t.download(_t.workbook([{name:"المنتجات",rows:[["المنتج","القطع المباعة","عدد الطلبات","المبيعات (ر.ع)"],...s.products.map(([o,r])=>[o,r.qty,r.orders,Math.round(r.total*1e3)/1e3])],widths:[36,14,12,16]},{name:"الأقسام",rows:[["القسم","القطع المباعة","المبيعات (ر.ع)"],...s.cats.map(([o,r])=>[o,r.qty,Math.round(r.total*1e3)/1e3])],widths:[26,14,16]},{name:"الأشهر",rows:[["الشهر","عدد الطلبات","المبيعات (ر.ع)"],...n.map(o=>[`${o.label} ${o.key.slice(0,4)}`,o.orders,Math.round(o.total*1e3)/1e3])],widths:[20,12,16]},{name:"الطلبات",rows:ws(a),widths:[12,12,10,22,16,12,14,14,50,8,10,9,12,10,9,10,14,12,14,7]}]),`huroof-report-${t}d-${fa()}.xlsx`),y("نُزّل تقرير المبيعات")}function Oo(t){const e=_s(t),a=ks(),s=Math.max(1,...a.map(n=>n.total));return`
             <section class="adm-card">
                 <div class="adm-row-between"><h2>📊 تقرير المبيعات</h2><button class="ab ab-soft ab-sm" type="button" data-a="xlsx-report">⬇️ Excel</button></div>
                 <h3 class="rp-h">آخر 6 أشهر</h3>
-                <div class="rp-months">${months.map((m) => `<div class="rp-m"><b>${m.total ? money(m.total) : "—"}</b><span class="rp-bar"><i style="height:${Math.round((m.total / max) * 100)}%"></i></span><small>${esc(m.label)}</small><small class="adm-muted">${m.orders} طلب</small></div>`).join("")}</div>
+                <div class="rp-months">${a.map(n=>`<div class="rp-m"><b>${n.total?x(n.total):"—"}</b><span class="rp-bar"><i style="height:${Math.round(n.total/s*100)}%"></i></span><small>${d(n.label)}</small><small class="adm-muted">${n.orders} طلب</small></div>`).join("")}</div>
                 <h3 class="rp-h">حسب القسم (هذه المدة)</h3>
-                ${rep.cats.length ? `<table class="adm-table"><thead><tr><th>القسم</th><th>القطع</th><th>المبيعات</th></tr></thead><tbody>${rep.cats.map(([n, c]) => `<tr><td>${esc(n)}</td><td>${c.qty}</td><td>${money(c.total)}</td></tr>`).join("")}</tbody></table>` : `<p class="adm-muted">لا توجد مبيعات في هذه المدة.</p>`}
+                ${e.cats.length?`<table class="adm-table"><thead><tr><th>القسم</th><th>القطع</th><th>المبيعات</th></tr></thead><tbody>${e.cats.map(([n,o])=>`<tr><td>${d(n)}</td><td>${o.qty}</td><td>${x(o.total)}</td></tr>`).join("")}</tbody></table>`:'<p class="adm-muted">لا توجد مبيعات في هذه المدة.</p>'}
                 <p class="adm-muted">ملف Excel فيه: مبيعات كل منتج، والأقسام، والأشهر، وكل طلبات المدة.</p>
-            </section>`;
-    }
-
-    // =====================================================
-    // 📦 المخزون: تنبيه الكميات القليلة
-    // =====================================================
-
-    function lowStockProducts() {
-        const limit = Number(cfg().sales.low_stock) || 0;
-        return A.draft.products.filter((p) => p.is_visible !== false && ATHR.stockOf(p) !== null && ATHR.stockOf(p) <= limit);
-    }
-
-    function stockCard() {
-        const tracked = A.draft.products.filter((p) => ATHR.stockOf(p) !== null).length;
-        const low = lowStockProducts();
-        return card("📦 المخزون", `
-            ${number("config.sales.low_stock", "التنبيه عندما تصير الكمية (أو أقل)", { step: "1", min: "0", help: "يظهر في اللوحة «قربت تخلص»، وللزبون «باقي 3 فقط»." })}
-            ${toggle("config.sales.low_stock_show", "إظهار «باقي N فقط» للزبون", { help: "رسالة حقيقية من المخزون تشجّع الزبون يطلب قبل لا يخلص المنتج." })}
-            <p class="adm-sentence">${tracked ? `تتابع كمية ${tracked} منتج${low.length ? ` · ⚠️ ${low.length} قربت تخلص` : ""}` : "لا تتابع كمية أي منتج الآن. اكتب الكمية من تعديل المنتج، أو دفعة واحدة من ملف Excel في «المنتجات»."}</p>
-            ${low.length ? `<button class="ab ab-soft ab-sm" type="button" data-a="products-low-open">عرض المنتجات التي قربت تخلص</button>` : ""}`,
-            "كل طلب يُنقص الكمية تلقائياً من الخادم، ولا يقدر الزبون يطلب أكثر من المتوفر. عند الصفر يصير المنتج «نفد»، ويقدر الزبون يضغط «أخبرني عند التوفر».");
-    }
-
-    // =====================================================
-    // ⭐ نقاط الولاء
-    // =====================================================
-
-    // نافذة تأكيد داخل الصفحة: confirm() الأصلية تُحجب بصمت في بعض متصفحات الجوال (تطبيق الشاشة الرئيسية، متصفح انستغرام...) فلا يحدث شيء عند الحذف
-    function askConfirm(message, okText = "حذف") {
-        return new Promise((resolve) => {
-            const wrap = document.createElement("div");
-            wrap.setAttribute("role", "alertdialog");
-            wrap.style.cssText = "position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;direction:rtl;font-family:inherit";
-            wrap.innerHTML = `<div style="background:#fff;color:#2b1a1a;border-radius:16px;padding:22px 20px;max-width:340px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.35)">
+            </section>`}function de(){const t=Number($().sales.low_stock)||0;return i.draft.products.filter(e=>e.is_visible!==!1&&ATHR.stockOf(e)!==null&&ATHR.stockOf(e)<=t)}function Lo(){const t=i.draft.products.filter(a=>ATHR.stockOf(a)!==null).length,e=de();return N("📦 المخزون",`
+            ${J("config.sales.low_stock","التنبيه عندما تصير الكمية (أو أقل)",{step:"1",min:"0",help:"يظهر في اللوحة «قربت تخلص»، وللزبون «باقي 3 فقط»."})}
+            ${H("config.sales.low_stock_show","إظهار «باقي N فقط» للزبون",{help:"رسالة حقيقية من المخزون تشجّع الزبون يطلب قبل لا يخلص المنتج."})}
+            <p class="adm-sentence">${t?`تتابع كمية ${t} منتج${e.length?` · ⚠️ ${e.length} قربت تخلص`:""}`:"لا تتابع كمية أي منتج الآن. اكتب الكمية من تعديل المنتج، أو دفعة واحدة من ملف Excel في «المنتجات»."}</p>
+            ${e.length?'<button class="ab ab-soft ab-sm" type="button" data-a="products-low-open">عرض المنتجات التي قربت تخلص</button>':""}`,"كل طلب يُنقص الكمية تلقائياً من الخادم، ولا يقدر الزبون يطلب أكثر من المتوفر. عند الصفر يصير المنتج «نفد»، ويقدر الزبون يضغط «أخبرني عند التوفر».")}function ha(t,e="حذف"){return new Promise(a=>{const s=document.createElement("div");s.setAttribute("role","alertdialog"),s.style.cssText="position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;direction:rtl;font-family:inherit",s.innerHTML=`<div style="background:#fff;color:#2b1a1a;border-radius:16px;padding:22px 20px;max-width:340px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.35)">
                 <p style="margin:0 0 18px;font-size:17px;line-height:1.6;font-weight:600"></p>
-                <div style="display:flex;gap:10px"><button type="button" data-ok style="flex:1;padding:12px;border:0;border-radius:12px;background:#b3261e;color:#fff;font:inherit;font-weight:700"></button><button type="button" data-no style="flex:1;padding:12px;border:0;border-radius:12px;background:#eee;color:#333;font:inherit;font-weight:700">إلغاء</button></div></div>`;
-            wrap.querySelector("p").textContent = message;
-            wrap.querySelector("[data-ok]").textContent = okText;
-            const done = (v) => { wrap.remove(); resolve(v); };
-            wrap.querySelector("[data-ok]").addEventListener("click", () => done(true));
-            wrap.querySelector("[data-no]").addEventListener("click", () => done(false));
-            wrap.addEventListener("click", (e) => { if (e.target === wrap) done(false); });
-            document.body.appendChild(wrap);
-        });
-    }
-
-    const loyalty = () => cfg().sales.loyalty || {};
-
-    // النقاط المكتسبة من الطلبات المسلّمة لكل رقم (بدون التوصيل)
-    function earnedPoints() {
-        const map = new Map();
-        if (!ATHR.loyaltyOn(cfg())) return map;
-        A.orders.forEach((o) => {
-            if (o.hidden || o.status !== "delivered" || !o.phone) return;
-            const phone = ATHR.customerWhatsapp(o.phone, o.country || "OM");
-            map.set(phone, (map.get(phone) || 0) + Math.max(0, Number(o.total || 0) - Number(o.delivery_price || 0)));
-        });
-        map.forEach((amount, phone) => map.set(phone, ATHR.pointsFor(amount, cfg())));
-        return map;
-    }
-
-    function custPoints(c, earned) {
-        const total = (earned || earnedPoints()).get(c.phone) || 0;
-        return Math.max(0, total - (Number(c.points_used) || 0));
-    }
-
-    const rewardReady = (c, earned) => ATHR.loyaltyOn(cfg()) && custPoints(c, earned) >= (Number(loyalty().reward_points) || 50);
-
-    function loyaltyCard() {
-        const ly = loyalty();
-        return card("⭐ نقاط الولاء", `
-            ${toggle("config.sales.loyalty.enabled", "تفعيل نقاط الولاء", { rerender: true, help: "الزبون يكسب نقاطاً من كل طلب يُسلَّم له، ويشوف رصيده وكم باقي على الخصم من «نقاطي» في قائمة المتجر (برقم جواله ورقم أحد طلباته)." })}
-            ${ly.enabled ? `<div class="two">
-                ${number("config.sales.loyalty.per_omr", "نقاط لكل 1 ر.ع", { step: "1", min: "1" })}
-                ${number("config.sales.loyalty.reward_points", "النقاط المطلوبة للمكافأة", { step: "1", min: "5" })}
-                ${number("config.sales.loyalty.reward_value", "قيمة المكافأة (ر.ع)", { step: "0.5", min: "0.5" })}
-                ${number("config.sales.loyalty.reward_days", "صلاحية كود المكافأة (أيام)", { step: "1", min: "1" })}
+                <div style="display:flex;gap:10px"><button type="button" data-ok style="flex:1;padding:12px;border:0;border-radius:12px;background:#b3261e;color:#fff;font:inherit;font-weight:700"></button><button type="button" data-no style="flex:1;padding:12px;border:0;border-radius:12px;background:#eee;color:#333;font:inherit;font-weight:700">إلغاء</button></div></div>`,s.querySelector("p").textContent=t,s.querySelector("[data-ok]").textContent=e;const n=o=>{s.remove(),a(o)};s.querySelector("[data-ok]").addEventListener("click",()=>n(!0)),s.querySelector("[data-no]").addEventListener("click",()=>n(!1)),s.addEventListener("click",o=>{o.target===s&&n(!1)}),document.body.appendChild(s)})}const Ee=()=>$().sales.loyalty||{};function xs(){const t=new Map;return ATHR.loyaltyOn($())&&(i.orders.forEach(e=>{if(e.hidden||e.status!=="delivered"||!e.phone)return;const a=ATHR.customerWhatsapp(e.phone,e.country||"OM");t.set(a,(t.get(a)||0)+Math.max(0,Number(e.total||0)-Number(e.delivery_price||0)))}),t.forEach((e,a)=>t.set(a,ATHR.pointsFor(e,$())))),t}function St(t,e){const a=(e||xs()).get(t.phone)||0;return Math.max(0,a-(Number(t.points_used)||0))}const ga=(t,e)=>ATHR.loyaltyOn($())&&St(t,e)>=(Number(Ee().reward_points)||50);function gl(){const t=Ee();return N("⭐ نقاط الولاء",`
+            ${H("config.sales.loyalty.enabled","تفعيل نقاط الولاء",{rerender:!0,help:"الزبون يكسب نقاطاً من كل طلب يُسلَّم له، ويشوف رصيده وكم باقي على الخصم من «نقاطي» في قائمة المتجر (برقم جواله ورقم أحد طلباته)."})}
+            ${t.enabled?`<div class="two">
+                ${J("config.sales.loyalty.per_omr","نقاط لكل 1 ر.ع",{step:"1",min:"1"})}
+                ${J("config.sales.loyalty.reward_points","النقاط المطلوبة للمكافأة",{step:"1",min:"5"})}
+                ${J("config.sales.loyalty.reward_value","قيمة المكافأة (ر.ع)",{step:"0.5",min:"0.5"})}
+                ${J("config.sales.loyalty.reward_days","صلاحية كود المكافأة (أيام)",{step:"1",min:"1"})}
             </div>
-            <p class="adm-sentence">كل 1 ر.ع = ${Number(ly.per_omr) || 1} نقطة، وكل ${Number(ly.reward_points) || 50} نقطة = خصم ${money(Number(ly.reward_value) || 0)}${Number(ly.per_omr) && Number(ly.reward_points) ? ` (تعادل ${Math.round(((Number(ly.reward_value) || 0) / ((Number(ly.reward_points) || 50) / (Number(ly.per_omr) || 1))) * 1000) / 10}% من المشتريات)` : ""}.</p>
-            ${area("config.sales.loyalty.msg", "رسالة المكافأة في واتساب", { rows: 6, help: "{name} الاسم · {points} النقاط · {code} الكود · {value} قيمة الخصم · {ends} آخر يوم · {link} رابط المتجر · {store} اسم المتجر." })}
-            <button class="ab ab-soft ab-sm" type="button" data-a="open-customers">🎁 فتح العملاء وإرسال المكافآت</button>` : ""}`,
-            "النقاط تُحسب من الطلبات «تم التسليم» فقط. عندما يجمع العميل نقاطاً كافية يظهر له زر «🎁 مكافأة» في قائمة العملاء: نجهّز كوداً خاصاً برقمه (لا يعمل لغيره) ونرسله له في واتساب بضغطة.");
-    }
-
-    function rewardCode() {
-        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        const rnd = crypto.getRandomValues(new Uint8Array(6));
-        return `VIP${Array.from(rnd, (b) => chars[b % chars.length]).join("")}`;
-    }
-
-    // تجهيز المكافأة: كود مربوط برقم العميل، ثم رسالة جاهزة للإرسال
-    async function prepareReward(phone) {
-        const c = A.customers.find((x) => x.phone === phone);
-        if (!c) return;
-        const ly = loyalty();
-        const need = Number(ly.reward_points) || 50;
-        if (custPoints(c) < need) { toast("نقاط العميل لا تكفي للمكافأة بعد."); return; }
-        const value = Math.max(0.5, Number(ly.reward_value) || 2);
-        const days = Math.max(1, Math.round(Number(ly.reward_days) || 30));
-        const ends = new Date(Date.now() + days * 864e5);
-        const endsDate = new Date(ends.getTime() + 4 * 36e5).toISOString().slice(0, 10);
-        let code = "";
-        for (let i = 0; i < 4 && !code; i++) {
-            const tryCode = rewardCode();
-            const { error } = await sb.from("coupons").insert({
-                code: tryCode, owner: `⭐ مكافأة ولاء: ${String(c.name || "").slice(0, 50)}`, kind: "fixed", value, min_total: 0,
-                ends_at: `${endsDate}T23:59:59+04:00`, max_uses: 1, enabled: true, phone: c.phone
-            });
-            if (!error) code = tryCode;
-            else if (error.code !== "23505") { console.warn("Reward failed:", error); break; }
-        }
-        if (!code) { toast("تعذر تجهيز المكافأة. تأكد من الإنترنت."); return; }
-        const used = (Number(c.points_used) || 0) + need;
-        const { error } = await sb.from("customers").update({ points_used: used }).eq("phone", c.phone);
-        if (error) console.warn("Points update failed:", error);
-        else c.points_used = used;
-        const first = String(c.name || "").trim().split(/\s+/)[0] || "";
-        const text = fillOffer(ly.msg || ATHR_DEFAULTS.sales.loyalty.msg, {
-            name: first, store: ATHR.storeName(cfg()), points: String(need), code, value: money(value),
-            ends: `${endsDate.split("-").reverse().join("/")}`, link: `${siteLink(ATHR.base())}?code=${code}`,
-            product: "x", price: "x", old: "x", pct: "x", save: "x"
-        });
-        A.reward = { phone: c.phone, text, code };
-        openOrderSheet(`${offerSheetHead("🎁 مكافأة الولاء جاهزة")}
+            <p class="adm-sentence">كل 1 ر.ع = ${Number(t.per_omr)||1} نقطة، وكل ${Number(t.reward_points)||50} نقطة = خصم ${x(Number(t.reward_value)||0)}${Number(t.per_omr)&&Number(t.reward_points)?` (تعادل ${Math.round((Number(t.reward_value)||0)/((Number(t.reward_points)||50)/(Number(t.per_omr)||1))*1e3)/10}% من المشتريات)`:""}.</p>
+            ${G("config.sales.loyalty.msg","رسالة المكافأة في واتساب",{rows:6,help:"{name} الاسم · {points} النقاط · {code} الكود · {value} قيمة الخصم · {ends} آخر يوم · {link} رابط المتجر · {store} اسم المتجر."})}
+            <button class="ab ab-soft ab-sm" type="button" data-a="open-customers">🎁 فتح العملاء وإرسال المكافآت</button>`:""}`,"النقاط تُحسب من الطلبات «تم التسليم» فقط. عندما يجمع العميل نقاطاً كافية يظهر له زر «🎁 مكافأة» في قائمة العملاء: نجهّز كوداً خاصاً برقمه (لا يعمل لغيره) ونرسله له في واتساب بضغطة.")}function Po(){const t="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",e=crypto.getRandomValues(new Uint8Array(6));return`VIP${Array.from(e,a=>t[a%t.length]).join("")}`}async function Do(t){const e=i.customers.find(M=>M.phone===t);if(!e)return;const a=Ee(),s=Number(a.reward_points)||50;if(St(e)<s){y("نقاط العميل لا تكفي للمكافأة بعد.");return}const n=Math.max(.5,Number(a.reward_value)||2),o=Math.max(1,Math.round(Number(a.reward_days)||30)),r=new Date(Date.now()+o*864e5),l=new Date(r.getTime()+4*36e5).toISOString().slice(0,10);let c="";for(let M=0;M<4&&!c;M++){const L=Po(),{error:S}=await _.from("coupons").insert({code:L,owner:`⭐ مكافأة ولاء: ${String(e.name||"").slice(0,50)}`,kind:"fixed",value:n,min_total:0,ends_at:`${l}T23:59:59+04:00`,max_uses:1,enabled:!0,phone:e.phone});if(!S)c=L;else if(S.code!=="23505"){console.warn("Reward failed:",S);break}}if(!c){y("تعذر تجهيز المكافأة. تأكد من الإنترنت.");return}const p=(Number(e.points_used)||0)+s,{error:u}=await _.from("customers").update({points_used:p}).eq("phone",e.phone);u?console.warn("Points update failed:",u):e.points_used=p;const m=String(e.name||"").trim().split(/\s+/)[0]||"",h=Pa(a.msg||ATHR_DEFAULTS.sales.loyalty.msg,{name:m,store:ATHR.storeName($()),points:String(s),code:c,value:x(n),ends:`${l.split("-").reverse().join("/")}`,link:`${Y(ATHR.base())}?code=${c}`,product:"x",price:"x",old:"x",pct:"x",save:"x"});i.reward={phone:e.phone,text:h,code:c},Tt(`${It("🎁 مكافأة الولاء جاهزة")}
             <div class="af-stack">
-                <div class="offer-who"><b>${esc(c.name || "العميل")}</b><span dir="ltr">+${esc(c.phone)}</span></div>
-                <p class="adm-sentence">كود <b dir="ltr">${esc(code)}</b> · خصم ${money(value)} · لرقمه فقط · صالح ${days} يوم</p>
-                ${waBubble(text, { product: null })}
+                <div class="offer-who"><b>${d(e.name||"العميل")}</b><span dir="ltr">+${d(e.phone)}</span></div>
+                <p class="adm-sentence">كود <b dir="ltr">${d(c)}</b> · خصم ${x(n)} · لرقمه فقط · صالح ${o} يوم</p>
+                ${Dt(h,{product:null})}
                 <button class="ab ab-primary ab-block offer-send" type="button" data-a="reward-send">${ATHR.views.waIcon()}أرسل له في واتساب</button>
-                <p class="adm-muted">خُصمت ${ATHR.pointsText(need)} من رصيده، وبقي له ${ATHR.pointsText(custPoints(c))}.</p>
-            </div>`);
-        renderCustomers();
-    }
-
-    // =====================================================
-    // ✨ الذكاء الاصطناعي: وصف المنتجات ورسائل العروض
-    // =====================================================
-
-    const AI_ERRORS = {
-        no_key: "أضف مفتاح الذكاء الاصطناعي أولاً من تبويب «النصوص».",
-        bad_key: "مفتاح الذكاء الاصطناعي غير صحيح أو انتهى. غيّره من تبويب «النصوص».",
-        rate_limit: "وصلت حد الاستخدام المؤقت عند خدمة الرسم. انتظر دقيقة ثم حاول مرة أخرى.",
-        not_admin: "انتهت الجلسة. سجّل الدخول مرة أخرى.",
-        bad_photo: "الصورة غير صالحة. جرّب صورة ثانية.",
-        provider: "خدمة الرسم رفضت الطلب (غالباً الرصيد أو الحصة المجانية انتهت، أو الرسم غير متاح لمفتاحك). حاول بعد قليل."
-    };
-    const aiError = (e) => AI_ERRORS[e && e.code] || "تعذر الاتصال بالذكاء الاصطناعي. حاول مرة أخرى.";
-
-    async function aiCall(body, fn = "ai-text") {
-        const { data } = await sb.auth.getSession();
-        const token = data && data.session && data.session.access_token;
-        const res = await fetch(`${window.ATHR_SUPABASE_URL}/functions/v1/${fn}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", apikey: window.ATHR_SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${token || ""}` },
-            body: JSON.stringify({ store: ATHR.storeName(cfg()), ...body })
-        });
-        let out = {};
-        try { out = await res.json(); } catch { /* رد غير متوقع */ }
-        if (!res.ok || out.error) {
-            const error = new Error(out.error || `http_${res.status}`);
-            error.code = out.error;
-            error.detail = out.detail || "";
-            throw error;
-        }
-        return out;
-    }
-
-    async function loadAiStatus() {
-        A.ai = { loading: true };
-        try {
-            const { data, error } = await sb.rpc("ai_key_status");
-            A.ai = { status: error ? {} : (data || {}) };
-        } catch {
-            A.ai = { status: {} };
-        }
-        if (A.view === "admin" && A.tab === "texts") renderTab({ keepScroll: true });
-    }
-
-    function aiCard() {
-        if (!A.ai) loadAiStatus();
-        const st = (A.ai && A.ai.status) || {};
-        const active = st.gemini ? ["Gemini", st.gemini.last4] : st.openai ? ["OpenAI", st.openai.last4] : null;
-        return card("✨ الذكاء الاصطناعي", `
-            ${A.ai && A.ai.loading ? `<p class="adm-muted">جاري التحقق...</p>` : active
-                ? `<p class="adm-sentence">✅ مفعّل · ${esc(active[0])} <span dir="ltr">(…${esc(active[1])})</span></p>
-                   <div class="inline"><button class="ab ab-ghost ab-sm" type="button" data-a="ai-change">تغيير المفتاح</button><button class="ab-mini danger" type="button" data-a="ai-remove">حذف المفتاح</button></div>`
-                : ""}
-            ${!active || A.aiEditing ? `
+                <p class="adm-muted">خُصمت ${ATHR.pointsText(s)} من رصيده، وبقي له ${ATHR.pointsText(St(e))}.</p>
+            </div>`),gt()}const Io={no_key:"أضف مفتاح الذكاء الاصطناعي أولاً من تبويب «النصوص».",bad_key:"مفتاح الذكاء الاصطناعي غير صحيح أو انتهى. غيّره من تبويب «النصوص».",rate_limit:"وصلت حد الاستخدام المؤقت عند خدمة الرسم. انتظر دقيقة ثم حاول مرة أخرى.",not_admin:"انتهت الجلسة. سجّل الدخول مرة أخرى.",bad_photo:"الصورة غير صالحة. جرّب صورة ثانية.",provider:"خدمة الرسم رفضت الطلب (غالباً الرصيد أو الحصة المجانية انتهت، أو الرسم غير متاح لمفتاحك). حاول بعد قليل."},zt=t=>Io[t&&t.code]||"تعذر الاتصال بالذكاء الاصطناعي. حاول مرة أخرى.";async function Kt(t,e="ai-text"){const{data:a}=await _.auth.getSession(),s=a&&a.session&&a.session.access_token,n=await fetch(`${window.ATHR_SUPABASE_URL}/functions/v1/${e}`,{method:"POST",headers:{"Content-Type":"application/json",apikey:window.ATHR_SUPABASE_PUBLISHABLE_KEY,Authorization:`Bearer ${s||""}`},body:JSON.stringify({store:ATHR.storeName($()),...t})});let o={};try{o=await n.json()}catch{}if(!n.ok||o.error){const r=new Error(o.error||`http_${n.status}`);throw r.code=o.error,r.detail=o.detail||"",r}return o}async function Zt(){i.ai={loading:!0};try{const{data:t,error:e}=await _.rpc("ai_key_status");i.ai={status:e?{}:t||{}}}catch{i.ai={status:{}}}i.view==="admin"&&i.tab==="texts"&&B({keepScroll:!0})}function Fo(){i.ai||Zt();const t=i.ai&&i.ai.status||{},e=t.gemini?["Gemini",t.gemini.last4]:t.openai?["OpenAI",t.openai.last4]:null;return N("✨ الذكاء الاصطناعي",`
+            ${i.ai&&i.ai.loading?'<p class="adm-muted">جاري التحقق...</p>':e?`<p class="adm-sentence">✅ مفعّل · ${d(e[0])} <span dir="ltr">(…${d(e[1])})</span></p>
+                   <div class="inline"><button class="ab ab-ghost ab-sm" type="button" data-a="ai-change">تغيير المفتاح</button><button class="ab-mini danger" type="button" data-a="ai-remove">حذف المفتاح</button></div>`:""}
+            ${!e||i.aiEditing?`
                 <label class="af"><span>الخدمة</span><select class="ai" id="aiProvider"><option value="gemini">Google Gemini (فيه استخدام مجاني محدود)</option><option value="openai">OpenAI (ChatGPT)</option></select></label>
                 <label class="af"><span>المفتاح (API Key)</span><input class="ai" id="aiKey" type="password" dir="ltr" autocomplete="off" spellcheck="false" placeholder="الصق المفتاح هنا"><small>يُحفظ في الخادم فقط ولا يظهر لأحد بعد الحفظ، ولا يصل للزوار.</small></label>
                 <button class="ab ab-primary ab-sm" type="button" data-a="ai-save">حفظ المفتاح</button>
@@ -2690,1314 +695,191 @@
                     <li>افتح <b dir="ltr">aistudio.google.com</b> وسجّل دخول بحساب Google.</li>
                     <li>اضغط <b>Get API key</b> ثم <b>Create API key</b>.</li>
                     <li>انسخ المفتاح (يبدأ بـ <span dir="ltr">AIza</span>) والصقه هنا، ثم «حفظ المفتاح».</li>
-                </ol></details>` : ""}
+                </ol></details>`:""}
             <ul class="px-events">
                 <li>📝 <b>وصف المنتجات</b> <small>زر «✨ اكتب الوصف» داخل كل منتج، أو للكل من «المنتجات»</small></li>
                 <li>📣 <b>رسائل العروض</b> <small>زر «✨ اكتب رسالة» في استوديو العروض</small></li>
-            </ul>`, "يكتب لك النصوص في ثوانٍ، وتراجعها وتعدّلها قبل النشر أو الإرسال.");
-    }
-
-    async function saveAiKey() {
-        const provider = ($("#aiProvider") || {}).value || "gemini";
-        const key = String(($("#aiKey") || {}).value || "").trim();
-        if (key.length < 20 || /\s/.test(key)) { toast("المفتاح غير مكتمل. انسخه كاملاً والصقه."); return; }
-        const { error } = await sb.rpc("set_ai_key", { provider, key });
-        if (error) { toast("تعذر حفظ المفتاح. تأكد منه وحاول مرة أخرى."); return; }
-        A.aiEditing = false;
-        toast("حُفظ المفتاح ✓ جرّب «✨ اكتب الوصف» في أي منتج");
-        loadAiStatus();
-    }
-
-    async function removeAiKey() {
-        const st = (A.ai && A.ai.status) || {};
-        if (!confirm("حذف مفتاح الذكاء الاصطناعي؟ تتوقف كتابة الوصف والرسائل.")) return;
-        for (const provider of Object.keys(st)) await sb.rpc("set_ai_key", { provider, key: "" });
-        toast("حُذف المفتاح");
-        loadAiStatus();
-    }
-
-    const aiItem = (p) => {
-        const cat = A.draft.categories.find((c) => c.id === p.category_id) || {};
-        const color = cfg().colors.find((c) => c.id === p.color_id) || {};
-        return { id: p.id, name: p.name, name_en: p.name_en || "", category: cat.name || "", category_desc: cat.description || "", color: color.name || "" };
-    };
-
-    async function aiDescribe(id) {
-        const p = A.draft.products.find((x) => x.id === id);
-        if (!p || !p.name) { toast("اكتب اسم المنتج أولاً."); return; }
-        const btn = $(`[data-ai-desc="${CSS.escape(id)}"]`);
-        if (btn) { btn.disabled = true; btn.textContent = "✨ جاري الكتابة..."; }
-        try {
-            const out = await aiCall({ task: "describe", items: [aiItem(p)] });
-            const it = (out.items || [])[0];
-            if (it) {
-                p.description = it.ar;
-                if (it.en) p.description_en = it.en;
-                saveDraft();
-                refreshSheet();
-                toast("كُتب الوصف ✓ راجعه وعدّله إن أردت");
-            }
-        } catch (error) {
-            toast(aiError(error));
-            if (btn) { btn.disabled = false; btn.textContent = "✨ اكتب الوصف بالذكاء الاصطناعي"; }
-        }
-    }
-
-    async function aiBulk() {
-        const list = A.draft.products.filter((p) => p.name && !String(p.description || "").trim());
-        if (!list.length) return;
-        let done = 0;
-        await withBusy(`✨ جاري كتابة الوصف 0 من ${list.length}...`, async () => {
-            try {
-            for (let i = 0; i < list.length; i += 5) {
-                const batch = list.slice(i, i + 5);
-                let out = null;
-                for (let attempt = 0; attempt < 3 && !out; attempt++) {
-                    try {
-                        out = await aiCall({ task: "describe", items: batch.map(aiItem) });
-                    } catch (error) {
-                        if (error.code === "rate_limit" && attempt < 2) { busyMessage("⏳ انتظار حد الاستخدام..."); await new Promise((r) => setTimeout(r, 20000)); continue; }
-                        throw error;
-                    }
-                }
-                (out.items || []).forEach((it) => {
-                    const p = A.draft.products.find((x) => x.id === it.id);
-                    if (p && !String(p.description || "").trim()) {
-                        p.description = it.ar;
-                        if (it.en && !p.description_en) p.description_en = it.en;
-                        done++;
-                    }
-                });
-                saveDraft();
-                busyMessage(`✨ جاري كتابة الوصف ${Math.min(i + 5, list.length)} من ${list.length}...`);
-            }
-            } catch (error) {
-                saveDraft();
-                throw new Error(done ? `${aiError(error)} (كُتب ${done} قبل التوقف)` : aiError(error));
-            }
-        });
-        renderTab({ keepScroll: true });
-        if (done) toast(`كُتب وصف ${done} منتج ✓ راجعه ثم «نشر التغييرات»`);
-    }
-
-    async function aiOffer() {
-        const st = A.offer;
-        if (!st) return;
-        const btn = $('[data-a="offer-ai"]');
-        if (btn) { btn.disabled = true; btn.textContent = "✨ جاري الكتابة..."; }
-        const tpls = st.product ? PRODUCT_OFFERS : OFFER_TEMPLATES;
-        try {
-            const out = await aiCall({ task: "offer", style: (tpls[st.tpl] || [])[0] || "", product: st.product ? { name: st.product.name, pct: st.product.pct || 0 } : null, ends: Boolean(st.product && st.hours) });
-            if (out.text) {
-                st.text = out.text;
-                renderOffer({ keepScroll: true });
-                toast("كُتبت رسالة جديدة ✓ تقدر تعدّلها");
-                return;
-            }
-        } catch (error) {
-            toast(aiError(error));
-        }
-        if (btn) { btn.disabled = false; btn.textContent = "✨ اكتب رسالة بالذكاء الاصطناعي"; }
-    }
-
-    // =====================================================
-    // v18 — النسخ الاحتياطي
-    //  - نسخة كاملة (مع الطلبات والعملاء) تنزل على جوال صاحب المتجر بضغطة
-    //  - النسخ اليومية من قاعدة البيانات تظهر هنا تلقائياً لما تكون مفعّلة (backup_list)
-    // =====================================================
-    const BACKUP_KEY = "huroof_backup_last";
-    const BACKUP_TABLES = [
-        ["categories", "id"], ["products", "id"], ["product_media", "id"], ["store_settings", "id"], ["coupons", "code"],
-        ["orders", "id"], ["customers", "phone"], ["reviews", "id"], ["restock_requests", "product_id"], ["product_stats", "product_id"], ["stats_daily", "day"]
-    ];
-    const BACKUP_KINDS = { auto: "تلقائية", manual: "يدوية", "pre-restore": "قبل الاسترجاع" };
-
-    function bkDays(iso) {
-        const t = new Date(iso).getTime();
-        if (!Number.isFinite(t)) return null;
-        return Math.floor((Date.now() - t) / 864e5);
-    }
-
-    function daysText(n) {
-        return n <= 0 ? "اليوم" : n === 1 ? "أمس" : n === 2 ? "قبل يومين" : n <= 10 ? `قبل ${n} أيام` : `قبل ${n} يوم`;
-    }
-
-    function backupHint() {
-        const last = storage.get(BACKUP_KEY);
-        const n = last && last.at ? bkDays(last.at) : null;
-        if (n === null) return `<small class="hot">ما نزّلت نسخة كاملة على جوالك للحين</small>`;
-        return `<small${n > 7 ? ' class="hot"' : ""}>آخر نسخة على جوالك: ${daysText(n)}</small>`;
-    }
-
-    function muscatTime(iso) {
-        try {
-            return new Intl.DateTimeFormat("ar-OM", { timeZone: "Asia/Muscat", weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
-        } catch { return String(iso).slice(0, 16).replace("T", " "); }
-    }
-
-    async function fetchAllRows(table, order) {
-        const rows = [];
-        for (let from = 0; from < 200000; from += 1000) {
-            const { data, error } = await sb.from(table).select("*").order(order, { ascending: true }).range(from, from + 999);
-            if (error) throw error;
-            rows.push(...(data || []));
-            if (!data || data.length < 1000) break;
-        }
-        return rows;
-    }
-
-    function saveJsonFile(obj, name) {
-        const blob = new Blob([JSON.stringify(obj, null, 1)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = name;
-        a.rel = "noopener";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 8000);
-    }
-
-    const fileStamp = () => new Date(Date.now() + 4 * 36e5).toISOString().slice(0, 16).replace("T", "-").replace(":", "");
-
-    function countsLine(c) {
-        if (!c) return "";
-        const parts = [];
-        if (c.products !== undefined) parts.push(`${c.products} منتج`);
-        if (c.categories !== undefined) parts.push(`${c.categories} قسم`);
-        if (c.orders !== undefined) parts.push(`${c.orders} طلب`);
-        if (c.customers !== undefined) parts.push(`${c.customers} عميل`);
-        return parts.join(" · ");
-    }
-
-    async function loadServerBackups() {
-        const { data, error } = await sb.rpc("backup_list");
-        if (error) return null;           // غير مفعّلة في قاعدة البيانات بعد
-        return Array.isArray(data) ? data : [];
-    }
-
-    async function openBackups() {
-        const head = `<div class="adm-sheet-head"><h2>🛡️ النسخ الاحتياطي</h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>`;
-        const last = storage.get(BACKUP_KEY);
-        const lastLine = last && last.at
-            ? `آخر نسخة كاملة نزّلتها: <b>${esc(daysText(bkDays(last.at)))}</b>${last.counts ? ` (${esc(countsLine(last.counts))})` : ""}`
-            : "ما نزّلت نسخة كاملة للحين.";
-        const render = (server) => openSheet(`${head}
+            </ul>`,"يكتب لك النصوص في ثوانٍ، وتراجعها وتعدّلها قبل النشر أو الإرسال.")}async function jo(){const t=(b("#aiProvider")||{}).value||"gemini",e=String((b("#aiKey")||{}).value||"").trim();if(e.length<20||/\s/.test(e)){y("المفتاح غير مكتمل. انسخه كاملاً والصقه.");return}const{error:a}=await _.rpc("set_ai_key",{provider:t,key:e});if(a){y("تعذر حفظ المفتاح. تأكد منه وحاول مرة أخرى.");return}i.aiEditing=!1,y("حُفظ المفتاح ✓ جرّب «✨ اكتب الوصف» في أي منتج"),Zt()}async function Uo(){const t=i.ai&&i.ai.status||{};if(confirm("حذف مفتاح الذكاء الاصطناعي؟ تتوقف كتابة الوصف والرسائل.")){for(const e of Object.keys(t))await _.rpc("set_ai_key",{provider:e,key:""});y("حُذف المفتاح"),Zt()}}const Ts=t=>{const e=i.draft.categories.find(s=>s.id===t.category_id)||{},a=$().colors.find(s=>s.id===t.color_id)||{};return{id:t.id,name:t.name,name_en:t.name_en||"",category:e.name||"",category_desc:e.description||"",color:a.name||""}};async function Bo(t){const e=i.draft.products.find(s=>s.id===t);if(!e||!e.name){y("اكتب اسم المنتج أولاً.");return}const a=b(`[data-ai-desc="${CSS.escape(t)}"]`);a&&(a.disabled=!0,a.textContent="✨ جاري الكتابة...");try{const n=((await Kt({task:"describe",items:[Ts(e)]})).items||[])[0];n&&(e.description=n.ar,n.en&&(e.description_en=n.en),nt(),ie(),y("كُتب الوصف ✓ راجعه وعدّله إن أردت"))}catch(s){y(zt(s)),a&&(a.disabled=!1,a.textContent="✨ اكتب الوصف بالذكاء الاصطناعي")}}async function qo(){const t=i.draft.products.filter(a=>a.name&&!String(a.description||"").trim());if(!t.length)return;let e=0;await Lt(`✨ جاري كتابة الوصف 0 من ${t.length}...`,async()=>{try{for(let a=0;a<t.length;a+=5){const s=t.slice(a,a+5);let n=null;for(let o=0;o<3&&!n;o++)try{n=await Kt({task:"describe",items:s.map(Ts)})}catch(r){if(r.code==="rate_limit"&&o<2){dt("⏳ انتظار حد الاستخدام..."),await new Promise(l=>setTimeout(l,2e4));continue}throw r}(n.items||[]).forEach(o=>{const r=i.draft.products.find(l=>l.id===o.id);r&&!String(r.description||"").trim()&&(r.description=o.ar,o.en&&!r.description_en&&(r.description_en=o.en),e++)}),nt(),dt(`✨ جاري كتابة الوصف ${Math.min(a+5,t.length)} من ${t.length}...`)}}catch(a){throw nt(),new Error(e?`${zt(a)} (كُتب ${e} قبل التوقف)`:zt(a))}}),B({keepScroll:!0}),e&&y(`كُتب وصف ${e} منتج ✓ راجعه ثم «نشر التغييرات»`)}async function Vo(){const t=i.offer;if(!t)return;const e=b('[data-a="offer-ai"]');e&&(e.disabled=!0,e.textContent="✨ جاري الكتابة...");const a=t.product?be:he;try{const s=await Kt({task:"offer",style:(a[t.tpl]||[])[0]||"",product:t.product?{name:t.product.name,pct:t.product.pct||0}:null,ends:!!(t.product&&t.hours)});if(s.text){t.text=s.text,ut({keepScroll:!0}),y("كُتبت رسالة جديدة ✓ تقدر تعدّلها");return}}catch(s){y(zt(s))}e&&(e.disabled=!1,e.textContent="✨ اكتب رسالة بالذكاء الاصطناعي")}const $a="huroof_backup_last",Wo=[["categories","id"],["products","id"],["product_media","id"],["store_settings","id"],["coupons","code"],["orders","id"],["customers","phone"],["reviews","id"],["restock_requests","product_id"],["product_stats","product_id"],["stats_daily","day"]],Go={auto:"تلقائية",manual:"يدوية","pre-restore":"قبل الاسترجاع"};function As(t){const e=new Date(t).getTime();return Number.isFinite(e)?Math.floor((Date.now()-e)/864e5):null}function Ss(t){return t<=0?"اليوم":t===1?"أمس":t===2?"قبل يومين":t<=10?`قبل ${t} أيام`:`قبل ${t} يوم`}function Rs(){const t=Q.get($a),e=t&&t.at?As(t.at):null;return e===null?'<small class="hot">ما نزّلت نسخة كاملة على جوالك للحين</small>':`<small${e>7?' class="hot"':""}>آخر نسخة على جوالك: ${Ss(e)}</small>`}function Hs(t){try{return new Intl.DateTimeFormat("ar-OM",{timeZone:"Asia/Muscat",weekday:"short",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}).format(new Date(t))}catch{return String(t).slice(0,16).replace("T"," ")}}async function zo(t,e){const a=[];for(let s=0;s<2e5;s+=1e3){const{data:n,error:o}=await _.from(t).select("*").order(e,{ascending:!0}).range(s,s+999);if(o)throw o;if(a.push(...n||[]),!n||n.length<1e3)break}return a}function Ms(t,e){const a=new Blob([JSON.stringify(t,null,1)],{type:"application/json"}),s=URL.createObjectURL(a),n=document.createElement("a");n.href=s,n.download=e,n.rel="noopener",document.body.appendChild(n),n.click(),n.remove(),setTimeout(()=>URL.revokeObjectURL(s),8e3)}const Es=()=>new Date(Date.now()+4*36e5).toISOString().slice(0,16).replace("T","-").replace(":","");function ya(t){if(!t)return"";const e=[];return t.products!==void 0&&e.push(`${t.products} منتج`),t.categories!==void 0&&e.push(`${t.categories} قسم`),t.orders!==void 0&&e.push(`${t.orders} طلب`),t.customers!==void 0&&e.push(`${t.customers} عميل`),e.join(" · ")}async function Ko(){const{data:t,error:e}=await _.rpc("backup_list");return e?null:Array.isArray(t)?t:[]}async function Ns(){const t='<div class="adm-sheet-head"><h2>🛡️ النسخ الاحتياطي</h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>',e=Q.get($a),a=e&&e.at?`آخر نسخة كاملة نزّلتها: <b>${d(Ss(As(e.at)))}</b>${e.counts?` (${d(ya(e.counts))})`:""}`:"ما نزّلت نسخة كاملة للحين.",s=n=>ot(`${t}
             <div class="af-stack">
                 <div class="bk-box">
                     <p><b>✅ المنتجات والأقسام والإعدادات</b> تنحفظ تلقائياً مع كل تغيير، وكل نسخة سابقة محفوظة.</p>
                     <p><b>📦 النسخة الكاملة</b> فيها كل شي مع الطلبات والعملاء. نزّلها على جوالك واحفظها في «الملفات»، ويفضّل مرة كل أسبوع.</p>
                 </div>
                 <button class="ab ab-primary ab-block" type="button" data-a="backup-download" id="bkDownload">⬇️ نزّل نسخة كاملة الحين</button>
-                <p class="adm-muted" id="bkLast">${lastLine}</p>
-                ${server === null ? "" : `
+                <p class="adm-muted" id="bkLast">${a}</p>
+                ${n===null?"":`
                 <h3 class="bk-title">نسخ يومية تلقائية (3 الفجر)</h3>
                 <button class="ab ab-soft ab-sm" type="button" data-a="backup-now">خذ نسخة الحين</button>
-                ${server.length ? `<ul class="bk-list">${server.map((b) => `<li>
-                    <span class="bk-info"><b>${esc(muscatTime(b.taken_at))}</b><small>${esc(BACKUP_KINDS[b.kind] || b.kind)}${b.counts ? ` · ${esc(countsLine(b.counts))}` : ""}</small></span>
-                    <span class="bk-act"><button class="ab-mini" type="button" data-bk-get="${b.id}">تنزيل</button><button class="ab-mini" type="button" data-bk-restore="${b.id}">استرجاع</button></span>
-                </li>`).join("")}</ul>` : `<p class="adm-muted">ما فيه نسخ للحين.</p>`}`}
-            </div>`);
-        render(A.backups === undefined ? null : A.backups);
-        A.backups = await loadServerBackups();
-        if ($("#bkDownload")) render(A.backups);
-    }
-
-    async function downloadFullBackup(btn) {
-        if (btn) { btn.disabled = true; btn.textContent = "جاري تجهيز النسخة…"; }
-        try {
-            const tables = {};
-            for (const [t, order] of BACKUP_TABLES) tables[t] = await fetchAllRows(t, order);
-            try { const ex = await finCall({ action: "get", doc: "expenses" }); tables.expenses = (ex.data && ex.data.items) || []; } catch { /* المصاريف اختيارية في النسخة */ }
-            const counts = Object.fromEntries(Object.entries(tables).map(([k, v]) => [k, v.length]));
-            saveJsonFile({ app: "athr", version: 1, source: "admin-download", taken_at: new Date().toISOString(), counts, tables }, `huroof-backup-${fileStamp()}.json`);
-            storage.set(BACKUP_KEY, { at: new Date().toISOString(), counts });
-            toast("نزلت النسخة الكاملة ✓ احفظها في الملفات");
-            if ($("#bkLast")) $("#bkLast").innerHTML = `آخر نسخة كاملة نزّلتها: <b>اليوم</b> (${esc(countsLine(counts))})`;
-            renderHomeHint();
-        } catch (error) {
-            toast("تعذّر تجهيز النسخة، تأكد من الاتصال وحاول مرة ثانية");
-        }
-        if (btn) { btn.disabled = false; btn.textContent = "⬇️ نزّل نسخة كاملة الحين"; }
-    }
-
-    function renderHomeHint() {
-        const tile = $('[data-a="backup-open"] .aot-txt');
-        if (tile) tile.innerHTML = `<b>النسخ الاحتياطي</b>${backupHint()}`;
-    }
-
-    function restoreSheet(id) {
-        const b = (A.backups || []).find((x) => String(x.id) === String(id));
-        if (!b) return;
-        const head = `<div class="adm-sheet-head"><h2>↩️ استرجاع نسخة</h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>`;
-        openSheet(`${head}
+                ${n.length?`<ul class="bk-list">${n.map(o=>`<li>
+                    <span class="bk-info"><b>${d(Hs(o.taken_at))}</b><small>${d(Go[o.kind]||o.kind)}${o.counts?` · ${d(ya(o.counts))}`:""}</small></span>
+                    <span class="bk-act"><button class="ab-mini" type="button" data-bk-get="${o.id}">تنزيل</button><button class="ab-mini" type="button" data-bk-restore="${o.id}">استرجاع</button></span>
+                </li>`).join("")}</ul>`:'<p class="adm-muted">ما فيه نسخ للحين.</p>'}`}
+            </div>`);s(i.backups===void 0?null:i.backups),i.backups=await Ko(),b("#bkDownload")&&s(i.backups)}async function Zo(t){t&&(t.disabled=!0,t.textContent="جاري تجهيز النسخة…");try{const e={};for(const[s,n]of Wo)e[s]=await zo(s,n);try{const s=await Pe({action:"get",doc:"expenses"});e.expenses=s.data&&s.data.items||[]}catch{}const a=Object.fromEntries(Object.entries(e).map(([s,n])=>[s,n.length]));Ms({app:"athr",version:1,source:"admin-download",taken_at:new Date().toISOString(),counts:a,tables:e},`huroof-backup-${Es()}.json`),Q.set($a,{at:new Date().toISOString(),counts:a}),y("نزلت النسخة الكاملة ✓ احفظها في الملفات"),b("#bkLast")&&(b("#bkLast").innerHTML=`آخر نسخة كاملة نزّلتها: <b>اليوم</b> (${d(ya(a))})`),Qo()}catch{y("تعذّر تجهيز النسخة، تأكد من الاتصال وحاول مرة ثانية")}t&&(t.disabled=!1,t.textContent="⬇️ نزّل نسخة كاملة الحين")}function Qo(){const t=b('[data-a="backup-open"] .aot-txt');t&&(t.innerHTML=`<b>النسخ الاحتياطي</b>${Rs()}`)}function Jo(t){const e=(i.backups||[]).find(s=>String(s.id)===String(t));if(!e)return;ot(`<div class="adm-sheet-head"><h2>↩️ استرجاع نسخة</h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>
             <div class="af-stack">
-                <p class="adm-sentence">ترجّع المتجر مثل ما كان <b>${esc(muscatTime(b.taken_at))}</b>.</p>
+                <p class="adm-sentence">ترجّع المتجر مثل ما كان <b>${d(Hs(e.taken_at))}</b>.</p>
                 <div class="bk-box warn">
                     <p>• المنتجات والأقسام اللي انضافت بعد هذا الوقت <b>بتنحذف</b>، والمعدّلة ترجع مثل ما كانت.</p>
                     <p>• قبل الاسترجاع ناخذ نسخة من الوضع الحالي، فتقدر تتراجع في أي وقت.</p>
-                    ${isDirty() ? "<p>• عندك تعديلات غير منشورة في اللوحة <b>بتضيع</b>.</p>" : ""}
+                    ${He()?"<p>• عندك تعديلات غير منشورة في اللوحة <b>بتضيع</b>.</p>":""}
                 </div>
-                <button class="ab ab-primary ab-block" type="button" data-bk-scope="catalog" data-id="${b.id}">استرجع المنتجات والأقسام والإعدادات</button>
-                <button class="ab ab-soft ab-block" type="button" data-bk-scope="all" data-id="${b.id}">استرجع الكل + الطلبات والعملاء المحذوفين</button>
+                <button class="ab ab-primary ab-block" type="button" data-bk-scope="catalog" data-id="${e.id}">استرجع المنتجات والأقسام والإعدادات</button>
+                <button class="ab ab-soft ab-block" type="button" data-bk-scope="all" data-id="${e.id}">استرجع الكل + الطلبات والعملاء المحذوفين</button>
                 <p class="adm-muted">الطلبات الجديدة ما تنحذف أبداً، الاسترجاع يرجّع المحذوف منها بس.</p>
-            </div>`);
-    }
-
-    async function runRestore(id, scope, btn) {
-        if (btn) { btn.disabled = true; btn.textContent = "جاري الاسترجاع…"; }
-        const { error } = await sb.rpc("backup_restore", { backup_id: Number(id), scope });
-        if (error) {
-            toast("تعذّر الاسترجاع: " + (error.message || "خطأ"));
-            if (btn) { btn.disabled = false; btn.textContent = "حاول مرة ثانية"; }
-            return;
-        }
-        storage.del(DRAFT_KEY);
-        toast("تم الاسترجاع ✓ نعيد تحميل اللوحة");
-        setTimeout(() => location.reload(), 1200);
-    }
-
-    async function backupClick(d) {
-        if (d.a === "backup-open") { await openBackups(); return true; }
-        if (d.a === "backup-download") { await downloadFullBackup($("#bkDownload")); return true; }
-        if (d.a === "backup-now") {
-            const { error } = await sb.rpc("backup_now", { label: null });
-            toast(error ? "تعذّر أخذ النسخة، حاول بعد دقيقة" : "انحفظت نسخة جديدة ✓");
-            await openBackups();
-            return true;
-        }
-        if (d.bkGet) {
-            const { data, error } = await sb.rpc("backup_get", { backup_id: Number(d.bkGet) });
-            if (error || !data) { toast("تعذّر تنزيل النسخة"); return true; }
-            const b = (A.backups || []).find((x) => String(x.id) === String(d.bkGet));
-            const when = b ? new Date(new Date(b.taken_at).getTime() + 4 * 36e5).toISOString().slice(0, 16).replace("T", "-").replace(":", "") : fileStamp();
-            saveJsonFile(data, `huroof-backup-${when}.json`);
-            return true;
-        }
-        if (d.bkRestore) { restoreSheet(d.bkRestore); return true; }
-        if (d.bkScope) {
-            const sure = window.confirm(d.bkScope === "all" ? "متأكد؟ بنرجّع المتجر لهذي النسخة ونرجّع الطلبات والعملاء المحذوفين." : "متأكد؟ بنرجّع المنتجات والأقسام والإعدادات لهذي النسخة.");
-            if (sure) await runRestore(d.id, d.bkScope, $(`[data-bk-scope="${d.bkScope}"]`));
-            return true;
-        }
-        return false;
-    }
-
-    // =====================================================
-    // v19 — «اعرف عملاءك» + «مساعدك الذكي»
-    //  - ملف كامل لكل عميل: طلباته، سلوك الشراء، والفرصة الجاية معه
-    //  - مساعد تكلّمه: يقرأ أرقام المتجر (محسوبة هنا من بياناتك) ويقترح وينفّذ بعد موافقتك
-    // =====================================================
-    const r3 = (n) => Math.round(Number(n || 0) * 1000) / 1000;
-    const agoDays = (date) => (date ? Math.floor((Date.now() - new Date(date).getTime()) / 864e5) : null);
-    const firstName = (name) => String(name || "").trim().split(/\s+/)[0] || "";
-    const orderTime = (o) => new Date(o.ordered_at || o.created_at).getTime();
-    const liveOrders = () => (A.orders || []).filter((o) => !o.hidden);
-    const CH_NAMES = { direct: "مباشر", google: "جوجل", instagram: "إنستغرام", tiktok: "تيك توك", whatsapp: "واتساب", snapchat: "سناب شات", facebook: "فيسبوك", x: "إكس", offer: "روابط العروض", app: "التطبيق", push: "الإشعارات", other: "أخرى" };
-    const chName = (k) => CH_NAMES[k] || k || "مباشر";
-    // عدّ بالعربي: 1 طلب، 2 طلبين، 3-10 طلبات، 11+ طلب
-    const countAr = (n, one, two, few) => (n === 1 ? `1 ${one}` : n === 2 ? two : n >= 3 && n <= 10 ? `${n} ${few}` : `${n} ${one}`);
-    const ordersAr = (n) => countAr(Number(n) || 0, "طلب", "طلبين", "طلبات");
-    const piecesAr = (n) => countAr(Number(n) || 0, "قطعة", "قطعتين", "قطع");
-
-    async function loadStatsRows() {
-        const since = new Date(Date.now() - 60 * 864e5 + 4 * 36e5).toISOString().slice(0, 10);
-        const { data } = await sb.from("stats_daily").select("day,key,n").gte("day", since).limit(5000);
-        A.statsRows = data || [];
-        A.statsAt = Date.now();
-    }
-
-    async function ensureInsights() {
-        const jobs = [];
-        if (!A.ordersLoaded) jobs.push(loadOrders());
-        if (!A.customersLoaded) jobs.push(loadCustomers());
-        if (!A.statsRows || Date.now() - (A.statsAt || 0) > 300000) jobs.push(loadStatsRows());
-        if (!finState().loaded) jobs.push(loadFinance());
-        await Promise.all(jobs.map((p) => p.catch(() => null)));
-    }
-
-    function themeOf(name) {
-        return String(name || "").replace(/\(.*?\)/g, "").replace(/^\s*(كوب|كاس|كأس|مج|محفظة|حقيبة|طقم)\s+/, "").split(/\s+مع\s+|\s*\+\s*/)[0].trim();
-    }
-    const typeOf = (name) => (String(name || "").trim().match(/^(كوب|كاس|كأس|مج|محفظة|حقيبة|طقم)/) || [""])[0];
-
-    // ---------- الأرقام ----------
-    function storeMetrics() {
-        const now = Date.now();
-        const ord = liveOrders();
-        const inDays = (d) => ord.filter((o) => now - orderTime(o) <= d * 864e5);
-        const sales = (list) => list.reduce((s, o) => s + Number(o.total || 0), 0);
-        const pieces = (list) => list.reduce((s, o) => s + (o.items || []).reduce((a, i) => a + Number(i.qty || 0), 0), 0);
-        const period = (list) => ({ orders: list.length, sales: r3(sales(list)), avg: list.length ? r3(sales(list) / list.length) : 0, pieces: pieces(list) });
-        const dayKey = (t) => new Date(t + 4 * 36e5).toISOString().slice(0, 10);
-        const today = ord.filter((o) => dayKey(orderTime(o)) === dayKey(now));
-        const products = (A.draft ? A.draft.products : []).filter((p) => p.is_visible !== false);
-        const byId = new Map((A.draft ? A.draft.products : []).map((p) => [p.id, p]));
-        const catName = (id) => ((A.draft ? A.draft.categories : []).find((c) => c.id === id) || {}).name || "بدون قسم";
-        const sold = new Map();
-        inDays(30).forEach((o) => (o.items || []).forEach((i) => {
-            const k = i.id || i.label || i.name;
-            const row = sold.get(k) || { id: i.id || null, name: (byId.get(i.id) || {}).name || i.label || i.name, qty: 0, sales: 0 };
-            row.qty += Number(i.qty || 0);
-            row.sales += Number(i.total || Number(i.price || 0) * Number(i.qty || 0));
-            sold.set(k, row);
-        }));
-        const top = [...sold.values()].sort((a, b) => b.qty - a.qty || b.sales - a.sales).slice(0, 8).map((x) => ({ ...x, sales: r3(x.sales) }));
-        const soldIds = new Set([...sold.values()].map((x) => x.id).filter(Boolean));
-        const lowLimit = Number(cfg().sales.low_stock) || 3;
-        const count = (list, key) => {
-            const m = new Map();
-            list.forEach((x) => { const k = key(x); if (k) m.set(k, (m.get(k) || 0) + 1); });
-            return [...m.entries()].sort((a, b) => b[1] - a[1]);
-        };
-        const cats = new Map();
-        inDays(90).forEach((o) => (o.items || []).forEach((i) => {
-            const p = byId.get(i.id);
-            const k = p ? catName(p.category_id) : "أخرى";
-            cats.set(k, (cats.get(k) || 0) + Number(i.qty || 0));
-        }));
-        const since30 = dayKey(now - 30 * 864e5);
-        const st = (A.statsRows || []).filter((r) => r.day >= since30);
-        const fsum = (k) => st.filter((r) => r.key === k).reduce((s, r) => s + Number(r.n || 0), 0);
-        const sources = {};
-        st.filter((r) => r.key.startsWith("visit:")).forEach((r) => { const k = r.key.slice(6); sources[k] = (sources[k] || 0) + Number(r.n || 0); });
-        const cs = A.customers || [];
-        const d = (x) => { const v = agoDays(x); return v === null ? Infinity : v; };
-        return {
-            today: period(today), d7: period(inDays(7)), d30: period(inDays(30)), all: period(ord),
-            pending: ord.filter((o) => o.status === "new").length,
-            top,
-            unsold: products.filter((p) => !soldIds.has(p.id) && p.is_available !== false).map((p) => p.name),
-            low: products.filter((p) => ATHR.stockOf(p) !== null && ATHR.stockOf(p) <= lowLimit).map((p) => ({ name: p.name, stock: ATHR.stockOf(p) })),
-            cats: [...cats.entries()].sort((a, b) => b[1] - a[1]),
-            channels: count(inDays(30), (o) => o.channel || "direct"),
-            places: count(inDays(90), (o) => o.wilaya || o.governorate || (o.country && o.country !== "OM" ? o.country : "")),
-            gifts: inDays(90).filter((o) => o.gift).length,
-            funnel: { visits: fsum("visit"), views: fsum("view"), adds: fsum("add"), checkouts: fsum("checkout"), orders: fsum("order") },
-            sources: Object.entries(sources).sort((a, b) => b[1] - a[1]),
-            cust: {
-                total: cs.length,
-                repeat: cs.filter((c) => c.orders_count > 1).length,
-                vip: cs.filter(isVip).length,
-                away: cs.filter((c) => d(c.last_order_at) > 60).length,
-                second: cs.filter((c) => c.orders_count === 1 && d(c.last_order_at) >= 14 && d(c.last_order_at) <= 60).length,
-                new30: cs.filter((c) => d(c.first_order_at || c.last_order_at) <= 30).length,
-                marketing: cs.filter((c) => c.marketing).length
-            },
-            topCustomers: cs.slice().sort((a, b) => Number(b.total_spent) - Number(a.total_spent)).slice(0, 5)
-                .map((c) => ({ name: firstName(c.name) || "عميل", orders: c.orders_count, spent: r3(c.total_spent), last_days: agoDays(c.last_order_at) }))
-        };
-    }
-
-    // ---------- «اعرف عملاءك» ----------
-    function custOrdersOf(c) {
-        return liveOrders().filter((o) => o.phone && ATHR.customerWhatsapp(o.phone, o.country || "OM") === c.phone).sort((a, b) => orderTime(b) - orderTime(a));
-    }
-
-    function custBehavior(c, orders) {
-        const byId = new Map((A.draft ? A.draft.products : []).map((p) => [p.id, p]));
-        const catName = (id) => ((A.draft ? A.draft.categories : []).find((x) => x.id === id) || {}).name || "";
-        const prods = new Map();
-        const cats = new Map();
-        orders.forEach((o) => (o.items || []).forEach((i) => {
-            const p = byId.get(i.id);
-            const name = (p && p.name) || i.label || i.name;
-            const row = prods.get(name) || { name, qty: 0, id: i.id };
-            row.qty += Number(i.qty || 0);
-            prods.set(name, row);
-            const cn = p ? catName(p.category_id) : "";
-            if (cn) cats.set(cn, (cats.get(cn) || 0) + Number(i.qty || 0));
-        }));
-        const most = (list, key) => {
-            const m = new Map();
-            list.forEach((x) => { const k = key(x); if (k) m.set(k, (m.get(k) || 0) + 1); });
-            return [...m.entries()].sort((a, b) => b[1] - a[1])[0];
-        };
-        const spent = orders.reduce((s, o) => s + Number(o.total || 0), 0);
-        return {
-            products: [...prods.values()].sort((a, b) => b.qty - a.qty),
-            cats: [...cats.entries()].sort((a, b) => b[1] - a[1]),
-            gifts: orders.filter((o) => o.gift),
-            pay: most(orders, (o) => o.payment_name),
-            delivery: most(orders, (o) => o.delivery_name),
-            place: most(orders, (o) => o.wilaya || o.governorate),
-            channel: most(orders, (o) => o.channel),
-            avg: orders.length ? r3(spent / orders.length) : 0
-        };
-    }
-
-    // الفرصة الجاية مع العميل: اقتراحات مبنية على طلباته فقط
-    function custOpportunities(c, orders, beh) {
-        const out = [];
-        const last = agoDays(c.last_order_at);
-        const name = firstName(c.name);
-        if (last !== null && last > 60) out.push({ icon: "💤", text: `صار له ${last} يوم ما طلب. هذا وقت عرض «وحشتنا» يرجّعه.`, btn: c.marketing ? "offer" : "" });
-        else if (c.orders_count === 1 && last !== null && last >= 14) out.push({ icon: "🔁", text: `طلب مرة وحدة قبل ${last} يوم. الطلب الثاني هو اللي يحوّله لعميل دائم.`, btn: c.marketing ? "offer" : "" });
-        if (isVip(c)) out.push({ icon: "💎", text: `${name || "هذا العميل"} من أفضل عملائك. رسالة شكر أو كود خاص يخليه يرجع ويجيب غيره.`, btn: c.marketing ? "offer" : "" });
-        // منتجات من نفس اهتمامه ما اشتراها
-        const bought = new Set(beh.products.map((p) => p.id).filter(Boolean));
-        const themes = [...new Set(beh.products.map((p) => themeOf(p.name)).filter((t) => t && t.length >= 3))];
-        const pool = (A.draft ? A.draft.products : []).filter((p) => p.is_visible !== false && p.is_available !== false && !bought.has(p.id));
-        const boughtTypes = new Set(beh.products.map((p) => typeOf(p.name)));
-        const picks = [];
-        themes.forEach((t) => pool.forEach((p) => {
-            if (picks.length >= 2 || picks.includes(p)) return;
-            if (themeOf(p.name) === t && !boughtTypes.has(typeOf(p.name))) picks.push(p);
-        }));
-        picks.forEach((p) => out.push({ icon: "🛍️", text: `يحب «${themeOf(p.name)}». اقترح عليه «${p.name}» (${money(p.price)}).`, btn: "suggest", pid: p.id }));
-        if (beh.gifts.length) out.push({ icon: "🎁", text: `اشترى ${beh.gifts.length === 1 ? "هدية" : `${beh.gifts.length} هدايا`} من قبل. ذكّره قبل المناسبات: العيد، التخرج، أعياد الميلاد.`, btn: "" });
-        if (ATHR.loyaltyOn(cfg())) {
-            const need = Number(loyalty().reward_points) || 50;
-            const pts = custPoints(c);
-            if (pts > 0 && pts < need && need - pts <= need * 0.4) out.push({ icon: "⭐", text: `باقي له ${need - pts} نقطة على المكافأة. طلب صغير يوصّله.`, btn: c.marketing ? "offer" : "" });
-        }
-        return out.slice(0, 4);
-    }
-
-    function custInsightsHTML() {
-        if (!A.ordersLoaded) {
-            loadOrders().then(() => { if (A.view === "orders" && A.book === "customers") renderCustomers(); }).catch(() => {});
-            return "";
-        }
-        const m = storeMetrics();
-        if (!m.cust.total) return "";
-        const repeatPct = m.cust.total ? Math.round((m.cust.repeat / m.cust.total) * 100) : 0;
-        const cell = (label, value) => value ? `<div><small>${label}</small><b>${esc(String(value))}</b></div>` : "";
-        const opp = (kind, n, label) => n ? `<button type="button" class="ci-opp" data-cust-kind="${kind}">${label} <b>${n}</b></button>` : "";
-        return `<section class="cust-insight">
+            </div>`)}async function Yo(t,e,a){a&&(a.disabled=!0,a.textContent="جاري الاسترجاع…");const{error:s}=await _.rpc("backup_restore",{backup_id:Number(t),scope:e});if(s){y("تعذّر الاسترجاع: "+(s.message||"خطأ")),a&&(a.disabled=!1,a.textContent="حاول مرة ثانية");return}Q.del(Et),y("تم الاسترجاع ✓ نعيد تحميل اللوحة"),setTimeout(()=>location.reload(),1200)}async function Xo(t){if(t.a==="backup-open")return await Ns(),!0;if(t.a==="backup-download")return await Zo(b("#bkDownload")),!0;if(t.a==="backup-now"){const{error:e}=await _.rpc("backup_now",{label:null});return y(e?"تعذّر أخذ النسخة، حاول بعد دقيقة":"انحفظت نسخة جديدة ✓"),await Ns(),!0}if(t.bkGet){const{data:e,error:a}=await _.rpc("backup_get",{backup_id:Number(t.bkGet)});if(a||!e)return y("تعذّر تنزيل النسخة"),!0;const s=(i.backups||[]).find(o=>String(o.id)===String(t.bkGet)),n=s?new Date(new Date(s.taken_at).getTime()+4*36e5).toISOString().slice(0,16).replace("T","-").replace(":",""):Es();return Ms(e,`huroof-backup-${n}.json`),!0}return t.bkRestore?(Jo(t.bkRestore),!0):t.bkScope?(window.confirm(t.bkScope==="all"?"متأكد؟ بنرجّع المتجر لهذي النسخة ونرجّع الطلبات والعملاء المحذوفين.":"متأكد؟ بنرجّع المنتجات والأقسام والإعدادات لهذي النسخة.")&&await Yo(t.id,t.bkScope,b(`[data-bk-scope="${t.bkScope}"]`)),!0):!1}const z=t=>Math.round(Number(t||0)*1e3)/1e3,va=t=>t?Math.floor((Date.now()-new Date(t).getTime())/864e5):null,wa=t=>String(t||"").trim().split(/\s+/)[0]||"",Ne=t=>new Date(t.ordered_at||t.created_at).getTime(),Ce=()=>(i.orders||[]).filter(t=>!t.hidden),tr={direct:"مباشر",google:"جوجل",instagram:"إنستغرام",tiktok:"تيك توك",whatsapp:"واتساب",snapchat:"سناب شات",facebook:"فيسبوك",x:"إكس",offer:"روابط العروض",app:"التطبيق",push:"الإشعارات",other:"أخرى"},Qt=t=>tr[t]||t||"مباشر",Cs=(t,e,a,s)=>t===1?`1 ${e}`:t===2?a:t>=3&&t<=10?`${t} ${s}`:`${t} ${e}`,Oe=t=>Cs(Number(t)||0,"طلب","طلبين","طلبات"),er=t=>Cs(Number(t)||0,"قطعة","قطعتين","قطع");async function ar(){const t=new Date(Date.now()-5184e6+144e5).toISOString().slice(0,10),{data:e}=await _.from("stats_daily").select("day,key,n").gte("day",t).limit(5e3);i.statsRows=e||[],i.statsAt=Date.now()}async function _a(){const t=[];i.ordersLoaded||t.push(me()),i.customersLoaded||t.push(Fe()),(!i.statsRows||Date.now()-(i.statsAt||0)>3e5)&&t.push(ar()),K().loaded||t.push(Aa()),await Promise.all(t.map(e=>e.catch(()=>null)))}function Le(t){return String(t||"").replace(/\(.*?\)/g,"").replace(/^\s*(كوب|كاس|كأس|مج|محفظة|حقيبة|طقم)\s+/,"").split(/\s+مع\s+|\s*\+\s*/)[0].trim()}const Os=t=>(String(t||"").trim().match(/^(كوب|كاس|كأس|مج|محفظة|حقيبة|طقم)/)||[""])[0];function ka(){const t=Date.now(),e=Ce(),a=f=>e.filter(w=>t-Ne(w)<=f*864e5),s=f=>f.reduce((w,C)=>w+Number(C.total||0),0),n=f=>f.reduce((w,C)=>w+(C.items||[]).reduce((O,Z)=>O+Number(Z.qty||0),0),0),o=f=>({orders:f.length,sales:z(s(f)),avg:f.length?z(s(f)/f.length):0,pieces:n(f)}),r=f=>new Date(f+4*36e5).toISOString().slice(0,10),l=e.filter(f=>r(Ne(f))===r(t)),c=(i.draft?i.draft.products:[]).filter(f=>f.is_visible!==!1),p=new Map((i.draft?i.draft.products:[]).map(f=>[f.id,f])),u=f=>((i.draft?i.draft.categories:[]).find(w=>w.id===f)||{}).name||"بدون قسم",m=new Map;a(30).forEach(f=>(f.items||[]).forEach(w=>{const C=w.id||w.label||w.name,O=m.get(C)||{id:w.id||null,name:(p.get(w.id)||{}).name||w.label||w.name,qty:0,sales:0};O.qty+=Number(w.qty||0),O.sales+=Number(w.total||Number(w.price||0)*Number(w.qty||0)),m.set(C,O)}));const h=[...m.values()].sort((f,w)=>w.qty-f.qty||w.sales-f.sales).slice(0,8).map(f=>({...f,sales:z(f.sales)})),M=new Set([...m.values()].map(f=>f.id).filter(Boolean)),L=Number($().sales.low_stock)||3,S=(f,w)=>{const C=new Map;return f.forEach(O=>{const Z=w(O);Z&&C.set(Z,(C.get(Z)||0)+1)}),[...C.entries()].sort((O,Z)=>Z[1]-O[1])},E=new Map;a(90).forEach(f=>(f.items||[]).forEach(w=>{const C=p.get(w.id),O=C?u(C.category_id):"أخرى";E.set(O,(E.get(O)||0)+Number(w.qty||0))}));const R=r(t-30*864e5),D=(i.statsRows||[]).filter(f=>f.day>=R),P=f=>D.filter(w=>w.key===f).reduce((w,C)=>w+Number(C.n||0),0),A={};D.filter(f=>f.key.startsWith("visit:")).forEach(f=>{const w=f.key.slice(6);A[w]=(A[w]||0)+Number(f.n||0)});const k=i.customers||[],v=f=>{const w=va(f);return w===null?1/0:w};return{today:o(l),d7:o(a(7)),d30:o(a(30)),all:o(e),pending:e.filter(f=>f.status==="new").length,top:h,unsold:c.filter(f=>!M.has(f.id)&&f.is_available!==!1).map(f=>f.name),low:c.filter(f=>ATHR.stockOf(f)!==null&&ATHR.stockOf(f)<=L).map(f=>({name:f.name,stock:ATHR.stockOf(f)})),cats:[...E.entries()].sort((f,w)=>w[1]-f[1]),channels:S(a(30),f=>f.channel||"direct"),places:S(a(90),f=>f.wilaya||f.governorate||(f.country&&f.country!=="OM"?f.country:"")),gifts:a(90).filter(f=>f.gift).length,funnel:{visits:P("visit"),views:P("view"),adds:P("add"),checkouts:P("checkout"),orders:P("order")},sources:Object.entries(A).sort((f,w)=>w[1]-f[1]),cust:{total:k.length,repeat:k.filter(f=>f.orders_count>1).length,vip:k.filter(ge).length,away:k.filter(f=>v(f.last_order_at)>60).length,second:k.filter(f=>f.orders_count===1&&v(f.last_order_at)>=14&&v(f.last_order_at)<=60).length,new30:k.filter(f=>v(f.first_order_at||f.last_order_at)<=30).length,marketing:k.filter(f=>f.marketing).length},topCustomers:k.slice().sort((f,w)=>Number(w.total_spent)-Number(f.total_spent)).slice(0,5).map(f=>({name:wa(f.name)||"عميل",orders:f.orders_count,spent:z(f.total_spent),last_days:va(f.last_order_at)}))}}function sr(t){return Ce().filter(e=>e.phone&&ATHR.customerWhatsapp(e.phone,e.country||"OM")===t.phone).sort((e,a)=>Ne(a)-Ne(e))}function nr(t,e){const a=new Map((i.draft?i.draft.products:[]).map(c=>[c.id,c])),s=c=>((i.draft?i.draft.categories:[]).find(p=>p.id===c)||{}).name||"",n=new Map,o=new Map;e.forEach(c=>(c.items||[]).forEach(p=>{const u=a.get(p.id),m=u&&u.name||p.label||p.name,h=n.get(m)||{name:m,qty:0,id:p.id};h.qty+=Number(p.qty||0),n.set(m,h);const M=u?s(u.category_id):"";M&&o.set(M,(o.get(M)||0)+Number(p.qty||0))}));const r=(c,p)=>{const u=new Map;return c.forEach(m=>{const h=p(m);h&&u.set(h,(u.get(h)||0)+1)}),[...u.entries()].sort((m,h)=>h[1]-m[1])[0]},l=e.reduce((c,p)=>c+Number(p.total||0),0);return{products:[...n.values()].sort((c,p)=>p.qty-c.qty),cats:[...o.entries()].sort((c,p)=>p[1]-c[1]),gifts:e.filter(c=>c.gift),pay:r(e,c=>c.payment_name),delivery:r(e,c=>c.delivery_name),place:r(e,c=>c.wilaya||c.governorate),channel:r(e,c=>c.channel),avg:e.length?z(l/e.length):0}}function or(t,e,a){const s=[],n=va(t.last_order_at),o=wa(t.name);n!==null&&n>60?s.push({icon:"💤",text:`صار له ${n} يوم ما طلب. هذا وقت عرض «وحشتنا» يرجّعه.`,btn:t.marketing?"offer":""}):t.orders_count===1&&n!==null&&n>=14&&s.push({icon:"🔁",text:`طلب مرة وحدة قبل ${n} يوم. الطلب الثاني هو اللي يحوّله لعميل دائم.`,btn:t.marketing?"offer":""}),ge(t)&&s.push({icon:"💎",text:`${o||"هذا العميل"} من أفضل عملائك. رسالة شكر أو كود خاص يخليه يرجع ويجيب غيره.`,btn:t.marketing?"offer":""});const r=new Set(a.products.map(m=>m.id).filter(Boolean)),l=[...new Set(a.products.map(m=>Le(m.name)).filter(m=>m&&m.length>=3))],c=(i.draft?i.draft.products:[]).filter(m=>m.is_visible!==!1&&m.is_available!==!1&&!r.has(m.id)),p=new Set(a.products.map(m=>Os(m.name))),u=[];if(l.forEach(m=>c.forEach(h=>{u.length>=2||u.includes(h)||Le(h.name)===m&&!p.has(Os(h.name))&&u.push(h)})),u.forEach(m=>s.push({icon:"🛍️",text:`يحب «${Le(m.name)}». اقترح عليه «${m.name}» (${x(m.price)}).`,btn:"suggest",pid:m.id})),a.gifts.length&&s.push({icon:"🎁",text:`اشترى ${a.gifts.length===1?"هدية":`${a.gifts.length} هدايا`} من قبل. ذكّره قبل المناسبات: العيد، التخرج، أعياد الميلاد.`,btn:""}),ATHR.loyaltyOn($())){const m=Number(Ee().reward_points)||50,h=St(t);h>0&&h<m&&m-h<=m*.4&&s.push({icon:"⭐",text:`باقي له ${m-h} نقطة على المكافأة. طلب صغير يوصّله.`,btn:t.marketing?"offer":""})}return s.slice(0,4)}function rr(){if(!i.ordersLoaded)return me().then(()=>{i.view==="orders"&&i.book==="customers"&&gt()}).catch(()=>{}),"";const t=ka();if(!t.cust.total)return"";const e=t.cust.total?Math.round(t.cust.repeat/t.cust.total*100):0,a=(n,o)=>o?`<div><small>${n}</small><b>${d(String(o))}</b></div>`:"",s=(n,o,r)=>o?`<button type="button" class="ci-opp" data-cust-kind="${n}">${r} <b>${o}</b></button>`:"";return`<section class="cust-insight">
             <div class="ci-head"><b>🧠 فهم عملائك</b><small class="adm-muted">من طلباتهم الحقيقية</small></div>
             <div class="ci-grid">
-                ${cell("متوسط الطلب", m.all.orders ? money(m.all.avg) : "")}
-                ${cell("رجعوا للشراء", `${repeatPct}%`)}
-                ${cell("أكثر قسم", m.cats[0] ? m.cats[0][0] : "")}
-                ${cell("أكثر منطقة", m.places[0] ? m.places[0][0] : "")}
-                ${cell("أكثر مصدر", m.channels[0] ? chName(m.channels[0][0]) : "")}
-                ${cell("هدايا آخر 3 شهور", m.gifts || "")}
+                ${a("متوسط الطلب",t.all.orders?x(t.all.avg):"")}
+                ${a("رجعوا للشراء",`${e}%`)}
+                ${a("أكثر قسم",t.cats[0]?t.cats[0][0]:"")}
+                ${a("أكثر منطقة",t.places[0]?t.places[0][0]:"")}
+                ${a("أكثر مصدر",t.channels[0]?Qt(t.channels[0][0]):"")}
+                ${a("هدايا آخر 3 شهور",t.gifts||"")}
             </div>
-            ${m.cust.away || m.cust.second || m.cust.vip ? `<div class="ci-opps"><span class="adm-muted">فرص الحين:</span>
-                ${opp("second", m.cust.second, "🔁 جاهزين للطلب الثاني")}
-                ${opp("away", m.cust.away, "💤 غائبون")}
-                ${opp("vip", m.cust.vip, "💎 مميزون")}
-            </div>` : ""}
-        </section>`;
-    }
-
-    async function openCustomer(phone) {
-        const c = (A.customers || []).find((x) => x.phone === phone);
-        if (!c) return;
-        if (!A.ordersLoaded) { try { await loadOrders(); } catch { /* نعرض الموجود */ } }
-        const orders = custOrdersOf(c);
-        const beh = custBehavior(c, orders);
-        const opps = custOpportunities(c, orders, beh);
-        const lyOn = ATHR.loyaltyOn(cfg());
-        const flag = (ATHR_COUNTRIES.find((x) => x.code === c.country) || ATHR_COUNTRIES[0]).flag;
-        const stat = (label, value) => `<div><small>${label}</small><b>${value}</b></div>`;
-        const line = (label, value) => value ? `<li><span>${label}</span><b>${esc(String(value))}</b></li>` : "";
-        A.prof = { phone };
-        openSheet(`
-            <div class="adm-sheet-head"><h2>${esc(c.name || "عميل")} <span aria-hidden="true">${flag}</span></h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>
+            ${t.cust.away||t.cust.second||t.cust.vip?`<div class="ci-opps"><span class="adm-muted">فرص الحين:</span>
+                ${s("second",t.cust.second,"🔁 جاهزين للطلب الثاني")}
+                ${s("away",t.cust.away,"💤 غائبون")}
+                ${s("vip",t.cust.vip,"💎 مميزون")}
+            </div>`:""}
+        </section>`}async function ir(t){const e=(i.customers||[]).find(p=>p.phone===t);if(!e)return;if(!i.ordersLoaded)try{await me()}catch{}const a=sr(e),s=nr(e,a),n=or(e,a,s),o=ATHR.loyaltyOn($()),r=(ATHR_COUNTRIES.find(p=>p.code===e.country)||ATHR_COUNTRIES[0]).flag,l=(p,u)=>`<div><small>${p}</small><b>${u}</b></div>`,c=(p,u)=>u?`<li><span>${p}</span><b>${d(String(u))}</b></li>`:"";i.prof={phone:t},ot(`
+            <div class="adm-sheet-head"><h2>${d(e.name||"عميل")} <span aria-hidden="true">${r}</span></h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>
             <div class="prof">
                 <div class="prof-top">
-                    <span dir="ltr" class="cust-phone">+${esc(c.phone)}</span>
-                    <span class="cust-tags">${custTags(c).map(([k, l]) => `<span class="ctag ${k}">${l}</span>`).join("")}${c.marketing ? "" : `<span class="ctag off">لا يستقبل العروض</span>`}</span>
+                    <span dir="ltr" class="cust-phone">+${d(e.phone)}</span>
+                    <span class="cust-tags">${$e(e).map(([p,u])=>`<span class="ctag ${p}">${u}</span>`).join("")}${e.marketing?"":'<span class="ctag off">لا يستقبل العروض</span>'}</span>
                 </div>
                 <div class="ob-stats prof-stats">
-                    ${stat("الطلبات", c.orders_count)}
-                    ${stat("المشتريات", money(c.total_spent))}
-                    ${stat("متوسط الطلب", money(beh.avg || (c.orders_count ? c.total_spent / c.orders_count : 0)))}
-                    ${stat("آخر طلب", esc(sinceText(c.last_order_at) || "—"))}
-                    ${lyOn ? stat("النقاط", ATHR.pointsText(custPoints(c))) : ""}
+                    ${l("الطلبات",e.orders_count)}
+                    ${l("المشتريات",x(e.total_spent))}
+                    ${l("متوسط الطلب",x(s.avg||(e.orders_count?e.total_spent/e.orders_count:0)))}
+                    ${l("آخر طلب",d(Xt(e.last_order_at)||"—"))}
+                    ${o?l("النقاط",ATHR.pointsText(St(e))):""}
                 </div>
-                ${opps.length ? `<section class="prof-sec prof-opps"><h3>💡 الفرصة الجاية</h3><ul>${opps.map((o) => `<li><span class="po-ico" aria-hidden="true">${o.icon}</span><span class="po-txt">${esc(o.text)}</span>${o.btn === "offer" ? `<button type="button" class="ab-mini gift" data-cust-offer="${esc(c.phone)}">🎁 عرض</button>` : o.btn === "suggest" ? `<button type="button" class="ab-mini wa" data-prof-suggest="${esc(o.pid)}">📩 اقترح</button>` : ""}</li>`).join("")}</ul></section>` : ""}
+                ${n.length?`<section class="prof-sec prof-opps"><h3>💡 الفرصة الجاية</h3><ul>${n.map(p=>`<li><span class="po-ico" aria-hidden="true">${p.icon}</span><span class="po-txt">${d(p.text)}</span>${p.btn==="offer"?`<button type="button" class="ab-mini gift" data-cust-offer="${d(e.phone)}">🎁 عرض</button>`:p.btn==="suggest"?`<button type="button" class="ab-mini wa" data-prof-suggest="${d(p.pid)}">📩 اقترح</button>`:""}</li>`).join("")}</ul></section>`:""}
                 <section class="prof-sec"><h3>🛒 سلوك الشراء</h3><ul class="prof-lines">
-                    ${line("أكثر قسم", beh.cats[0] ? beh.cats[0][0] : "")}
-                    ${line("اشترى", beh.products.slice(0, 4).map((p) => `${p.name}${p.qty > 1 ? ` ×${p.qty}` : ""}`).join("، "))}
-                    ${line("هدايا", beh.gifts.length ? `${beh.gifts.length} من ${orders.length}` : "")}
-                    ${line("يدفع بـ", beh.pay ? beh.pay[0] : "")}
-                    ${line("التوصيل", beh.delivery ? beh.delivery[0] : "")}
-                    ${line("المنطقة", beh.place ? beh.place[0] : "")}
-                    ${line("وصلنا من", beh.channel ? chName(beh.channel[0]) : "")}
-                    ${line("أول طلب", c.first_order_at ? sinceText(c.first_order_at) : "")}
+                    ${c("أكثر قسم",s.cats[0]?s.cats[0][0]:"")}
+                    ${c("اشترى",s.products.slice(0,4).map(p=>`${p.name}${p.qty>1?` ×${p.qty}`:""}`).join("، "))}
+                    ${c("هدايا",s.gifts.length?`${s.gifts.length} من ${a.length}`:"")}
+                    ${c("يدفع بـ",s.pay?s.pay[0]:"")}
+                    ${c("التوصيل",s.delivery?s.delivery[0]:"")}
+                    ${c("المنطقة",s.place?s.place[0]:"")}
+                    ${c("وصلنا من",s.channel?Qt(s.channel[0]):"")}
+                    ${c("أول طلب",e.first_order_at?Xt(e.first_order_at):"")}
                 </ul></section>
-                <section class="prof-sec"><h3>📦 طلباته (${orders.length})</h3>
-                    ${orders.length ? `<ul class="prof-orders">${orders.slice(0, 12).map((o) => `<li>
-                        <span><b dir="ltr">${esc(o.order_no || "")}</b><small>${esc(sinceText(o.ordered_at || o.created_at))}${o.gift ? " · 🎁 هدية" : ""}</small></span>
-                        <span class="po-items">${esc((o.items || []).map((i) => `${i.label || i.name}${Number(i.qty) > 1 ? ` ×${i.qty}` : ""}`).join("، "))}</span>
-                        <span class="po-total"><b>${money(o.total)}</b><small class="ost ${esc(o.status)}">${o.status === "delivered" ? "تم التسليم" : "جديد"}</small></span>
-                    </li>`).join("")}</ul>` : `<p class="adm-muted">ما لقينا طلباته في آخر 1000 طلب.</p>`}
+                <section class="prof-sec"><h3>📦 طلباته (${a.length})</h3>
+                    ${a.length?`<ul class="prof-orders">${a.slice(0,12).map(p=>`<li>
+                        <span><b dir="ltr">${d(p.order_no||"")}</b><small>${d(Xt(p.ordered_at||p.created_at))}${p.gift?" · 🎁 هدية":""}</small></span>
+                        <span class="po-items">${d((p.items||[]).map(u=>`${u.label||u.name}${Number(u.qty)>1?` ×${u.qty}`:""}`).join("، "))}</span>
+                        <span class="po-total"><b>${x(p.total)}</b><small class="ost ${d(p.status)}">${p.status==="delivered"?"تم التسليم":"جديد"}</small></span>
+                    </li>`).join("")}</ul>`:'<p class="adm-muted">ما لقينا طلباته في آخر 1000 طلب.</p>'}
                 </section>
                 <section class="prof-sec"><h3>📝 ملاحظة عنه</h3>
-                    <textarea class="ai" id="profNote" rows="2" maxlength="500" placeholder="مثال: معلمة صف ثاني، تحب ملفات الرياضيات">${esc(c.note || "")}</textarea>
+                    <textarea class="ai" id="profNote" rows="2" maxlength="500" placeholder="مثال: معلمة صف ثاني، تحب ملفات الرياضيات">${d(e.note||"")}</textarea>
                     <button class="ab ab-ghost ab-sm" type="button" data-a="prof-note">حفظ الملاحظة</button>
                 </section>
                 <div class="prof-btns">
-                    ${c.marketing ? `<button type="button" class="ab ab-primary" data-cust-offer="${esc(c.phone)}">🎁 أرسل له عرض</button>` : ""}
-                    <button type="button" class="ab ab-ghost" data-cust-wa="${esc(c.phone)}">واتساب</button>
+                    ${e.marketing?`<button type="button" class="ab ab-primary" data-cust-offer="${d(e.phone)}">🎁 أرسل له عرض</button>`:""}
+                    <button type="button" class="ab ab-ghost" data-cust-wa="${d(e.phone)}">واتساب</button>
                 </div>
-            </div>`);
-    }
-
-    async function saveCustNote() {
-        const c = A.prof && (A.customers || []).find((x) => x.phone === A.prof.phone);
-        if (!c) return;
-        const note = String(($("#profNote") || {}).value || "").trim().slice(0, 500) || null;
-        const { error } = await sb.from("customers").update({ note }).eq("phone", c.phone);
-        if (error) { toast("تعذر حفظ الملاحظة"); return; }
-        c.note = note;
-        toast("حُفظت الملاحظة ✓");
-    }
-
-    function suggestToCustomer(pid) {
-        const c = A.prof && (A.customers || []).find((x) => x.phone === A.prof.phone);
-        const p = publishedProduct(pid);
-        if (!c || !p) { toast("المنتج غير منشور للحين"); return; }
-        const link = siteLink(ATHR.url.product(p));
-        const text = `هلا ${firstName(c.name) || ""} 👋\nلأنك تحب «${themeOf(p.name)}» حبينا نعرّفك على *${p.name}* ✨\nبسعر *${money(p.price)}*\n${link}`;
-        window.open(ATHR.waLink(custWa(c), text), "_blank", "noopener");
-    }
-
-    // ---------- «مساعدك الذكي» ----------
-    const ASST_CHIPS = [
-        ["sales", "📊 ملخص المبيعات"],
-        ["top", "🏆 الأكثر مبيعاً"],
-        ["customers", "👥 عملائي"],
-        ["unsold", "😴 منتجات ما تنباع"],
-        ["sources", "📍 من وين الطلبات"],
-        ["stock", "📦 المخزون"],
-        ["profit", "💰 الأرباح"]
-    ];
-
-    function asstState() {
-        if (!A.asst) A.asst = { msgs: [], busy: false };
-        return A.asst;
-    }
-
-    function aiReady() {
-        const st = (A.ai && A.ai.status) || {};
-        return Boolean(st.gemini || st.openai);
-    }
-
-    function asstLocal(kind) {
-        const m = storeMetrics();
-        const L = [];
-        const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : "—");
-        if (kind === "sales") {
-            if (!m.all.orders) return "ما فيه طلبات مسجلة في المتجر للحين. أول ما توصل طلبات أعطيك ملخصها هنا.";
-            L.push(`<b>اليوم:</b> ${m.today.orders ? ordersAr(m.today.orders) : "ما فيه طلبات"}${m.today.orders ? ` · ${money(m.today.sales)}` : ""}`);
-            L.push(`<b>آخر 7 أيام:</b> ${ordersAr(m.d7.orders)} · ${money(m.d7.sales)}`);
-            L.push(`<b>آخر 30 يوم:</b> ${ordersAr(m.d30.orders)} · ${money(m.d30.sales)} · متوسط الطلب ${money(m.d30.avg)}`);
-            if (m.pending) L.push(`⏳ عندك <b>${ordersAr(m.pending)}</b> ${m.pending === 1 ? "جديد ما تسلّم" : "جديدة ما تسلّمت"} للحين.`);
-            if (m.funnel.visits) L.push(`👀 الزيارات آخر 30 يوم ${m.funnel.visits}، أضافوا للسلة ${m.funnel.adds}، طلبوا ${m.funnel.orders} (نسبة الشراء ${pct(m.funnel.orders, m.funnel.visits)}).`);
-            return L.join("<br>");
-        }
-        if (kind === "top") {
-            if (!m.top.length) return "ما انباع شي في آخر 30 يوم.";
-            return `<b>الأكثر مبيعاً آخر 30 يوم:</b><ol>${m.top.slice(0, 6).map((x) => `<li>${esc(x.name)} — ${piecesAr(x.qty)} · ${money(x.sales)}</li>`).join("")}</ol>`;
-        }
-        if (kind === "customers") {
-            const c = m.cust;
-            if (!c.total) return "ما فيه عملاء مسجلين للحين. كل من يطلب ينحفظ تلقائياً.";
-            L.push(`<b>عملاؤك:</b> ${c.total} · رجعوا للشراء ${c.repeat} (${pct(c.repeat, c.total)}) · مميزون ${c.vip}`);
-            L.push(`<b>جدد آخر 30 يوم:</b> ${c.new30} · يقبلون العروض ${c.marketing}`);
-            if (c.second) L.push(`🔁 <b>${c.second}</b> طلبوا مرة وحدة قبل 2 إلى 8 أسابيع. هذولا أسهل ناس للطلب الثاني.`);
-            if (c.away) L.push(`💤 <b>${c.away}</b> ما طلبوا من أكثر من شهرين.`);
-            if (m.topCustomers.length) L.push(`<b>أفضل العملاء:</b> ${m.topCustomers.slice(0, 3).map((x) => `${esc(x.name)} (${money(x.spent)})`).join("، ")}`);
-            return L.join("<br>") + `<div class="asst-acts"><button class="ab-mini" type="button" data-a="asst-customers">افتح العملاء</button></div>`;
-        }
-        if (kind === "unsold") {
-            if (!m.unsold.length) return "كل المنتجات انباع منها شي آخر 30 يوم 👏";
-            return `<b>${m.unsold.length}</b> منتج ما انباع منه شي آخر 30 يوم، مثل: ${m.unsold.slice(0, 6).map(esc).join("، ")}.<br>💡 جرّب تعرضها في ريل، أو حطها في طقم مع منتج يبيع، أو اعمل لها عرض مؤقت.`;
-        }
-        if (kind === "sources") {
-            if (!m.channels.length && !m.sources.length) return "ما فيه بيانات كافية عن مصادر الزوار والطلبات للحين.";
-            if (m.channels.length) L.push(`<b>الطلبات جت من (30 يوم):</b> ${m.channels.slice(0, 5).map(([k, n]) => `${chName(k)} ${n}`).join("، ")}`);
-            if (m.sources.length) L.push(`<b>الزيارات من:</b> ${m.sources.slice(0, 5).map(([k, n]) => `${chName(k)} ${n}`).join("، ")}`);
-            if (m.places.length) L.push(`<b>أكثر المناطق (3 شهور):</b> ${m.places.slice(0, 4).map(([k, n]) => `${esc(k)} ${n}`).join("، ")}`);
-            return L.join("<br>");
-        }
-        if (kind === "profit") {
-            const f = finState();
-            const cur = monthSummary(thisMonth());
-            const prev = monthSummary(addMonths(thisMonth(), -1));
-            const open = `<div class="asst-acts"><button class="ab-mini" type="button" data-a="fin-open">💰 افتح المبيعات والمصاريف</button></div>`;
-            if (!f.loaded) return `ما قدرت أقرأ المصاريف الحين. مبيعات ${monthName(cur.m, false)} للحين: <b>${money(cur.sales)}</b>.${open}`;
-            L.push(`<b>${monthName(cur.m, false)} للحين:</b> مبيعات ${money(cur.sales)} − مصاريف ${money(cur.expenses)} = <b>${cur.profit < 0 ? "خسارة" : "ربح"} ${money(Math.abs(cur.profit))}</b>${cur.margin !== null ? ` (هامش ${cur.margin}%)` : ""}`);
-            if (prev.sales || prev.expenses) L.push(`<b>${monthName(prev.m, false)}:</b> مبيعات ${money(prev.sales)} · مصاريف ${money(prev.expenses)} · ${prev.profit < 0 ? "خسارة" : "ربح"} ${money(Math.abs(prev.profit))}`);
-            if (cur.byCat[0]) L.push(`أكبر مصروف هالشهر: ${finCat(cur.byCat[0][0])[1]} ${finCat(cur.byCat[0][0])[2]} (${money(cur.byCat[0][1])})`);
-            if (!cur.exps.length) L.push(`⚠️ ما سجلت مصاريف هالشهر، فالربح هنا هو نفس المبيعات. سجّل مصاريفك عشان يطلع الرقم الصحيح.`);
-            return L.join("<br>") + open;
-        }
-        if (kind === "stock") {
-            if (!m.low.length) return "ما فيه منتجات قربت تخلص. (المتابعة تشتغل للمنتجات اللي حاط لها كمية في المخزون.)";
-            return `<b>قربت تخلص:</b><ul>${m.low.map((x) => `<li>${esc(x.name)} — باقي ${x.stock}</li>`).join("")}</ul>`;
-        }
-        return "";
-    }
-
-    function asstContext() {
-        const m = storeMetrics();
-        const c = cfg();
-        const catName = (id) => ((A.draft ? A.draft.categories : []).find((x) => x.id === id) || {}).name || "";
-        const soldQty = new Map(m.top.map((x) => [x.id, x.qty]));
-        return {
-            date: new Date(Date.now() + 4 * 36e5).toISOString().slice(0, 10),
-            currency: "OMR",
-            store: {
-                free_delivery_from: Number(c.order.free_min) || 0,
-                delivery: (c.order.delivery || []).filter((d) => d.enabled !== false).map((d) => ({ name: d.name, price: Number(d.price) || 0 })),
-                payments: (c.order.payments || []).filter((p) => p.enabled !== false).map((p) => p.name),
-                loyalty: ATHR.loyaltyOn(c)
-            },
-            numbers: { today: m.today, last7: m.d7, last30: m.d30, all_time: m.all, pending_orders: m.pending, funnel_30d: m.funnel, gifts_90d: m.gifts },
-            best_sellers_30d: m.top.map((x) => ({ name: x.name, qty: x.qty, sales: x.sales })),
-            unsold_30d: m.unsold.slice(0, 25),
-            low_stock: m.low,
-            categories_sold_90d: m.cats.slice(0, 8),
-            order_channels_30d: m.channels.map(([k, n]) => [chName(k), n]),
-            visit_sources_30d: m.sources.map(([k, n]) => [chName(k), n]),
-            top_places_90d: m.places.slice(0, 6),
-            customers: m.cust,
-            top_customers: m.topCustomers,
-            finance: finState().loaded ? [thisMonth(), addMonths(thisMonth(), -1), addMonths(thisMonth(), -2)].map((mm) => {
-                const x = monthSummary(mm);
-                return { month: mm, sales: x.sales, expenses: x.expenses, profit: x.profit, margin_pct: x.margin, orders: x.orders, expenses_by_type: x.byCat.map(([k, v]) => [finCat(k)[2], v]) };
-            }) : "expenses_not_loaded",
-            coupons: ((A.promo && A.promo.coupons) || []).slice(0, 15).map((k) => ({ code: k.code, kind: k.kind, value: Number(k.value), enabled: k.enabled, ends_at: k.ends_at })),
-            products: (A.draft ? A.draft.products : []).slice(0, 120).map((p) => ({
-                id: p.id, name: p.name, category: catName(p.category_id), price: Number(p.price), old_price: p.old_price ? Number(p.old_price) : null,
-                visible: p.is_visible !== false, available: p.is_available !== false, stock: ATHR.stockOf(p), sold_30d: soldQty.get(p.id) || 0
-            }))
-        };
-    }
-
-    // نتحقق من كل إجراء يقترحه الذكاء الاصطناعي قبل ما نعرضه
-    function asstCheck(a) {
-        if (!a || typeof a !== "object") return null;
-        if (a.type === "create_coupon") {
-            const code = ATHR.couponCode(ATHR.digits(String(a.code || ""))).replace(/[^A-Z0-9_-]/g, "");
-            const kind = ["pct", "fixed", "ship"].includes(a.kind) ? a.kind : "pct";
-            const value = kind === "ship" ? 0 : Number(a.value);
-            if (!ATHR.couponValid(code)) return null;
-            if (kind === "pct" && !(value >= 1 && value <= 90)) return null;
-            if (kind === "fixed" && !(value > 0 && value <= 100)) return null;
-            const days = Number(a.days) > 0 ? Math.min(90, Math.round(Number(a.days))) : 0;
-            const maxUses = Number.isInteger(Number(a.max_uses)) && Number(a.max_uses) > 0 ? Number(a.max_uses) : null;
-            const min = Number(a.min_total) > 0 ? r3(a.min_total) : 0;
-            const what = kind === "ship" ? "توصيل مجاني" : kind === "fixed" ? `خصم ${money(value)}` : `خصم ${value}%`;
-            return { type: "create_coupon", code, kind, value: r3(value), min, days, maxUses, owner: String(a.owner || "").slice(0, 80),
-                label: `🎟️ إنشاء كود <b dir="ltr">${esc(code)}</b>: ${what}${min ? ` للطلبات من ${money(min)}` : ""}${days ? ` لمدة ${days} يوم` : ""}${maxUses ? ` (${maxUses} مرة)` : ""}` };
-        }
-        if (a.type === "update_product") {
-            const p = (A.draft ? A.draft.products : []).find((x) => x.id === a.id);
-            if (!p) return null;
-            const ch = {};
-            const parts = [];
-            if (a.price !== undefined && Number(a.price) > 0 && Number(a.price) <= 500) { ch.price = r3(a.price); parts.push(`السعر ${money(ch.price)}`); }
-            if (a.old_price === null) { ch.old_price = null; parts.push("بدون سعر مشطوب"); }
-            else if (a.old_price !== undefined && Number(a.old_price) > Number(ch.price ?? p.price)) { ch.old_price = r3(a.old_price); parts.push(`السعر المشطوب ${money(ch.old_price)}`); }
-            if (typeof a.is_visible === "boolean") { ch.is_visible = a.is_visible; parts.push(a.is_visible ? "إظهار" : "إخفاء"); }
-            if (typeof a.is_available === "boolean") { ch.is_available = a.is_available; parts.push(a.is_available ? "متوفر" : "نفذ"); }
-            if (a.stock === null) { ch.stock = null; parts.push("بدون متابعة مخزون"); }
-            else if (Number.isInteger(Number(a.stock)) && Number(a.stock) >= 0 && a.stock !== undefined) { ch.stock = Number(a.stock); parts.push(`المخزون ${ch.stock}`); }
-            if (!parts.length) return null;
-            return { type: "update_product", id: p.id, ch, label: `✏️ «${esc(p.name)}»: ${esc(parts.join("، "))}` };
-        }
-        if (a.type === "open_customers") {
-            const filter = ["away", "new", "vip", "repeat", "second", "marketing"].includes(a.filter) ? a.filter : "all";
-            const names = { away: "الغائبين", new: "الجدد", vip: "المميزين", repeat: "اللي رجعوا", second: "الجاهزين للطلب الثاني", marketing: "اللي يقبلون العروض", all: "كل العملاء" };
-            return { type: "open_customers", filter, label: `👥 فتح قائمة ${names[filter]}` };
-        }
-        return null;
-    }
-
-    function asstMsgHTML(msg, idx) {
-        if (msg.role === "user") return `<div class="am am-user">${esc(msg.text)}</div>`;
-        const acts = (msg.actions || []).map((a, j) => `<div class="am-act${a.done ? " done" : ""}">
-            <span>${a.label}</span>
-            ${a.done ? `<small>${a.done === "no" ? "انلغى" : "تم ✓"}</small>` : `<span class="am-act-btns"><button class="ab-mini ok" type="button" data-asst-act="${idx}:${j}">✅ نفّذ</button><button class="ab-mini" type="button" data-asst-no="${idx}:${j}">لا</button></span>`}
-        </div>`).join("");
-        return `<div class="am am-bot${msg.err ? " err" : ""}">${msg.html || esc(msg.text).replace(/\n/g, "<br>")}${acts ? `<div class="am-acts">${acts}</div>` : ""}</div>`;
-    }
-
-    function renderAsstLog() {
-        const log = $("#asstLog");
-        if (!log) return;
-        const st = asstState();
-        log.innerHTML = st.msgs.map(asstMsgHTML).join("") + (st.busy ? `<div class="am am-bot am-typing"><span></span><span></span><span></span></div>` : "");
-        log.scrollTop = log.scrollHeight;
-    }
-
-    async function openAssistant() {
-        const st = asstState();
-        if (!A.ai) loadAiStatus();
-        if (!st.msgs.length) {
-            st.msgs.push({ role: "bot", html: `هلا 👋 أنا مساعد متجرك.<br>اسألني عن <b>مبيعاتك وعملائك ومنتجاتك</b>، أو اطلب مني أسوي <b>كود خصم</b> أو أغيّر <b>سعر منتج</b>، وأنا أجهّزه وإنت توافق.<br>جرّب الأزرار تحت 👇`, text: "مرحبا" });
-        }
-        openSheet(`
+            </div>`)}async function lr(){const t=i.prof&&(i.customers||[]).find(s=>s.phone===i.prof.phone);if(!t)return;const e=String((b("#profNote")||{}).value||"").trim().slice(0,500)||null,{error:a}=await _.from("customers").update({note:e}).eq("phone",t.phone);if(a){y("تعذر حفظ الملاحظة");return}t.note=e,y("حُفظت الملاحظة ✓")}function cr(t){const e=i.prof&&(i.customers||[]).find(o=>o.phone===i.prof.phone),a=vs(t);if(!e||!a){y("المنتج غير منشور للحين");return}const s=Y(ATHR.url.product(a)),n=`هلا ${wa(e.name)||""} 👋
+لأنك تحب «${Le(a.name)}» حبينا نعرّفك على *${a.name}* ✨
+بسعر *${x(a.price)}*
+${s}`;window.open(ATHR.waLink(Ma(e),n),"_blank","noopener")}const Ls=[["sales","📊 ملخص المبيعات"],["top","🏆 الأكثر مبيعاً"],["customers","👥 عملائي"],["unsold","😴 منتجات ما تنباع"],["sources","📍 من وين الطلبات"],["stock","📦 المخزون"],["profit","💰 الأرباح"]];function kt(){return i.asst||(i.asst={msgs:[],busy:!1}),i.asst}function xa(){const t=i.ai&&i.ai.status||{};return!!(t.gemini||t.openai)}function dr(t){const e=ka(),a=[],s=(n,o)=>o?`${Math.round(n/o*100)}%`:"—";if(t==="sales")return e.all.orders?(a.push(`<b>اليوم:</b> ${e.today.orders?Oe(e.today.orders):"ما فيه طلبات"}${e.today.orders?` · ${x(e.today.sales)}`:""}`),a.push(`<b>آخر 7 أيام:</b> ${Oe(e.d7.orders)} · ${x(e.d7.sales)}`),a.push(`<b>آخر 30 يوم:</b> ${Oe(e.d30.orders)} · ${x(e.d30.sales)} · متوسط الطلب ${x(e.d30.avg)}`),e.pending&&a.push(`⏳ عندك <b>${Oe(e.pending)}</b> ${e.pending===1?"جديد ما تسلّم":"جديدة ما تسلّمت"} للحين.`),e.funnel.visits&&a.push(`👀 الزيارات آخر 30 يوم ${e.funnel.visits}، أضافوا للسلة ${e.funnel.adds}، طلبوا ${e.funnel.orders} (نسبة الشراء ${s(e.funnel.orders,e.funnel.visits)}).`),a.join("<br>")):"ما فيه طلبات مسجلة في المتجر للحين. أول ما توصل طلبات أعطيك ملخصها هنا.";if(t==="top")return e.top.length?`<b>الأكثر مبيعاً آخر 30 يوم:</b><ol>${e.top.slice(0,6).map(n=>`<li>${d(n.name)} — ${er(n.qty)} · ${x(n.sales)}</li>`).join("")}</ol>`:"ما انباع شي في آخر 30 يوم.";if(t==="customers"){const n=e.cust;return n.total?(a.push(`<b>عملاؤك:</b> ${n.total} · رجعوا للشراء ${n.repeat} (${s(n.repeat,n.total)}) · مميزون ${n.vip}`),a.push(`<b>جدد آخر 30 يوم:</b> ${n.new30} · يقبلون العروض ${n.marketing}`),n.second&&a.push(`🔁 <b>${n.second}</b> طلبوا مرة وحدة قبل 2 إلى 8 أسابيع. هذولا أسهل ناس للطلب الثاني.`),n.away&&a.push(`💤 <b>${n.away}</b> ما طلبوا من أكثر من شهرين.`),e.topCustomers.length&&a.push(`<b>أفضل العملاء:</b> ${e.topCustomers.slice(0,3).map(o=>`${d(o.name)} (${x(o.spent)})`).join("، ")}`),a.join("<br>")+'<div class="asst-acts"><button class="ab-mini" type="button" data-a="asst-customers">افتح العملاء</button></div>'):"ما فيه عملاء مسجلين للحين. كل من يطلب ينحفظ تلقائياً."}if(t==="unsold")return e.unsold.length?`<b>${e.unsold.length}</b> منتج ما انباع منه شي آخر 30 يوم، مثل: ${e.unsold.slice(0,6).map(d).join("، ")}.<br>💡 جرّب تعرضها في ريل، أو حطها في طقم مع منتج يبيع، أو اعمل لها عرض مؤقت.`:"كل المنتجات انباع منها شي آخر 30 يوم 👏";if(t==="sources")return!e.channels.length&&!e.sources.length?"ما فيه بيانات كافية عن مصادر الزوار والطلبات للحين.":(e.channels.length&&a.push(`<b>الطلبات جت من (30 يوم):</b> ${e.channels.slice(0,5).map(([n,o])=>`${Qt(n)} ${o}`).join("، ")}`),e.sources.length&&a.push(`<b>الزيارات من:</b> ${e.sources.slice(0,5).map(([n,o])=>`${Qt(n)} ${o}`).join("، ")}`),e.places.length&&a.push(`<b>أكثر المناطق (3 شهور):</b> ${e.places.slice(0,4).map(([n,o])=>`${d(n)} ${o}`).join("، ")}`),a.join("<br>"));if(t==="profit"){const n=K(),o=Ht(rt()),r=Ht(xt(rt(),-1)),l='<div class="asst-acts"><button class="ab-mini" type="button" data-a="fin-open">💰 افتح المبيعات والمصاريف</button></div>';return n.loaded?(a.push(`<b>${lt(o.m,!1)} للحين:</b> مبيعات ${x(o.sales)} − مصاريف ${x(o.expenses)} = <b>${o.profit<0?"خسارة":"ربح"} ${x(Math.abs(o.profit))}</b>${o.margin!==null?` (هامش ${o.margin}%)`:""}`),(r.sales||r.expenses)&&a.push(`<b>${lt(r.m,!1)}:</b> مبيعات ${x(r.sales)} · مصاريف ${x(r.expenses)} · ${r.profit<0?"خسارة":"ربح"} ${x(Math.abs(r.profit))}`),o.byCat[0]&&a.push(`أكبر مصروف هالشهر: ${ht(o.byCat[0][0])[1]} ${ht(o.byCat[0][0])[2]} (${x(o.byCat[0][1])})`),o.exps.length||a.push("⚠️ ما سجلت مصاريف هالشهر، فالربح هنا هو نفس المبيعات. سجّل مصاريفك عشان يطلع الرقم الصحيح."),a.join("<br>")+l):`ما قدرت أقرأ المصاريف الحين. مبيعات ${lt(o.m,!1)} للحين: <b>${x(o.sales)}</b>.${l}`}return t==="stock"?e.low.length?`<b>قربت تخلص:</b><ul>${e.low.map(n=>`<li>${d(n.name)} — باقي ${n.stock}</li>`).join("")}</ul>`:"ما فيه منتجات قربت تخلص. (المتابعة تشتغل للمنتجات اللي حاط لها كمية في المخزون.)":""}function ur(){const t=ka(),e=$(),a=n=>((i.draft?i.draft.categories:[]).find(o=>o.id===n)||{}).name||"",s=new Map(t.top.map(n=>[n.id,n.qty]));return{date:new Date(Date.now()+4*36e5).toISOString().slice(0,10),currency:"OMR",store:{free_delivery_from:Number(e.order.free_min)||0,delivery:(e.order.delivery||[]).filter(n=>n.enabled!==!1).map(n=>({name:n.name,price:Number(n.price)||0})),payments:(e.order.payments||[]).filter(n=>n.enabled!==!1).map(n=>n.name),loyalty:ATHR.loyaltyOn(e)},numbers:{today:t.today,last7:t.d7,last30:t.d30,all_time:t.all,pending_orders:t.pending,funnel_30d:t.funnel,gifts_90d:t.gifts},best_sellers_30d:t.top.map(n=>({name:n.name,qty:n.qty,sales:n.sales})),unsold_30d:t.unsold.slice(0,25),low_stock:t.low,categories_sold_90d:t.cats.slice(0,8),order_channels_30d:t.channels.map(([n,o])=>[Qt(n),o]),visit_sources_30d:t.sources.map(([n,o])=>[Qt(n),o]),top_places_90d:t.places.slice(0,6),customers:t.cust,top_customers:t.topCustomers,finance:K().loaded?[rt(),xt(rt(),-1),xt(rt(),-2)].map(n=>{const o=Ht(n);return{month:n,sales:o.sales,expenses:o.expenses,profit:o.profit,margin_pct:o.margin,orders:o.orders,expenses_by_type:o.byCat.map(([r,l])=>[ht(r)[2],l])}}):"expenses_not_loaded",coupons:(i.promo&&i.promo.coupons||[]).slice(0,15).map(n=>({code:n.code,kind:n.kind,value:Number(n.value),enabled:n.enabled,ends_at:n.ends_at})),products:(i.draft?i.draft.products:[]).slice(0,120).map(n=>({id:n.id,name:n.name,category:a(n.category_id),price:Number(n.price),old_price:n.old_price?Number(n.old_price):null,visible:n.is_visible!==!1,available:n.is_available!==!1,stock:ATHR.stockOf(n),sold_30d:s.get(n.id)||0}))}}function pr(t){if(!t||typeof t!="object")return null;if(t.type==="create_coupon"){const e=ATHR.couponCode(ATHR.digits(String(t.code||""))).replace(/[^A-Z0-9_-]/g,""),a=["pct","fixed","ship"].includes(t.kind)?t.kind:"pct",s=a==="ship"?0:Number(t.value);if(!ATHR.couponValid(e)||a==="pct"&&!(s>=1&&s<=90)||a==="fixed"&&!(s>0&&s<=100))return null;const n=Number(t.days)>0?Math.min(90,Math.round(Number(t.days))):0,o=Number.isInteger(Number(t.max_uses))&&Number(t.max_uses)>0?Number(t.max_uses):null,r=Number(t.min_total)>0?z(t.min_total):0,l=a==="ship"?"توصيل مجاني":a==="fixed"?`خصم ${x(s)}`:`خصم ${s}%`;return{type:"create_coupon",code:e,kind:a,value:z(s),min:r,days:n,maxUses:o,owner:String(t.owner||"").slice(0,80),label:`🎟️ إنشاء كود <b dir="ltr">${d(e)}</b>: ${l}${r?` للطلبات من ${x(r)}`:""}${n?` لمدة ${n} يوم`:""}${o?` (${o} مرة)`:""}`}}if(t.type==="update_product"){const e=(i.draft?i.draft.products:[]).find(n=>n.id===t.id);if(!e)return null;const a={},s=[];return t.price!==void 0&&Number(t.price)>0&&Number(t.price)<=500&&(a.price=z(t.price),s.push(`السعر ${x(a.price)}`)),t.old_price===null?(a.old_price=null,s.push("بدون سعر مشطوب")):t.old_price!==void 0&&Number(t.old_price)>Number(a.price??e.price)&&(a.old_price=z(t.old_price),s.push(`السعر المشطوب ${x(a.old_price)}`)),typeof t.is_visible=="boolean"&&(a.is_visible=t.is_visible,s.push(t.is_visible?"إظهار":"إخفاء")),typeof t.is_available=="boolean"&&(a.is_available=t.is_available,s.push(t.is_available?"متوفر":"نفذ")),t.stock===null?(a.stock=null,s.push("بدون متابعة مخزون")):Number.isInteger(Number(t.stock))&&Number(t.stock)>=0&&t.stock!==void 0&&(a.stock=Number(t.stock),s.push(`المخزون ${a.stock}`)),s.length?{type:"update_product",id:e.id,ch:a,label:`✏️ «${d(e.name)}»: ${d(s.join("، "))}`}:null}if(t.type==="open_customers"){const e=["away","new","vip","repeat","second","marketing"].includes(t.filter)?t.filter:"all";return{type:"open_customers",filter:e,label:`👥 فتح قائمة ${{away:"الغائبين",new:"الجدد",vip:"المميزين",repeat:"اللي رجعوا",second:"الجاهزين للطلب الثاني",marketing:"اللي يقبلون العروض",all:"كل العملاء"}[e]}`}}return null}function mr(t,e){if(t.role==="user")return`<div class="am am-user">${d(t.text)}</div>`;const a=(t.actions||[]).map((s,n)=>`<div class="am-act${s.done?" done":""}">
+            <span>${s.label}</span>
+            ${s.done?`<small>${s.done==="no"?"انلغى":"تم ✓"}</small>`:`<span class="am-act-btns"><button class="ab-mini ok" type="button" data-asst-act="${e}:${n}">✅ نفّذ</button><button class="ab-mini" type="button" data-asst-no="${e}:${n}">لا</button></span>`}
+        </div>`).join("");return`<div class="am am-bot${t.err?" err":""}">${t.html||d(t.text).replace(/\n/g,"<br>")}${a?`<div class="am-acts">${a}</div>`:""}</div>`}function Rt(){const t=b("#asstLog");if(!t)return;const e=kt();t.innerHTML=e.msgs.map(mr).join("")+(e.busy?'<div class="am am-bot am-typing"><span></span><span></span><span></span></div>':""),t.scrollTop=t.scrollHeight}async function fr(){const t=kt();i.ai||Zt(),t.msgs.length||t.msgs.push({role:"bot",html:"هلا 👋 أنا مساعد متجرك.<br>اسألني عن <b>مبيعاتك وعملائك ومنتجاتك</b>، أو اطلب مني أسوي <b>كود خصم</b> أو أغيّر <b>سعر منتج</b>، وأنا أجهّزه وإنت توافق.<br>جرّب الأزرار تحت 👇",text:"مرحبا"}),ot(`
             <div class="adm-sheet-head"><h2>✨ مساعدك الذكي</h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>
             <div class="asst-log" id="asstLog" aria-live="polite"></div>
-            <div class="asst-chips">${ASST_CHIPS.map(([k, l]) => `<button type="button" class="chip-q" data-asst-q="${k}">${l}</button>`).join("")}</div>
-            <p class="asst-hint" id="asstHint"${aiReady() || !A.ai || (A.ai && A.ai.loading) ? " hidden" : ""}>للأسئلة الحرة فعّل الذكاء الاصطناعي (فيه استخدام مجاني) <button class="link-mini" type="button" data-a="asst-key">من هنا</button></p>
+            <div class="asst-chips">${Ls.map(([a,s])=>`<button type="button" class="chip-q" data-asst-q="${a}">${s}</button>`).join("")}</div>
+            <p class="asst-hint" id="asstHint"${xa()||!i.ai||i.ai&&i.ai.loading?" hidden":""}>للأسئلة الحرة فعّل الذكاء الاصطناعي (فيه استخدام مجاني) <button class="link-mini" type="button" data-a="asst-key">من هنا</button></p>
             <form class="asst-form" id="asstForm" autocomplete="off">
                 <input class="ai" id="asstInput" maxlength="600" placeholder="اسأل أي شي… مثال: سوّ كود خصم 10% لأسبوع">
                 <button class="ab ab-primary" type="submit" aria-label="إرسال">إرسال</button>
-            </form>`);
-        const panel = $("#admSheet .adm-sheet-panel");
-        if (panel) panel.classList.add("asst-panel");
-        $("#asstForm").addEventListener("submit", (e) => {
-            e.preventDefault();
-            const input = $("#asstInput");
-            const q = String(input.value || "").trim();
-            if (!q || asstState().busy) return;
-            input.value = "";
-            asstAsk(q);
-        });
-        renderAsstLog();
-        ensureInsights().catch(() => {});
-        if (!A.promo) loadPromo().catch(() => {});
-    }
-
-    async function asstQuick(kind) {
-        const st = asstState();
-        const label = (ASST_CHIPS.find(([k]) => k === kind) || [])[1] || "";
-        st.msgs.push({ role: "user", text: label.replace(/^\S+\s/, "") });
-        st.busy = true;
-        renderAsstLog();
-        await ensureInsights();
-        st.busy = false;
-        const html = asstLocal(kind);
-        st.msgs.push({ role: "bot", html, text: html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() });
-        renderAsstLog();
-    }
-
-    async function asstAsk(q) {
-        const st = asstState();
-        st.msgs.push({ role: "user", text: q });
-        st.busy = true;
-        renderAsstLog();
-        await ensureInsights();
-        if (!aiReady()) await loadAiStatus();
-        if (!aiReady()) {
-            st.busy = false;
-            st.msgs.push({ role: "bot", err: true, html: `للأسئلة الحرة لازم تفعّل الذكاء الاصطناعي أول (Gemini فيه استخدام مجاني). <div class="asst-acts"><button class="ab-mini" type="button" data-a="asst-key">فعّله الحين</button></div>الأزرار تحت تشتغل بدونه 👇` });
-            renderAsstLog();
-            return;
-        }
-        try {
-            const history = st.msgs.slice(-11, -1).map((x) => ({ role: x.role === "user" ? "user" : "assistant", text: String(x.text || "").slice(0, 800) }));
-            const out = await aiCall({ task: "assistant", question: q, history, context: asstContext() });
-            const actions = (Array.isArray(out.actions) ? out.actions : []).map(asstCheck).filter(Boolean).slice(0, 3);
-            st.msgs.push({ role: "bot", text: String(out.reply || "").slice(0, 2500), actions });
-        } catch (error) {
-            const msg = error && error.code === "bad_request" ? "المساعد يحتاج تحديث بسيط في الخادم. جرّب الأزرار تحت حالياً." : aiError(error);
-            st.msgs.push({ role: "bot", err: true, text: msg });
-        }
-        st.busy = false;
-        renderAsstLog();
-    }
-
-    async function asstRun(ref, yes) {
-        const [i, j] = String(ref).split(":").map(Number);
-        const msg = asstState().msgs[i];
-        const a = msg && msg.actions && msg.actions[j];
-        if (!a || a.done) return;
-        if (!yes) { a.done = "no"; renderAsstLog(); return; }
-        if (a.type === "create_coupon") {
-            const row = {
-                code: a.code, owner: a.owner || null, kind: a.kind, value: a.value, min_total: a.min,
-                ends_at: a.days ? new Date(Date.now() + a.days * 864e5).toISOString() : null, max_uses: a.maxUses, enabled: true
-            };
-            const { error } = await sb.from("coupons").insert(row);
-            if (error) { toast(error.code === "23505" ? "هذا الكود موجود من قبل" : "تعذر إنشاء الكود"); return; }
-            a.done = "yes";
-            asstState().msgs.push({ role: "bot", html: `أنشأت الكود <b dir="ltr">${esc(a.code)}</b> ✓ يشتغل الحين في صفحة الطلب. تلقاه في «المبيعات والعروض».`, text: `أنشأت الكود ${a.code}` });
-            loadPromo().catch(() => {});
-        } else if (a.type === "update_product") {
-            const p = A.draft.products.find((x) => x.id === a.id);
-            if (!p) return;
-            Object.assign(p, a.ch);
-            saveDraft();
-            a.done = "yes";
-            asstState().msgs.push({ role: "bot", html: `جهّزت التعديل ✓ يظهر للزبائن بعد النشر.<div class="asst-acts"><button class="ab-mini ok" type="button" data-a="publish">نشر التغييرات الحين</button></div>`, text: "جهزت تعديل المنتج" });
-        } else if (a.type === "open_customers") {
-            a.done = "yes";
-            A.custFilter.kind = a.filter;
-            A.custFilter.q = "";
-            closeSheet();
-            A.book = "customers";
-            location.hash = "#orders";
-            open("orders");
-            return;
-        }
-        renderAsstLog();
-    }
-
-    async function insightsClick(d) {
-        if (d.a === "asst-open") { await openAssistant(); return true; }
-        if (d.a === "asst-customers") { closeSheet(); A.book = "customers"; location.hash = "#orders"; open("orders"); return true; }
-        if (d.a === "asst-key") { closeSheet(); A.tab = "texts"; if (A.view !== "admin") { location.hash = "#admin"; open("admin"); } else renderPanel(); return true; }
-        if (d.a === "prof-note") { await saveCustNote(); return true; }
-        if (d.asstQ) { if (!asstState().busy) await asstQuick(d.asstQ); return true; }
-        if (d.asstAct) { await asstRun(d.asstAct, true); return true; }
-        if (d.asstNo) { await asstRun(d.asstNo, false); return true; }
-        if (d.custOpen) { await openCustomer(d.custOpen); return true; }
-        if (d.profSuggest) { suggestToCustomer(d.profSuggest); return true; }
-        return false;
-    }
-
-    // =====================================================
-    // v20 — «مبيعات ومصاريف مشروعي»
-    //  - المبيعات تنحسب تلقائياً من الطلبات (غير المخفية)
-    //  - المصاريف يسجلها المدير، وتنحفظ في مخزن خاص عبر دالة admin-data (ما يشوفها الزوار)
-    //  - ملخص شهري تلقائي: المبيعات، المصاريف، الربح، الهامش، الطلبات + رسم آخر 6 شهور + تنزيل Excel
-    // =====================================================
-    const FIN_CATS = [
-        ["stock", "📦", "بضاعة وطباعة"],
-        ["pack", "🎀", "تغليف"],
-        ["ship", "🚚", "توصيل"],
-        ["ads", "📣", "إعلانات"],
-        ["subs", "💻", "اشتراكات ورسوم"],
-        ["other", "🧾", "أخرى"]
-    ];
-    const finCat = (k) => FIN_CATS.find((c) => c[0] === k) || FIN_CATS[FIN_CATS.length - 1];
-    const AR_MONTHS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-    const muscatDay = (t = Date.now()) => new Date(Number(t) + 4 * 36e5).toISOString().slice(0, 10);
-    const thisMonth = () => muscatDay().slice(0, 7);
-    const monthName = (m, year = true) => `${AR_MONTHS[Number(m.slice(5, 7)) - 1]}${year ? ` ${m.slice(0, 4)}` : ""}`;
-    function addMonths(m, n) {
-        const d = new Date(Date.UTC(Number(m.slice(0, 4)), Number(m.slice(5, 7)) - 1 + n, 1));
-        return d.toISOString().slice(0, 7);
-    }
-    const orderMonth = (o) => muscatDay(new Date(o.ordered_at || o.created_at).getTime());
-
-    function finState() {
-        if (!A.fin) A.fin = { loaded: false, loading: false, err: "", rev: 0, items: [], month: thisMonth(), edit: null };
-        return A.fin;
-    }
-
-    async function finCall(body) {
-        const { data } = await sb.auth.getSession();
-        const token = data && data.session && data.session.access_token;
-        const res = await fetch(`${window.ATHR_SUPABASE_URL}/functions/v1/admin-data`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", apikey: window.ATHR_SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${token || ""}` },
-            body: JSON.stringify(body)
-        });
-        let out = {};
-        try { out = await res.json(); } catch { /* رد غير متوقع */ }
-        if (!res.ok || out.error) {
-            const error = new Error(out.error || `http_${res.status}`);
-            error.code = out.error || `http_${res.status}`;
-            error.body = out;
-            throw error;
-        }
-        return out;
-    }
-
-    async function loadFinance() {
-        const f = finState();
-        if (f.loading) return f.loading;
-        f.loading = (async () => {
-            try {
-                const out = await finCall({ action: "get", doc: "expenses" });
-                f.items = (out.data && Array.isArray(out.data.items)) ? out.data.items : [];
-                f.rev = Number(out.rev) || 0;
-                f.loaded = true;
-                f.err = "";
-            } catch (error) {
-                f.err = error.code || "net";
-            }
-            f.loading = false;
-        })();
-        return f.loading;
-    }
-
-    // تعديل المصاريف: نحفظ برقم النسخة، ولو انحفظ شي من جهاز ثاني نعيد التعديل فوق آخر نسخة
-    async function finMutate(change) {
-        const f = finState();
-        const run = () => change(f.items.map((x) => ({ ...x })));
-        let out;
-        try {
-            out = await finCall({ action: "put", doc: "expenses", rev: f.rev, data: { items: run() } });
-        } catch (error) {
-            if (error.code !== "conflict") throw error;
-            f.items = (error.body.data && error.body.data.items) || [];
-            f.rev = Number(error.body.rev) || 0;
-            out = await finCall({ action: "put", doc: "expenses", rev: f.rev, data: { items: run() } });
-        }
-        f.items = out.data.items || [];
-        f.rev = Number(out.rev) || 0;
-    }
-
-    // مصاريف شهر معيّن (مع المصاريف الشهرية المتكررة)
-    function expensesIn(m) {
-        const f = finState();
-        const now = thisMonth();
-        return f.items.filter((x) => {
-            const start = x.d.slice(0, 7);
-            if (!x.m) return start === m;
-            return start <= m && m <= now && (!x.u || m <= x.u);
-        }).map((x) => ({ ...x, shown: x.m ? `${m}-${x.d.slice(8, 10)}` : x.d }))
-            .sort((a, b) => (b.shown > a.shown ? 1 : b.shown < a.shown ? -1 : 0));
-    }
-
-    function monthSummary(m) {
-        const ord = liveOrders().filter((o) => orderMonth(o).slice(0, 7) === m);
-        const sales = r3(ord.reduce((s, o) => s + Number(o.total || 0), 0));
-        const delivery = r3(ord.reduce((s, o) => s + Number(o.delivery_price || 0), 0));
-        const exps = expensesIn(m);
-        const expenses = r3(exps.reduce((s, x) => s + Number(x.a || 0), 0));
-        const profit = r3(sales - expenses);
-        const byCat = FIN_CATS.map(([k]) => [k, r3(exps.filter((x) => x.c === k).reduce((s, x) => s + Number(x.a), 0))]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]);
-        return { m, orders: ord.length, sales, delivery, expenses, profit, margin: sales > 0 ? Math.round((profit / sales) * 100) : null, byCat, exps };
-    }
-
-    // الأشهر اللي فيها بيانات (طلبات أو مصاريف)، من الأحدث
-    function finMonths() {
-        const set = new Set([thisMonth()]);
-        liveOrders().forEach((o) => set.add(orderMonth(o).slice(0, 7)));
-        finState().items.forEach((x) => {
-            set.add(x.d.slice(0, 7));
-            if (x.m) for (let m = x.d.slice(0, 7), i = 0; m <= thisMonth() && (!x.u || m <= x.u) && i < 60; m = addMonths(m, 1), i++) set.add(m);
-        });
-        return [...set].filter((m) => m <= thisMonth()).sort().reverse();
-    }
-
-    const signMoney = (n) => (n < 0 ? `− ${money(Math.abs(n))}` : money(n));
-
-    function finChart(sel) {
-        const months = Array.from({ length: 6 }, (_, i) => addMonths(sel, i - 5));
-        const data = months.map(monthSummary);
-        const max = Math.max(1, ...data.map((d) => Math.max(d.sales, d.expenses)));
-        const nice = (v) => { const p = 10 ** Math.floor(Math.log10(v)); return Math.ceil(v / p / (v / p > 5 ? 2 : 1)) * p * (v / p > 5 ? 2 : 1); };
-        const top = nice(max);
-        const W = 340, H = 170, padR = 34, padL = 6, padT = 16, padB = 26;
-        const plotW = W - padR - padL, plotH = H - padT - padB;
-        const gw = plotW / months.length;
-        const bw = Math.min(18, (gw - 14) / 2);
-        const y = (v) => padT + plotH - (v / top) * plotH;
-        const fmt = (v) => (v >= 1000 ? `${Math.round(v / 100) / 10}K` : String(Math.round(v * 10) / 10));
-        const bar = (x, v, cls) => {
-            if (v <= 0) return "";
-            const h = Math.max(2, (v / top) * plotH), r = Math.min(4, h / 2, bw / 2), b = padT + plotH;
-            return `<path class="${cls}" d="M${x},${b} V${b - h + r} Q${x},${b - h} ${x + r},${b - h} H${x + bw - r} Q${x + bw},${b - h} ${x + bw},${b - h + r} V${b} Z"/>`;
-        };
-        const grid = [0, top / 2, top].map((v) => `<line class="fg" x1="${padL}" x2="${W - padR}" y1="${y(v)}" y2="${y(v)}"/><text class="ft" x="${W - padR + 4}" y="${y(v) + 3.5}">${fmt(v)}</text>`).join("");
-        // اتجاه عربي: الأقدم يمين، والأحدث يسار
-        const groups = data.map((d, i) => {
-            const gx = W - padR - (i + 1) * gw;
-            const cx = gx + gw / 2;
-            const on = d.m === sel;
-            return `<g class="fgrp${on ? " on" : ""}" data-a="fin-pick" data-m="${d.m}" role="button" aria-label="${esc(monthName(d.m))}: المبيعات ${money(d.sales)}، المصاريف ${money(d.expenses)}">
-                <rect class="fhit" x="${gx + 2}" y="${padT - 12}" width="${gw - 4}" height="${plotH + 12 + padB}" rx="8"/>
-                ${bar(cx + 1, d.sales, "fb-s")}${bar(cx - 1 - bw, d.expenses, "fb-e")}
-                <text class="fm" x="${cx}" y="${H - 8}">${AR_MONTHS[Number(d.m.slice(5, 7)) - 1]}</text>
-            </g>`;
-        }).join("");
-        return `<div class="fin-chart">
+            </form>`);const e=b("#admSheet .adm-sheet-panel");e&&e.classList.add("asst-panel"),b("#asstForm").addEventListener("submit",a=>{a.preventDefault();const s=b("#asstInput"),n=String(s.value||"").trim();!n||kt().busy||(s.value="",hr(n))}),Rt(),_a().catch(()=>{}),i.promo||Gt().catch(()=>{})}async function br(t){const e=kt(),a=(Ls.find(([n])=>n===t)||[])[1]||"";e.msgs.push({role:"user",text:a.replace(/^\S+\s/,"")}),e.busy=!0,Rt(),await _a(),e.busy=!1;const s=dr(t);e.msgs.push({role:"bot",html:s,text:s.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim()}),Rt()}async function hr(t){const e=kt();if(e.msgs.push({role:"user",text:t}),e.busy=!0,Rt(),await _a(),xa()||await Zt(),!xa()){e.busy=!1,e.msgs.push({role:"bot",err:!0,html:'للأسئلة الحرة لازم تفعّل الذكاء الاصطناعي أول (Gemini فيه استخدام مجاني). <div class="asst-acts"><button class="ab-mini" type="button" data-a="asst-key">فعّله الحين</button></div>الأزرار تحت تشتغل بدونه 👇'}),Rt();return}try{const a=e.msgs.slice(-11,-1).map(o=>({role:o.role==="user"?"user":"assistant",text:String(o.text||"").slice(0,800)})),s=await Kt({task:"assistant",question:t,history:a,context:ur()}),n=(Array.isArray(s.actions)?s.actions:[]).map(pr).filter(Boolean).slice(0,3);e.msgs.push({role:"bot",text:String(s.reply||"").slice(0,2500),actions:n})}catch(a){const s=a&&a.code==="bad_request"?"المساعد يحتاج تحديث بسيط في الخادم. جرّب الأزرار تحت حالياً.":zt(a);e.msgs.push({role:"bot",err:!0,text:s})}e.busy=!1,Rt()}async function Ps(t,e){const[a,s]=String(t).split(":").map(Number),n=kt().msgs[a],o=n&&n.actions&&n.actions[s];if(!(!o||o.done)){if(!e){o.done="no",Rt();return}if(o.type==="create_coupon"){const r={code:o.code,owner:o.owner||null,kind:o.kind,value:o.value,min_total:o.min,ends_at:o.days?new Date(Date.now()+o.days*864e5).toISOString():null,max_uses:o.maxUses,enabled:!0},{error:l}=await _.from("coupons").insert(r);if(l){y(l.code==="23505"?"هذا الكود موجود من قبل":"تعذر إنشاء الكود");return}o.done="yes",kt().msgs.push({role:"bot",html:`أنشأت الكود <b dir="ltr">${d(o.code)}</b> ✓ يشتغل الحين في صفحة الطلب. تلقاه في «المبيعات والعروض».`,text:`أنشأت الكود ${o.code}`}),Gt().catch(()=>{})}else if(o.type==="update_product"){const r=i.draft.products.find(l=>l.id===o.id);if(!r)return;Object.assign(r,o.ch),nt(),o.done="yes",kt().msgs.push({role:"bot",html:'جهّزت التعديل ✓ يظهر للزبائن بعد النشر.<div class="asst-acts"><button class="ab-mini ok" type="button" data-a="publish">نشر التغييرات الحين</button></div>',text:"جهزت تعديل المنتج"})}else if(o.type==="open_customers"){o.done="yes",i.custFilter.kind=o.filter,i.custFilter.q="",At(),i.book="customers",location.hash="#orders",ft("orders");return}Rt()}}async function gr(t){return t.a==="asst-open"?(await fr(),!0):t.a==="asst-customers"?(At(),i.book="customers",location.hash="#orders",ft("orders"),!0):t.a==="asst-key"?(At(),i.tab="texts",i.view!=="admin"?(location.hash="#admin",ft("admin")):re(),!0):t.a==="prof-note"?(await lr(),!0):t.asstQ?(kt().busy||await br(t.asstQ),!0):t.asstAct?(await Ps(t.asstAct,!0),!0):t.asstNo?(await Ps(t.asstNo,!1),!0):t.custOpen?(await ir(t.custOpen),!0):t.profSuggest?(cr(t.profSuggest),!0):!1}const ue=[["stock","📦","بضاعة وطباعة"],["pack","🎀","تغليف"],["ship","🚚","توصيل"],["ads","📣","إعلانات"],["subs","💻","اشتراكات ورسوم"],["other","🧾","أخرى"]],ht=t=>ue.find(e=>e[0]===t)||ue[ue.length-1],Ta=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"],Ot=(t=Date.now())=>new Date(Number(t)+4*36e5).toISOString().slice(0,10),rt=()=>Ot().slice(0,7),lt=(t,e=!0)=>`${Ta[Number(t.slice(5,7))-1]}${e?` ${t.slice(0,4)}`:""}`;function xt(t,e){return new Date(Date.UTC(Number(t.slice(0,4)),Number(t.slice(5,7))-1+e,1)).toISOString().slice(0,7)}const Ds=t=>Ot(new Date(t.ordered_at||t.created_at).getTime());function K(){return i.fin||(i.fin={loaded:!1,loading:!1,err:"",rev:0,items:[],month:rt(),edit:null}),i.fin}async function Pe(t){const{data:e}=await _.auth.getSession(),a=e&&e.session&&e.session.access_token,s=await fetch(`${window.ATHR_SUPABASE_URL}/functions/v1/admin-data`,{method:"POST",headers:{"Content-Type":"application/json",apikey:window.ATHR_SUPABASE_PUBLISHABLE_KEY,Authorization:`Bearer ${a||""}`},body:JSON.stringify(t)});let n={};try{n=await s.json()}catch{}if(!s.ok||n.error){const o=new Error(n.error||`http_${s.status}`);throw o.code=n.error||`http_${s.status}`,o.body=n,o}return n}async function Aa(){const t=K();return t.loading||(t.loading=(async()=>{try{const e=await Pe({action:"get",doc:"expenses"});t.items=e.data&&Array.isArray(e.data.items)?e.data.items:[],t.rev=Number(e.rev)||0,t.loaded=!0,t.err=""}catch(e){t.err=e.code||"net"}t.loading=!1})()),t.loading}async function Is(t){const e=K(),a=()=>t(e.items.map(n=>({...n})));let s;try{s=await Pe({action:"put",doc:"expenses",rev:e.rev,data:{items:a()}})}catch(n){if(n.code!=="conflict")throw n;e.items=n.body.data&&n.body.data.items||[],e.rev=Number(n.body.rev)||0,s=await Pe({action:"put",doc:"expenses",rev:e.rev,data:{items:a()}})}e.items=s.data.items||[],e.rev=Number(s.rev)||0}function Fs(t){const e=K(),a=rt();return e.items.filter(s=>{const n=s.d.slice(0,7);return s.m?n<=t&&t<=a&&(!s.u||t<=s.u):n===t}).map(s=>({...s,shown:s.m?`${t}-${s.d.slice(8,10)}`:s.d})).sort((s,n)=>n.shown>s.shown?1:n.shown<s.shown?-1:0)}function Ht(t){const e=Ce().filter(c=>Ds(c).slice(0,7)===t),a=z(e.reduce((c,p)=>c+Number(p.total||0),0)),s=z(e.reduce((c,p)=>c+Number(p.delivery_price||0),0)),n=Fs(t),o=z(n.reduce((c,p)=>c+Number(p.a||0),0)),r=z(a-o),l=ue.map(([c])=>[c,z(n.filter(p=>p.c===c).reduce((p,u)=>p+Number(u.a),0))]).filter(c=>c[1]>0).sort((c,p)=>p[1]-c[1]);return{m:t,orders:e.length,sales:a,delivery:s,expenses:o,profit:r,margin:a>0?Math.round(r/a*100):null,byCat:l,exps:n}}function js(){const t=new Set([rt()]);return Ce().forEach(e=>t.add(Ds(e).slice(0,7))),K().items.forEach(e=>{if(t.add(e.d.slice(0,7)),e.m)for(let a=e.d.slice(0,7),s=0;a<=rt()&&(!e.u||a<=e.u)&&s<60;a=xt(a,1),s++)t.add(a)}),[...t].filter(e=>e<=rt()).sort().reverse()}const Us=t=>t<0?`− ${x(Math.abs(t))}`:x(t);function $r(t){const e=Array.from({length:6},(k,v)=>xt(t,v-5)),a=e.map(Ht),s=Math.max(1,...a.map(k=>Math.max(k.sales,k.expenses))),o=(k=>{const v=10**Math.floor(Math.log10(k));return Math.ceil(k/v/(k/v>5?2:1))*v*(k/v>5?2:1)})(s),r=340,l=170,c=34,p=6,u=16,m=26,h=r-c-p,M=l-u-m,L=h/e.length,S=Math.min(18,(L-14)/2),E=k=>u+M-k/o*M,R=k=>k>=1e3?`${Math.round(k/100)/10}K`:String(Math.round(k*10)/10),D=(k,v,f)=>{if(v<=0)return"";const w=Math.max(2,v/o*M),C=Math.min(4,w/2,S/2),O=u+M;return`<path class="${f}" d="M${k},${O} V${O-w+C} Q${k},${O-w} ${k+C},${O-w} H${k+S-C} Q${k+S},${O-w} ${k+S},${O-w+C} V${O} Z"/>`},P=[0,o/2,o].map(k=>`<line class="fg" x1="${p}" x2="${r-c}" y1="${E(k)}" y2="${E(k)}"/><text class="ft" x="${r-c+4}" y="${E(k)+3.5}">${R(k)}</text>`).join(""),A=a.map((k,v)=>{const f=r-c-(v+1)*L,w=f+L/2;return`<g class="fgrp${k.m===t?" on":""}" data-a="fin-pick" data-m="${k.m}" role="button" aria-label="${d(lt(k.m))}: المبيعات ${x(k.sales)}، المصاريف ${x(k.expenses)}">
+                <rect class="fhit" x="${f+2}" y="${u-12}" width="${L-4}" height="${M+12+m}" rx="8"/>
+                ${D(w+1,k.sales,"fb-s")}${D(w-1-S,k.expenses,"fb-e")}
+                <text class="fm" x="${w}" y="${l-8}">${Ta[Number(k.m.slice(5,7))-1]}</text>
+            </g>`}).join("");return`<div class="fin-chart">
             <div class="fin-legend"><span><i class="sw s"></i>المبيعات</span><span><i class="sw e"></i>المصاريف</span><small class="adm-muted">اضغط على أي شهر</small></div>
-            <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="المبيعات والمصاريف آخر 6 شهور">${grid}${groups}</svg>
-        </div>`;
-    }
-
-    function finKpis(s, prev) {
-        const delta = (a, b) => {
-            if (!b) return "";
-            const p = Math.round(((a - b) / Math.abs(b)) * 100);
-            return p ? `<small class="fk-d">${p > 0 ? "▲" : "▼"} ${Math.abs(p)}% عن ${monthName(prev.m, false)}</small>` : "";
-        };
-        const row = (label, value, extra = "", cls = "") => `<div class="fk-row${cls ? ` ${cls}` : ""}"><span>${label}</span><b dir="ltr">${value}</b>${extra}</div>`;
-        const f = finState();
-        const expTxt = f.loaded ? money(s.expenses) : f.err ? "—" : "…";
-        return `<div class="fin-kpis">
-            ${row("المبيعات", money(s.sales), delta(s.sales, prev.sales))}
-            ${row("المصاريف", expTxt, f.loaded ? delta(s.expenses, prev.expenses) : "")}
-            ${row(s.profit < 0 && f.loaded ? "الخسارة" : "الربح", f.loaded ? signMoney(s.profit) : "…", f.loaded ? delta(s.profit, prev.profit) : "", s.profit < 0 && f.loaded ? "neg" : "hero")}
-            ${row("الهامش", f.loaded && s.margin !== null ? `${s.margin}%` : "—")}
-            ${row("الطلبات", String(s.orders))}
+            <svg viewBox="0 0 ${r} ${l}" role="img" aria-label="المبيعات والمصاريف آخر 6 شهور">${P}${A}</svg>
+        </div>`}function yr(t,e){const a=(r,l)=>{if(!l)return"";const c=Math.round((r-l)/Math.abs(l)*100);return c?`<small class="fk-d">${c>0?"▲":"▼"} ${Math.abs(c)}% عن ${lt(e.m,!1)}</small>`:""},s=(r,l,c="",p="")=>`<div class="fk-row${p?` ${p}`:""}"><span>${r}</span><b dir="ltr">${l}</b>${c}</div>`,n=K(),o=n.loaded?x(t.expenses):n.err?"—":"…";return`<div class="fin-kpis">
+            ${s("المبيعات",x(t.sales),a(t.sales,e.sales))}
+            ${s("المصاريف",o,n.loaded?a(t.expenses,e.expenses):"")}
+            ${s(t.profit<0&&n.loaded?"الخسارة":"الربح",n.loaded?Us(t.profit):"…",n.loaded?a(t.profit,e.profit):"",t.profit<0&&n.loaded?"neg":"hero")}
+            ${s("الهامش",n.loaded&&t.margin!==null?`${t.margin}%`:"—")}
+            ${s("الطلبات",String(t.orders))}
         </div>
-        ${s.delivery > 0 ? `<p class="adm-muted fin-sub">منها رسوم توصيل دفعها الزبائن: ${money(s.delivery)}</p>` : ""}`;
-    }
-
-    function finExpensesHTML(s) {
-        const f = finState();
-        if (f.err && !f.loaded) {
-            return `<div class="bk-box warn"><p>تعذّر تحميل المصاريف. تأكد من الاتصال.</p><button class="ab ab-ghost ab-sm" type="button" data-a="fin-retry">حاول مرة ثانية</button></div>`;
-        }
-        if (!f.loaded) return `<p class="adm-muted">جاري تحميل المصاريف…</p>`;
-        return `${s.byCat.length ? `<div class="fin-cats">${s.byCat.map(([k, v]) => `<span class="fin-cat">${finCat(k)[1]} ${finCat(k)[2]} <b dir="ltr">${money(v)}</b></span>`).join("")}</div>` : ""}
-            ${s.exps.length ? `<ul class="fin-list">${s.exps.map((x) => `<li><button type="button" class="fin-item" data-fin-edit="${esc(x.id)}">
-                <span class="fi-ico" aria-hidden="true">${finCat(x.c)[1]}</span>
-                <span class="fi-txt"><b>${esc(x.n || finCat(x.c)[2])}</b><small>${esc(finCat(x.c)[2])} · ${Number(x.shown.slice(8, 10))} ${AR_MONTHS[Number(x.shown.slice(5, 7)) - 1]}${x.m ? " · 🔁 شهري" : ""}</small></span>
-                <span class="fi-amt" dir="ltr">${money(x.a)}</span>
-            </button></li>`).join("")}</ul>` : `<p class="adm-muted fin-empty">ما فيه مصاريف مسجلة في ${monthName(s.m, false)}. سجّل مصاريفك (طباعة، تغليف، توصيل، إعلانات…) عشان يطلع ربحك الصحيح.</p>`}`;
-    }
-
-    function finTableHTML() {
-        const rows = finMonths().slice(0, 12).map(monthSummary);
-        const f = finState();
-        return `<div class="fin-table-wrap"><table class="fin-table">
+        ${t.delivery>0?`<p class="adm-muted fin-sub">منها رسوم توصيل دفعها الزبائن: ${x(t.delivery)}</p>`:""}`}function vr(t){const e=K();return e.err&&!e.loaded?'<div class="bk-box warn"><p>تعذّر تحميل المصاريف. تأكد من الاتصال.</p><button class="ab ab-ghost ab-sm" type="button" data-a="fin-retry">حاول مرة ثانية</button></div>':e.loaded?`${t.byCat.length?`<div class="fin-cats">${t.byCat.map(([a,s])=>`<span class="fin-cat">${ht(a)[1]} ${ht(a)[2]} <b dir="ltr">${x(s)}</b></span>`).join("")}</div>`:""}
+            ${t.exps.length?`<ul class="fin-list">${t.exps.map(a=>`<li><button type="button" class="fin-item" data-fin-edit="${d(a.id)}">
+                <span class="fi-ico" aria-hidden="true">${ht(a.c)[1]}</span>
+                <span class="fi-txt"><b>${d(a.n||ht(a.c)[2])}</b><small>${d(ht(a.c)[2])} · ${Number(a.shown.slice(8,10))} ${Ta[Number(a.shown.slice(5,7))-1]}${a.m?" · 🔁 شهري":""}</small></span>
+                <span class="fi-amt" dir="ltr">${x(a.a)}</span>
+            </button></li>`).join("")}</ul>`:`<p class="adm-muted fin-empty">ما فيه مصاريف مسجلة في ${lt(t.m,!1)}. سجّل مصاريفك (طباعة، تغليف، توصيل، إعلانات…) عشان يطلع ربحك الصحيح.</p>`}`:'<p class="adm-muted">جاري تحميل المصاريف…</p>'}function wr(){const t=js().slice(0,12).map(Ht),e=K();return`<div class="fin-table-wrap"><table class="fin-table">
             <thead><tr><th>الشهر</th><th>المبيعات</th><th>المصاريف</th><th>الربح</th></tr></thead>
-            <tbody>${rows.map((s) => `<tr${s.m === f.month ? ' class="on"' : ""}><td><button type="button" class="link-mini" data-a="fin-pick" data-m="${s.m}">${monthName(s.m)}</button></td><td dir="ltr">${money(s.sales)}</td><td dir="ltr">${f.loaded ? money(s.expenses) : "—"}</td><td dir="ltr" class="${s.profit < 0 && f.loaded ? "neg" : ""}">${f.loaded ? signMoney(s.profit) : "—"}</td></tr>`).join("")}</tbody>
-        </table></div>`;
-    }
-
-    function finFormHTML() {
-        const f = finState();
-        const x = f.edit && f.edit.id ? f.items.find((i) => i.id === f.edit.id) : null;
-        const day = x ? x.d : (f.month === thisMonth() ? muscatDay() : `${f.month}-01`);
-        const cat = x ? x.c : (f.edit && f.edit.c) || "stock";
-        return `<form class="fin-form" id="finForm" autocomplete="off">
-            <h3>${x ? "تعديل مصروف" : "➕ مصروف جديد"}</h3>
-            <label class="af"><span>المبلغ (ر.ع)</span><input class="ai" name="amount" inputmode="decimal" dir="ltr" placeholder="0.000" value="${x ? esc(String(x.a)) : ""}" required></label>
-            <div class="af"><span>النوع</span><div class="fin-chips">${FIN_CATS.map(([k, ic, l]) => `<label class="fin-chip"><input type="radio" name="cat" value="${k}"${k === cat ? " checked" : ""}><span>${ic} ${l}</span></label>`).join("")}</div></div>
-            <label class="af"><span>التاريخ</span><input class="ai" type="date" name="day" value="${esc(day)}" max="${muscatDay()}" required></label>
-            <label class="af"><span>وصف (اختياري)</span><input class="ai" name="note" maxlength="200" placeholder="مثال: اشتراك برنامج تصميم" value="${x ? esc(x.n || "") : ""}"></label>
-            <label class="fin-check"><input type="checkbox" name="monthly"${x && x.m ? " checked" : ""}><span>🔁 يتكرر كل شهر <small class="adm-muted">(مثل اشتراك أو إيجار)</small></span></label>
+            <tbody>${t.map(a=>`<tr${a.m===e.month?' class="on"':""}><td><button type="button" class="link-mini" data-a="fin-pick" data-m="${a.m}">${lt(a.m)}</button></td><td dir="ltr">${x(a.sales)}</td><td dir="ltr">${e.loaded?x(a.expenses):"—"}</td><td dir="ltr" class="${a.profit<0&&e.loaded?"neg":""}">${e.loaded?Us(a.profit):"—"}</td></tr>`).join("")}</tbody>
+        </table></div>`}function _r(){const t=K(),e=t.edit&&t.edit.id?t.items.find(n=>n.id===t.edit.id):null,a=e?e.d:t.month===rt()?Ot():`${t.month}-01`,s=e?e.c:t.edit&&t.edit.c||"stock";return`<form class="fin-form" id="finForm" autocomplete="off">
+            <h3>${e?"تعديل مصروف":"➕ مصروف جديد"}</h3>
+            <label class="af"><span>المبلغ (ر.ع)</span><input class="ai" name="amount" inputmode="decimal" dir="ltr" placeholder="0.000" value="${e?d(String(e.a)):""}" required></label>
+            <div class="af"><span>النوع</span><div class="fin-chips">${ue.map(([n,o,r])=>`<label class="fin-chip"><input type="radio" name="cat" value="${n}"${n===s?" checked":""}><span>${o} ${r}</span></label>`).join("")}</div></div>
+            <label class="af"><span>التاريخ</span><input class="ai" type="date" name="day" value="${d(a)}" max="${Ot()}" required></label>
+            <label class="af"><span>وصف (اختياري)</span><input class="ai" name="note" maxlength="200" placeholder="مثال: اشتراك برنامج تصميم" value="${e?d(e.n||""):""}"></label>
+            <label class="fin-check"><input type="checkbox" name="monthly"${e&&e.m?" checked":""}><span>🔁 يتكرر كل شهر <small class="adm-muted">(مثل اشتراك أو إيجار)</small></span></label>
             <p class="af-err" id="finErr" role="alert"></p>
             <div class="fin-form-btns">
-                <button class="ab ab-primary" type="submit">${x ? "حفظ التعديل" : "إضافة"}</button>
+                <button class="ab ab-primary" type="submit">${e?"حفظ التعديل":"إضافة"}</button>
                 <button class="ab ab-ghost" type="button" data-a="fin-cancel">إلغاء</button>
             </div>
-            ${x ? `<div class="fin-form-btns del">
-                ${x.m && !x.u && f.month > x.d.slice(0, 7) ? `<button class="ab-mini" type="button" data-a="fin-stop">⏹️ أوقف التكرار من ${monthName(f.month, false)}</button>` : ""}
+            ${e?`<div class="fin-form-btns del">
+                ${e.m&&!e.u&&t.month>e.d.slice(0,7)?`<button class="ab-mini" type="button" data-a="fin-stop">⏹️ أوقف التكرار من ${lt(t.month,!1)}</button>`:""}
                 <button class="ab-mini danger" type="button" data-a="fin-del">🗑️ حذف</button>
-            </div>` : ""}
-        </form>`;
-    }
-
-    function finBody() {
-        const f = finState();
-        if (f.edit) return finFormHTML();
-        const s = monthSummary(f.month);
-        const prev = monthSummary(addMonths(f.month, -1));
-        const isNow = f.month >= thisMonth();
-        return `<div class="fin-month">
+            </div>`:""}
+        </form>`}function kr(){const t=K();if(t.edit)return _r();const e=Ht(t.month),a=Ht(xt(t.month,-1)),s=t.month>=rt();return`<div class="fin-month">
                 <button class="adm-icon" type="button" data-a="fin-prev" aria-label="الشهر السابق">→</button>
-                <b>${monthName(f.month)}</b>
-                <button class="adm-icon" type="button" data-a="fin-next" aria-label="الشهر التالي"${isNow ? " disabled" : ""}>←</button>
+                <b>${lt(t.month)}</b>
+                <button class="adm-icon" type="button" data-a="fin-next" aria-label="الشهر التالي"${s?" disabled":""}>←</button>
             </div>
-            ${finKpis(s, prev)}
-            ${finChart(f.month)}
+            ${yr(e,a)}
+            ${$r(t.month)}
             <section class="prof-sec">
-                <div class="fin-sec-head"><h3>🧾 مصاريف ${monthName(f.month, false)}</h3>${f.loaded ? `<button class="ab ab-soft ab-sm" type="button" data-a="fin-add">➕ أضف مصروف</button>` : ""}</div>
-                ${finExpensesHTML(s)}
+                <div class="fin-sec-head"><h3>🧾 مصاريف ${lt(t.month,!1)}</h3>${t.loaded?'<button class="ab ab-soft ab-sm" type="button" data-a="fin-add">➕ أضف مصروف</button>':""}</div>
+                ${vr(e)}
             </section>
-            <section class="prof-sec"><h3>📅 ملخص شهري تلقائي</h3>${finTableHTML()}</section>
+            <section class="prof-sec"><h3>📅 ملخص شهري تلقائي</h3>${wr()}</section>
             <div class="fin-foot">
                 <button class="ab ab-ghost ab-sm" type="button" data-a="fin-xlsx">⬇️ تنزيل Excel</button>
                 <small class="adm-muted">المبيعات تنحسب تلقائياً من الطلبات (ما عدا المخفية). المصاريف تنحفظ بشكل خاص، ما يشوفها غيرك.</small>
-            </div>`;
-    }
-
-    function renderFinance(keepScroll) {
-        const box = $("#finBody");
-        if (!box) return;
-        const panel = $("#admSheet .adm-sheet-panel");
-        const top = keepScroll && panel ? panel.scrollTop : 0;
-        box.innerHTML = finBody();
-        if (panel) panel.scrollTop = keepScroll ? top : 0;
-        if (finState().edit) { const a = box.querySelector("input[name=amount]"); if (a && !a.value) a.focus(); }
-    }
-
-    async function openFinance() {
-        const f = finState();
-        f.edit = null;
-        openSheet(`
+            </div>`}function ct(t){const e=b("#finBody");if(!e)return;const a=b("#admSheet .adm-sheet-panel"),s=t&&a?a.scrollTop:0;if(e.innerHTML=kr(),a&&(a.scrollTop=t?s:0),K().edit){const n=e.querySelector("input[name=amount]");n&&!n.value&&n.focus()}}async function xr(){const t=K();if(t.edit=null,ot(`
             <div class="adm-sheet-head"><h2>💰 المبيعات والمصاريف</h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>
-            <div class="fin" id="finBody"><p class="adm-muted">جاري التحميل…</p></div>`);
-        if (!A.ordersLoaded) { try { await loadOrders(); } catch { /* نعرض الموجود */ } }
-        renderFinance();
-        if (!f.loaded) { await loadFinance(); renderFinance(true); }
-    }
-
-    async function saveExpense(form) {
-        const f = finState();
-        const err = $("#finErr");
-        const v = Object.fromEntries(new FormData(form).entries());
-        const amount = r3(Number(ATHR.digits(String(v.amount || "")).replace(/[٫,]/g, ".").replace(/[^\d.]/g, "")));
-        if (!(amount > 0 && amount < 100000)) { err.textContent = "اكتب المبلغ بالأرقام، مثال: 12.500"; return; }
-        const day = /^\d{4}-\d{2}-\d{2}$/.test(v.day || "") ? v.day : muscatDay();
-        if (day > muscatDay()) { err.textContent = "التاريخ ما يكون بعد اليوم."; return; }
-        const id = f.edit && f.edit.id;
-        const row = { d: day, a: amount, c: finCat(v.cat)[0], n: String(v.note || "").trim().slice(0, 200), m: Boolean(v.monthly) };
-        const btn = form.querySelector("button[type=submit]");
-        btn.disabled = true;
-        try {
-            await finMutate((items) => {
-                const clean = (x) => { const o = { ...x, ...row }; if (!o.n) delete o.n; if (!o.m) { delete o.m; delete o.u; } return o; };
-                if (id) return items.map((x) => (x.id === id ? clean(x) : x));
-                return [...items, clean({ id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}` })];
-            });
-            f.edit = null;
-            f.month = day.slice(0, 7);
-            toast(id ? "انحفظ التعديل ✓" : "انضاف المصروف ✓");
-            renderFinance();
-        } catch (error) {
-            btn.disabled = false;
-            err.textContent = "تعذّر الحفظ. تأكد من الاتصال وحاول مرة ثانية.";
-        }
-    }
-
-    async function deleteExpense(stopOnly) {
-        const f = finState();
-        const id = f.edit && f.edit.id;
-        const x = f.items.find((i) => i.id === id);
-        if (!x) return;
-        if (!stopOnly && !confirm(x.m ? "تحذف هذا المصروف الشهري من كل الأشهر؟" : "تحذف هذا المصروف؟")) return;
-        try {
-            const until = addMonths(f.month, -1);
-            await finMutate((items) => (stopOnly ? items.map((i) => (i.id === id ? { ...i, u: until } : i)) : items.filter((i) => i.id !== id)));
-            f.edit = null;
-            toast(stopOnly ? `وقف التكرار من ${monthName(f.month, false)} ✓` : "انحذف ✓");
-            renderFinance();
-        } catch {
-            toast("تعذّر الحفظ. تأكد من الاتصال وحاول مرة ثانية.");
-        }
-    }
-
-    function financeWorkbook() {
-        const f = finState();
-        const months = finMonths().slice().reverse();
-        const sum = months.map(monthSummary);
-        const head = ["الشهر", "الطلبات", "المبيعات", "منها توصيل", "المصاريف", "الربح", "الهامش %"];
-        const rows = [head, ...sum.map((s) => [monthName(s.m), s.orders, s.sales, s.delivery, s.expenses, s.profit, s.margin === null ? "" : s.margin])];
-        const tot = sum.reduce((a, s) => ({ orders: a.orders + s.orders, sales: a.sales + s.sales, delivery: a.delivery + s.delivery, expenses: a.expenses + s.expenses }), { orders: 0, sales: 0, delivery: 0, expenses: 0 });
-        rows.push(["المجموع", tot.orders, r3(tot.sales), r3(tot.delivery), r3(tot.expenses), r3(tot.sales - tot.expenses), tot.sales > 0 ? Math.round(((tot.sales - tot.expenses) / tot.sales) * 100) : ""]);
-        const exps = [["التاريخ", "النوع", "الوصف", "المبلغ", "شهري"]];
-        months.forEach((m) => expensesIn(m).slice().reverse().forEach((x) => exps.push([x.shown, finCat(x.c)[2], x.n || "", Number(x.a), x.m ? "نعم" : ""])));
-        const sheets = [{ name: "الملخص الشهري", rows, widths: [16, 9, 12, 12, 12, 12, 10] }];
-        if (f.loaded) sheets.push({ name: "المصاريف", rows: exps, widths: [12, 16, 36, 11, 7] });
-        return XL.workbook(sheets);
-    }
-
-    async function financeClick(d) {
-        const f = finState();
-        if (d.a === "fin-open") { await openFinance(); return true; }
-        if (!$("#finBody")) return false;
-        if (d.a === "fin-prev") { f.month = addMonths(f.month, -1); renderFinance(true); return true; }
-        if (d.a === "fin-next") { if (f.month < thisMonth()) f.month = addMonths(f.month, 1); renderFinance(true); return true; }
-        if (d.a === "fin-pick" && /^\d{4}-\d{2}$/.test(d.m || "")) { f.month = d.m; renderFinance(true); return true; }
-        if (d.a === "fin-add") { f.edit = { id: null }; renderFinance(); return true; }
-        if (d.finEdit) { f.edit = { id: d.finEdit }; renderFinance(); return true; }
-        if (d.a === "fin-cancel") { f.edit = null; renderFinance(); return true; }
-        if (d.a === "fin-del") { await deleteExpense(false); return true; }
-        if (d.a === "fin-stop") { await deleteExpense(true); return true; }
-        if (d.a === "fin-retry") { f.err = ""; renderFinance(true); await loadFinance(); renderFinance(true); return true; }
-        if (d.a === "fin-xlsx") { XL.download(financeWorkbook(), `huroof-finance-${muscatDay()}.xlsx`); toast("نُزّل ملف المبيعات والمصاريف"); return true; }
-        return false;
-    }
-
-    // أزرار هذه المميزات
-    async function v17Click(d) {
-        switch (d.a) {
-            case "xlsx-products": XL.download(productsWorkbook(), `huroof-products-${today()}.xlsx`); toast("نُزّل ملف المنتجات"); return true;
-            case "xlsx-orders": downloadOrders(); return true;
-            case "xlsx-report": downloadReport(); return true;
-            case "import-apply": applyImport(); return true;
-            case "products-low": A.productLow = !A.productLow; renderTab({ keepScroll: true }); return true;
-            case "products-low-open": A.productLow = true; A.tab = "products"; renderPanel(); return true;
-            case "ai-save": await saveAiKey(); return true;
-            case "ai-change": A.aiEditing = true; renderTab({ keepScroll: true }); return true;
-            case "ai-remove": await removeAiKey(); return true;
-            case "ai-bulk": await aiBulk(); return true;
-            case "offer-ai": await aiOffer(); return true;
-            case "reward-send": {
-                const r = A.reward;
-                if (r) window.open(ATHR.waLink(r.phone, r.text), "_blank", "noopener");
-                closeOrderSheet();
-                return true;
-            }
-            default: break;
-        }
-        if (d.aiDesc) { await aiDescribe(d.aiDesc); return true; }
-        if (d.custReward) { await prepareReward(d.custReward); return true; }
-        return false;
-    }
-
-    // =====================================================
-    // TAB 8: CONTACT & REVIEWS
-    // =====================================================
-
-    // =====================================================
-    // TAB: تتبع الإعلانات (Meta Pixel + TikTok Pixel + نتائج كل منصة)
-    // =====================================================
-
-    const AD_CHANNELS = [["instagram", "إنستغرام", "📸"], ["tiktok", "تيك توك", "🎵"], ["snapchat", "سناب شات", "👻"], ["facebook", "فيسبوك", "📘"]];
-
-    async function loadAdStats() {
-        A.adStats = { loading: true };
-        try {
-            const since = new Date(Date.now() - 30 * 864e5);
-            const sinceDay = new Date(since.getTime() + 4 * 36e5).toISOString().slice(0, 10);
-            const chs = AD_CHANNELS.map((c) => c[0]);
-            const [st, od] = await Promise.all([
-                sb.from("stats_daily").select("key,n").in("key", chs.map((c) => `visit:${c}`)).gte("day", sinceDay),
-                sb.from("orders").select("channel,total,hidden,ordered_at").in("channel", chs).gte("ordered_at", since.toISOString())
-            ]);
-            if (st.error || od.error) throw st.error || od.error;
-            const sum = (key) => (st.data || []).filter((r) => r.key === key).reduce((n, r) => n + Number(r.n || 0), 0);
-            A.adStats = {
-                rows: AD_CHANNELS.map(([ch, label, emoji]) => {
-                    const orders = (od.data || []).filter((o) => o.channel === ch && !o.hidden);
-                    return { ch, label, emoji, visits: sum(`visit:${ch}`), orders: orders.length, sales: orders.reduce((n, o) => n + Number(o.total || 0), 0) };
-                })
-            };
-        } catch (error) {
-            console.warn("Ad stats failed:", error);
-            A.adStats = { error: true };
-        }
-        if (A.view === "admin" && A.tab === "ads") renderTab({ keepScroll: true });
-    }
-
-    function adResults() {
-        const st = A.adStats;
-        if (!st || st.loading) return `<section class="adm-card ad-results"><h2>📈 نتائج إعلاناتك <small class="adm-muted">آخر 30 يوم</small></h2><p class="adm-muted">جاري التحميل...</p></section>`;
-        if (st.error) return "";
-        const rows = st.rows.filter((r) => r.visits || r.orders || r.ch === "instagram" || r.ch === "tiktok");
-        return `<section class="adm-card ad-results"><h2>📈 نتائج إعلاناتك <small class="adm-muted">آخر 30 يوم · حسب متجرك</small></h2>
-            <div class="ad-rows">${rows.map((r) => `<div class="ad-row">
-                <b><span aria-hidden="true">${r.emoji}</span> ${r.label}</b>
-                <span><small>زيارات</small><b>${r.visits}</b></span>
-                <span><small>طلبات</small><b>${r.orders}</b></span>
-                <span><small>مبيعات</small><b>${money(r.sales)}</b></span>
-                <span><small>تحويل</small><b>${r.visits ? `${Math.round((r.orders / r.visits) * 1000) / 10}%` : "—"}</b></span>
+            <div class="fin" id="finBody"><p class="adm-muted">جاري التحميل…</p></div>`),!i.ordersLoaded)try{await me()}catch{}ct(),t.loaded||(await Aa(),ct(!0))}async function Tr(t){const e=K(),a=b("#finErr"),s=Object.fromEntries(new FormData(t).entries()),n=z(Number(ATHR.digits(String(s.amount||"")).replace(/[٫,]/g,".").replace(/[^\d.]/g,"")));if(!(n>0&&n<1e5)){a.textContent="اكتب المبلغ بالأرقام، مثال: 12.500";return}const o=/^\d{4}-\d{2}-\d{2}$/.test(s.day||"")?s.day:Ot();if(o>Ot()){a.textContent="التاريخ ما يكون بعد اليوم.";return}const r=e.edit&&e.edit.id,l={d:o,a:n,c:ht(s.cat)[0],n:String(s.note||"").trim().slice(0,200),m:!!s.monthly},c=t.querySelector("button[type=submit]");c.disabled=!0;try{await Is(p=>{const u=m=>{const h={...m,...l};return h.n||delete h.n,h.m||(delete h.m,delete h.u),h};return r?p.map(m=>m.id===r?u(m):m):[...p,u({id:`${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}`})]}),e.edit=null,e.month=o.slice(0,7),y(r?"انحفظ التعديل ✓":"انضاف المصروف ✓"),ct()}catch{c.disabled=!1,a.textContent="تعذّر الحفظ. تأكد من الاتصال وحاول مرة ثانية."}}async function Bs(t){const e=K(),a=e.edit&&e.edit.id,s=e.items.find(n=>n.id===a);if(s&&!(!t&&!confirm(s.m?"تحذف هذا المصروف الشهري من كل الأشهر؟":"تحذف هذا المصروف؟")))try{const n=xt(e.month,-1);await Is(o=>t?o.map(r=>r.id===a?{...r,u:n}:r):o.filter(r=>r.id!==a)),e.edit=null,y(t?`وقف التكرار من ${lt(e.month,!1)} ✓`:"انحذف ✓"),ct()}catch{y("تعذّر الحفظ. تأكد من الاتصال وحاول مرة ثانية.")}}function Ar(){const t=K(),e=js().slice().reverse(),a=e.map(Ht),n=[["الشهر","الطلبات","المبيعات","منها توصيل","المصاريف","الربح","الهامش %"],...a.map(c=>[lt(c.m),c.orders,c.sales,c.delivery,c.expenses,c.profit,c.margin===null?"":c.margin])],o=a.reduce((c,p)=>({orders:c.orders+p.orders,sales:c.sales+p.sales,delivery:c.delivery+p.delivery,expenses:c.expenses+p.expenses}),{orders:0,sales:0,delivery:0,expenses:0});n.push(["المجموع",o.orders,z(o.sales),z(o.delivery),z(o.expenses),z(o.sales-o.expenses),o.sales>0?Math.round((o.sales-o.expenses)/o.sales*100):""]);const r=[["التاريخ","النوع","الوصف","المبلغ","شهري"]];e.forEach(c=>Fs(c).slice().reverse().forEach(p=>r.push([p.shown,ht(p.c)[2],p.n||"",Number(p.a),p.m?"نعم":""])));const l=[{name:"الملخص الشهري",rows:n,widths:[16,9,12,12,12,12,10]}];return t.loaded&&l.push({name:"المصاريف",rows:r,widths:[12,16,36,11,7]}),_t.workbook(l)}async function Sr(t){const e=K();return t.a==="fin-open"?(await xr(),!0):b("#finBody")?t.a==="fin-prev"?(e.month=xt(e.month,-1),ct(!0),!0):t.a==="fin-next"?(e.month<rt()&&(e.month=xt(e.month,1)),ct(!0),!0):t.a==="fin-pick"&&/^\d{4}-\d{2}$/.test(t.m||"")?(e.month=t.m,ct(!0),!0):t.a==="fin-add"?(e.edit={id:null},ct(),!0):t.finEdit?(e.edit={id:t.finEdit},ct(),!0):t.a==="fin-cancel"?(e.edit=null,ct(),!0):t.a==="fin-del"?(await Bs(!1),!0):t.a==="fin-stop"?(await Bs(!0),!0):t.a==="fin-retry"?(e.err="",ct(!0),await Aa(),ct(!0),!0):t.a==="fin-xlsx"?(_t.download(Ar(),`huroof-finance-${Ot()}.xlsx`),y("نُزّل ملف المبيعات والمصاريف"),!0):!1:!1}async function Rr(t){switch(t.a){case"xlsx-products":return _t.download(Ho(),`huroof-products-${fa()}.xlsx`),y("نُزّل ملف المنتجات"),!0;case"xlsx-orders":return No(),!0;case"xlsx-report":return Co(),!0;case"import-apply":return Eo(),!0;case"products-low":return i.productLow=!i.productLow,B({keepScroll:!0}),!0;case"products-low-open":return i.productLow=!0,i.tab="products",re(),!0;case"ai-save":return await jo(),!0;case"ai-change":return i.aiEditing=!0,B({keepScroll:!0}),!0;case"ai-remove":return await Uo(),!0;case"ai-bulk":return await qo(),!0;case"offer-ai":return await Vo(),!0;case"reward-send":{const e=i.reward;return e&&window.open(ATHR.waLink(e.phone,e.text),"_blank","noopener"),ee(),!0}default:break}return t.aiDesc?(await Bo(t.aiDesc),!0):t.custReward?(await Do(t.custReward),!0):!1}const qs=[["instagram","إنستغرام","📸"],["tiktok","تيك توك","🎵"],["snapchat","سناب شات","👻"],["facebook","فيسبوك","📘"]];async function Hr(){i.adStats={loading:!0};try{const t=new Date(Date.now()-2592e6),e=new Date(t.getTime()+4*36e5).toISOString().slice(0,10),a=qs.map(r=>r[0]),[s,n]=await Promise.all([_.from("stats_daily").select("key,n").in("key",a.map(r=>`visit:${r}`)).gte("day",e),_.from("orders").select("channel,total,hidden,ordered_at").in("channel",a).gte("ordered_at",t.toISOString())]);if(s.error||n.error)throw s.error||n.error;const o=r=>(s.data||[]).filter(l=>l.key===r).reduce((l,c)=>l+Number(c.n||0),0);i.adStats={rows:qs.map(([r,l,c])=>{const p=(n.data||[]).filter(u=>u.channel===r&&!u.hidden);return{ch:r,label:l,emoji:c,visits:o(`visit:${r}`),orders:p.length,sales:p.reduce((u,m)=>u+Number(m.total||0),0)}})}}catch(t){console.warn("Ad stats failed:",t),i.adStats={error:!0}}i.view==="admin"&&i.tab==="ads"&&B({keepScroll:!0})}function Mr(){const t=i.adStats;return!t||t.loading?'<section class="adm-card ad-results"><h2>📈 نتائج إعلاناتك <small class="adm-muted">آخر 30 يوم</small></h2><p class="adm-muted">جاري التحميل...</p></section>':t.error?"":`<section class="adm-card ad-results"><h2>📈 نتائج إعلاناتك <small class="adm-muted">آخر 30 يوم · حسب متجرك</small></h2>
+            <div class="ad-rows">${t.rows.filter(a=>a.visits||a.orders||a.ch==="instagram"||a.ch==="tiktok").map(a=>`<div class="ad-row">
+                <b><span aria-hidden="true">${a.emoji}</span> ${a.label}</b>
+                <span><small>زيارات</small><b>${a.visits}</b></span>
+                <span><small>طلبات</small><b>${a.orders}</b></span>
+                <span><small>مبيعات</small><b>${x(a.sales)}</b></span>
+                <span><small>تحويل</small><b>${a.visits?`${Math.round(a.orders/a.visits*1e3)/10}%`:"—"}</b></span>
             </div>`).join("")}</div>
             <p class="adm-muted">تُحسب الزيارة لإنستغرام أو تيك توك تلقائياً عند الفتح من التطبيق أو من الروابط الجاهزة بالأسفل. تفاصيل أكثر في دفتر الطلبيات ← «الأداء».</p>
-        </section>`;
-    }
-
-    function tabAds() {
-        const t = cfg().tracking || {};
-        const metaId = ATHR.metaPixelId(t.meta_pixel);
-        const ttId = ATHR.tiktokPixelId(t.tiktok_pixel);
-        if (!A.adStats) loadAdStats();
-        const status = (id, raw) => (id ? `<span class="tag ok">✅ مفعّل</span>` : String(raw || "").trim() ? `<span class="tag warn">الرقم غير صحيح</span>` : `<span class="tag">غير مفعّل</span>`);
-        const base = siteLink(ATHR.base());
-        const link = (ref, label) => `<div class="ad-link"><span><b>${label}</b><code dir="ltr">${esc(decodeURI(base))}?ref=${ref}</code></span><button class="ab ab-soft ab-sm" type="button" data-copy-text="${esc(`${base}?ref=${ref}`)}">نسخ</button></div>`;
-        return `
+        </section>`}function Er(){const t=$().tracking||{},e=ATHR.metaPixelId(t.meta_pixel),a=ATHR.tiktokPixelId(t.tiktok_pixel);i.adStats||Hr();const s=(r,l)=>r?'<span class="tag ok">✅ مفعّل</span>':String(l||"").trim()?'<span class="tag warn">الرقم غير صحيح</span>':'<span class="tag">غير مفعّل</span>',n=Y(ATHR.base()),o=(r,l)=>`<div class="ad-link"><span><b>${l}</b><code dir="ltr">${d(decodeURI(n))}?ref=${r}</code></span><button class="ab ab-soft ab-sm" type="button" data-copy-text="${d(`${n}?ref=${r}`)}">نسخ</button></div>`;return`
             <p class="adm-sentence">اربط متجرك بإعلانات إنستغرام وتيك توك: تعرف كم شخص شاف المنتج وأضاف للسلة واشترى من كل إعلان، والمنصة نفسها تتعلم وتوصّل إعلانك لناس أكثر احتمالاً للشراء.</p>
-            ${adResults()}
-            ${card(`Meta Pixel <small class="adm-muted">(إنستغرام وفيسبوك)</small> ${status(metaId, t.meta_pixel)}`, `
-                <label class="af"><span>رقم البكسل (Pixel ID)</span><input class="ai" dir="ltr" data-pixel="meta" value="${esc(t.meta_pixel || "")}" placeholder="1234567890123456" autocomplete="off" spellcheck="false">
-                    <small>الصق الرقم وحده، أو الصق الكود كاملاً ونطلع الرقم منه تلقائياً.${metaId ? ` الرقم: <b dir="ltr">${esc(metaId)}</b>` : ""}</small></label>
+            ${Mr()}
+            ${N(`Meta Pixel <small class="adm-muted">(إنستغرام وفيسبوك)</small> ${s(e,t.meta_pixel)}`,`
+                <label class="af"><span>رقم البكسل (Pixel ID)</span><input class="ai" dir="ltr" data-pixel="meta" value="${d(t.meta_pixel||"")}" placeholder="1234567890123456" autocomplete="off" spellcheck="false">
+                    <small>الصق الرقم وحده، أو الصق الكود كاملاً ونطلع الرقم منه تلقائياً.${e?` الرقم: <b dir="ltr">${d(e)}</b>`:""}</small></label>
                 <details class="howto"><summary>من أين أحصل على الرقم؟</summary><ol>
                     <li>افتح <b dir="ltr">business.facebook.com</b> بحسابك المرتبط بصفحة إنستغرام.</li>
                     <li>ادخل «مدير الأحداث» (Events Manager) ← «ربط مصادر البيانات» ← «ويب» ← Meta Pixel.</li>
                     <li>سمِّه «حروف وألوان»، واختر الإعداد اليدوي، ثم انسخ رقم Pixel ID (15–16 رقماً) والصقه هنا.</li>
                     <li>اضغط «نشر التغييرات». لا تحتاج تضيف أي كود آخر.</li>
                 </ol></details>`)}
-            ${card(`TikTok Pixel ${status(ttId, t.tiktok_pixel)}`, `
-                <label class="af"><span>رقم البكسل (Pixel ID)</span><input class="ai" dir="ltr" data-pixel="tiktok" value="${esc(t.tiktok_pixel || "")}" placeholder="C4ABCD1234EFGH5678IJ" autocomplete="off" autocapitalize="characters" spellcheck="false">
-                    <small>الصق الرقم وحده، أو الكود كاملاً.${ttId ? ` الرقم: <b dir="ltr">${esc(ttId)}</b>` : ""}</small></label>
+            ${N(`TikTok Pixel ${s(a,t.tiktok_pixel)}`,`
+                <label class="af"><span>رقم البكسل (Pixel ID)</span><input class="ai" dir="ltr" data-pixel="tiktok" value="${d(t.tiktok_pixel||"")}" placeholder="C4ABCD1234EFGH5678IJ" autocomplete="off" autocapitalize="characters" spellcheck="false">
+                    <small>الصق الرقم وحده، أو الكود كاملاً.${a?` الرقم: <b dir="ltr">${d(a)}</b>`:""}</small></label>
                 <details class="howto"><summary>من أين أحصل على الرقم؟</summary><ol>
                     <li>افتح <b dir="ltr">ads.tiktok.com</b>.</li>
                     <li>من «الأدوات» (Tools) اختر «الأحداث» (Events) ← «أحداث الويب» (Web Events).</li>
                     <li>أنشئ بكسل جديد واختر «تثبيت الكود يدوياً» (Manually install pixel code).</li>
                     <li>انسخ رقم البكسل (حروف وأرقام) أو الكود كاملاً والصقه هنا، ثم «نشر التغييرات».</li>
                 </ol></details>`)}
-            ${card("ماذا يُرسل للمنصات؟", `
+            ${N("ماذا يُرسل للمنصات؟",`
                 <ul class="px-events">
                     <li>👀 <b>زيارة صفحة</b> <small dir="ltr">PageView</small></li>
                     <li>🛍️ <b>مشاهدة منتج</b> <small dir="ltr">ViewContent</small></li>
@@ -4007,1051 +889,95 @@
                     <li>🔍 <b>بحث</b> · 💬 <b>تواصل واتساب</b> <small dir="ltr">Search · Contact</small></li>
                 </ul>
                 <small class="adm-muted">القيم تُرسل بالدولار (1 ر.ع = 2.60 $) لأن المنصات تدعمه دائماً. لا نرسل أسماء أو أرقام العملاء. وزياراتك أنت من جوالك (المسجّل كصاحب المتجر) لا تُرسل، حتى لا تختلط بنتائج الإعلانات.</small>`)}
-            ${card("روابط جاهزة لإعلاناتك", `
-                ${link("instagram", "📸 إنستغرام (البايو والإعلانات والستوري)")}
-                ${link("tiktok", "🎵 تيك توك")}
-                ${link("snapchat", "👻 سناب شات")}
-                <small class="adm-muted">لرابط منتج معيّن: انسخ رابطه من «المنتجات» وأضف في آخره <code dir="ltr">?ref=instagram</code> أو <code dir="ltr">?ref=tiktok</code>.</small>`, "استخدمها في البايو والإعلانات، حتى يُعرف من أين جاء كل زائر وكل طلب.")}
-            ${card("كيف تتأكد أنه يعمل؟", `
+            ${N("روابط جاهزة لإعلاناتك",`
+                ${o("instagram","📸 إنستغرام (البايو والإعلانات والستوري)")}
+                ${o("tiktok","🎵 تيك توك")}
+                ${o("snapchat","👻 سناب شات")}
+                <small class="adm-muted">لرابط منتج معيّن: انسخ رابطه من «المنتجات» وأضف في آخره <code dir="ltr">?ref=instagram</code> أو <code dir="ltr">?ref=tiktok</code>.</small>`,"استخدمها في البايو والإعلانات، حتى يُعرف من أين جاء كل زائر وكل طلب.")}
+            ${N("كيف تتأكد أنه يعمل؟",`
                 <ol class="howto-ol">
                     <li>اضغط «نشر التغييرات».</li>
                     <li>افتح المتجر من جوال آخر (ليس جوالك)، وافتح منتجاً وأضفه للسلة.</li>
                     <li>في Meta: مدير الأحداث ← «اختبار الأحداث» (Test events). وفي TikTok: Web Events ← «اختبار الأحداث». تظهر الأحداث خلال دقائق.</li>
-                </ol>`)}`;
-    }
-
-    // لصق الرقم أو الكود كاملاً: نحفظ الرقم فقط
-    function setPixel(input) {
-        const kind = input.dataset.pixel;
-        const raw = input.value;
-        const id = kind === "meta" ? ATHR.metaPixelId(raw) : ATHR.tiktokPixelId(raw);
-        setPath(`config.tracking.${kind === "meta" ? "meta_pixel" : "tiktok_pixel"}`, id || raw.trim());
-        saveDraft();
-        if (id && id !== raw.trim()) input.value = id;
-        renderTab({ keepScroll: true });
-        if (raw.trim()) toast(id ? "✅ تم التعرّف على رقم البكسل. اضغط «نشر التغييرات»." : "الرقم غير صحيح. انسخه من جديد.");
-    }
-
-    function tabContact() {
-        const c = cfg().contact;
-        const d = ATHR_DEFAULTS.contact;
-        const reviews = c.reviews.map((r, i) => {
-            const base = `config.contact.reviews.${i}`;
-            const images = r.images || [];
-            return `<li class="item-card">
+                </ol>`)}`}function Nr(t){const e=t.dataset.pixel,a=t.value,s=e==="meta"?ATHR.metaPixelId(a):ATHR.tiktokPixelId(a);oe(`config.tracking.${e==="meta"?"meta_pixel":"tiktok_pixel"}`,s||a.trim()),nt(),s&&s!==a.trim()&&(t.value=s),B({keepScroll:!0}),a.trim()&&y(s?"✅ تم التعرّف على رقم البكسل. اضغط «نشر التغييرات».":"الرقم غير صحيح. انسخه من جديد.")}function Cr(){const t=$().contact,e=ATHR_DEFAULTS.contact,a=t.reviews.map((s,n)=>{const o=`config.contact.reviews.${n}`,r=s.images||[];return`<li class="item-card">
                 <div class="two">
-                    ${text(`${base}.name`, "اسم العميل (اختياري)")}
-                    ${select(`${base}.stars`, "التقييم", [["5", "★★★★★ (5)"], ["4", "★★★★ (4)"], ["3", "★★★ (3)"], ["2", "★★ (2)"], ["1", "★ (1)"]], { type: "number" })}
+                    ${T(`${o}.name`,"اسم العميل (اختياري)")}
+                    ${q(`${o}.stars`,"التقييم",[["5","★★★★★ (5)"],["4","★★★★ (4)"],["3","★★★ (3)"],["2","★★ (2)"],["1","★ (1)"]],{type:"number"})}
                 </div>
-                ${area(`${base}.text`, "نص الرأي", { rows: 2 })}
+                ${G(`${o}.text`,"نص الرأي",{rows:2})}
                 <div class="af"><span>صور العميل (اختياري، حتى 3)</span>
-                    <div class="thumb-row">${images.map((src, n) => `<span class="thumb"><img src="${esc(src)}" alt=""><button type="button" class="ab-mini danger" data-review-img-del="${i}" data-n="${n}" aria-label="حذف الصورة">×</button></span>`).join("")}</div>
-                    ${images.length < 3 ? uploadButton("إضافة صورة", `data-review-img="${i}" multiple`) : ""}
+                    <div class="thumb-row">${r.map((l,c)=>`<span class="thumb"><img src="${d(l)}" alt=""><button type="button" class="ab-mini danger" data-review-img-del="${n}" data-n="${c}" aria-label="حذف الصورة">×</button></span>`).join("")}</div>
+                    ${r.length<3?wt("إضافة صورة",`data-review-img="${n}" multiple`):""}
                 </div>
                 <div class="af"><span>فيديو العميل (اختياري)</span>
-                    ${uploadButton(r.video ? "استبدال الفيديو" : "رفع فيديو", `data-upload="${base}.video" data-kind="reviewVideo"`, { accept: "video/*", current: r.video, remove: r.video ? `data-clear="${base}.video"` : "" })}
+                    ${wt(s.video?"استبدال الفيديو":"رفع فيديو",`data-upload="${o}.video" data-kind="reviewVideo"`,{accept:"video/*",current:s.video,remove:s.video?`data-clear="${o}.video"`:""})}
                 </div>
-                ${listControls("config.contact.reviews", i, c.reviews.length)}
-            </li>`;
-        }).join("");
-
-        return card("قائمة النقاط الثلاث (⋮) أعلى المتجر", `
-                ${toggle("config.contact.menu_show", "إظهار قائمة النقاط الثلاث")}
-                ${toggle("config.contact.menu_home", "زر «الصفحة الرئيسية» في القائمة")}
-                ${text("config.contact.share_url", "رابط متجرك", { dir: "ltr", placeholder: "https://", help: "يُستعمل في روابط التقييم والمشاركة. غيّره فقط إذا ربطت دومينك الخاص." })}`)
-            + card("الظهور في جوجل", `
-                ${text("config.seo.home_title", "عنوان المتجر في نتائج جوجل", { max: 70, placeholder: `${cfg().name} | ${cfg().texts.hero_title}`, help: "أفضل طول 50 إلى 60 حرفاً، وفيه الكلمات التي يبحث بها الناس مثل «أكواب» و«عُمان»." })}
-                ${area("config.seo.home_description", "وصف المتجر في نتائج جوجل", { rows: 3, help: "أفضل طول 120 إلى 155 حرفاً. اتركه فارغاً ليُكتب تلقائياً من النبذة وطرق التوصيل والدفع." })}
-                ${text("config.seo.google_verification", "رمز التحقق من Google Search Console", { dir: "ltr", placeholder: "الصق الرمز أو وسم meta كاملاً", help: "من Search Console اختر طريقة «علامة HTML» وانسخ الرمز هنا، ثم انشر وانتظر حتى ساعة قبل الضغط على «تحقق»." })}
-                <p class="adm-muted">لكل منتج وقسم صفحة خاصة يقرؤها جوجل، تُحدَّث تلقائياً كل ساعة بعد النشر. خريطة الموقع: <code dir="ltr">${esc(siteLink(ATHR.base() + "sitemap.xml"))}</code></p>`,
-                "عناوين المنتجات وأوصافها تؤثر على ظهورك في البحث. اكتب وصفاً لكل قسم في «الأقسام والألوان».")
-            + card("زر واتساب السريع", `
-                ${toggle("config.contact.wa_float", "إظهار زر واتساب العائم في كل الصفحة")}
-                ${text("config.contact.wa_float_msg", "الرسالة الجاهزة عند ضغط الزائر على الزر", { placeholder: d.wa_float_msg })}`)
-            + card("سياسة الشحن والتوصيل", `
-                ${toggle("config.contact.policy_show", "إظهار رابط «سياسة الشحن والتوصيل» للعميل")}
-                ${text("config.contact.policy_title", "عنوان السياسة", { placeholder: d.policy_title })}
-                ${area("config.contact.policy_notes", "ملاحظات إضافية في السياسة", { rows: 3, help: "أسعار التوصيل وطرق الدفع تُسحب تلقائياً من تبويب الطلب والتوصيل. كل سطر فقرة." })}`)
-            + card("آراء العملاء", `
-                ${text("config.contact.reviews_title", "عنوان قسم الآراء", { placeholder: d.reviews_title })}
-                ${toggle("config.contact.reviews_share_btn", "زر «شاركنا رأيك» لإرسال الصور والفيديو عبر واتساب")}
-                ${text("config.contact.reviews_share_text", "نص زر المشاركة", { placeholder: d.reviews_share_text })}
-                ${text("config.contact.reviews_share_msg", "الرسالة الجاهزة التي يبدأ بها العميل", { placeholder: d.reviews_share_msg })}
-                <ul class="items">${reviews}</ul>
-                ${c.reviews.length < 12 ? `<button class="ab ab-ghost ab-sm" type="button" data-add-item="config.contact.reviews">+ إضافة رأي</button>` : ""}`,
-                "يظهر القسم في المتجر بمجرد إضافة أول رأي، ويختفي إن لم يكن فيه شيء.");
-    }
-
-    // =====================================================
-    // LIST TEMPLATES
-    // =====================================================
-
-    const NEW_ITEM = {
-        "config.texts.hero_features": () => "",
-        "config.texts.socials": () => ({ name: "", url: "" }),
-        "config.order.delivery": () => ({ id: ATHR.uid("d-"), enabled: true, name: "", type: "home", price: 0, note: "", duration: "" }),
-        "config.order.governorates": () => "",
-        "config.order.payments": () => ({ id: ATHR.uid("p-"), enabled: false, name: "", type: "other", note: "", bank: { number: "", bank: "", holder: "", account: "", swift: "", iban: "" }, link: "" }),
-        "config.sales.bundles": () => ({ id: ATHR.uid("b-"), enabled: true, a: "", b: "", pct: 10 }),
-        "config.sales.trust_custom": () => "",
-        "config.sales.volume.tiers": () => ({ min: 4, pct: 15 }),
-        "config.contact.reviews": () => ({ id: ATHR.uid("r-"), name: "", text: "", stars: 5, images: [], video: "" })
-    };
-
-    // =====================================================
-    // UPLOADS
-    // =====================================================
-
-    const IMAGE_SIZES = { product: 1600, ad: 1800, hero: 1920, logo: 512, review: 1200, category: 1100 };
-
-    function loadImage(file) {
-        return new Promise((resolve, reject) => {
-            const url = URL.createObjectURL(file);
-            const img = new Image();
-            img.onload = () => resolve({ img, url });
-            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("تعذر قراءة الصورة. جرّب صورة JPG أو PNG.")); };
-            img.src = url;
-        });
-    }
-
-    async function prepareImage(file, kind) {
-        const max = IMAGE_SIZES[kind] || 1600;
-        const keepPng = kind === "logo" && file.type === "image/png";
-        const { img, url } = await loadImage(file);
-        const ratio = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
-        const w = Math.round(img.naturalWidth * ratio);
-        const h = Math.round(img.naturalHeight * ratio);
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        if (!keepPng) {
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, w, h);
-        }
-        ctx.drawImage(img, 0, 0, w, h);
-        URL.revokeObjectURL(url);
-        const type = keepPng ? "image/png" : "image/jpeg";
-        const blob = await new Promise((resolve) => canvas.toBlob(resolve, type, 0.86));
-        if (!blob) throw new Error("تعذر تجهيز الصورة.");
-        return { blob, ext: keepPng ? "png" : "jpg", type };
-    }
-
-    async function compressVideo(file, maxSide, onProgress) {
-        if (!maxSide || !window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) return file;
-        const url = URL.createObjectURL(file);
-        const video = document.createElement("video");
-        video.src = url;
-        video.muted = true;
-        video.playsInline = true;
-        video.preload = "auto";
-        try {
-            await new Promise((resolve, reject) => {
-                video.onloadedmetadata = resolve;
-                video.onerror = () => reject(new Error("meta"));
-                setTimeout(() => reject(new Error("meta timeout")), 15000);
-            });
-            const short = Math.min(video.videoWidth, video.videoHeight);
-            if (!short || short <= maxSide * 1.05) return file;
-            const scale = maxSide / short;
-            const w = Math.round(video.videoWidth * scale / 2) * 2;
-            const h = Math.round(video.videoHeight * scale / 2) * 2;
-            const canvas = document.createElement("canvas");
-            canvas.width = w;
-            canvas.height = h;
-            const ctx = canvas.getContext("2d");
-            const mime = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"].find((t) => MediaRecorder.isTypeSupported(t));
-            if (!mime) return file;
-            const bitrate = maxSide >= 1080 ? 4500000 : maxSide >= 720 ? 2500000 : 1200000;
-            const stream = canvas.captureStream(30);
-            const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: bitrate });
-            const chunks = [];
-            recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
-            const done = new Promise((resolve) => { recorder.onstop = resolve; });
-            let running = true;
-            const draw = () => {
-                if (!running) return;
-                ctx.drawImage(video, 0, 0, w, h);
-                if (video.duration) onProgress(Math.min(99, Math.round((video.currentTime / video.duration) * 100)));
-                requestAnimationFrame(draw);
-            };
-            recorder.start(1000);
-            await video.play();
-            draw();
-            await new Promise((resolve) => { video.onended = resolve; });
-            running = false;
-            recorder.stop();
-            await done;
-            const blob = new Blob(chunks, { type: mime.split(";")[0] });
-            return blob.size && blob.size < file.size ? blob : file;
-        } catch (error) {
-            console.warn("Video compression skipped:", error);
-            return file;
-        } finally {
-            URL.revokeObjectURL(url);
-        }
-    }
-
-    async function uploadBlob(blob, ext, type) {
-        const path = `${Date.now()}-${crypto.randomUUID().replaceAll("-", "").slice(0, 16)}.${ext}`;
-        const { error } = await sb.storage.from(BUCKET).upload(path, blob, { cacheControl: "31536000", upsert: false, contentType: type });
-        if (error) throw error;
-        return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
-    }
-
-    async function uploadImage(file, kind) {
-        const { blob, ext, type } = await prepareImage(file, kind);
-        return uploadBlob(blob, ext, type);
-    }
-
-    async function uploadVideo(file, qualityPref, label) {
-        const maxSide = Number(storage.get(qualityPref) ?? (qualityPref === "adVideoQuality" ? 480 : 720)) || 0;
-        let blob = file;
-        if (maxSide) {
-            blob = await compressVideo(file, maxSide, (pct) => busyMessage(`جاري ضغط ${label} ${pct}%`));
-        }
-        if (blob.size > 50 * 1024 * 1024) throw new Error("الفيديو أكبر من 50 ميغابايت. اختر جودة أخف أو فيديو أقصر.");
-        busyMessage(`جاري رفع ${label}...`);
-        const type = blob.type || "video/mp4";
-        const ext = type.includes("webm") ? "webm" : type.includes("quicktime") ? "mov" : "mp4";
-        return uploadBlob(blob, ext, type);
-    }
-
-    function busyMessage(msg) {
-        let el = $("#admBusy");
-        if (!el) {
-            el = document.createElement("div");
-            el.id = "admBusy";
-            el.className = "adm-busy";
-            el.setAttribute("role", "status");
-            root().appendChild(el);
-        }
-        el.textContent = msg;
-        el.hidden = !msg;
-    }
-
-    async function withBusy(msg, fn) {
-        busyMessage(msg);
-        try {
-            await fn();
-        } catch (error) {
-            console.error(error);
-            toast(error && error.message && /[؀-ۿ]/.test(error.message) ? error.message : "تعذر الرفع. تأكد من الإنترنت وحاول مرة أخرى.");
-        } finally {
-            busyMessage("");
-        }
-    }
-
-    function afterChange({ sheet = false } = {}) {
-        saveDraft();
-        if (sheet || A.editing) refreshSheet();
-        renderTab({ keepScroll: true });
-    }
-
-    // =====================================================
-    // EVENTS (panel + orders)
-    // =====================================================
-
-    function onInput(e) {
-        const t = e.target;
-        if (bulkInput(t, false)) return;
-        if (t.id === "productFilter") {
-            A.productFilter = t.value;
-            const pos = t.selectionStart;
-            renderTab({ keepScroll: true });
-            const input = $("#productFilter");
-            input.focus();
-            try { input.setSelectionRange(pos, pos); } catch { /* ignore */ }
-            return;
-        }
-        if (t.id === "ordersSearch") {
-            A.filter.q = t.value;
-            renderOrdersList();
-            return;
-        }
-        if (t.id === "custSearch") {
-            A.custFilter.q = t.value;
-            renderCustomers();
-            return;
-        }
-        if (t.closest && t.closest("#couponForm")) {
-            couponFormInput(t);
-            return;
-        }
-        if (t.id === "restockText" && A.restockRun) {
-            A.restockRun.text = t.value;
-            storage.set(RESTOCK_KEY, t.value);
-            const box = $("#restockPreview");
-            if (box) box.innerHTML = waBubble(restockText(A.restockRun, A.restockRun.list[0]), A.restockRun);
-            return;
-        }
-        if (t.id === "offerText" && A.offer) {
-            A.offer.text = t.value;
-            refreshOfferPreview();
-            return;
-        }
-        if (t.id === "offerProdQ" && A.offer) {
-            A.offer.q = t.value;
-            const list = $("#opList");
-            if (list) list.innerHTML = offerProductItems(A.offer);
-            return;
-        }
-        if (t.dataset.priceBase || t.dataset.pricePct) {
-            priceFromSheet(t.dataset.priceBase || t.dataset.pricePct);
-            return;
-        }
-        if (t.dataset.stock) {
-            setStock(t.dataset.stock, t.value);
-            return;
-        }
-        if (t.dataset.bind && t.type !== "checkbox" && t.tagName !== "SELECT") {
-            bindValue(t);
-            if (t.type === "color") {
-                const code = t.parentElement.querySelector("code");
-                if (code) code.textContent = t.value;
-            }
-            if (/\.name$/.test(t.dataset.bind) && A.editing) {
-                const head = $("#admSheet .adm-sheet-head h2");
-                if (head) head.textContent = t.value || "منتج جديد";
-            }
-        }
-    }
-
-    function bindValue(t) {
-        let value;
-        if (t.dataset.type === "bool") value = t.checked;
-        else if (t.dataset.type === "number") value = t.value === "" ? null : Number(ATHR.digits(t.value));
-        else value = t.value;
-        setPath(t.dataset.bind, value);
-        saveDraft();
-        if (t.dataset.bind.startsWith("config.gift.")) refreshGiftPreview();
-    }
-
-    async function onChange(e) {
-        const t = e.target;
-        if (bulkInput(t, true)) return;
-        if (t.closest && t.closest("#waBody") && await waChange(t)) return;
-        if (t.dataset.pixel) {
-            setPixel(t);
-            return;
-        }
-        if (t.closest && t.closest("#couponForm")) {
-            couponFormInput(t);
-            return;
-        }
-        if (t.id === "offerSkip" && A.offer) {
-            A.offer.skipRecent = t.checked;
-            saveOfferPref(A.offer);
-            renderOffer({ keepScroll: true });
-            return;
-        }
-
-        if (t.dataset.pref) {
-            storage.set(t.dataset.pref, t.value);
-            return;
-        }
-        if (t.dataset.priceBase || t.dataset.pricePct) {
-            priceFromSheet(t.dataset.priceBase || t.dataset.pricePct);
-            renderTab({ keepScroll: true });
-            return;
-        }
-        if (t.dataset.bind) {
-            bindValue(t);
-            if (t.dataset.rerender !== undefined) {
-                if (A.editing) refreshSheet();
-                renderTab({ keepScroll: true });
-            }
-            return;
-        }
-        if (t.dataset.countryPath) {
-            const current = getPath(t.dataset.countryPath);
-            const list = new Set(Array.isArray(current) && current.length ? current : ATHR_COUNTRIES.map((c) => c.code));
-            if (t.checked) list.add(t.value);
-            else list.delete(t.value);
-            setPath(t.dataset.countryPath, ATHR_COUNTRIES.map((c) => c.code).filter((code) => list.has(code)));
-            saveDraft();
-            return;
-        }
-        if (t.dataset.stock) {
-            setStock(t.dataset.stock, t.value);
-            refreshSheet();
-            renderTab({ keepScroll: true });
-            return;
-        }
-        if (t.dataset.soldOut) {
-            const p = A.draft.products.find((x) => x.id === t.dataset.soldOut);
-            if (p) p.is_available = !t.checked;
-            saveDraft();
-            return;
-        }
-        if (t.type === "file" && t.files && t.files.length) {
-            const files = Array.from(t.files);
-            t.value = "";
-            await handleFiles(t, files);
-            return;
-        }
-        if (t.dataset.orderField) {
-            updateOrderField(t.dataset.orderId, t.dataset.orderField, t.value);
-            return;
-        }
-        if (t.id === "payFilter") {
-            A.filter.pay = t.value;
-            renderOrdersList();
-        }
-    }
-
-    async function handleFiles(input, files) {
-        const d = input.dataset;
-        if (d.importProducts !== undefined) {
-            await importProducts(files[0]);
-            return;
-        }
-
-        if (d.upload) {
-            const kind = d.kind || "product";
-            const isVideo = /video/i.test(kind);
-            await withBusy(isVideo ? "جاري تجهيز الفيديو..." : "جاري رفع الصورة...", async () => {
-                const url = isVideo
-                    ? await uploadVideo(files[0], kind === "adVideo" ? "adVideoQuality" : "productVideoQuality", "الفيديو")
-                    : await uploadImage(files[0], kind);
-                setPath(d.upload, url);
-                afterChange();
-                toast(isVideo ? "رُفع الفيديو" : "رُفعت الصورة");
-            });
-            return;
-        }
-
-        if (d.mediaAdd) {
-            const p = A.draft.products.find((x) => x.id === d.mediaAdd);
-            if (!p) return;
-            const room = 5 - p.media.filter((m) => m.type === "image").length;
-            const pick = files.slice(0, Math.max(0, room));
-            if (files.length > room) toast(`يمكن إضافة ${room} صور فقط (الحد 5).`);
-            await withBusy("جاري رفع الصور...", async () => {
-                for (let i = 0; i < pick.length; i++) {
-                    busyMessage(`جاري رفع الصور ${i + 1} من ${pick.length}...`);
-                    const url = await uploadImage(pick[i], "product");
-                    const video = p.media.filter((m) => m.type === "video");
-                    p.media = [...p.media.filter((m) => m.type === "image"), { type: "image", url }, ...video];
-                }
-                afterChange({ sheet: true });
-            });
-            return;
-        }
-
-        if (d.paidfileFor) {
-            const p = A.draft.products.find((x) => x.id === d.paidfileFor);
-            const f = files[0];
-            if (!p || !f) return;
-            if (!/pdf$/i.test(f.type || "") && !/\.pdf$/i.test(f.name || "")) { toast("اختر ملف PDF فقط"); return; }
-            await withBusy("جاري رفع الملف...", async () => {
-                const path = `${p.id}.pdf`;
-                const { error } = await sb.storage.from("paid-files").upload(path, f, { upsert: true, contentType: "application/pdf", cacheControl: "0" });
-                if (error) throw error;
-                p.file_url = `private:${path}`;
-                p._fileRemoved = false;
-                afterChange({ sheet: true });
-                toast("رُفع الملف. اضغط حفظ ليثبت في المنتج");
-            });
-            return;
-        }
-
-        if (d.videoFor) {
-            const p = A.draft.products.find((x) => x.id === d.videoFor);
-            if (!p) return;
-            await withBusy("جاري تجهيز الفيديو...", async () => {
-                const url = await uploadVideo(files[0], "productVideoQuality", "الفيديو");
-                p.media = [...p.media.filter((m) => m.type === "image"), { type: "video", url }];
-                afterChange({ sheet: true });
-                toast("رُفع الفيديو");
-            });
-            return;
-        }
-
-        if (d.reviewImg !== undefined) {
-            const r = cfg().contact.reviews[Number(d.reviewImg)];
-            if (!r) return;
-            r.images = r.images || [];
-            const pick = files.slice(0, 3 - r.images.length);
-            await withBusy("جاري رفع الصور...", async () => {
-                for (const file of pick) r.images.push(await uploadImage(file, "review"));
-                afterChange();
-            });
-        }
-    }
-
-    function moveItem(arr, i, dir) {
-        const j = i + dir;
-        if (j < 0 || j >= arr.length) return;
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-
-    async function onClick(e) {
-        const t = e.target.closest("button, [data-a], [data-tab]");
-        if (!t) return;
-        const d = t.dataset;
-
-        if (d.tab) {
-            A.tab = d.tab;
-            A.rowMenu = null;
-            renderPanel();
-            return;
-        }
-        if (d.gforReset && ATHR_DEFAULTS.gift.genders[d.gforReset]) {
-            cfg().gift.genders[d.gforReset].colors = { ...ATHR_DEFAULTS.gift.genders[d.gforReset].colors };
-            afterChange();
-            return;
-        }
-        if (d.giftTheme && GIFT_THEMES[d.giftTheme]) {
-            cfg().gift.colors = { ...GIFT_THEMES[d.giftTheme] };
-            afterChange();
-            return;
-        }
-        if (d.giftWaReset !== undefined) {
-            cfg().gift.wa = ATHR_DEFAULTS.gift.wa;
-            afterChange();
-            return;
-        }
-        if (d.priceQuick !== undefined && d.id) {
-            priceFromSheet(d.id, Number(d.priceQuick));
-            refreshSheet();
-            return;
-        }
-        if (d.rowMenu) {
-            A.rowMenu = A.rowMenu === d.rowMenu ? null : d.rowMenu;
-            renderTab({ keepScroll: true });
-            return;
-        }
-
-        if (d.a && /^(offer|cust)-/.test(d.a) && await customersClick(d)) return;
-        if (d.custKind) {
-            A.custFilter.kind = d.custKind;
-            $$("[data-cust-kind]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.custKind === d.custKind)));
-            renderCustomers();
-            return;
-        }
-        if (d.custMk) { toggleMarketing(d.custMk); return; }
-        if (d.custWa) {
-            const c = A.customers.find((x) => x.phone === d.custWa);
-            if (c) window.open(ATHR.waLink(custWa(c), ""), "_blank", "noopener");
-            return;
-        }
-        if ((d.custOffer || d.offerProduct || d.offerTpl !== undefined || d.offerEnds !== undefined || d.offerAud) && offerOptionClick(d)) return;
-        if (((d.a && /^fin-/.test(d.a)) || d.finEdit) && await financeClick(d)) return;
-        if (((d.a && /^wa-/.test(d.a)) || d.waChat || d.waFilter || d.waCountry || d.waQ || d.waTpl || d.waAud || d.copyWa !== undefined) && await waClick(d)) return;
-        if (((d.a && /^(asst|prof)-/.test(d.a)) || d.asstQ || d.asstAct || d.asstNo || d.custOpen || d.profSuggest) && await insightsClick(d)) return;
-        if (((d.a && /^backup-/.test(d.a)) || d.bkGet || d.bkRestore || d.bkScope) && await backupClick(d)) return;
-        if ((d.a && /^bulk-/.test(d.a)) || d.bpMode || d.bpPct !== undefined) { bulkClick(d); return; }
-        if (((d.a && /^(xlsx-|import-|products-low|ai-|offer-ai$|reward-)/.test(d.a)) || d.aiDesc || d.custReward) && await v17Click(d)) return;
-        if ((d.a && /^(coupon|restock|promo)-/.test(d.a)) || d.cpToggle || d.cpEdit || d.cpLink || d.cpMsg || d.restockSend || d.restockClear || d.restockAvail || d.favOffer) {
-            await promoClick(d);
-            return;
-        }
-
-        switch (d.a) {
-            case "close": close(); return;
-            case "retry": open(A.view); return;
-            case "close-sheet": closeSheet(); return;
-            case "preview": preview(); return;
-            case "tpl-apply": applyTemplate(d.id); return;
-            case "tpl-undo": undoTemplate(); return;
-            case "tpl-preview": previewTemplate(d.id); return;
-            case "gift-preview": preview(`${ATHR.base()}gift/?c=${ATHR.giftCode({ ...GIFT_SAMPLE, gender: d.gender || "" })}`); return;
-            case "account": openAccount(); return;
-            case "discard": discard(); return;
-            case "publish": publish(); return;
-            case "add-product": addProduct(); return;
-            case "add-category":
-                A.draft.categories.push({ id: crypto.randomUUID(), name: "", slug: "", description: "", image_url: "" });
-                afterChange();
-                setTimeout(() => { const inputs = $$('#admBody .lst input[data-bind^="categories."]'); inputs[inputs.length - 1]?.focus(); }, 30);
-                return;
-            case "add-color":
-                cfg().colors.push({ id: ATHR.uid("c-"), name: "", hex: "#cccccc" });
-                afterChange();
-                return;
-            case "ad-add": {
-                const ad = cfg().ad;
-                if (!Array.isArray(ad.more)) ad.more = [];
-                const blank = {};
-                ATHR.AD_FIELDS.forEach((k) => { blank[k] = ""; });
-                ad.more.push({ ...blank, type: "image", bg: cfg().theme.primary || "#570418" });
-                afterChange();
-                setTimeout(() => { const cards = $$("#admBody .adm-card"); const last = cards[cards.length - 1]; if (last) last.scrollIntoView({ behavior: "smooth", block: "start" }); }, 40);
-                return;
-            }
-            case "ad-move": {
-                const i = Number(d.i), j = i + Number(d.dir);
-                const n = 1 + (cfg().ad.more || []).length;
-                if (j < 0 || j >= n) return;
-                const a = adGet(i), b = adGet(j);
-                adPut(i, b);
-                adPut(j, a);
-                afterChange();
-                return;
-            }
-            case "ad-del": {
-                const i = Number(d.i);
-                const ad = cfg().ad;
-                const more = Array.isArray(ad.more) ? ad.more : [];
-                if (!more.length || !confirm(`تحذف الإعلان ${i + 1}؟`)) return;
-                // حذف الأول: الثاني يصير مكانه
-                if (i === 0) adPut(0, adGet(1));
-                more.splice(i === 0 ? 0 : i - 1, 1);
-                afterChange();
-                toast("انحذف الإعلان");
-                return;
-            }
-            case "reset-colors":
-                ["primary", "hero", "bg", "text"].forEach((k) => { cfg().theme[k] = ATHR_DEFAULTS.theme[k]; });
-                afterChange();
-                return;
-            case "signout":
-                await sb.auth.signOut();
-                ATHR.store.setAdmin(false);
-                A.server = null;
-                A.draft = null;
-                A.orders = [];
-                A.ordersLoaded = false;
-                close();
-                toast("تم تسجيل الخروج");
-                return;
-            case "orders-close": close(); return;
-            case "orders-paste": openPaste(); return;
-            case "orders-manual": openOrderForm(null); return;
-            case "story-maker": openStoryMaker(null, -1); return;
-            case "orders-sheet-close": closeOrderSheet(); return;
-            case "paste-import": importPasted(); return;
-            case "open-panel": location.hash = "#admin"; open("admin"); return;
-            case "open-orders": A.book = "orders"; location.hash = "#orders"; open("orders"); return;
-            case "open-customers": A.book = "customers"; location.hash = "#orders"; open("orders"); return;
-            default: break;
-        }
-
-        if (d.copyText) { ATHR.store.copyText(d.copyText, "نُسخ الرابط"); return; }
-        if (d.book) { A.book = d.book; renderBook(); return; }
-        if (d.days) { A.statsDays = Number(d.days); renderBook(); return; }
-        if (d.reviewSet) { setReviewStatus(d.reviewSet, d.value); return; }
-        if (d.reviewDel) { deleteReview(d.reviewDel); return; }
-        if (d.paidfileDel) {
-            const p = A.draft.products.find((x) => x.id === d.paidfileDel);
-            if (!p) return;
-            if (!(await askConfirm("إزالة ملف هذا المنتج؟ لن يُرسل للعملاء بعد الآن."))) return;
-            p.file_url = "";
-            p._fileRemoved = true;
-            sb.storage.from("paid-files").remove([`${p.id}.pdf`]).catch(() => {});
-            afterChange({ sheet: true });
-            return;
-        }
-        if (d.orderFiles) { sendOrderFiles(d.orderFiles); return; }
-        if (d.orderReview) { const o = A.orders.find((x) => x.id === d.orderReview); if (o) window.open(customerWa(o, reviewRequestText(o)), "_blank", "noopener"); return; }
-        if (d.edit) { editProduct(d.edit); return; }
-        if (d.toggleVisible) {
-            const p = A.draft.products.find((x) => x.id === d.toggleVisible);
-            if (p) p.is_visible = !p.is_visible;
-            afterChange();
-            return;
-        }
-        if (d.copyProduct) {
-            const i = A.draft.products.findIndex((x) => x.id === d.copyProduct);
-            if (i < 0) return;
-            const copy = ATHR.clone(A.draft.products[i]);
-            copy.id = crypto.randomUUID();
-            copy.slug = "";
-            copy.name = `${copy.name} (نسخة)`;
-            A.draft.products.splice(i + 1, 0, copy);
-            afterChange();
-            toast("نُسخ المنتج");
-            return;
-        }
-        if (d.delProduct) {
-            const p = A.draft.products.find((x) => x.id === d.delProduct);
-            const pid = d.delProduct;
-            if (p) {
-                askConfirm(`حذف «${p.name || "المنتج"}»؟`).then((ok) => {
-                    if (!ok) return;
-                    A.draft.products = A.draft.products.filter((x) => x.id !== pid);
-                    cfg().sales.bundles.forEach((b) => {
-                        if (b.a === pid) b.a = "";
-                        if (b.b === pid) b.b = "";
-                    });
-                    A.rowMenu = null;
-                    afterChange();
-                    toast("حُذف من المسودة. اضغط «نشر التغييرات» ليختفي من المتجر");
-                });
-            }
-            return;
-        }
-        if (d.move) {
-            const arr = getPath(d.move);
-            if (Array.isArray(arr)) moveItem(arr, Number(d.i), Number(d.dir));
-            afterChange();
-            return;
-        }
-        if (d.del) {
-            const arr = getPath(d.del);
-            if (!Array.isArray(arr)) return;
-            const item = arr[Number(d.i)];
-            const label = d.del === "categories" ? `القسم «${item?.name || ""}»` : "هذا العنصر";
-            const idx = Number(d.i), path = d.del;
-            askConfirm(`حذف ${label}؟`).then((ok) => {
-                if (!ok) return;
-                const list = getPath(path);
-                if (!Array.isArray(list) || list[idx] !== item) return;
-                list.splice(idx, 1);
-                if (path === "categories" && item) {
-                    A.draft.products.forEach((p) => { if (p.category_id === item.id) p.category_id = null; });
-                }
-                if (path === "config.colors" && item) {
-                    A.draft.products.forEach((p) => { if (p.color_id === item.id) p.color_id = ""; });
-                }
-                afterChange();
-                if (path === "categories") toast("حُذف القسم من المسودة. اضغط «نشر التغييرات» ليختفي من المتجر");
-            });
-            return;
-        }
-        if (d.addItem) {
-            const arr = getPath(d.addItem);
-            const make = NEW_ITEM[d.addItem];
-            if (Array.isArray(arr) && make) arr.push(make());
-            afterChange();
-            return;
-        }
-        if (d.clear) {
-            setPath(d.clear, "");
-            afterChange();
-            return;
-        }
-        if (d.resetLogo !== undefined) {
-            cfg().logo_url = ATHR_DEFAULTS.logo_url;
-            afterChange();
-            return;
-        }
-        if (d.mediaMove) {
-            const p = A.draft.products.find((x) => x.id === d.mediaMove);
-            if (!p) return;
-            const images = p.media.filter((m) => m.type === "image");
-            moveItem(images, Number(d.i), Number(d.dir));
-            p.media = [...images, ...p.media.filter((m) => m.type === "video")];
-            afterChange({ sheet: true });
-            return;
-        }
-        if (d.mediaDel) {
-            const p = A.draft.products.find((x) => x.id === d.mediaDel);
-            if (!p) return;
-            const images = p.media.filter((m) => m.type === "image");
-            images.splice(Number(d.i), 1);
-            p.media = [...images, ...p.media.filter((m) => m.type === "video")];
-            afterChange({ sheet: true });
-            return;
-        }
-        if (d.videoDel) {
-            const p = A.draft.products.find((x) => x.id === d.videoDel);
-            if (p) p.media = p.media.filter((m) => m.type !== "video");
-            afterChange({ sheet: true });
-            return;
-        }
-        if (d.reviewImgDel !== undefined) {
-            const r = cfg().contact.reviews[Number(d.reviewImgDel)];
-            if (r && r.images) r.images.splice(Number(d.n), 1);
-            afterChange();
-            return;
-        }
-
-        // ---------- orders ----------
-        if (d.status) { A.filter.status = d.status; renderOrdersList(); return; }
-        if (d.orderEdit) { openOrderForm(A.orders.find((o) => o.id === d.orderEdit)); return; }
-        if (d.orderWa) { const o = A.orders.find((x) => x.id === d.orderWa); if (o) window.open(customerWa(o, ""), "_blank", "noopener"); return; }
-        if (d.orderGiftCard) {
-            const o = A.orders.find((x) => x.id === d.orderGiftCard);
-            if (o && o.gift_phone) {
-                const link = siteLink(ATHR.giftCardPath(o));
-                const from = String(o.customer_name || "").trim().split(/\s+/)[0];
-                const text = ATHR.withLang("ar", () => ATHR.giftWhatsApp({ to: o.gift_name, from, msg: o.gift_message, occasion: o.gift_occasion, occasionText: o.gift_occasion_text, link, store: ATHR.storeName(cfg()), config: cfg() }));
-                window.open(ATHR.waLink(ATHR.customerWhatsapp(o.gift_phone, o.country || "OM"), text), "_blank", "noopener");
-            }
-            return;
-        }
-        if (d.orderWaGift) { const o = A.orders.find((x) => x.id === d.orderWaGift); if (o && o.gift_phone) window.open(ATHR.waLink(ATHR.customerWhatsapp(o.gift_phone, o.country || "OM"), ""), "_blank", "noopener"); return; }
-        if (d.orderRemind) { const o = A.orders.find((x) => x.id === d.orderRemind); if (o) window.open(customerWa(o, reminderText(o)), "_blank", "noopener"); return; }
-        if (d.orderCopy) { const o = A.orders.find((x) => x.id === d.orderCopy); if (o) ATHR.store.copyText(orderText(o), "نُسخ الطلب"); return; }
-        if (d.storyMake) { const o = A.orders.find((x) => x.id === d.storyMake); if (o) openStoryMaker(o, Number(d.storyI)); return; }
-        if (d.photoView) { const o = A.orders.find((x) => x.id === d.photoView); if (o) openPhotoSheet(o, Number(d.photoI)); return; }
-        if (d.orderHide) { const o = A.orders.find((x) => x.id === d.orderHide); if (o) updateOrderField(o.id, "hidden", !o.hidden); return; }
-        if (d.orderDelete) { await deleteOrder(d.orderDelete); return; }
-    }
-
-    function onSubmit(e) {
-        e.preventDefault();
-        if (waSubmit(e.target)) return;
-        if (e.target.id === "loginForm") doLogin();
-        if (e.target.id === "passwordForm") changePassword(e.target);
-        if (e.target.id === "orderForm") saveOrderForm(e.target);
-        if (e.target.id === "couponForm") saveCoupon(e.target);
-        if (e.target.id === "finForm") saveExpense(e.target);
-    }
-
-    // =====================================================
-    // ACTIONS
-    // =====================================================
-
-    // =====================================================
-    // v27 — سعر موحّد وخصومات: السعر الجديد والقديم لكل المنتجات أو جزء منها دفعة وحدة
-    // السعر الجديد = اللي يدفعه الزبون (price) · السعر القديم = المشطوب (old_price)
-    // =====================================================
-    const BP_MODES = [
-        ["set", "🏷️", "سعر جديد وقديم", "تكتب السعرين بنفسك"],
-        ["pct", "٪", "خصم بالنسبة", "يحسب السعر الجديد من الأصلي"],
-        ["adjust", "↕️", "زيادة أو تخفيض", "بمبلغ أو بنسبة على الكل"],
-        ["end", "✖️", "إنهاء الخصم", "يرجع السعر الأصلي ويشيل الشطب"]
-    ];
-    const BP_PCTS = [10, 15, 20, 25, 30, 40, 50];
-
-    function bpState() {
-        if (!A.bulk) A.bulk = { mode: "set", scope: "all", cat: "", eq: "", visibleOnly: false, newPrice: "", oldPrice: "", noOld: false, pct: "", dir: "down", val: "", unit: "pct", round: "0" };
-        return A.bulk;
-    }
-    const bpNum = (v) => (v === "" || v === null || v === undefined ? null : Number(ATHR.digits(String(v))));
-    const bpDec = () => (Number.isInteger(Number(cfg().order.decimals)) ? Number(cfg().order.decimals) : 3);
-    const bpFix = (v) => { const f = 10 ** bpDec(); return Math.round(v * f) / f; };
-    const bpRound = (v, st) => { const step = Number(st.round) || 0; return bpFix(step ? Math.max(step, Math.round(v / step) * step) : v); };
-
-    // المنتجات اللي بيشملها التعديل
-    function bpTargets(st = bpState()) {
-        const eq = bpNum(st.eq);
-        return A.draft.products.filter((p) => {
-            if (st.visibleOnly && !p.is_visible) return false;
-            if (st.scope === "cat") return Boolean(st.cat) && p.category_id === st.cat;
-            if (st.scope === "sale") return pctOf(p) > 0;
-            if (st.scope === "nosale") return !pctOf(p);
-            if (st.scope === "price") return eq !== null && Math.abs(Number(p.price) - eq) < 0.0005;
-            return true;
-        });
-    }
-
-    // السعر بعد التعديل لمنتج واحد: { price, old } أو null لو ما بيتغيّر
-    function bpCompute(p, st = bpState()) {
-        const price = Number(p.price) > 0 ? Number(p.price) : null;
-        const old = pctOf(p) ? Number(p.old_price) : null;
-        let np = price, no = old;
-        if (st.mode === "set") {
-            const a = bpNum(st.newPrice), b = bpNum(st.oldPrice);
-            if (a === null && b === null && !st.noOld) return null;
-            if (a !== null) { if (!(a > 0)) return null; np = bpRound(a, st); }
-            if (st.noOld) no = null;
-            else if (b !== null) no = b > 0 ? bpFix(b) : null;
-        } else if (st.mode === "pct") {
-            const pct = bpNum(st.pct);
-            if (pct === null || !(pct > 0) || pct > 90 || !price) return null;
-            const base = old || price;
-            no = bpFix(base);
-            np = bpRound(base * (1 - pct / 100), st);
-        } else if (st.mode === "adjust") {
-            const val = bpNum(st.val);
-            if (val === null || !(val > 0) || !price) return null;
-            const k = st.dir === "up" ? 1 : -1;
-            const adj = (x) => (st.unit === "pct" ? x * (1 + (k * val) / 100) : x + k * val);
-            np = adj(price);
-            if (!(np > 0)) return { skip: true };
-            np = bpRound(np, st);
-            no = old ? bpRound(adj(old), st) : null;
-        } else if (st.mode === "end") {
-            if (!old) return null;
-            np = bpFix(old);
-            no = null;
-        }
-        if (!(np > 0)) return null;
-        const dropped = no !== null && no <= np;   // السعر القديم لازم يكون أكبر من الجديد عشان يبان خصم
-        if (dropped) no = null;
-        if (np === price && no === old) return dropped ? { same: true, dropped } : null;
-        return { price: np, old: no, dropped };
-    }
-
-    function bpPlan(st = bpState()) {
-        const targets = bpTargets(st);
-        const rows = [];
-        let skipped = 0, dropped = 0;
-        targets.forEach((p) => {
-            const r = bpCompute(p, st);
-            if (!r) return;
-            if (r.skip) { skipped++; return; }
-            if (r.dropped) dropped++;
-            if (r.same) return;
-            rows.push({ p, ...r });
-        });
-        return { targets, rows, skipped, dropped };
-    }
-
-    const bpPriceHTML = (price, old) => price > 0
-        ? `<b>${money(price)}</b>${old ? ` <s>${money(old)}</s> <span class="tag sale">خصم ${Math.round((1 - price / old) * 100)}%</span>` : ""}`
-        : `<span class="adm-muted">بدون سعر</span>`;
-
-    function bpPreviewHTML() {
-        const st = bpState();
-        const plan = bpPlan(st);
-        const n = plan.rows.length;
-        const need = {
-            set: "اكتب السعر الجديد أو القديم (أو الاثنين).",
-            pct: "اختار نسبة الخصم.",
-            adjust: "اكتب قيمة الزيادة أو التخفيض.",
-            end: "ما فيه منتجات عليها خصم في اختيارك."
-        }[st.mode];
-        const head = plan.targets.length
-            ? `<p class="bp-count">الاختيار يشمل <b>${plan.targets.length}</b> منتج${n ? ` · بيتغيّر سعر <b>${n}</b>` : ""}</p>`
-            : `<p class="bp-count warn">ما فيه منتجات تطابق اختيارك.</p>`;
-        const list = n ? `<ul class="bp-prev">${plan.rows.slice(0, 6).map((r) => `<li>
-                <span class="bp-name">${esc(r.p.name || "منتج بدون اسم")}</span>
-                <span class="bp-was">${bpPriceHTML(Number(r.p.price), pctOf(r.p) ? Number(r.p.old_price) : null)}</span>
+                ${bt("config.contact.reviews",n,t.reviews.length)}
+            </li>`}).join("");return N("قائمة النقاط الثلاث (⋮) أعلى المتجر",`
+                ${H("config.contact.menu_show","إظهار قائمة النقاط الثلاث")}
+                ${H("config.contact.menu_home","زر «الصفحة الرئيسية» في القائمة")}
+                ${T("config.contact.share_url","رابط متجرك",{dir:"ltr",placeholder:"https://",help:"يُستعمل في روابط التقييم والمشاركة. غيّره فقط إذا ربطت دومينك الخاص."})}`)+N("الظهور في جوجل",`
+                ${T("config.seo.home_title","عنوان المتجر في نتائج جوجل",{max:70,placeholder:`${$().name} | ${$().texts.hero_title}`,help:"أفضل طول 50 إلى 60 حرفاً، وفيه الكلمات التي يبحث بها الناس مثل «أكواب» و«عُمان»."})}
+                ${G("config.seo.home_description","وصف المتجر في نتائج جوجل",{rows:3,help:"أفضل طول 120 إلى 155 حرفاً. اتركه فارغاً ليُكتب تلقائياً من النبذة وطرق التوصيل والدفع."})}
+                ${T("config.seo.google_verification","رمز التحقق من Google Search Console",{dir:"ltr",placeholder:"الصق الرمز أو وسم meta كاملاً",help:"من Search Console اختر طريقة «علامة HTML» وانسخ الرمز هنا، ثم انشر وانتظر حتى ساعة قبل الضغط على «تحقق»."})}
+                <p class="adm-muted">لكل منتج وقسم صفحة خاصة يقرؤها جوجل، تُحدَّث تلقائياً كل ساعة بعد النشر. خريطة الموقع: <code dir="ltr">${d(Y(ATHR.base()+"sitemap.xml"))}</code></p>`,"عناوين المنتجات وأوصافها تؤثر على ظهورك في البحث. اكتب وصفاً لكل قسم في «الأقسام والألوان».")+N("زر واتساب السريع",`
+                ${H("config.contact.wa_float","إظهار زر واتساب العائم في كل الصفحة")}
+                ${T("config.contact.wa_float_msg","الرسالة الجاهزة عند ضغط الزائر على الزر",{placeholder:e.wa_float_msg})}`)+N("سياسة الشحن والتوصيل",`
+                ${H("config.contact.policy_show","إظهار رابط «سياسة الشحن والتوصيل» للعميل")}
+                ${T("config.contact.policy_title","عنوان السياسة",{placeholder:e.policy_title})}
+                ${G("config.contact.policy_notes","ملاحظات إضافية في السياسة",{rows:3,help:"أسعار التوصيل وطرق الدفع تُسحب تلقائياً من تبويب الطلب والتوصيل. كل سطر فقرة."})}`)+N("آراء العملاء",`
+                ${T("config.contact.reviews_title","عنوان قسم الآراء",{placeholder:e.reviews_title})}
+                ${H("config.contact.reviews_share_btn","زر «شاركنا رأيك» لإرسال الصور والفيديو عبر واتساب")}
+                ${T("config.contact.reviews_share_text","نص زر المشاركة",{placeholder:e.reviews_share_text})}
+                ${T("config.contact.reviews_share_msg","الرسالة الجاهزة التي يبدأ بها العميل",{placeholder:e.reviews_share_msg})}
+                <ul class="items">${a}</ul>
+                ${t.reviews.length<12?'<button class="ab ab-ghost ab-sm" type="button" data-add-item="config.contact.reviews">+ إضافة رأي</button>':""}`,"يظهر القسم في المتجر بمجرد إضافة أول رأي، ويختفي إن لم يكن فيه شيء.")}const Or={"config.texts.hero_features":()=>"","config.texts.socials":()=>({name:"",url:""}),"config.order.delivery":()=>({id:ATHR.uid("d-"),enabled:!0,name:"",type:"home",price:0,note:"",duration:""}),"config.order.governorates":()=>"","config.order.payments":()=>({id:ATHR.uid("p-"),enabled:!1,name:"",type:"other",note:"",bank:{number:"",bank:"",holder:"",account:"",swift:"",iban:""},link:""}),"config.sales.bundles":()=>({id:ATHR.uid("b-"),enabled:!0,a:"",b:"",pct:10}),"config.sales.trust_custom":()=>"","config.sales.volume.tiers":()=>({min:4,pct:15}),"config.contact.reviews":()=>({id:ATHR.uid("r-"),name:"",text:"",stars:5,images:[],video:""})},Lr={product:1600,ad:1800,hero:1920,logo:512,review:1200,category:1100};function Pr(t){return new Promise((e,a)=>{const s=URL.createObjectURL(t),n=new Image;n.onload=()=>e({img:n,url:s}),n.onerror=()=>{URL.revokeObjectURL(s),a(new Error("تعذر قراءة الصورة. جرّب صورة JPG أو PNG."))},n.src=s})}async function Dr(t,e){const a=Lr[e]||1600,s=e==="logo"&&t.type==="image/png",{img:n,url:o}=await Pr(t),r=Math.min(1,a/Math.max(n.naturalWidth,n.naturalHeight)),l=Math.round(n.naturalWidth*r),c=Math.round(n.naturalHeight*r),p=document.createElement("canvas");p.width=l,p.height=c;const u=p.getContext("2d");s||(u.fillStyle="#ffffff",u.fillRect(0,0,l,c)),u.drawImage(n,0,0,l,c),URL.revokeObjectURL(o);const m=s?"image/png":"image/jpeg",h=await new Promise(M=>p.toBlob(M,m,.86));if(!h)throw new Error("تعذر تجهيز الصورة.");return{blob:h,ext:s?"png":"jpg",type:m}}async function Ir(t,e,a){if(!e||!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream)return t;const s=URL.createObjectURL(t),n=document.createElement("video");n.src=s,n.muted=!0,n.playsInline=!0,n.preload="auto";try{await new Promise((A,k)=>{n.onloadedmetadata=A,n.onerror=()=>k(new Error("meta")),setTimeout(()=>k(new Error("meta timeout")),15e3)});const o=Math.min(n.videoWidth,n.videoHeight);if(!o||o<=e*1.05)return t;const r=e/o,l=Math.round(n.videoWidth*r/2)*2,c=Math.round(n.videoHeight*r/2)*2,p=document.createElement("canvas");p.width=l,p.height=c;const u=p.getContext("2d"),m=["video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9","video/webm"].find(A=>MediaRecorder.isTypeSupported(A));if(!m)return t;const h=e>=1080?45e5:e>=720?25e5:12e5,M=p.captureStream(30),L=new MediaRecorder(M,{mimeType:m,videoBitsPerSecond:h}),S=[];L.ondataavailable=A=>{A.data&&A.data.size&&S.push(A.data)};const E=new Promise(A=>{L.onstop=A});let R=!0;const D=()=>{R&&(u.drawImage(n,0,0,l,c),n.duration&&a(Math.min(99,Math.round(n.currentTime/n.duration*100))),requestAnimationFrame(D))};L.start(1e3),await n.play(),D(),await new Promise(A=>{n.onended=A}),R=!1,L.stop(),await E;const P=new Blob(S,{type:m.split(";")[0]});return P.size&&P.size<t.size?P:t}catch(o){return console.warn("Video compression skipped:",o),t}finally{URL.revokeObjectURL(s)}}async function Vs(t,e,a){const s=`${Date.now()}-${crypto.randomUUID().replaceAll("-","").slice(0,16)}.${e}`,{error:n}=await _.storage.from(Ja).upload(s,t,{cacheControl:"31536000",upsert:!1,contentType:a});if(n)throw n;return _.storage.from(Ja).getPublicUrl(s).data.publicUrl}async function Sa(t,e){const{blob:a,ext:s,type:n}=await Dr(t,e);return Vs(a,s,n)}async function Ws(t,e,a){const s=Number(Q.get(e)??(e==="adVideoQuality"?480:720))||0;let n=t;if(s&&(n=await Ir(t,s,l=>dt(`جاري ضغط ${a} ${l}%`))),n.size>50*1024*1024)throw new Error("الفيديو أكبر من 50 ميغابايت. اختر جودة أخف أو فيديو أقصر.");dt(`جاري رفع ${a}...`);const o=n.type||"video/mp4",r=o.includes("webm")?"webm":o.includes("quicktime")?"mov":"mp4";return Vs(n,r,o)}function dt(t){let e=b("#admBusy");e||(e=document.createElement("div"),e.id="admBusy",e.className="adm-busy",e.setAttribute("role","status"),vt().appendChild(e)),e.textContent=t,e.hidden=!t}async function Lt(t,e){dt(t);try{await e()}catch(a){console.error(a),y(a&&a.message&&/[؀-ۿ]/.test(a.message)?a.message:"تعذر الرفع. تأكد من الإنترنت وحاول مرة أخرى.")}finally{dt("")}}function F({sheet:t=!1}={}){nt(),(t||i.editing)&&ie(),B({keepScroll:!0})}function Fr(t){const e=t.target;if(!Js(e,!1)){if(e.id==="productFilter"){i.productFilter=e.value;const a=e.selectionStart;B({keepScroll:!0});const s=b("#productFilter");s.focus();try{s.setSelectionRange(a,a)}catch{}return}if(e.id==="ordersSearch"){i.filter.q=e.value,Mt();return}if(e.id==="custSearch"){i.custFilter.q=e.value,gt();return}if(e.closest&&e.closest("#couponForm")){ys(e);return}if(e.id==="restockText"&&i.restockRun){i.restockRun.text=e.value,Q.set(fs,e.value);const a=b("#restockPreview");a&&(a.innerHTML=Dt(Me(i.restockRun,i.restockRun.list[0]),i.restockRun));return}if(e.id==="offerText"&&i.offer){i.offer.text=e.value,ui();return}if(e.id==="offerProdQ"&&i.offer){i.offer.q=e.value;const a=b("#opList");a&&(a.innerHTML=nn(i.offer));return}if(e.dataset.priceBase||e.dataset.pricePct){sa(e.dataset.priceBase||e.dataset.pricePct);return}if(e.dataset.stock){cs(e.dataset.stock,e.value);return}if(e.dataset.bind&&e.type!=="checkbox"&&e.tagName!=="SELECT"){if(Gs(e),e.type==="color"){const a=e.parentElement.querySelector("code");a&&(a.textContent=e.value)}if(/\.name$/.test(e.dataset.bind)&&i.editing){const a=b("#admSheet .adm-sheet-head h2");a&&(a.textContent=e.value||"منتج جديد")}}}}function Gs(t){let e;t.dataset.type==="bool"?e=t.checked:t.dataset.type==="number"?e=t.value===""?null:Number(ATHR.digits(t.value)):e=t.value,oe(t.dataset.bind,e),nt(),t.dataset.bind.startsWith("config.gift.")&&Kn()}async function jr(t){const e=t.target;if(!Js(e,!0)&&!(e.closest&&e.closest("#waBody")&&await dl(e))){if(e.dataset.pixel){Nr(e);return}if(e.closest&&e.closest("#couponForm")){ys(e);return}if(e.id==="offerSkip"&&i.offer){i.offer.skipRecent=e.checked,Be(i.offer),ut({keepScroll:!0});return}if(e.dataset.pref){Q.set(e.dataset.pref,e.value);return}if(e.dataset.priceBase||e.dataset.pricePct){sa(e.dataset.priceBase||e.dataset.pricePct),B({keepScroll:!0});return}if(e.dataset.bind){Gs(e),e.dataset.rerender!==void 0&&(i.editing&&ie(),B({keepScroll:!0}));return}if(e.dataset.countryPath){const a=X(e.dataset.countryPath),s=new Set(Array.isArray(a)&&a.length?a:ATHR_COUNTRIES.map(n=>n.code));e.checked?s.add(e.value):s.delete(e.value),oe(e.dataset.countryPath,ATHR_COUNTRIES.map(n=>n.code).filter(n=>s.has(n))),nt();return}if(e.dataset.stock){cs(e.dataset.stock,e.value),ie(),B({keepScroll:!0});return}if(e.dataset.soldOut){const a=i.draft.products.find(s=>s.id===e.dataset.soldOut);a&&(a.is_available=!e.checked),nt();return}if(e.type==="file"&&e.files&&e.files.length){const a=Array.from(e.files);e.value="",await Ur(e,a);return}if(e.dataset.orderField){Da(e.dataset.orderId,e.dataset.orderField,e.value);return}e.id==="payFilter"&&(i.filter.pay=e.value,Mt())}}async function Ur(t,e){const a=t.dataset;if(a.importProducts!==void 0){await Mo(e[0]);return}if(a.upload){const s=a.kind||"product",n=/video/i.test(s);await Lt(n?"جاري تجهيز الفيديو...":"جاري رفع الصورة...",async()=>{const o=n?await Ws(e[0],s==="adVideo"?"adVideoQuality":"productVideoQuality","الفيديو"):await Sa(e[0],s);oe(a.upload,o),F(),y(n?"رُفع الفيديو":"رُفعت الصورة")});return}if(a.mediaAdd){const s=i.draft.products.find(r=>r.id===a.mediaAdd);if(!s)return;const n=5-s.media.filter(r=>r.type==="image").length,o=e.slice(0,Math.max(0,n));e.length>n&&y(`يمكن إضافة ${n} صور فقط (الحد 5).`),await Lt("جاري رفع الصور...",async()=>{for(let r=0;r<o.length;r++){dt(`جاري رفع الصور ${r+1} من ${o.length}...`);const l=await Sa(o[r],"product"),c=s.media.filter(p=>p.type==="video");s.media=[...s.media.filter(p=>p.type==="image"),{type:"image",url:l},...c]}F({sheet:!0})});return}if(a.paidfileFor){const s=i.draft.products.find(o=>o.id===a.paidfileFor),n=e[0];if(!s||!n)return;if(!/pdf$/i.test(n.type||"")&&!/\.pdf$/i.test(n.name||"")){y("اختر ملف PDF فقط");return}await Lt("جاري رفع الملف...",async()=>{const o=`${s.id}.pdf`,{error:r}=await _.storage.from("paid-files").upload(o,n,{upsert:!0,contentType:"application/pdf",cacheControl:"0"});if(r)throw r;s.file_url=`private:${o}`,s._fileRemoved=!1,F({sheet:!0}),y("رُفع الملف. اضغط حفظ ليثبت في المنتج")});return}if(a.videoFor){const s=i.draft.products.find(n=>n.id===a.videoFor);if(!s)return;await Lt("جاري تجهيز الفيديو...",async()=>{const n=await Ws(e[0],"productVideoQuality","الفيديو");s.media=[...s.media.filter(o=>o.type==="image"),{type:"video",url:n}],F({sheet:!0}),y("رُفع الفيديو")});return}if(a.reviewImg!==void 0){const s=$().contact.reviews[Number(a.reviewImg)];if(!s)return;s.images=s.images||[];const n=e.slice(0,3-s.images.length);await Lt("جاري رفع الصور...",async()=>{for(const o of n)s.images.push(await Sa(o,"review"));F()})}}function zs(t,e,a){const s=e+a;s<0||s>=t.length||([t[e],t[s]]=[t[s],t[e]])}async function Br(t){const e=t.target.closest("button, [data-a], [data-tab]");if(!e)return;const a=e.dataset;if(a.tab){i.tab=a.tab,i.rowMenu=null,re();return}if(a.gforReset&&ATHR_DEFAULTS.gift.genders[a.gforReset]){$().gift.genders[a.gforReset].colors={...ATHR_DEFAULTS.gift.genders[a.gforReset].colors},F();return}if(a.giftTheme&&us[a.giftTheme]){$().gift.colors={...us[a.giftTheme]},F();return}if(a.giftWaReset!==void 0){$().gift.wa=ATHR_DEFAULTS.gift.wa,F();return}if(a.priceQuick!==void 0&&a.id){sa(a.id,Number(a.priceQuick)),ie();return}if(a.rowMenu){i.rowMenu=i.rowMenu===a.rowMenu?null:a.rowMenu,B({keepScroll:!0});return}if(!(a.a&&/^(offer|cust)-/.test(a.a)&&await hi(a))){if(a.custKind){i.custFilter.kind=a.custKind,at("[data-cust-kind]").forEach(s=>s.setAttribute("aria-pressed",String(s.dataset.custKind===a.custKind))),gt();return}if(a.custMk){fi(a.custMk);return}if(a.custWa){const s=i.customers.find(n=>n.phone===a.custWa);s&&window.open(ATHR.waLink(Ma(s),""),"_blank","noopener");return}if(!((a.custOffer||a.offerProduct||a.offerTpl!==void 0||a.offerEnds!==void 0||a.offerAud)&&bi(a))&&!((a.a&&/^fin-/.test(a.a)||a.finEdit)&&await Sr(a))&&!((a.a&&/^wa-/.test(a.a)||a.waChat||a.waFilter||a.waCountry||a.waQ||a.waTpl||a.waAud||a.copyWa!==void 0)&&await cl(a))&&!((a.a&&/^(asst|prof)-/.test(a.a)||a.asstQ||a.asstAct||a.asstNo||a.custOpen||a.profSuggest)&&await gr(a))&&!((a.a&&/^backup-/.test(a.a)||a.bkGet||a.bkRestore||a.bkScope)&&await Xo(a))){if(a.a&&/^bulk-/.test(a.a)||a.bpMode||a.bpPct!==void 0){Qr(a);return}if(!((a.a&&/^(xlsx-|import-|products-low|ai-|offer-ai$|reward-)/.test(a.a)||a.aiDesc||a.custReward)&&await Rr(a))){if(a.a&&/^(coupon|restock|promo)-/.test(a.a)||a.cpToggle||a.cpEdit||a.cpLink||a.cpMsg||a.restockSend||a.restockClear||a.restockAvail||a.favOffer){await Ao(a);return}switch(a.a){case"close":Ae();return;case"retry":ft(i.view);return;case"close-sheet":At();return;case"preview":Ra();return;case"tpl-apply":ao(a.id);return;case"tpl-undo":so();return;case"tpl-preview":no(a.id);return;case"gift-preview":Ra(`${ATHR.base()}gift/?c=${ATHR.giftCode({...Ct,gender:a.gender||""})}`);return;case"account":Ys();return;case"discard":Jr();return;case"publish":ai();return;case"add-product":Vn();return;case"add-category":i.draft.categories.push({id:crypto.randomUUID(),name:"",slug:"",description:"",image_url:""}),F(),setTimeout(()=>{const s=at('#admBody .lst input[data-bind^="categories."]');s[s.length-1]?.focus()},30);return;case"add-color":$().colors.push({id:ATHR.uid("c-"),name:"",hex:"#cccccc"}),F();return;case"ad-add":{const s=$().ad;Array.isArray(s.more)||(s.more=[]);const n={};ATHR.AD_FIELDS.forEach(o=>{n[o]=""}),s.more.push({...n,type:"image",bg:$().theme.primary||"#570418"}),F(),setTimeout(()=>{const o=at("#admBody .adm-card"),r=o[o.length-1];r&&r.scrollIntoView({behavior:"smooth",block:"start"})},40);return}case"ad-move":{const s=Number(a.i),n=s+Number(a.dir),o=1+($().ad.more||[]).length;if(n<0||n>=o)return;const r=ra(s),l=ra(n);ia(s,l),ia(n,r),F();return}case"ad-del":{const s=Number(a.i),n=$().ad,o=Array.isArray(n.more)?n.more:[];if(!o.length||!confirm(`تحذف الإعلان ${s+1}؟`))return;s===0&&ia(0,ra(1)),o.splice(s===0?0:s-1,1),F(),y("انحذف الإعلان");return}case"reset-colors":["primary","hero","bg","text"].forEach(s=>{$().theme[s]=ATHR_DEFAULTS.theme[s]}),F();return;case"signout":await _.auth.signOut(),ATHR.store.setAdmin(!1),i.server=null,i.draft=null,i.orders=[],i.ordersLoaded=!1,Ae(),y("تم تسجيل الخروج");return;case"orders-close":Ae();return;case"orders-paste":qi();return;case"orders-manual":yn(null);return;case"story-maker":mn(null,-1);return;case"orders-sheet-close":ee();return;case"paste-import":Wi();return;case"open-panel":location.hash="#admin",ft("admin");return;case"open-orders":i.book="orders",location.hash="#orders",ft("orders");return;case"open-customers":i.book="customers",location.hash="#orders",ft("orders");return;default:break}if(a.copyText){ATHR.store.copyText(a.copyText,"نُسخ الرابط");return}if(a.book){i.book=a.book,fe();return}if(a.days){i.statsDays=Number(a.days),fe();return}if(a.reviewSet){$i(a.reviewSet,a.value);return}if(a.reviewDel){yi(a.reviewDel);return}if(a.paidfileDel){const s=i.draft.products.find(n=>n.id===a.paidfileDel);if(!s||!await ha("إزالة ملف هذا المنتج؟ لن يُرسل للعملاء بعد الآن."))return;s.file_url="",s._fileRemoved=!0,_.storage.from("paid-files").remove([`${s.id}.pdf`]).catch(()=>{}),F({sheet:!0});return}if(a.orderFiles){Ti(a.orderFiles);return}if(a.orderReview){const s=i.orders.find(n=>n.id===a.orderReview);s&&window.open(ve(s,vi(s)),"_blank","noopener");return}if(a.edit){aa(a.edit);return}if(a.toggleVisible){const s=i.draft.products.find(n=>n.id===a.toggleVisible);s&&(s.is_visible=!s.is_visible),F();return}if(a.copyProduct){const s=i.draft.products.findIndex(o=>o.id===a.copyProduct);if(s<0)return;const n=ATHR.clone(i.draft.products[s]);n.id=crypto.randomUUID(),n.slug="",n.name=`${n.name} (نسخة)`,i.draft.products.splice(s+1,0,n),F(),y("نُسخ المنتج");return}if(a.delProduct){const s=i.draft.products.find(o=>o.id===a.delProduct),n=a.delProduct;s&&ha(`حذف «${s.name||"المنتج"}»؟`).then(o=>{o&&(i.draft.products=i.draft.products.filter(r=>r.id!==n),$().sales.bundles.forEach(r=>{r.a===n&&(r.a=""),r.b===n&&(r.b="")}),i.rowMenu=null,F(),y("حُذف من المسودة. اضغط «نشر التغييرات» ليختفي من المتجر"))});return}if(a.move){const s=X(a.move);Array.isArray(s)&&zs(s,Number(a.i),Number(a.dir)),F();return}if(a.del){const s=X(a.del);if(!Array.isArray(s))return;const n=s[Number(a.i)],o=a.del==="categories"?`القسم «${n?.name||""}»`:"هذا العنصر",r=Number(a.i),l=a.del;ha(`حذف ${o}؟`).then(c=>{if(!c)return;const p=X(l);!Array.isArray(p)||p[r]!==n||(p.splice(r,1),l==="categories"&&n&&i.draft.products.forEach(u=>{u.category_id===n.id&&(u.category_id=null)}),l==="config.colors"&&n&&i.draft.products.forEach(u=>{u.color_id===n.id&&(u.color_id="")}),F(),l==="categories"&&y("حُذف القسم من المسودة. اضغط «نشر التغييرات» ليختفي من المتجر"))});return}if(a.addItem){const s=X(a.addItem),n=Or[a.addItem];Array.isArray(s)&&n&&s.push(n()),F();return}if(a.clear){oe(a.clear,""),F();return}if(a.resetLogo!==void 0){$().logo_url=ATHR_DEFAULTS.logo_url,F();return}if(a.mediaMove){const s=i.draft.products.find(o=>o.id===a.mediaMove);if(!s)return;const n=s.media.filter(o=>o.type==="image");zs(n,Number(a.i),Number(a.dir)),s.media=[...n,...s.media.filter(o=>o.type==="video")],F({sheet:!0});return}if(a.mediaDel){const s=i.draft.products.find(o=>o.id===a.mediaDel);if(!s)return;const n=s.media.filter(o=>o.type==="image");n.splice(Number(a.i),1),s.media=[...n,...s.media.filter(o=>o.type==="video")],F({sheet:!0});return}if(a.videoDel){const s=i.draft.products.find(n=>n.id===a.videoDel);s&&(s.media=s.media.filter(n=>n.type!=="video")),F({sheet:!0});return}if(a.reviewImgDel!==void 0){const s=$().contact.reviews[Number(a.reviewImgDel)];s&&s.images&&s.images.splice(Number(a.n),1),F();return}if(a.status){i.filter.status=a.status,Mt();return}if(a.orderEdit){yn(i.orders.find(s=>s.id===a.orderEdit));return}if(a.orderWa){const s=i.orders.find(n=>n.id===a.orderWa);s&&window.open(ve(s,""),"_blank","noopener");return}if(a.orderGiftCard){const s=i.orders.find(n=>n.id===a.orderGiftCard);if(s&&s.gift_phone){const n=Y(ATHR.giftCardPath(s)),o=String(s.customer_name||"").trim().split(/\s+/)[0],r=ATHR.withLang("ar",()=>ATHR.giftWhatsApp({to:s.gift_name,from:o,msg:s.gift_message,occasion:s.gift_occasion,occasionText:s.gift_occasion_text,link:n,store:ATHR.storeName($()),config:$()}));window.open(ATHR.waLink(ATHR.customerWhatsapp(s.gift_phone,s.country||"OM"),r),"_blank","noopener")}return}if(a.orderWaGift){const s=i.orders.find(n=>n.id===a.orderWaGift);s&&s.gift_phone&&window.open(ATHR.waLink(ATHR.customerWhatsapp(s.gift_phone,s.country||"OM"),""),"_blank","noopener");return}if(a.orderRemind){const s=i.orders.find(n=>n.id===a.orderRemind);s&&window.open(ve(s,Si(s)),"_blank","noopener");return}if(a.orderCopy){const s=i.orders.find(n=>n.id===a.orderCopy);s&&ATHR.store.copyText(Ri(s),"نُسخ الطلب");return}if(a.storyMake){const s=i.orders.find(n=>n.id===a.storyMake);s&&mn(s,Number(a.storyI));return}if(a.photoView){const s=i.orders.find(n=>n.id===a.photoView);s&&Ni(s,Number(a.photoI));return}if(a.orderHide){const s=i.orders.find(n=>n.id===a.orderHide);s&&Da(s.id,"hidden",!s.hidden);return}if(a.orderDelete){await ki(a.orderDelete);return}}}}}function qr(t){t.preventDefault(),!ul(t.target)&&(t.target.id==="loginForm"&&Pn(),t.target.id==="passwordForm"&&Yr(t.target),t.target.id==="orderForm"&&Bi(t.target),t.target.id==="couponForm"&&ho(t.target),t.target.id==="finForm"&&Tr(t.target))}const Vr=[["set","🏷️","سعر جديد وقديم","تكتب السعرين بنفسك"],["pct","٪","خصم بالنسبة","يحسب السعر الجديد من الأصلي"],["adjust","↕️","زيادة أو تخفيض","بمبلغ أو بنسبة على الكل"],["end","✖️","إنهاء الخصم","يرجع السعر الأصلي ويشيل الشطب"]],Wr=[10,15,20,25,30,40,50];function Pt(){return i.bulk||(i.bulk={mode:"set",scope:"all",cat:"",eq:"",visibleOnly:!1,newPrice:"",oldPrice:"",noOld:!1,pct:"",dir:"down",val:"",unit:"pct",round:"0"}),i.bulk}const pe=t=>t===""||t===null||t===void 0?null:Number(ATHR.digits(String(t))),Gr=()=>Number.isInteger(Number($().order.decimals))?Number($().order.decimals):3,De=t=>{const e=10**Gr();return Math.round(t*e)/e},Ie=(t,e)=>{const a=Number(e.round)||0;return De(a?Math.max(a,Math.round(t/a)*a):t)};function zr(t=Pt()){const e=pe(t.eq);return i.draft.products.filter(a=>t.visibleOnly&&!a.is_visible?!1:t.scope==="cat"?!!t.cat&&a.category_id===t.cat:t.scope==="sale"?et(a)>0:t.scope==="nosale"?!et(a):t.scope==="price"?e!==null&&Math.abs(Number(a.price)-e)<5e-4:!0)}function Kr(t,e=Pt()){const a=Number(t.price)>0?Number(t.price):null,s=et(t)?Number(t.old_price):null;let n=a,o=s;if(e.mode==="set"){const l=pe(e.newPrice),c=pe(e.oldPrice);if(l===null&&c===null&&!e.noOld)return null;if(l!==null){if(!(l>0))return null;n=Ie(l,e)}e.noOld?o=null:c!==null&&(o=c>0?De(c):null)}else if(e.mode==="pct"){const l=pe(e.pct);if(l===null||!(l>0)||l>90||!a)return null;const c=s||a;o=De(c),n=Ie(c*(1-l/100),e)}else if(e.mode==="adjust"){const l=pe(e.val);if(l===null||!(l>0)||!a)return null;const c=e.dir==="up"?1:-1,p=u=>e.unit==="pct"?u*(1+c*l/100):u+c*l;if(n=p(a),!(n>0))return{skip:!0};n=Ie(n,e),o=s?Ie(p(s),e):null}else if(e.mode==="end"){if(!s)return null;n=De(s),o=null}if(!(n>0))return null;const r=o!==null&&o<=n;return r&&(o=null),n===a&&o===s?r?{same:!0,dropped:r}:null:{price:n,old:o,dropped:r}}function Ks(t=Pt()){const e=zr(t),a=[];let s=0,n=0;return e.forEach(o=>{const r=Kr(o,t);if(r){if(r.skip){s++;return}r.dropped&&n++,!r.same&&a.push({p:o,...r})}}),{targets:e,rows:a,skipped:s,dropped:n}}const Zs=(t,e)=>t>0?`<b>${x(t)}</b>${e?` <s>${x(e)}</s> <span class="tag sale">خصم ${Math.round((1-t/e)*100)}%</span>`:""}`:'<span class="adm-muted">بدون سعر</span>';function Qs(){const t=Pt(),e=Ks(t),a=e.rows.length,s={set:"اكتب السعر الجديد أو القديم (أو الاثنين).",pct:"اختار نسبة الخصم.",adjust:"اكتب قيمة الزيادة أو التخفيض.",end:"ما فيه منتجات عليها خصم في اختيارك."}[t.mode],n=e.targets.length?`<p class="bp-count">الاختيار يشمل <b>${e.targets.length}</b> منتج${a?` · بيتغيّر سعر <b>${a}</b>`:""}</p>`:'<p class="bp-count warn">ما فيه منتجات تطابق اختيارك.</p>',o=a?`<ul class="bp-prev">${e.rows.slice(0,6).map(l=>`<li>
+                <span class="bp-name">${d(l.p.name||"منتج بدون اسم")}</span>
+                <span class="bp-was">${Zs(Number(l.p.price),et(l.p)?Number(l.p.old_price):null)}</span>
                 <span class="bp-arrow" aria-hidden="true">←</span>
-                <span class="bp-now">${bpPriceHTML(r.price, r.old)}</span>
-            </li>`).join("")}</ul>${n > 6 ? `<p class="adm-muted bp-more">و ${n - 6} منتج ثاني بنفس الطريقة.</p>` : ""}` : plan.targets.length ? `<p class="adm-muted">${need}</p>` : "";
-        const warns = [
-            plan.dropped ? `⚠️ ${plan.dropped} منتج السعر القديم فيه مو أكبر من الجديد، فبيختفي الشطب (بدون خصم).` : "",
-            plan.skipped ? `⚠️ ${plan.skipped} منتج بيصير سعره صفر أو أقل، فما بيتغيّر.` : ""
-        ].filter(Boolean).map((w) => `<p class="bp-warn">${w}</p>`).join("");
-        return `${head}${list}${warns}
-            <button class="ab ab-primary ab-block" type="button" data-a="bulk-apply"${n ? "" : " disabled"}>${n ? `تطبيق على ${n} منتج` : "تطبيق"}</button>`;
-    }
-
-    function bulkCard() {
-        const st = bpState();
-        const all = A.draft.products.length;
-        const onSale = A.draft.products.filter((p) => pctOf(p) > 0).length;
-        const cats = A.draft.categories.map((c) => [c.id, `${c.name || "قسم بدون اسم"} (${A.draft.products.filter((p) => p.category_id === c.id).length})`]);
-        const opt = (v, l, cur) => `<option value="${esc(v)}"${String(cur) === String(v) ? " selected" : ""}>${esc(l)}</option>`;
-        const numIn = (id, label, value, ph, help = "") => `<label class="af"><span>${label}</span><input class="ai" type="number" inputmode="decimal" step="0.001" min="0" id="${id}" value="${esc(value)}" placeholder="${esc(ph)}">${help ? `<small>${help}</small>` : ""}</label>`;
-        let fields = "";
-        if (st.mode === "set") {
-            fields = `<div class="two">
-                    ${numIn("bpNew", "السعر الجديد", st.newPrice, "فاضي = ما يتغيّر", "اللي يدفعه الزبون")}
-                    ${st.noOld ? `<label class="af"><span>السعر القديم</span><input class="ai" disabled placeholder="بدون"><small>بدون شطب</small></label>` : numIn("bpOld", "السعر القديم", st.oldPrice, "فاضي = ما يتغيّر", "يظهر مشطوب فوق الجديد")}
+                <span class="bp-now">${Zs(l.price,l.old)}</span>
+            </li>`).join("")}</ul>${a>6?`<p class="adm-muted bp-more">و ${a-6} منتج ثاني بنفس الطريقة.</p>`:""}`:e.targets.length?`<p class="adm-muted">${s}</p>`:"",r=[e.dropped?`⚠️ ${e.dropped} منتج السعر القديم فيه مو أكبر من الجديد، فبيختفي الشطب (بدون خصم).`:"",e.skipped?`⚠️ ${e.skipped} منتج بيصير سعره صفر أو أقل، فما بيتغيّر.`:""].filter(Boolean).map(l=>`<p class="bp-warn">${l}</p>`).join("");return`${n}${o}${r}
+            <button class="ab ab-primary ab-block" type="button" data-a="bulk-apply"${a?"":" disabled"}>${a?`تطبيق على ${a} منتج`:"تطبيق"}</button>`}function Zr(){const t=Pt(),e=i.draft.products.length,a=i.draft.products.filter(p=>et(p)>0).length,s=i.draft.categories.map(p=>[p.id,`${p.name||"قسم بدون اسم"} (${i.draft.products.filter(u=>u.category_id===p.id).length})`]),n=(p,u,m)=>`<option value="${d(p)}"${String(m)===String(p)?" selected":""}>${d(u)}</option>`,o=(p,u,m,h,M="")=>`<label class="af"><span>${u}</span><input class="ai" type="number" inputmode="decimal" step="0.001" min="0" id="${p}" value="${d(m)}" placeholder="${d(h)}">${M?`<small>${M}</small>`:""}</label>`;let r="";t.mode==="set"?r=`<div class="two">
+                    ${o("bpNew","السعر الجديد",t.newPrice,"فاضي = ما يتغيّر","اللي يدفعه الزبون")}
+                    ${t.noOld?'<label class="af"><span>السعر القديم</span><input class="ai" disabled placeholder="بدون"><small>بدون شطب</small></label>':o("bpOld","السعر القديم",t.oldPrice,"فاضي = ما يتغيّر","يظهر مشطوب فوق الجديد")}
                 </div>
-                <label class="fin-check"><input type="checkbox" id="bpNoOld"${st.noOld ? " checked" : ""}><span>شيل السعر القديم (بدون خصم)</span></label>`;
-        } else if (st.mode === "pct") {
-            fields = `${numIn("bpPct", "نسبة الخصم %", st.pct, "مثال: 20", "يُحسب من السعر الأصلي: السعر الأصلي يصير هو القديم المشطوب، والجديد بعد الخصم.")}
-                <div class="pct-chips">${BP_PCTS.map((n) => `<button type="button" class="ab-mini${Number(st.pct) === n ? " on" : ""}" data-bp-pct="${n}">${n}%</button>`).join("")}</div>`;
-        } else if (st.mode === "adjust") {
-            fields = `<div class="bp-adj">
-                    <label class="af"><span>النوع</span><select class="ai" id="bpDir">${opt("down", "تخفيض ⬇️", st.dir)}${opt("up", "زيادة ⬆️", st.dir)}</select></label>
-                    ${numIn("bpVal", "القيمة", st.val, st.unit === "pct" ? "مثال: 10" : "مثال: 0.500")}
-                    <label class="af"><span>بـ</span><select class="ai" id="bpUnit">${opt("pct", "نسبة %", st.unit)}${opt("amt", "مبلغ (ر.ع)", st.unit)}</select></label>
+                <label class="fin-check"><input type="checkbox" id="bpNoOld"${t.noOld?" checked":""}><span>شيل السعر القديم (بدون خصم)</span></label>`:t.mode==="pct"?r=`${o("bpPct","نسبة الخصم %",t.pct,"مثال: 20","يُحسب من السعر الأصلي: السعر الأصلي يصير هو القديم المشطوب، والجديد بعد الخصم.")}
+                <div class="pct-chips">${Wr.map(p=>`<button type="button" class="ab-mini${Number(t.pct)===p?" on":""}" data-bp-pct="${p}">${p}%</button>`).join("")}</div>`:t.mode==="adjust"?r=`<div class="bp-adj">
+                    <label class="af"><span>النوع</span><select class="ai" id="bpDir">${n("down","تخفيض ⬇️",t.dir)}${n("up","زيادة ⬆️",t.dir)}</select></label>
+                    ${o("bpVal","القيمة",t.val,t.unit==="pct"?"مثال: 10":"مثال: 0.500")}
+                    <label class="af"><span>بـ</span><select class="ai" id="bpUnit">${n("pct","نسبة %",t.unit)}${n("amt","مبلغ (ر.ع)",t.unit)}</select></label>
                 </div>
-                <small class="adm-muted">يتغيّر السعر الجديد والقديم مع بعض، فنسبة الخصم تبقى نفسها.</small>`;
-        } else {
-            fields = `<p class="adm-sentence">يرجع كل منتج عليه خصم لسعره الأصلي، ويختفي السعر المشطوب.</p>`;
-        }
-        const roundSel = st.mode === "end" ? "" : `<label class="af"><span>تقريب السعر الجديد</span><select class="ai" id="bpRound">${opt("0", "بدون تقريب", st.round)}${opt("0.05", "لأقرب 0.050", st.round)}${opt("0.1", "لأقرب 0.100", st.round)}${opt("0.5", "لأقرب 0.500", st.round)}${opt("1", "لأقرب 1 ر.ع", st.round)}</select></label>`;
-        const undo = A.bulkUndo ? `<div class="bp-undo"><span>آخر تعديل: ${esc(A.bulkUndo.label)}</span><button class="ab ab-ghost ab-sm" type="button" data-a="bulk-undo">↩️ تراجع</button></div>` : "";
-        return `<section class="adm-card bp" id="bulkBox">
+                <small class="adm-muted">يتغيّر السعر الجديد والقديم مع بعض، فنسبة الخصم تبقى نفسها.</small>`:r='<p class="adm-sentence">يرجع كل منتج عليه خصم لسعره الأصلي، ويختفي السعر المشطوب.</p>';const l=t.mode==="end"?"":`<label class="af"><span>تقريب السعر الجديد</span><select class="ai" id="bpRound">${n("0","بدون تقريب",t.round)}${n("0.05","لأقرب 0.050",t.round)}${n("0.1","لأقرب 0.100",t.round)}${n("0.5","لأقرب 0.500",t.round)}${n("1","لأقرب 1 ر.ع",t.round)}</select></label>`,c=i.bulkUndo?`<div class="bp-undo"><span>آخر تعديل: ${d(i.bulkUndo.label)}</span><button class="ab ab-ghost ab-sm" type="button" data-a="bulk-undo">↩️ تراجع</button></div>`:"";return`<section class="adm-card bp" id="bulkBox">
             <h2>💰 سعر موحّد وخصومات</h2>
             <p class="adm-muted">غيّر السعر الجديد والقديم لكل المنتجات أو لقسم معيّن دفعة وحدة. تشوف النتيجة قبل التطبيق، وما يوصل للزبائن إلا بعد «نشر التغييرات».</p>
-            <div class="bp-stats"><span><b>${all}</b> منتج</span><span><b>${onSale}</b> عليها خصم</span><span><b>${all - onSale}</b> بدون خصم</span></div>
-            ${undo}
+            <div class="bp-stats"><span><b>${e}</b> منتج</span><span><b>${a}</b> عليها خصم</span><span><b>${e-a}</b> بدون خصم</span></div>
+            ${c}
             <div class="bp-step"><h3><span>1</span> أي منتجات؟</h3>
                 <label class="af"><span>المنتجات</span><select class="ai" id="bpScope">
-                    ${opt("all", `كل المنتجات (${all})`, st.scope)}
-                    ${cats.length ? opt("cat", "قسم معيّن", st.scope) : ""}
-                    ${opt("sale", `اللي عليها خصم (${onSale})`, st.scope)}
-                    ${opt("nosale", `اللي بدون خصم (${all - onSale})`, st.scope)}
-                    ${opt("price", "اللي سعرها الحالي…", st.scope)}
+                    ${n("all",`كل المنتجات (${e})`,t.scope)}
+                    ${s.length?n("cat","قسم معيّن",t.scope):""}
+                    ${n("sale",`اللي عليها خصم (${a})`,t.scope)}
+                    ${n("nosale",`اللي بدون خصم (${e-a})`,t.scope)}
+                    ${n("price","اللي سعرها الحالي…",t.scope)}
                 </select></label>
-                ${st.scope === "cat" ? `<label class="af"><span>القسم</span><select class="ai" id="bpCat">${opt("", "اختار القسم", st.cat)}${cats.map(([v, l]) => opt(v, l, st.cat)).join("")}</select></label>` : ""}
-                ${st.scope === "price" ? numIn("bpEq", "السعر الحالي (اللي يدفعه الزبون)", st.eq, "مثال: 3.500", "مثلاً: كل الملفات اللي بـ 1.000 تصير بسعر ثاني.") : ""}
-                <label class="fin-check"><input type="checkbox" id="bpVisible"${st.visibleOnly ? " checked" : ""}><span>الظاهرة في المتجر بس (بدون المخفية)</span></label>
+                ${t.scope==="cat"?`<label class="af"><span>القسم</span><select class="ai" id="bpCat">${n("","اختار القسم",t.cat)}${s.map(([p,u])=>n(p,u,t.cat)).join("")}</select></label>`:""}
+                ${t.scope==="price"?o("bpEq","السعر الحالي (اللي يدفعه الزبون)",t.eq,"مثال: 3.500","مثلاً: كل الملفات اللي بـ 1.000 تصير بسعر ثاني."):""}
+                <label class="fin-check"><input type="checkbox" id="bpVisible"${t.visibleOnly?" checked":""}><span>الظاهرة في المتجر بس (بدون المخفية)</span></label>
             </div>
             <div class="bp-step"><h3><span>2</span> وش تبي تسوي؟</h3>
-                <div class="bp-modes" role="radiogroup" aria-label="نوع التعديل">${BP_MODES.map(([id, ic, l, d]) => `<button type="button" class="bp-mode" role="radio" aria-checked="${st.mode === id}" data-bp-mode="${id}"><i aria-hidden="true">${ic}</i><b>${l}</b><small>${d}</small></button>`).join("")}</div>
-                ${fields}
-                ${roundSel}
+                <div class="bp-modes" role="radiogroup" aria-label="نوع التعديل">${Vr.map(([p,u,m,h])=>`<button type="button" class="bp-mode" role="radio" aria-checked="${t.mode===p}" data-bp-mode="${p}"><i aria-hidden="true">${u}</i><b>${m}</b><small>${h}</small></button>`).join("")}</div>
+                ${r}
+                ${l}
             </div>
             <div class="bp-step"><h3><span>3</span> شوف النتيجة وطبّق</h3>
-                <div id="bpPreview">${bpPreviewHTML()}</div>
+                <div id="bpPreview">${Qs()}</div>
             </div>
-        </section>`;
-    }
-
-    // قراءة الحقول: الكتابة تحدّث المعاينة بس، والاختيارات تعيد رسم البطاقة
-    function bulkInput(t, changed) {
-        if (!t.closest || !t.closest("#bulkBox")) return false;
-        const st = bpState();
-        const map = { bpScope: "scope", bpCat: "cat", bpEq: "eq", bpNew: "newPrice", bpOld: "oldPrice", bpPct: "pct", bpDir: "dir", bpVal: "val", bpUnit: "unit", bpRound: "round" };
-        if (t.id === "bpVisible") st.visibleOnly = t.checked;
-        else if (t.id === "bpNoOld") st.noOld = t.checked;
-        else if (map[t.id]) st[map[t.id]] = t.value;
-        else return true;
-        const redraw = t.tagName === "SELECT" || t.type === "checkbox";
-        if (redraw) { if (changed) renderTab({ keepScroll: true }); return true; }
-        // «change» يجي لما يطلع المؤشر من الخانة (مثلاً عند الضغط على «تطبيق»)، والمعاينة محدّثة من الكتابة أصلاً
-        if (changed) return true;
-        if (t.id === "bpPct") $$("#bulkBox [data-bp-pct]").forEach((b) => b.classList.toggle("on", Number(b.dataset.bpPct) === Number(t.value)));
-        const box = $("#bpPreview");
-        if (box) box.innerHTML = bpPreviewHTML();
-        return true;
-    }
-
-    function bulkClick(d) {
-        const st = bpState();
-        if (d.bpMode) { st.mode = d.bpMode; renderTab({ keepScroll: true }); return; }
-        if (d.bpPct !== undefined) { st.pct = d.bpPct; renderTab({ keepScroll: true }); return; }
-        if (d.a === "bulk-undo") {
-            const u = A.bulkUndo;
-            if (!u) return;
-            u.items.forEach(([id, price, old]) => { const p = A.draft.products.find((x) => x.id === id); if (p) { p.price = price; p.old_price = old; } });
-            A.bulkUndo = null;
-            afterChange();
-            toast(`رجعت أسعار ${u.items.length} منتج`);
-            return;
-        }
-        if (d.a === "bulk-apply") {
-            const plan = bpPlan(st);
-            const n = plan.rows.length;
-            if (!n) return;
-            const what = {
-                set: "تغيير السعر",
-                pct: `خصم ${Number(st.pct)}%`,
-                adjust: `${st.dir === "up" ? "زيادة" : "تخفيض"} ${st.unit === "pct" ? `${Number(st.val)}%` : money(Number(st.val))}`,
-                end: "إنهاء الخصم"
-            }[st.mode];
-            if (!confirm(`${what} على ${n} منتج؟\nتقدر تتراجع قبل «نشر التغييرات».`)) return;
-            A.bulkUndo = { label: `${what} (${n} منتج)`, items: plan.rows.map((r) => [r.p.id, r.p.price, r.p.old_price ?? null]) };
-            plan.rows.forEach((r) => { r.p.price = r.price; r.p.old_price = r.old; });
-            if (st.mode === "set") { st.newPrice = ""; st.oldPrice = ""; }
-            afterChange();
-            toast(`✓ ${what} على ${n} منتج. لا تنسى «نشر التغييرات»`);
-        }
-    }
-
-    function discard() {
-        if (!confirm("تجاهل كل التعديلات غير المنشورة والرجوع لآخر نسخة منشورة؟")) return;
-        A.draft = ATHR.clone(A.server);
-        A.errors = [];
-        A.prevTheme = null;
-        storage.del(DRAFT_KEY);
-        renderTab();
-        renderStatus();
-        toast("رجعت لآخر نسخة منشورة");
-    }
-
-    function preview(path, config) {
-        const data = {
-            config: config || A.draft.config,
-            categories: A.draft.categories.map((c, i) => ({ ...c, sort_order: i + 1 })),
-            products: A.draft.products.map((p, i) => ({ ...p, sort_order: i + 1 }))
-        };
-        const el = $("#adm");
-        el.hidden = true;
-        el.innerHTML = "";
-        document.body.classList.remove("locked");
-        A.view = null;
-        ATHR.store.preview(data, path);
-    }
-
-    function openAccount({ first = false } = {}) {
-        openSheet(`
+        </section>`}function Js(t,e){if(!t.closest||!t.closest("#bulkBox"))return!1;const a=Pt(),s={bpScope:"scope",bpCat:"cat",bpEq:"eq",bpNew:"newPrice",bpOld:"oldPrice",bpPct:"pct",bpDir:"dir",bpVal:"val",bpUnit:"unit",bpRound:"round"};if(t.id==="bpVisible")a.visibleOnly=t.checked;else if(t.id==="bpNoOld")a.noOld=t.checked;else if(s[t.id])a[s[t.id]]=t.value;else return!0;if(t.tagName==="SELECT"||t.type==="checkbox")return e&&B({keepScroll:!0}),!0;if(e)return!0;t.id==="bpPct"&&at("#bulkBox [data-bp-pct]").forEach(r=>r.classList.toggle("on",Number(r.dataset.bpPct)===Number(t.value)));const o=b("#bpPreview");return o&&(o.innerHTML=Qs()),!0}function Qr(t){const e=Pt();if(t.bpMode){e.mode=t.bpMode,B({keepScroll:!0});return}if(t.bpPct!==void 0){e.pct=t.bpPct,B({keepScroll:!0});return}if(t.a==="bulk-undo"){const a=i.bulkUndo;if(!a)return;a.items.forEach(([s,n,o])=>{const r=i.draft.products.find(l=>l.id===s);r&&(r.price=n,r.old_price=o)}),i.bulkUndo=null,F(),y(`رجعت أسعار ${a.items.length} منتج`);return}if(t.a==="bulk-apply"){const a=Ks(e),s=a.rows.length;if(!s)return;const n={set:"تغيير السعر",pct:`خصم ${Number(e.pct)}%`,adjust:`${e.dir==="up"?"زيادة":"تخفيض"} ${e.unit==="pct"?`${Number(e.val)}%`:x(Number(e.val))}`,end:"إنهاء الخصم"}[e.mode];if(!confirm(`${n} على ${s} منتج؟
+تقدر تتراجع قبل «نشر التغييرات».`))return;i.bulkUndo={label:`${n} (${s} منتج)`,items:a.rows.map(o=>[o.p.id,o.p.price,o.p.old_price??null])},a.rows.forEach(o=>{o.p.price=o.price,o.p.old_price=o.old}),e.mode==="set"&&(e.newPrice="",e.oldPrice=""),F(),y(`✓ ${n} على ${s} منتج. لا تنسى «نشر التغييرات»`)}}function Jr(){confirm("تجاهل كل التعديلات غير المنشورة والرجوع لآخر نسخة منشورة؟")&&(i.draft=ATHR.clone(i.server),i.errors=[],i.prevTheme=null,Q.del(Et),B(),Vt(),y("رجعت لآخر نسخة منشورة"))}function Ra(t,e){const a={config:e||i.draft.config,categories:i.draft.categories.map((n,o)=>({...n,sort_order:o+1})),products:i.draft.products.map((n,o)=>({...n,sort_order:o+1}))},s=b("#adm");s.hidden=!0,s.innerHTML="",document.body.classList.remove("locked"),i.view=null,ATHR.store.preview(a,t)}function Ys({first:t=!1}={}){ot(`
             <div class="adm-sheet-head"><h2>الحساب</h2><button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button></div>
-            <form class="af-stack" id="passwordForm" novalidate${first ? ' data-first="1"' : ""}>
-                <h3>${first ? "اختر كلمة مرور جديدة" : "تغيير كلمة المرور"}</h3>
-                ${first ? `<p class="adm-muted">دخلت بكلمة مرور مؤقتة. اكتب كلمة مرور جديدة تحفظها أنت، واستعملها من الحين في كل دخول.</p>` : ""}
+            <form class="af-stack" id="passwordForm" novalidate${t?' data-first="1"':""}>
+                <h3>${t?"اختر كلمة مرور جديدة":"تغيير كلمة المرور"}</h3>
+                ${t?'<p class="adm-muted">دخلت بكلمة مرور مؤقتة. اكتب كلمة مرور جديدة تحفظها أنت، واستعملها من الحين في كل دخول.</p>':""}
                 <label class="af"><span>كلمة المرور الجديدة</span><input class="ai" id="newPassword" type="password" autocomplete="new-password" dir="ltr"><small>8 أحرف على الأقل، والأفضل خليط من حروف وأرقام.</small></label>
                 <label class="af"><span>تأكيد كلمة المرور</span><input class="ai" id="confirmPassword" type="password" autocomplete="new-password" dir="ltr"></label>
                 <p class="adm-error" id="passwordMsg" role="alert"></p>
@@ -5061,350 +987,7 @@
             <div class="af-stack">
                 <button class="ab ab-ghost" type="button" data-a="open-orders">دفتر الطلبيات</button>
                 <button class="ab ab-ghost danger" type="button" data-a="signout">تسجيل الخروج</button>
-            </div>`);
-    }
-
-    async function changePassword(form) {
-        const pass = $("#newPassword", form).value;
-        const confirmPass = $("#confirmPassword", form).value;
-        const msg = $("#passwordMsg", form);
-        msg.classList.remove("ok");
-        if (pass.length < 8) { msg.textContent = "كلمة المرور يجب أن تكون 8 أحرف على الأقل."; return; }
-        if (pass !== confirmPass) { msg.textContent = "كلمتا المرور غير متطابقتين."; return; }
-        const btn = $("#savePassword", form);
-        btn.disabled = true;
-        btn.textContent = "جاري الحفظ...";
-        const { error } = await sb.auth.updateUser({ password: pass, data: { must_change_password: false } });
-        btn.disabled = false;
-        btn.textContent = "حفظ كلمة المرور";
-        if (error) {
-            msg.textContent = /different/i.test(error.message) ? "اختر كلمة مرور مختلفة عن الحالية." : "تعذر تغيير كلمة المرور. سجّل الخروج وادخل مرة أخرى ثم حاول.";
-            return;
-        }
-        msg.textContent = "تم تغيير كلمة المرور ✅";
-        msg.classList.add("ok");
-        form.reset();
-        // أول دخول: نقفل النافذة بعد لحظة ويكمل المالك شغله
-        if (form.dataset.first === "1") setTimeout(() => { if ($("#passwordForm")) closeSheet(); }, 1400);
-    }
-
-    // =====================================================
-    // VALIDATION & PUBLISH
-    // =====================================================
-
-    function validate() {
-        const c = cfg();
-        const errors = [];
-        const add = (tab, msg) => errors.push({ tab, msg });
-        const num = (v) => typeof v === "number" && Number.isFinite(v);
-
-        const tr = c.tracking || {};
-        if (String(tr.meta_pixel || "").trim() && !ATHR.metaPixelId(tr.meta_pixel)) add("ads", "رقم Meta Pixel غير صحيح: أرقام فقط (15–16 رقماً تقريباً).");
-        if (String(tr.tiktok_pixel || "").trim() && !ATHR.tiktokPixelId(tr.tiktok_pixel)) add("ads", "رقم TikTok Pixel غير صحيح: حروف إنجليزية وأرقام فقط.");
-        if (!/[\p{L}]/u.test(String(c.name || ""))) add("look", "اكتب اسم المتجر (يظهر في جوجل ورسائل واتساب). لإخفائه من أعلى المتجر أوقف «إظهار اسم المتجر بجانب الشعار».");
-        if (!ATHR.isValidWhatsapp(c.order.whatsapp)) add("order", "رقم واتساب غير صحيح.");
-        if (!String(c.order.currency || "").trim()) add("order", "رمز العملة فارغ.");
-        if (c.order.free_enabled && !(num(c.order.free_min) && c.order.free_min > 0)) add("order", "حد التوصيل المجاني غير صحيح.");
-        if (!(Number.isInteger(c.order.max_qty) && c.order.max_qty >= 1 && c.order.max_qty <= 99)) add("order", "أقصى كمية يجب أن تكون بين 1 و99.");
-        const deliveries = c.order.delivery.filter((d) => d.enabled);
-        if (!deliveries.length) add("order", "لا توجد طريقة توصيل مفعّلة.");
-        deliveries.forEach((d, i) => {
-            if (!String(d.name || "").trim()) add("order", `طريقة توصيل مفعّلة بلا اسم (${i + 1}).`);
-            if (!(num(d.price) && d.price >= 0)) add("order", `سعر توصيل غير صحيح في «${d.name || i + 1}».`);
-        });
-        deliveries.forEach((d) => {
-            if (d.pricing === "per_kg" && !(num(d.price) && d.price > 0)) add("order", `سعر الكيلو غير صحيح في «${d.name || "طريقة توصيل"}».`);
-            if (Array.isArray(d.countries) && !d.countries.length) add("order", `«${d.name || "طريقة توصيل"}» غير متاحة لأي دولة.`);
-        });
-        ATHR.countries(c).filter((x) => x.enabled).forEach((x) => {
-            if (!ATHR.deliveriesFor(c, x.code).length) add("order", `لا توجد طريقة توصيل مفعّلة لـ${x.name}.`);
-            if (!ATHR.paymentsFor(c, x.code).length) add("order", `لا توجد طريقة دفع مفعّلة لـ${x.name}.`);
-        });
-        c.order.countries.forEach((x) => {
-            if (x.code !== "OM" && x.enabled !== false && !(Number(x.rate) > 0) && !ATHR.liveRates(c)) add("order", `سعر صرف ${x.name} غير صحيح.`);
-        });
-        const payments = c.order.payments.filter((p) => p.enabled);
-        if (!payments.length) add("order", "لا توجد طريقة دفع مفعّلة.");
-        payments.forEach((p, i) => {
-            if (!String(p.name || "").trim()) add("order", `طريقة دفع مفعّلة بلا اسم (${i + 1}).`);
-            if (p.type === "online" && !ATHR.isUrl(p.link)) add("order", `الدفع الإلكتروني «${p.name || ""}» مفعّل بدون رابط صحيح.`);
-        });
-
-        if (c.ad.show) {
-            const slides = ATHR.adSlides(c);
-            slides.forEach((x, i) => {
-                const who = slides.length > 1 ? `الإعلان ${i + 1}` : "الإعلان";
-                if (x.type === "image" && !x.image_url) add("ad", `${who} مفعّل بدون صورة.`);
-                if (x.type === "video" && !x.video_url) add("ad", `${who} مفعّل بدون فيديو.`);
-                if (x.type === "text" && !String(x.title || x.text || "").trim()) add("ad", `${who} مفعّل بدون نص.`);
-                if (i > 0 && x.link && !ATHR.isSafeLink(x.link)) add("ad", `رابط ${who} غير صحيح.`);
-            });
-        }
-        if (c.ad.link && !ATHR.isSafeLink(c.ad.link)) add("ad", "رابط الإعلان غير صحيح.");
-        if (c.contact.share_url && !ATHR.isUrl(c.contact.share_url)) add("contact", "رابط المتجر للمشاركة غير صحيح.");
-        A.draft.products.forEach((p) => {
-            if (p.video_url && !ATHR.isUrl(p.video_url)) add("products", `رابط الفيديو الخارجي غير صحيح في «${p.name || "منتج"}».`);
-        });
-        c.texts.socials.forEach((s) => {
-            if (!String(s.name || "").trim() || !ATHR.isUrl(s.url)) add("texts", `رابط تواصل اجتماعي غير صحيح${s.name ? ` («${s.name}»)` : ""}.`);
-        });
-
-        c.sales.bundles.filter((b) => b.enabled).forEach((b, i) => {
-            if (!b.a || !b.b) add("sales", `الباقة ${i + 1} ينقصها منتج.`);
-            else if (b.a === b.b) add("sales", `الباقة ${i + 1}: المنتجان متطابقان.`);
-            else if (!A.draft.products.some((p) => p.id === b.a) || !A.draft.products.some((p) => p.id === b.b)) add("sales", `الباقة ${i + 1} فيها منتج محذوف.`);
-            if (!(Number.isInteger(b.pct) && b.pct >= 1 && b.pct <= 90)) add("sales", `نسبة خصم الباقة ${i + 1} يجب أن تكون من 1 إلى 90.`);
-        });
-
-        if (c.sales.volume && c.sales.volume.enabled) {
-            const tiers = c.sales.volume.tiers || [];
-            if (!tiers.length) add("sales", "خصم الكمية مفعّل بدون شرائح.");
-            tiers.forEach((t, i) => {
-                if (!(Number.isInteger(t.min) && t.min >= 2 && t.min <= 50)) add("sales", `شريحة خصم الكمية ${i + 1}: عدد القطع يجب أن يكون من 2 إلى 50.`);
-                if (!(Number.isInteger(t.pct) && t.pct >= 1 && t.pct <= 90)) add("sales", `شريحة خصم الكمية ${i + 1}: النسبة يجب أن تكون من 1 إلى 90.`);
-            });
-            const mins = tiers.map((t) => t.min);
-            if (new Set(mins).size !== mins.length) add("sales", "شرائح خصم الكمية فيها عدد قطع مكرر.");
-        }
-        if (c.seo && c.seo.google_verification && !/^[A-Za-z0-9_-]{10,100}$/.test(String(c.seo.google_verification).trim().replace(/^.*content=["']?([^"'\s>]+).*$/i, "$1"))) {
-            add("contact", "رمز التحقق من جوجل غير صحيح. انسخ الرمز فقط أو وسم meta كاملاً.");
-        }
-        c.contact.reviews.forEach((r, i) => {
-            if (!String(r.text || "").trim()) add("contact", `الرأي ${i + 1} بدون نص.`);
-        });
-        A.draft.categories.forEach((cat, i) => { if (!String(cat.name || "").trim()) add("catalog", `القسم ${i + 1} بلا اسم.`); });
-        c.colors.forEach((col, i) => { if (!String(col.name || "").trim()) add("catalog", `اللون ${i + 1} بلا اسم.`); });
-
-        A.draft.products.forEach((p, i) => {
-            const label = p.name ? `«${p.name}»` : `المنتج ${i + 1}`;
-            if (!String(p.name || "").trim()) add("products", `${label} بلا اسم.`);
-            if (!(num(p.price) && p.price > 0)) add("products", `${label}: السعر يجب أن يزيد على صفر.`);
-            if (p.weight_g !== null && p.weight_g !== undefined && !(num(p.weight_g) && p.weight_g > 0 && p.weight_g <= 50000)) add("products", `${label}: الوزن غير صحيح.`);
-            if (p.old_price !== null && p.old_price !== undefined && !(num(p.old_price) && p.old_price > (p.price || 0))) {
-                add("products", `${label}: راجع الخصم، السعر الأصلي يجب أن يكون أكبر من السعر بعد الخصم.`);
-            }
-        });
-        return errors;
-    }
-
-    // دمج ثلاثي: ما غيّرته أنت (المسودة مقابل الأصل) يُطبَّق فوق أحدث نسخة على الخادم
-    const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-    function mergeValue(base, mine, theirs) {
-        if (same(mine, base)) return ATHR.clone(theirs === undefined ? mine : theirs);
-        if (ATHR.isPlainObject(base) && ATHR.isPlainObject(mine) && ATHR.isPlainObject(theirs)) {
-            const out = {};
-            new Set([...Object.keys(base), ...Object.keys(mine), ...Object.keys(theirs)]).forEach((k) => {
-                const v = mergeValue(base[k], mine[k], theirs[k]);
-                if (v !== undefined) out[k] = v;
-            });
-            return out;
-        }
-        return ATHR.clone(mine);
-    }
-    function mergeRows(baseRows, mineRows, theirRows) {
-        const byId = (rows) => new Map(rows.map((r) => [r.id, r]));
-        const b = byId(baseRows);
-        const t = byId(theirRows);
-        const mineIds = new Set(mineRows.map((r) => r.id));
-        const merged = mineRows.map((row) => (b.has(row.id) && t.has(row.id) ? mergeValue(b.get(row.id), row, t.get(row.id)) : row));
-        // ما أُضيف من مكان آخر يبقى
-        theirRows.forEach((r) => { if (!b.has(r.id) && !mineIds.has(r.id)) merged.push(ATHR.clone(r)); });
-        return merged;
-    }
-    function mergeDraft(base, mine, theirs) {
-        return {
-            config: ATHR.fullConfig(mergeValue(base.config, mine.config, theirs.config)),
-            categories: mergeRows(base.categories, mine.categories, theirs.categories),
-            products: mergeRows(base.products, mine.products, theirs.products)
-        };
-    }
-
-    async function publish() {
-        if (A.busy) return;
-        A.errors = validate();
-        if (A.errors.length) {
-            A.tab = A.errors[0].tab;
-            renderPanel();
-            toast("لم يتم النشر، راجع الأخطاء");
-            return;
-        }
-        A.busy = true;
-        renderStatus();
-        busyMessage("جاري النشر...");
-
-        // إن تغيّر المتجر من مكان آخر بعد فتح اللوحة: ندمج تعديلاتك فقط فوق النسخة الأحدث
-        try {
-            const { data: fresh } = await sb.from("store_settings").select("updated_at").eq("id", 1).maybeSingle();
-            const freshTime = Date.parse(fresh?.updated_at || "") || 0;
-            if (A.serverUpdated && freshTime > A.serverUpdated) {
-                const base = A.server;
-                await loadServer();
-                A.draft = mergeDraft(base, A.draft, A.server);
-            }
-        } catch (error) {
-            console.warn("freshness check skipped", error);
-        }
-
-        const draft = A.draft;
-        const server = A.server;
-
-        try {
-            // 1) الإعدادات
-            draft.config.order.whatsapp = ATHR.normalizePhone(draft.config.order.whatsapp);
-            const cfgRes = await sb.from("store_settings").update({ config: draft.config }).eq("id", 1).select("id");
-            if (cfgRes.error) throw cfgRes.error;
-            if (!cfgRes.data || !cfgRes.data.length) throw new Error("no-permission");
-
-            // 2) الأقسام
-            const catTaken = new Set([...draft.categories, ...server.categories].map((c) => c.slug).filter(Boolean));
-            const catRows = draft.categories.map((c, i) => {
-                let slug = c.slug;
-                if (!slug) {
-                    slug = ATHR.uniqueSlug(ATHR.slugify(c.name) || `cat-${c.id.slice(0, 8)}`, catTaken);
-                    catTaken.add(slug);
-                }
-                return {
-                    id: c.id,
-                    name: c.name.trim(),
-                    name_en: String(c.name_en || "").trim() || null,
-                    description_en: String(c.description_en || "").trim() || null,
-                    slug,
-                    image_url: c.image_url || null,
-                    description: String(c.description || "").trim() || null,
-                    sort_order: i + 1
-                };
-            });
-            draft.categories.forEach((c, i) => { c.slug = catRows[i].slug; });
-            if (catRows.length) {
-                const r = await sb.from("categories").upsert(catRows, { onConflict: "id" });
-                if (r.error) throw r.error;
-            }
-            const goneCats = server.categories.filter((c) => !draft.categories.some((x) => x.id === c.id)).map((c) => c.id);
-            if (goneCats.length) {
-                const r = await sb.from("categories").delete().in("id", goneCats);
-                if (r.error) throw r.error;
-            }
-
-            // 3) المنتجات
-            busyMessage("جاري نشر المنتجات...");
-            const slugTaken = new Set([...draft.products, ...server.products].map((p) => p.slug).filter(Boolean));
-            draft.products.forEach((p) => {
-                if (p.slug) return;
-                p.slug = ATHR.uniqueSlug(ATHR.productSlugBase(p, draft.config) || `p-${p.id.slice(0, 8)}`, slugTaken);
-                slugTaken.add(p.slug);
-            });
-            // المخزون يتغيّر مع كل طلب: نأخذ آخر كمية من الخادم إلا إذا عدّلتها أنت في المسودة
-            let freshStock = new Map();
-            try {
-                const fr = await sb.from("products").select("id,stock,is_available,file_url");
-                if (!fr.error) freshStock = new Map((fr.data || []).map((x) => [x.id, x]));
-            } catch { /* نكمل بالمسودة */ }
-            draft.products.forEach((p) => {
-                const before = server.products.find((x) => x.id === p.id);
-                const now = freshStock.get(p.id);
-                if (!before || !now) return;
-                const mineStock = ATHR.stockOf(p);
-                if (mineStock === ATHR.stockOf(before)) p.stock = now.stock === null ? null : Number(now.stock);
-                if (ATHR.stockOf(p) !== null) p.is_available = ATHR.stockOf(p) > 0;
-                else if ((p.is_available !== false) === (before.is_available !== false)) p.is_available = now.is_available !== false;
-            });
-            const prodRows = draft.products.map((p, i) => ({
-                id: p.id,
-                name: p.name.trim(),
-                name_en: String(p.name_en || "").trim() || null,
-                description_en: String(p.description_en || "").trim() || null,
-                slug: p.slug,
-                price: Number(p.price),
-                old_price: p.old_price === null || p.old_price === undefined ? null : Number(p.old_price),
-                category_id: p.category_id || null,
-                image_url: p.image_url || null,
-                is_available: p.is_available !== false,
-                is_visible: p.is_visible !== false,
-                is_best_seller: p.is_best_seller === true,
-                is_new_arrival: p.is_new_arrival === true,
-                description: p.description || null,
-                color_id: p.color_id || null,
-                story: p.story || null,
-                video_url: p.video_url || null,
-                file_url: p.file_url || (p._fileRemoved ? null : (((freshStock.get(p.id) || {}).file_url || "").startsWith("private:") ? freshStock.get(p.id).file_url : null)),
-                weight_g: Number(p.weight_g) > 0 ? Math.round(Number(p.weight_g)) : null,
-                stock: ATHR.stockOf(p),
-                sort_order: i + 1
-            }));
-            for (let i = 0; i < prodRows.length; i += 100) {
-                const r = await sb.from("products").upsert(prodRows.slice(i, i + 100), { onConflict: "id" });
-                if (r.error) throw r.error;
-            }
-            const goneProducts = server.products.filter((p) => !draft.products.some((x) => x.id === p.id)).map((p) => p.id);
-            if (goneProducts.length) {
-                const r = await sb.from("products").delete().in("id", goneProducts);
-                if (r.error) throw r.error;
-            }
-
-            // 4) الصور والفيديو الإضافية
-            busyMessage("جاري نشر الصور...");
-            for (const p of draft.products) {
-                const before = server.products.find((x) => x.id === p.id);
-                if (before && JSON.stringify(before.media) === JSON.stringify(p.media)) continue;
-                const del = await sb.from("product_media").delete().eq("product_id", p.id);
-                if (del.error) throw del.error;
-                if (p.media.length) {
-                    const rows = p.media.map((m, i) => ({ product_id: p.id, media_type: m.type, media_url: m.url, sort_order: i }));
-                    const ins = await sb.from("product_media").insert(rows);
-                    if (ins.error) throw ins.error;
-                }
-            }
-
-            A.server = ATHR.clone(draft);
-            A.errors = [];
-            storage.del(DRAFT_KEY);
-            busyMessage("");
-            toast("نُشرت التغييرات ✅ تظهر للزبائن فوراً، وفي جوجل خلال ساعة");
-            ATHR.store.reload().catch(() => {});
-        } catch (error) {
-            console.error("Publish error:", error);
-            busyMessage("");
-            const msg = String(error && error.message || "");
-            toast(msg === "no-permission" || /row-level security/i.test(msg)
-                ? "ليس لديك صلاحية النشر. سجّل الدخول مرة أخرى."
-                : "تعذر النشر. تأكد من الإنترنت وحاول مرة أخرى، تعديلاتك محفوظة على جوالك.");
-        } finally {
-            A.busy = false;
-            renderTab({ keepScroll: true });
-            renderStatus();
-        }
-    }
-
-    // =====================================================
-    // ORDERS BOOK
-    // =====================================================
-
-    async function openOrders() {
-        root().innerHTML = `<div class="adm-loading">جاري تحميل الطلبات...</div>`;
-        try {
-            if (!A.server) await loadServer();
-            if (!A.draft) restoreDraft();
-            await loadOrders();
-        } catch (error) {
-            console.error(error);
-            root().innerHTML = `<div class="adm-loading"><p>تعذر تحميل الطلبات. تأكد من الإنترنت.</p><button class="ab ab-primary" data-a="retry">إعادة المحاولة</button> <button class="ab ab-ghost" data-a="close">إغلاق</button></div>`;
-            return;
-        }
-        renderBook();
-    }
-
-    async function loadOrders() {
-        const { data, error } = await sb.from("orders").select("*").order("ordered_at", { ascending: false }).limit(1000);
-        if (error) throw error;
-        A.orders = data || [];
-        A.ordersLoaded = true;
-        setTimeout(cleanupPhotos, 4000);
-    }
-
-    function renderBook() {
-        const pending = A.reviews.filter((r) => r.status === "pending").length;
-        const tabs = [["orders", "الطلبات"], ["customers", "العملاء"], ["reviews", `التقييمات${pending ? ` (${pending})` : ""}`], ["stats", "الأداء"]];
-        root().innerHTML = `
+            </div>`)}async function Yr(t){const e=b("#newPassword",t).value,a=b("#confirmPassword",t).value,s=b("#passwordMsg",t);if(s.classList.remove("ok"),e.length<8){s.textContent="كلمة المرور يجب أن تكون 8 أحرف على الأقل.";return}if(e!==a){s.textContent="كلمتا المرور غير متطابقتين.";return}const n=b("#savePassword",t);n.disabled=!0,n.textContent="جاري الحفظ...";const{error:o}=await _.auth.updateUser({password:e,data:{must_change_password:!1}});if(n.disabled=!1,n.textContent="حفظ كلمة المرور",o){s.textContent=/different/i.test(o.message)?"اختر كلمة مرور مختلفة عن الحالية.":"تعذر تغيير كلمة المرور. سجّل الخروج وادخل مرة أخرى ثم حاول.";return}s.textContent="تم تغيير كلمة المرور ✅",s.classList.add("ok"),t.reset(),t.dataset.first==="1"&&setTimeout(()=>{b("#passwordForm")&&At()},1400)}function Xr(){const t=$(),e=[],a=(l,c)=>e.push({tab:l,msg:c}),s=l=>typeof l=="number"&&Number.isFinite(l),n=t.tracking||{};String(n.meta_pixel||"").trim()&&!ATHR.metaPixelId(n.meta_pixel)&&a("ads","رقم Meta Pixel غير صحيح: أرقام فقط (15–16 رقماً تقريباً)."),String(n.tiktok_pixel||"").trim()&&!ATHR.tiktokPixelId(n.tiktok_pixel)&&a("ads","رقم TikTok Pixel غير صحيح: حروف إنجليزية وأرقام فقط."),/[\p{L}]/u.test(String(t.name||""))||a("look","اكتب اسم المتجر (يظهر في جوجل ورسائل واتساب). لإخفائه من أعلى المتجر أوقف «إظهار اسم المتجر بجانب الشعار»."),ATHR.isValidWhatsapp(t.order.whatsapp)||a("order","رقم واتساب غير صحيح."),String(t.order.currency||"").trim()||a("order","رمز العملة فارغ."),t.order.free_enabled&&!(s(t.order.free_min)&&t.order.free_min>0)&&a("order","حد التوصيل المجاني غير صحيح."),Number.isInteger(t.order.max_qty)&&t.order.max_qty>=1&&t.order.max_qty<=99||a("order","أقصى كمية يجب أن تكون بين 1 و99.");const o=t.order.delivery.filter(l=>l.enabled);o.length||a("order","لا توجد طريقة توصيل مفعّلة."),o.forEach((l,c)=>{String(l.name||"").trim()||a("order",`طريقة توصيل مفعّلة بلا اسم (${c+1}).`),s(l.price)&&l.price>=0||a("order",`سعر توصيل غير صحيح في «${l.name||c+1}».`)}),o.forEach(l=>{l.pricing==="per_kg"&&!(s(l.price)&&l.price>0)&&a("order",`سعر الكيلو غير صحيح في «${l.name||"طريقة توصيل"}».`),Array.isArray(l.countries)&&!l.countries.length&&a("order",`«${l.name||"طريقة توصيل"}» غير متاحة لأي دولة.`)}),ATHR.countries(t).filter(l=>l.enabled).forEach(l=>{ATHR.deliveriesFor(t,l.code).length||a("order",`لا توجد طريقة توصيل مفعّلة لـ${l.name}.`),ATHR.paymentsFor(t,l.code).length||a("order",`لا توجد طريقة دفع مفعّلة لـ${l.name}.`)}),t.order.countries.forEach(l=>{l.code!=="OM"&&l.enabled!==!1&&!(Number(l.rate)>0)&&!ATHR.liveRates(t)&&a("order",`سعر صرف ${l.name} غير صحيح.`)});const r=t.order.payments.filter(l=>l.enabled);if(r.length||a("order","لا توجد طريقة دفع مفعّلة."),r.forEach((l,c)=>{String(l.name||"").trim()||a("order",`طريقة دفع مفعّلة بلا اسم (${c+1}).`),l.type==="online"&&!ATHR.isUrl(l.link)&&a("order",`الدفع الإلكتروني «${l.name||""}» مفعّل بدون رابط صحيح.`)}),t.ad.show){const l=ATHR.adSlides(t);l.forEach((c,p)=>{const u=l.length>1?`الإعلان ${p+1}`:"الإعلان";c.type==="image"&&!c.image_url&&a("ad",`${u} مفعّل بدون صورة.`),c.type==="video"&&!c.video_url&&a("ad",`${u} مفعّل بدون فيديو.`),c.type==="text"&&!String(c.title||c.text||"").trim()&&a("ad",`${u} مفعّل بدون نص.`),p>0&&c.link&&!ATHR.isSafeLink(c.link)&&a("ad",`رابط ${u} غير صحيح.`)})}if(t.ad.link&&!ATHR.isSafeLink(t.ad.link)&&a("ad","رابط الإعلان غير صحيح."),t.contact.share_url&&!ATHR.isUrl(t.contact.share_url)&&a("contact","رابط المتجر للمشاركة غير صحيح."),i.draft.products.forEach(l=>{l.video_url&&!ATHR.isUrl(l.video_url)&&a("products",`رابط الفيديو الخارجي غير صحيح في «${l.name||"منتج"}».`)}),t.texts.socials.forEach(l=>{(!String(l.name||"").trim()||!ATHR.isUrl(l.url))&&a("texts",`رابط تواصل اجتماعي غير صحيح${l.name?` («${l.name}»)`:""}.`)}),t.sales.bundles.filter(l=>l.enabled).forEach((l,c)=>{!l.a||!l.b?a("sales",`الباقة ${c+1} ينقصها منتج.`):l.a===l.b?a("sales",`الباقة ${c+1}: المنتجان متطابقان.`):(!i.draft.products.some(p=>p.id===l.a)||!i.draft.products.some(p=>p.id===l.b))&&a("sales",`الباقة ${c+1} فيها منتج محذوف.`),Number.isInteger(l.pct)&&l.pct>=1&&l.pct<=90||a("sales",`نسبة خصم الباقة ${c+1} يجب أن تكون من 1 إلى 90.`)}),t.sales.volume&&t.sales.volume.enabled){const l=t.sales.volume.tiers||[];l.length||a("sales","خصم الكمية مفعّل بدون شرائح."),l.forEach((p,u)=>{Number.isInteger(p.min)&&p.min>=2&&p.min<=50||a("sales",`شريحة خصم الكمية ${u+1}: عدد القطع يجب أن يكون من 2 إلى 50.`),Number.isInteger(p.pct)&&p.pct>=1&&p.pct<=90||a("sales",`شريحة خصم الكمية ${u+1}: النسبة يجب أن تكون من 1 إلى 90.`)});const c=l.map(p=>p.min);new Set(c).size!==c.length&&a("sales","شرائح خصم الكمية فيها عدد قطع مكرر.")}return t.seo&&t.seo.google_verification&&!/^[A-Za-z0-9_-]{10,100}$/.test(String(t.seo.google_verification).trim().replace(/^.*content=["']?([^"'\s>]+).*$/i,"$1"))&&a("contact","رمز التحقق من جوجل غير صحيح. انسخ الرمز فقط أو وسم meta كاملاً."),t.contact.reviews.forEach((l,c)=>{String(l.text||"").trim()||a("contact",`الرأي ${c+1} بدون نص.`)}),i.draft.categories.forEach((l,c)=>{String(l.name||"").trim()||a("catalog",`القسم ${c+1} بلا اسم.`)}),t.colors.forEach((l,c)=>{String(l.name||"").trim()||a("catalog",`اللون ${c+1} بلا اسم.`)}),i.draft.products.forEach((l,c)=>{const p=l.name?`«${l.name}»`:`المنتج ${c+1}`;String(l.name||"").trim()||a("products",`${p} بلا اسم.`),s(l.price)&&l.price>0||a("products",`${p}: السعر يجب أن يزيد على صفر.`),l.weight_g!==null&&l.weight_g!==void 0&&!(s(l.weight_g)&&l.weight_g>0&&l.weight_g<=5e4)&&a("products",`${p}: الوزن غير صحيح.`),l.old_price!==null&&l.old_price!==void 0&&!(s(l.old_price)&&l.old_price>(l.price||0))&&a("products",`${p}: راجع الخصم، السعر الأصلي يجب أن يكون أكبر من السعر بعد الخصم.`)}),e}const ti=(t,e)=>JSON.stringify(t)===JSON.stringify(e);function Ha(t,e,a){if(ti(e,t))return ATHR.clone(a===void 0?e:a);if(ATHR.isPlainObject(t)&&ATHR.isPlainObject(e)&&ATHR.isPlainObject(a)){const s={};return new Set([...Object.keys(t),...Object.keys(e),...Object.keys(a)]).forEach(n=>{const o=Ha(t[n],e[n],a[n]);o!==void 0&&(s[n]=o)}),s}return ATHR.clone(e)}function Xs(t,e,a){const s=c=>new Map(c.map(p=>[p.id,p])),n=s(t),o=s(a),r=new Set(e.map(c=>c.id)),l=e.map(c=>n.has(c.id)&&o.has(c.id)?Ha(n.get(c.id),c,o.get(c.id)):c);return a.forEach(c=>{!n.has(c.id)&&!r.has(c.id)&&l.push(ATHR.clone(c))}),l}function ei(t,e,a){return{config:ATHR.fullConfig(Ha(t.config,e.config,a.config)),categories:Xs(t.categories,e.categories,a.categories),products:Xs(t.products,e.products,a.products)}}async function ai(){if(i.busy)return;if(i.errors=Xr(),i.errors.length){i.tab=i.errors[0].tab,re(),y("لم يتم النشر، راجع الأخطاء");return}i.busy=!0,Vt(),dt("جاري النشر...");try{const{data:a}=await _.from("store_settings").select("updated_at").eq("id",1).maybeSingle(),s=Date.parse(a?.updated_at||"")||0;if(i.serverUpdated&&s>i.serverUpdated){const n=i.server;await Re(),i.draft=ei(n,i.draft,i.server)}}catch(a){console.warn("freshness check skipped",a)}const t=i.draft,e=i.server;try{t.config.order.whatsapp=ATHR.normalizePhone(t.config.order.whatsapp);const a=await _.from("store_settings").update({config:t.config}).eq("id",1).select("id");if(a.error)throw a.error;if(!a.data||!a.data.length)throw new Error("no-permission");const s=new Set([...t.categories,...e.categories].map(u=>u.slug).filter(Boolean)),n=t.categories.map((u,m)=>{let h=u.slug;return h||(h=ATHR.uniqueSlug(ATHR.slugify(u.name)||`cat-${u.id.slice(0,8)}`,s),s.add(h)),{id:u.id,name:u.name.trim(),name_en:String(u.name_en||"").trim()||null,description_en:String(u.description_en||"").trim()||null,slug:h,image_url:u.image_url||null,description:String(u.description||"").trim()||null,sort_order:m+1}});if(t.categories.forEach((u,m)=>{u.slug=n[m].slug}),n.length){const u=await _.from("categories").upsert(n,{onConflict:"id"});if(u.error)throw u.error}const o=e.categories.filter(u=>!t.categories.some(m=>m.id===u.id)).map(u=>u.id);if(o.length){const u=await _.from("categories").delete().in("id",o);if(u.error)throw u.error}dt("جاري نشر المنتجات...");const r=new Set([...t.products,...e.products].map(u=>u.slug).filter(Boolean));t.products.forEach(u=>{u.slug||(u.slug=ATHR.uniqueSlug(ATHR.productSlugBase(u,t.config)||`p-${u.id.slice(0,8)}`,r),r.add(u.slug))});let l=new Map;try{const u=await _.from("products").select("id,stock,is_available,file_url");u.error||(l=new Map((u.data||[]).map(m=>[m.id,m])))}catch{}t.products.forEach(u=>{const m=e.products.find(L=>L.id===u.id),h=l.get(u.id);if(!m||!h)return;ATHR.stockOf(u)===ATHR.stockOf(m)&&(u.stock=h.stock===null?null:Number(h.stock)),ATHR.stockOf(u)!==null?u.is_available=ATHR.stockOf(u)>0:u.is_available!==!1==(m.is_available!==!1)&&(u.is_available=h.is_available!==!1)});const c=t.products.map((u,m)=>({id:u.id,name:u.name.trim(),name_en:String(u.name_en||"").trim()||null,description_en:String(u.description_en||"").trim()||null,slug:u.slug,price:Number(u.price),old_price:u.old_price===null||u.old_price===void 0?null:Number(u.old_price),category_id:u.category_id||null,image_url:u.image_url||null,is_available:u.is_available!==!1,is_visible:u.is_visible!==!1,is_best_seller:u.is_best_seller===!0,is_new_arrival:u.is_new_arrival===!0,description:u.description||null,color_id:u.color_id||null,story:u.story||null,video_url:u.video_url||null,file_url:u.file_url||(u._fileRemoved?null:((l.get(u.id)||{}).file_url||"").startsWith("private:")?l.get(u.id).file_url:null),weight_g:Number(u.weight_g)>0?Math.round(Number(u.weight_g)):null,stock:ATHR.stockOf(u),sort_order:m+1}));for(let u=0;u<c.length;u+=100){const m=await _.from("products").upsert(c.slice(u,u+100),{onConflict:"id"});if(m.error)throw m.error}const p=e.products.filter(u=>!t.products.some(m=>m.id===u.id)).map(u=>u.id);if(p.length){const u=await _.from("products").delete().in("id",p);if(u.error)throw u.error}dt("جاري نشر الصور...");for(const u of t.products){const m=e.products.find(M=>M.id===u.id);if(m&&JSON.stringify(m.media)===JSON.stringify(u.media))continue;const h=await _.from("product_media").delete().eq("product_id",u.id);if(h.error)throw h.error;if(u.media.length){const M=u.media.map((S,E)=>({product_id:u.id,media_type:S.type,media_url:S.url,sort_order:E})),L=await _.from("product_media").insert(M);if(L.error)throw L.error}}i.server=ATHR.clone(t),i.errors=[],Q.del(Et),dt(""),y("نُشرت التغييرات ✅ تظهر للزبائن فوراً، وفي جوجل خلال ساعة"),ATHR.store.reload().catch(()=>{})}catch(a){console.error("Publish error:",a),dt("");const s=String(a&&a.message||"");y(s==="no-permission"||/row-level security/i.test(s)?"ليس لديك صلاحية النشر. سجّل الدخول مرة أخرى.":"تعذر النشر. تأكد من الإنترنت وحاول مرة أخرى، تعديلاتك محفوظة على جوالك.")}finally{i.busy=!1,B({keepScroll:!0}),Vt()}}async function si(){vt().innerHTML='<div class="adm-loading">جاري تحميل الطلبات...</div>';try{i.server||await Re(),i.draft||es(),await me()}catch(t){console.error(t),vt().innerHTML='<div class="adm-loading"><p>تعذر تحميل الطلبات. تأكد من الإنترنت.</p><button class="ab ab-primary" data-a="retry">إعادة المحاولة</button> <button class="ab ab-ghost" data-a="close">إغلاق</button></div>';return}fe()}async function me(){const{data:t,error:e}=await _.from("orders").select("*").order("ordered_at",{ascending:!1}).limit(1e3);if(e)throw e;i.orders=t||[],i.ordersLoaded=!0,setTimeout(Ci,4e3)}function fe(){const t=i.reviews.filter(a=>a.status==="pending").length,e=[["orders","الطلبات"],["customers","العملاء"],["reviews",`التقييمات${t?` (${t})`:""}`],["stats","الأداء"]];vt().innerHTML=`
             <div class="adm-shell">
                 <header class="adm-top">
                     <h1>دفتر الطلبيات</h1>
@@ -5414,1107 +997,346 @@
                     </div>
                 </header>
                 <nav class="adm-tabs" role="tablist" aria-label="أقسام الدفتر">
-                    ${tabs.map(([id, label]) => `<button type="button" role="tab" data-book="${id}" aria-selected="${A.book === id}">${label}</button>`).join("")}
+                    ${e.map(([a,s])=>`<button type="button" role="tab" data-book="${a}" aria-selected="${i.book===a}">${s}</button>`).join("")}
                 </nav>
-                ${A.book === "orders" ? `<div class="ob-tools">
-                    <input class="ai" type="search" id="ordersSearch" placeholder="ابحث بالاسم أو الرقم أو الولاية أو المحافظة أو العنوان أو المنتج" value="${esc(A.filter.q)}">
+                ${i.book==="orders"?`<div class="ob-tools">
+                    <input class="ai" type="search" id="ordersSearch" placeholder="ابحث بالاسم أو الرقم أو الولاية أو المحافظة أو العنوان أو المنتج" value="${d(i.filter.q)}">
                     <div class="ob-filters">
                         <div class="seg" role="group" aria-label="الحالة">
-                            ${[["all", "الكل"], ["new", "جديد"], ["delivered", "تم التسليم"], ["hidden", "مخفي"]].map(([v, l]) => `<button type="button" data-status="${v}" aria-pressed="${A.filter.status === v}">${l}</button>`).join("")}
+                            ${[["all","الكل"],["new","جديد"],["delivered","تم التسليم"],["hidden","مخفي"]].map(([a,s])=>`<button type="button" data-status="${a}" aria-pressed="${i.filter.status===a}">${s}</button>`).join("")}
                         </div>
                         <select class="ai sm" id="payFilter" aria-label="طريقة الدفع">
-                            <option value="all"${A.filter.pay === "all" ? " selected" : ""}>كل طرق الدفع</option>
-                            <option value="bank"${A.filter.pay === "bank" ? " selected" : ""}>تحويل بنكي</option>
-                            <option value="cod"${A.filter.pay === "cod" ? " selected" : ""}>عند الاستلام</option>
+                            <option value="all"${i.filter.pay==="all"?" selected":""}>كل طرق الدفع</option>
+                            <option value="bank"${i.filter.pay==="bank"?" selected":""}>تحويل بنكي</option>
+                            <option value="cod"${i.filter.pay==="cod"?" selected":""}>عند الاستلام</option>
                         </select>
                     </div>
-                </div>` : ""}
-                ${A.book === "customers" ? `<div class="ob-tools">
-                    <input class="ai" type="search" id="custSearch" placeholder="ابحث باسم العميل أو رقمه" value="${esc(A.custFilter.q)}">
+                </div>`:""}
+                ${i.book==="customers"?`<div class="ob-tools">
+                    <input class="ai" type="search" id="custSearch" placeholder="ابحث باسم العميل أو رقمه" value="${d(i.custFilter.q)}">
                     <div class="seg" role="group" aria-label="تصفية العملاء">
-                        ${[["all", "الكل"], ["marketing", "يقبلون العروض"], ["vip", "💎 المميزون"], ["repeat", "رجعوا مرة ثانية"], ["second", "🔁 للطلب الثاني"], ["away", "غائبون +60 يوم"], ["new", "🆕 الجدد"], ...(ATHR.loyaltyOn(cfg()) ? [["reward", "🎁 مكافأة جاهزة"]] : [])].map(([v, l]) => `<button type="button" data-cust-kind="${v}" aria-pressed="${A.custFilter.kind === v}">${l}</button>`).join("")}
+                        ${[["all","الكل"],["marketing","يقبلون العروض"],["vip","💎 المميزون"],["repeat","رجعوا مرة ثانية"],["second","🔁 للطلب الثاني"],["away","غائبون +60 يوم"],["new","🆕 الجدد"],...ATHR.loyaltyOn($())?[["reward","🎁 مكافأة جاهزة"]]:[]].map(([a,s])=>`<button type="button" data-cust-kind="${a}" aria-pressed="${i.custFilter.kind===a}">${s}</button>`).join("")}
                     </div>
-                </div>` : ""}
+                </div>`:""}
                 <main class="adm-body" id="ordersBody"></main>
-                ${A.book === "orders" ? `<footer class="adm-foot ob-foot">
+                ${i.book==="orders"?`<footer class="adm-foot ob-foot">
                     <button class="ab ab-ghost" type="button" data-a="story-maker">📖 صانع القصص</button>
                     <button class="ab ab-ghost" type="button" data-a="orders-paste">لصق رسالة طلب من واتساب</button>
                     <button class="ab ab-primary" type="button" data-a="orders-manual">+ طلب يدوي</button>
-                </footer>` : ""}
+                </footer>`:""}
             </div>
-            <div class="adm-sheet" id="admSheet" hidden></div>`;
-        if (A.book === "reviews") renderReviews();
-        else if (A.book === "stats") renderStats();
-        else if (A.book === "customers") renderCustomers();
-        else renderOrdersList();
-        if (!A.reviewsLoaded) loadReviews().then(() => { if (A.view === "orders") { const tab = $('[data-book="reviews"]'); const n = A.reviews.filter((r) => r.status === "pending").length; if (tab) tab.textContent = `التقييمات${n ? ` (${n})` : ""}`; } }).catch(() => {});
-    }
+            <div class="adm-sheet" id="admSheet" hidden></div>`,i.book==="reviews"?gi():i.book==="stats"?wi():i.book==="customers"?gt():Mt(),i.reviewsLoaded||on().then(()=>{if(i.view==="orders"){const a=b('[data-book="reviews"]'),s=i.reviews.filter(n=>n.status==="pending").length;a&&(a.textContent=`التقييمات${s?` (${s})`:""}`)}}).catch(()=>{})}const tn="huroof_offer_pref",ni="(لإيقاف العروض أرسل: إيقاف)",be=[["🔥 خصم حصري",`هلا {name} 👋
 
-    // =====================================================
-    // CUSTOMERS: قائمة العملاء + استوديو العروض
-    // رسالة جذابة جاهزة، ورابط خاص لكل عميل باسمه مع عدّاد تنازلي لانتهاء العرض
-    // =====================================================
+🔥 *عرض خاص لك من {store}*
 
-    const OFFER_PREF = "huroof_offer_pref";
-    const OPT_OUT_LINE = "(لإيقاف العروض أرسل: إيقاف)";
-    // عروض المنتج: السطر الذي فيه معلومة غير موجودة (الخصم أو المدة) يُحذف تلقائياً
-    const PRODUCT_OFFERS = [
-        ["🔥 خصم حصري", "هلا {name} 👋\n\n🔥 *عرض خاص لك من {store}*\n\n🛍️ *{product}*\n❌ بدل {old}\n✅ صار بـ *{price}* فقط\n🎉 توفّر {save} (خصم {pct}%)\n\n⏳ العرض ينتهي {ends}\n\n👇 اطلبه الآن من رابطك الخاص:\n{link}"],
-        ["⏰ آخر فرصة", "⏰ *آخر فرصة يا {name}!*\n\nخصم {pct}% على *{product}* ينتهي {ends} 😱\n💰 بـ *{price}* بدل {old}\n\nالكمية محدودة، احجز قطعتك قبل لا تخلص 👇\n{link}"],
-        ["🎁 هدية مثالية", "🎁 تدوّر هدية تفرّح فيها أحد غالي يا {name}؟\n\n*{product}* هدية أنيقة ومختلفة ✨\n💰 بـ *{price}* فقط\n🎉 خصم {pct}% بدل {old}\n\nنوصلها باسمك مع بطاقة إهداء رقمية 💌\n👇 اطلبها من هنا:\n{link}"],
-        ["💎 لعملائنا المميزين", "{name}، أنت من عملائنا المميزين 💎\n\nجهّزنا لك عرضاً خاصاً على *{product}*\n✨ *{price}* بدل {old}\n🎉 خصم {pct}%\n⏳ ينتهي {ends}\n\nرابطك الخاص 👇\n{link}"],
-        ["✨ وصل جديد", "هلا {name} 👋\n\n✨ وصل جديد في {store}:\n🛍️ *{product}*\n💰 السعر: *{price}*\n🎉 وبخصم {pct}% لفترة محدودة\n\nشوفه قبل لا يخلص 🔥\n{link}"]
-    ];
-    // رسائل عامة بدون منتج محدد
-    const OFFER_TEMPLATES = [
-        ["🎉 خصم عام", "هلا {name} 👋\n\n🎉 *عرض خاص من {store}*\n✨ خصم 10% على كل الكاسات لمدة 3 أيام فقط\n\n🛍️ تسوّق الآن 👇\n{link}"],
-        ["✨ تصاميم جديدة", "هلا {name} 👋\n\n🔥 *وصلت تصاميم جديدة في {store}*\nأندية وجامعات وشخصيات… شوفها قبل لا تخلص 👇\n{link}"],
-        ["💙 اشتقنا لك", "{name}، اشتقنا لك 💙\n\nمرّ وقت من آخر طلب لك في {store}، وجهّزنا تصاميم جديدة بتعجبك ✨\n\n👇 شوفها من هنا:\n{link}"],
-        ["🌙 عرض العيد", "عيدكم مبارك يا {name} 🌙✨\n\nبمناسبة العيد: 🎁 هدية مع كل طلب من {store}\n\nاطلب الآن 👇\n{link}"],
-        ["🤍 شكراً لك", "شكراً لك يا {name} على ثقتك في {store} 🤍\n\nإذا عجبك طلبك شاركنا رأيك، ونسعد نخدمك دائماً 👇\n{link}"]
-    ];
-    const OFFER_ENDS = [[0, "بدون مدة"], [24, "24 ساعة"], [72, "3 أيام"], [168, "أسبوع"]];
-    const OFFER_AUDIENCE = [["marketing", "الكل"], ["vip", "💎 المميزون"], ["repeat", "🔁 رجعوا للشراء"], ["away", "💤 الغائبون"], ["new", "🆕 الجدد"]];
-    const VIP_SPENT = 15;
+🛍️ *{product}*
+❌ بدل {old}
+✅ صار بـ *{price}* فقط
+🎉 توفّر {save} (خصم {pct}%)
 
-    async function loadCustomers() {
-        const { data, error } = await sb.from("customers").select("*").order("last_order_at", { ascending: false }).limit(5000);
-        if (error) throw error;
-        A.customers = data || [];
-        A.customersLoaded = true;
-    }
+⏳ العرض ينتهي {ends}
 
-    function custWa(c) {
-        return ATHR.customerWhatsapp(c.phone, "XX");
-    }
+👇 اطلبه الآن من رابطك الخاص:
+{link}`],["⏰ آخر فرصة",`⏰ *آخر فرصة يا {name}!*
 
-    const daysSince = (date) => (date ? (Date.now() - new Date(date).getTime()) / 864e5 : Infinity);
-    const isVip = (c) => c.orders_count >= 3 || Number(c.total_spent) >= VIP_SPENT;
-    const isAway = (c) => daysSince(c.last_order_at) > 60;
-    const isNew = (c) => c.orders_count <= 1 && daysSince(c.first_order_at || c.last_order_at) <= 14;
-    const recentOffer = (c) => daysSince(c.last_offer_at) < 3;
-    const KIND_TEST = { marketing: (c) => c.marketing, vip: isVip, repeat: (c) => c.orders_count > 1, away: isAway, new: isNew, reward: (c) => rewardReady(c), second: (c) => c.orders_count === 1 && daysSince(c.last_order_at) >= 14 && daysSince(c.last_order_at) <= 60 };
+خصم {pct}% على *{product}* ينتهي {ends} 😱
+💰 بـ *{price}* بدل {old}
 
-    // شارات العميل: مميز / عاد للشراء / جديد / غائب
-    function custTags(c) {
-        const tags = [];
-        if (isVip(c)) tags.push(["vip", "💎 مميز"]);
-        else if (c.orders_count > 1) tags.push(["back", "🔁 عاد للشراء"]);
-        else if (isNew(c)) tags.push(["new", "🆕 جديد"]);
-        if (isAway(c)) tags.push(["away", "💤 غائب"]);
-        return tags;
-    }
+الكمية محدودة، احجز قطعتك قبل لا تخلص 👇
+{link}`],["🎁 هدية مثالية",`🎁 تدوّر هدية تفرّح فيها أحد غالي يا {name}؟
 
-    function filteredCustomers() {
-        const q = (A.custFilter.q || "").trim().toLowerCase();
-        const test = KIND_TEST[A.custFilter.kind];
-        return A.customers.filter((c) => {
-            if (test && !test(c)) return false;
-            if (!q) return true;
-            return `${c.name || ""} ${c.phone}`.toLowerCase().includes(q);
-        });
-    }
+*{product}* هدية أنيقة ومختلفة ✨
+💰 بـ *{price}* فقط
+🎉 خصم {pct}% بدل {old}
 
-    function sinceText(date) {
-        if (!date) return "";
-        const days = Math.floor((Date.now() - new Date(date).getTime()) / 864e5);
-        return days <= 0 ? "اليوم" : days === 1 ? "أمس" : days < 30 ? `منذ ${days} يوم` : `منذ ${Math.round(days / 30)} شهر`;
-    }
+نوصلها باسمك مع بطاقة إهداء رقمية 💌
+👇 اطلبها من هنا:
+{link}`],["💎 لعملائنا المميزين",`{name}، أنت من عملائنا المميزين 💎
 
-    // نتائج العروض آخر 30 يوم: من وصله عرض، من فتح الرابط، الطلبات والمبيعات
-    async function loadOfferVisits() {
-        A.offerVisits = 0;
-        try {
-            const since = new Date(Date.now() - 30 * 864e5 + 4 * 36e5).toISOString().slice(0, 10);
-            const { data } = await sb.from("stats_daily").select("n").eq("key", "visit:offer").gte("day", since);
-            A.offerVisits = (data || []).reduce((sum, r) => sum + Number(r.n || 0), 0);
-        } catch {
-            /* اختياري */
-        }
-        const el = $("#offerVisits");
-        if (el) el.textContent = A.offerVisits;
-    }
+جهّزنا لك عرضاً خاصاً على *{product}*
+✨ *{price}* بدل {old}
+🎉 خصم {pct}%
+⏳ ينتهي {ends}
 
-    function offerResults() {
-        const since = Date.now() - 30 * 864e5;
-        const orders = A.orders.filter((o) => o.channel === "offer" && !o.hidden && new Date(o.ordered_at || o.created_at).getTime() > since);
-        const sent = A.customers.filter((c) => c.last_offer_at && new Date(c.last_offer_at).getTime() > since).length;
-        if (A.offerVisits === undefined) loadOfferVisits();
-        return `<section class="offer-results">
+رابطك الخاص 👇
+{link}`],["✨ وصل جديد",`هلا {name} 👋
+
+✨ وصل جديد في {store}:
+🛍️ *{product}*
+💰 السعر: *{price}*
+🎉 وبخصم {pct}% لفترة محدودة
+
+شوفه قبل لا يخلص 🔥
+{link}`]],he=[["🎉 خصم عام",`هلا {name} 👋
+
+🎉 *عرض خاص من {store}*
+✨ خصم 10% على كل الكاسات لمدة 3 أيام فقط
+
+🛍️ تسوّق الآن 👇
+{link}`],["✨ تصاميم جديدة",`هلا {name} 👋
+
+🔥 *وصلت تصاميم جديدة في {store}*
+أندية وجامعات وشخصيات… شوفها قبل لا تخلص 👇
+{link}`],["💙 اشتقنا لك",`{name}، اشتقنا لك 💙
+
+مرّ وقت من آخر طلب لك في {store}، وجهّزنا تصاميم جديدة بتعجبك ✨
+
+👇 شوفها من هنا:
+{link}`],["🌙 عرض العيد",`عيدكم مبارك يا {name} 🌙✨
+
+بمناسبة العيد: 🎁 هدية مع كل طلب من {store}
+
+اطلب الآن 👇
+{link}`],["🤍 شكراً لك",`شكراً لك يا {name} على ثقتك في {store} 🤍
+
+إذا عجبك طلبك شاركنا رأيك، ونسعد نخدمك دائماً 👇
+{link}`]],en=[[0,"بدون مدة"],[24,"24 ساعة"],[72,"3 أيام"],[168,"أسبوع"]],oi=[["marketing","الكل"],["vip","💎 المميزون"],["repeat","🔁 رجعوا للشراء"],["away","💤 الغائبون"],["new","🆕 الجدد"]],an=15;async function Fe(){const{data:t,error:e}=await _.from("customers").select("*").order("last_order_at",{ascending:!1}).limit(5e3);if(e)throw e;i.customers=t||[],i.customersLoaded=!0}function Ma(t){return ATHR.customerWhatsapp(t.phone,"XX")}const Jt=t=>t?(Date.now()-new Date(t).getTime())/864e5:1/0,ge=t=>t.orders_count>=3||Number(t.total_spent)>=an,Ea=t=>Jt(t.last_order_at)>60,sn=t=>t.orders_count<=1&&Jt(t.first_order_at||t.last_order_at)<=14,je=t=>Jt(t.last_offer_at)<3,Yt={marketing:t=>t.marketing,vip:ge,repeat:t=>t.orders_count>1,away:Ea,new:sn,reward:t=>ga(t),second:t=>t.orders_count===1&&Jt(t.last_order_at)>=14&&Jt(t.last_order_at)<=60};function $e(t){const e=[];return ge(t)?e.push(["vip","💎 مميز"]):t.orders_count>1?e.push(["back","🔁 عاد للشراء"]):sn(t)&&e.push(["new","🆕 جديد"]),Ea(t)&&e.push(["away","💤 غائب"]),e}function Na(){const t=(i.custFilter.q||"").trim().toLowerCase(),e=Yt[i.custFilter.kind];return i.customers.filter(a=>e&&!e(a)?!1:t?`${a.name||""} ${a.phone}`.toLowerCase().includes(t):!0)}function Xt(t){if(!t)return"";const e=Math.floor((Date.now()-new Date(t).getTime())/864e5);return e<=0?"اليوم":e===1?"أمس":e<30?`منذ ${e} يوم`:`منذ ${Math.round(e/30)} شهر`}async function ri(){i.offerVisits=0;try{const e=new Date(Date.now()-2592e6+144e5).toISOString().slice(0,10),{data:a}=await _.from("stats_daily").select("n").eq("key","visit:offer").gte("day",e);i.offerVisits=(a||[]).reduce((s,n)=>s+Number(n.n||0),0)}catch{}const t=b("#offerVisits");t&&(t.textContent=i.offerVisits)}function ii(){const t=Date.now()-2592e6,e=i.orders.filter(s=>s.channel==="offer"&&!s.hidden&&new Date(s.ordered_at||s.created_at).getTime()>t),a=i.customers.filter(s=>s.last_offer_at&&new Date(s.last_offer_at).getTime()>t).length;return i.offerVisits===void 0&&ri(),`<section class="offer-results">
             <div class="or-head"><b>📈 نتائج العروض</b><small class="adm-muted">آخر 30 يوم</small></div>
             <div class="or-grid">
-                <div><small>وصلهم عرض</small><b>${sent}</b></div>
-                <div><small>فتحوا الرابط</small><b id="offerVisits">${A.offerVisits === undefined ? "…" : A.offerVisits}</b></div>
-                <div><small>طلبوا</small><b>${orders.length}</b></div>
-                <div><small>المبيعات</small><b>${money(orders.reduce((sum, o) => sum + Number(o.total || 0), 0))}</b></div>
+                <div><small>وصلهم عرض</small><b>${a}</b></div>
+                <div><small>فتحوا الرابط</small><b id="offerVisits">${i.offerVisits===void 0?"…":i.offerVisits}</b></div>
+                <div><small>طلبوا</small><b>${e.length}</b></div>
+                <div><small>المبيعات</small><b>${x(e.reduce((s,n)=>s+Number(n.total||0),0))}</b></div>
             </div>
-        </section>`;
-    }
-
-    function renderCustomers() {
-        const body = $("#ordersBody");
-        if (!body) return;
-        if (!A.customersLoaded) {
-            body.innerHTML = `<div class="adm-empty">جاري تحميل العملاء...</div>`;
-            loadCustomers().then(() => { if (A.view === "orders" && A.book === "customers") renderCustomers(); })
-                .catch(() => { body.innerHTML = `<div class="adm-empty">تعذر تحميل العملاء. تأكد من الإنترنت.</div>`; });
-            return;
-        }
-        const all = A.customers;
-        const list = filteredCustomers();
-        const optedIn = all.filter((c) => c.marketing);
-        const earned = earnedPoints();
-        const lyOn = ATHR.loyaltyOn(cfg());
-        const ready = lyOn ? all.filter((c) => rewardReady(c, earned)).length : 0;
-        const flag = (code) => (ATHR_COUNTRIES.find((x) => x.code === code) || ATHR_COUNTRIES[0]).flag;
-        body.innerHTML = `
+        </section>`}function gt(){const t=b("#ordersBody");if(!t)return;if(!i.customersLoaded){t.innerHTML='<div class="adm-empty">جاري تحميل العملاء...</div>',Fe().then(()=>{i.view==="orders"&&i.book==="customers"&&gt()}).catch(()=>{t.innerHTML='<div class="adm-empty">تعذر تحميل العملاء. تأكد من الإنترنت.</div>'});return}const e=i.customers,a=Na(),s=e.filter(c=>c.marketing),n=xs(),o=ATHR.loyaltyOn($()),r=o?e.filter(c=>ga(c,n)).length:0,l=c=>(ATHR_COUNTRIES.find(p=>p.code===c)||ATHR_COUNTRIES[0]).flag;t.innerHTML=`
             <div class="ob-stats cust-stats">
-                <div><small>العملاء</small><b>${all.length}</b></div>
-                <div><small>يقبلون العروض</small><b>${optedIn.length}</b></div>
-                <div><small>💎 المميزون</small><b>${all.filter(isVip).length}</b></div>
-                <div><small>🔁 رجعوا للشراء</small><b>${all.filter((c) => c.orders_count > 1).length}</b></div>
-                ${lyOn ? `<div class="${ready ? "hot" : ""}"><small>🎁 مكافآت جاهزة</small><b>${ready}</b></div>` : ""}
+                <div><small>العملاء</small><b>${e.length}</b></div>
+                <div><small>يقبلون العروض</small><b>${s.length}</b></div>
+                <div><small>💎 المميزون</small><b>${e.filter(ge).length}</b></div>
+                <div><small>🔁 رجعوا للشراء</small><b>${e.filter(c=>c.orders_count>1).length}</b></div>
+                ${o?`<div class="${r?"hot":""}"><small>🎁 مكافآت جاهزة</small><b>${r}</b></div>`:""}
             </div>
-            ${custInsightsHTML()}
-            ${all.length ? `<div class="offer-hero">
+            ${rr()}
+            ${e.length?`<div class="offer-hero">
                 <div class="oh-txt"><b>📣 استوديو العروض</b><small>اختر منتجاً، ورسالة جذابة جاهزة، ورابط خاص لكل عميل باسمه مع عدّاد لانتهاء العرض.</small></div>
-                <button class="ab ab-primary" type="button" data-a="offer-open"${optedIn.length ? "" : " disabled"}>أرسل عرضاً (${optedIn.length})</button>
+                <button class="ab ab-primary" type="button" data-a="offer-open"${s.length?"":" disabled"}>أرسل عرضاً (${s.length})</button>
             </div>
-            ${offerResults()}
+            ${ii()}
             <div class="cust-actions">
-                <button class="ab-mini" type="button" data-a="cust-copy"${optedIn.length ? "" : " disabled"}>نسخ الأرقام</button>
+                <button class="ab-mini" type="button" data-a="cust-copy"${s.length?"":" disabled"}>نسخ الأرقام</button>
                 <button class="ab-mini" type="button" data-a="cust-csv">تنزيل ملف العملاء</button>
-            </div>` : ""}
-            ${list.length ? `<ul class="cust-list">${list.map((c) => `<li class="cust${c.marketing ? "" : " off"}">
+            </div>`:""}
+            ${a.length?`<ul class="cust-list">${a.map(c=>`<li class="cust${c.marketing?"":" off"}">
                 <div class="cust-main">
-                    <button class="cust-open" type="button" data-cust-open="${esc(c.phone)}"><b>${esc(c.name || "بدون اسم")}${c.country && c.country !== "OM" ? ` <span aria-hidden="true">${flag(c.country)}</span>` : ""}</b><span class="co-more">الملف ‹</span></button>
-                    ${custTags(c).length || (lyOn && custPoints(c, earned)) ? `<span class="cust-tags">${custTags(c).map(([k, l]) => `<span class="ctag ${k}">${l}</span>`).join("")}${lyOn && custPoints(c, earned) ? `<span class="ctag pts">⭐ ${ATHR.pointsText(custPoints(c, earned))}</span>` : ""}</span>` : ""}
-                    <span dir="ltr" class="cust-phone">+${esc(c.phone)}</span>
-                    <small class="adm-muted">${c.orders_count} ${c.orders_count === 1 ? "طلب" : c.orders_count === 2 ? "طلبان" : "طلبات"} · ${money(c.total_spent)} · آخر طلب ${esc(sinceText(c.last_order_at))}${c.last_offer_at ? ` · آخر عرض ${esc(sinceText(c.last_offer_at))}` : ""}</small>
+                    <button class="cust-open" type="button" data-cust-open="${d(c.phone)}"><b>${d(c.name||"بدون اسم")}${c.country&&c.country!=="OM"?` <span aria-hidden="true">${l(c.country)}</span>`:""}</b><span class="co-more">الملف ‹</span></button>
+                    ${$e(c).length||o&&St(c,n)?`<span class="cust-tags">${$e(c).map(([p,u])=>`<span class="ctag ${p}">${u}</span>`).join("")}${o&&St(c,n)?`<span class="ctag pts">⭐ ${ATHR.pointsText(St(c,n))}</span>`:""}</span>`:""}
+                    <span dir="ltr" class="cust-phone">+${d(c.phone)}</span>
+                    <small class="adm-muted">${c.orders_count} ${c.orders_count===1?"طلب":c.orders_count===2?"طلبان":"طلبات"} · ${x(c.total_spent)} · آخر طلب ${d(Xt(c.last_order_at))}${c.last_offer_at?` · آخر عرض ${d(Xt(c.last_offer_at))}`:""}</small>
                 </div>
                 <div class="cust-ctrl">
-                    <button type="button" class="vis-switch" role="switch" aria-checked="${Boolean(c.marketing)}" data-cust-mk="${esc(c.phone)}" aria-label="يستقبل العروض" title="${c.marketing ? "يستقبل العروض" : "لا يستقبل العروض"}"><span></span></button>
+                    <button type="button" class="vis-switch" role="switch" aria-checked="${!!c.marketing}" data-cust-mk="${d(c.phone)}" aria-label="يستقبل العروض" title="${c.marketing?"يستقبل العروض":"لا يستقبل العروض"}"><span></span></button>
                     <small>العروض</small>
                 </div>
                 <div class="cust-btns">
-                    ${lyOn && rewardReady(c, earned) ? `<button type="button" class="ab-mini reward" data-cust-reward="${esc(c.phone)}">⭐ مكافأة</button>` : ""}
-                    ${c.marketing ? `<button type="button" class="ab-mini gift" data-cust-offer="${esc(c.phone)}">🎁 عرض</button>` : ""}
-                    <button type="button" class="ab-mini wa" data-cust-wa="${esc(c.phone)}">واتساب</button>
+                    ${o&&ga(c,n)?`<button type="button" class="ab-mini reward" data-cust-reward="${d(c.phone)}">⭐ مكافأة</button>`:""}
+                    ${c.marketing?`<button type="button" class="ab-mini gift" data-cust-offer="${d(c.phone)}">🎁 عرض</button>`:""}
+                    <button type="button" class="ab-mini wa" data-cust-wa="${d(c.phone)}">واتساب</button>
                 </div>
-            </li>`).join("")}</ul>` : `<div class="adm-empty">${all.length ? "لا يوجد عملاء مطابقون." : "يظهر هنا كل زبون يطلب من المتجر: اسمه ورقمه وعدد طلباته، وتقدر ترسل لهم العروض من هنا."}</div>`}
-            <p class="adm-muted cust-note">يُحفظ العميل تلقائياً مع أول طلب. 💎 المميز: 3 طلبات أو أكثر أو مشتريات من ${money(VIP_SPENT)}. من يطفئ «أرسلوا لي العروض» في صفحة الطلب، أو تطفئ أنت مفتاح «العروض» عنده، لا يدخل في إرسال العروض.</p>`;
-    }
+            </li>`).join("")}</ul>`:`<div class="adm-empty">${e.length?"لا يوجد عملاء مطابقون.":"يظهر هنا كل زبون يطلب من المتجر: اسمه ورقمه وعدد طلباته، وتقدر ترسل لهم العروض من هنا."}</div>`}
+            <p class="adm-muted cust-note">يُحفظ العميل تلقائياً مع أول طلب. 💎 المميز: 3 طلبات أو أكثر أو مشتريات من ${x(an)}. من يطفئ «أرسلوا لي العروض» في صفحة الطلب، أو تطفئ أنت مفتاح «العروض» عنده، لا يدخل في إرسال العروض.</p>`}function Ue(){const t=Q.get(tn)||{};return{hours:en.some(([e])=>e===t.hours)?t.hours:72,skip:t.skip!==!1,ptpl:Number(t.ptpl)||0,gtpl:Number(t.gtpl)||0}}function Be(t){Q.set(tn,{hours:t.hours,skip:t.skipRecent,...t.product?{ptpl:t.tpl}:{gtpl:t.tpl},...t.product?{gtpl:Ue().gtpl}:{ptpl:Ue().ptpl}})}function qe(){const t=(i.server?i.server.products:[]).filter(s=>s.is_visible!==!1),e=ATHR.assignSlugs(t,$()).filter(s=>s.is_available!==!1&&s.image_url),a=s=>Number(s.old_price)>Number(s.price)?Math.round((1-s.price/s.old_price)*100):0;return e.map((s,n)=>({p:s,i:n,pct:a(s)})).sort((s,n)=>(n.pct>0)-(s.pct>0)||(n.p.is_best_seller?1:0)-(s.p.is_best_seller?1:0)||s.i-n.i).map(s=>({...s.p,pct:s.pct}))}function Ca(t=null){const e=Ue();i.offer={step:"pick",product:null,tpl:0,text:"",hours:e.hours,audience:"marketing",skipRecent:e.skip,single:t,q:"",i:0,sent:0,targets:[],endsAt:0},ut()}function Oa(t){const e=i.offer,a=Ue();if(e.product=t&&qe().find(s=>s.id===t)||null,e.tpl=e.product?Math.min(a.ptpl,be.length-1):Math.min(a.gtpl,he.length-1),!e.product&&e.single){const s=i.customers.find(n=>n.phone===e.single);s&&Ea(s)&&(e.tpl=2)}e.text=(e.product?be:he)[e.tpl][1],e.step="compose",ut()}function La(t){if(t.single)return i.customers.filter(a=>a.phone===t.single);const e=Yt[t.audience]||Yt.marketing;return i.customers.filter(a=>a.marketing&&e(a)&&!(t.skipRecent&&je(a)))}function li(t){return t<=24?"خلال 24 ساعة":t<=72?"خلال 3 أيام":"خلال أسبوع"}function ci(t,e){if(!t.product)return Y(`${ATHR.base()}?ref=offer`);const a=t.hours?t.endsAt||Date.now()+t.hours*36e5:0;return Y(ATHR.offerLink(t.product,{name:e,ends:a}))}function di(t,e){const a=String(e&&e.name||"").trim().split(/\s+/)[0]||"",s={name:a,store:ATHR.storeName($()),ends:t.product&&t.hours?li(t.hours):"",link:ci(t,a),product:"",price:"",old:"",pct:"",save:""},n=t.product;return n&&(s.product=n.name,s.price=x(n.price),n.pct&&Object.assign(s,{old:x(n.old_price),pct:String(n.pct),save:x(n.old_price-n.price)})),s}function Pa(t,e){let a=String(t||"").replace(/\s*يا\s*\{name\}/g,e.name?` يا ${e.name}`:"").replace(/\{name\}،\s*/g,e.name?`${e.name}، `:"");return a=a.split(`
+`).filter(s=>!["old","pct","save","ends","product","price"].some(n=>s.includes(`{${n}}`)&&!e[n])).join(`
+`),a=a.replace(/\{(\w+)\}/g,(s,n)=>e[n]!==void 0?e[n]:s),a.replace(/[ \t]+\n/g,`
+`).replace(/ {2,}/g," ").replace(/\n{3,}/g,`
 
-    // ---------- استوديو العروض ----------
+`).replace(/^(هلا|مرحبا|أهلاً)\s+👋/m,"$1 👋").trim()}function ye(t,e,{broadcast:a=!1}={}){const s=Pa(t.text,di(t,a?{name:""}:e));return a||s.includes("إيقاف")?s:`${s}
 
-    function offerPref() {
-        const p = storage.get(OFFER_PREF) || {};
-        return { hours: OFFER_ENDS.some(([h]) => h === p.hours) ? p.hours : 72, skip: p.skip !== false, ptpl: Number(p.ptpl) || 0, gtpl: Number(p.gtpl) || 0 };
-    }
-
-    function saveOfferPref(st) {
-        storage.set(OFFER_PREF, { hours: st.hours, skip: st.skipRecent, ...(st.product ? { ptpl: st.tpl } : { gtpl: st.tpl }), ...(st.product ? { gtpl: offerPref().gtpl } : { ptpl: offerPref().ptpl }) });
-    }
-
-    // المنتجات المنشورة فقط (لأن الرابط يجب أن يعمل عند العميل)، والمخفّضة أولاً
-    function offerProducts() {
-        const visible = (A.server ? A.server.products : []).filter((p) => p.is_visible !== false);
-        const list = ATHR.assignSlugs(visible, cfg()).filter((p) => p.is_available !== false && p.image_url);
-        const pct = (p) => (Number(p.old_price) > Number(p.price) ? Math.round((1 - p.price / p.old_price) * 100) : 0);
-        return list.map((p, i) => ({ p, i, pct: pct(p) })).sort((a, b) => (b.pct > 0) - (a.pct > 0) || (b.p.is_best_seller ? 1 : 0) - (a.p.is_best_seller ? 1 : 0) || a.i - b.i).map((x) => ({ ...x.p, pct: x.pct }));
-    }
-
-    function openOffer(single = null) {
-        const pref = offerPref();
-        A.offer = { step: "pick", product: null, tpl: 0, text: "", hours: pref.hours, audience: "marketing", skipRecent: pref.skip, single, q: "", i: 0, sent: 0, targets: [], endsAt: 0 };
-        renderOffer();
-    }
-
-    function offerChoose(productId) {
-        const st = A.offer;
-        const pref = offerPref();
-        st.product = productId ? offerProducts().find((p) => p.id === productId) || null : null;
-        st.tpl = st.product ? Math.min(pref.ptpl, PRODUCT_OFFERS.length - 1) : Math.min(pref.gtpl, OFFER_TEMPLATES.length - 1);
-        if (!st.product && st.single) {
-            const c = A.customers.find((x) => x.phone === st.single);
-            if (c && isAway(c)) st.tpl = 2;
-        }
-        st.text = (st.product ? PRODUCT_OFFERS : OFFER_TEMPLATES)[st.tpl][1];
-        st.step = "compose";
-        renderOffer();
-    }
-
-    function offerTargets(st) {
-        if (st.single) return A.customers.filter((c) => c.phone === st.single);
-        const test = KIND_TEST[st.audience] || KIND_TEST.marketing;
-        return A.customers.filter((c) => c.marketing && test(c) && !(st.skipRecent && recentOffer(c)));
-    }
-
-    function endsText(h) {
-        return h <= 24 ? "خلال 24 ساعة" : h <= 72 ? "خلال 3 أيام" : "خلال أسبوع";
-    }
-
-    function offerUrl(st, first) {
-        if (!st.product) return siteLink(`${ATHR.base()}?ref=offer`);
-        const ends = st.hours ? (st.endsAt || Date.now() + st.hours * 36e5) : 0;
-        return siteLink(ATHR.offerLink(st.product, { name: first, ends }));
-    }
-
-    function offerVars(st, c) {
-        const first = String((c && c.name) || "").trim().split(/\s+/)[0] || "";
-        const vars = { name: first, store: ATHR.storeName(cfg()), ends: st.product && st.hours ? endsText(st.hours) : "", link: offerUrl(st, first), product: "", price: "", old: "", pct: "", save: "" };
-        const p = st.product;
-        if (p) {
-            vars.product = p.name;
-            vars.price = money(p.price);
-            if (p.pct) Object.assign(vars, { old: money(p.old_price), pct: String(p.pct), save: money(p.old_price - p.price) });
-        }
-        return vars;
-    }
-
-    // تعبئة الرسالة: الاسم والمنتج والسعر والرابط، وحذف السطر الذي معلومته غير موجودة
-    function fillOffer(text, vars) {
-        let out = String(text || "")
-            .replace(/\s*يا\s*\{name\}/g, vars.name ? ` يا ${vars.name}` : "")
-            .replace(/\{name\}،\s*/g, vars.name ? `${vars.name}، ` : "");
-        out = out.split("\n").filter((line) => !["old", "pct", "save", "ends", "product", "price"].some((k) => line.includes(`{${k}}`) && !vars[k])).join("\n");
-        out = out.replace(/\{(\w+)\}/g, (m, k) => (vars[k] !== undefined ? vars[k] : m));
-        return out.replace(/[ \t]+\n/g, "\n").replace(/ {2,}/g, " ").replace(/\n{3,}/g, "\n\n").replace(/^(هلا|مرحبا|أهلاً)\s+👋/m, "$1 👋").trim();
-    }
-
-    function offerText(st, c, { broadcast = false } = {}) {
-        const text = fillOffer(st.text, offerVars(st, broadcast ? { name: "" } : c));
-        return broadcast || text.includes("إيقاف") ? text : `${text}\n\n${OPT_OUT_LINE}`;
-    }
-
-    // معاينة بشكل رسالة واتساب، مع بطاقة الرابط (صورة المنتج) كما تظهر عند العميل
-    function waBubble(text, st) {
-        const p = st.product;
-        const img = p ? (ATHR.thumb(p.image_url, "m") || asset(p.image_url)) : asset("images/logo2.jpeg");
-        const html = esc(text)
-            .replace(/\*([^*\n]+)\*/g, "<b>$1</b>")
-            .replace(/(https?:\/\/[^\s<]+)/g, (u) => {
-                let shown = u;
-                try { shown = esc(decodeURI(u.replace(/&amp;/g, "&"))); } catch { /* keep */ }
-                return `<span class="wa-url" dir="ltr">${shown}</span>`;
-            });
-        const now = new Date();
-        return `<div class="wa-chat"><div class="wa-bubble">
-            <div class="wa-card"><img src="${esc(img)}" alt=""><div><b>${esc(p ? p.name : ATHR.storeName(cfg()))}</b><small dir="ltr">${esc(location.host)}</small></div></div>
-            <div class="wa-text">${html}</div>
-            <span class="wa-time">${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")} ✓✓</span>
-        </div></div>`;
-    }
-
-    function offerSheetHead(title) {
-        return `<div class="adm-sheet-head"><h2>${title}</h2><button class="adm-icon" type="button" data-a="orders-sheet-close" aria-label="إغلاق">×</button></div>`;
-    }
-
-    function offerProductItems(st) {
-        const q = st.q.trim().toLowerCase();
-        const list = offerProducts().filter((p) => !q || p.name.toLowerCase().includes(q));
-        return list.map((p) => `<button type="button" class="op-item" data-offer-product="${esc(p.id)}">
-            <img src="${esc(ATHR.thumb(p.image_url, "s") || asset(p.image_url))}" alt="" loading="lazy">
-            <span class="op-info"><b>${esc(p.name)}</b><small>${money(p.price)}${p.pct ? ` <s>${money(p.old_price)}</s>` : ""}</small></span>
-            ${p.pct ? `<span class="tag sale">خصم ${p.pct}%</span>` : p.is_best_seller ? `<span class="tag">🔥 الأكثر طلباً</span>` : ""}
-        </button>`).join("") || `<div class="adm-empty">لا توجد منتجات مطابقة.</div>`;
-    }
-
-    function renderOffer({ keepScroll = false } = {}) {
-        const st = A.offer;
-        if (!st) return;
-        const prevScroll = keepScroll ? ($("#admSheet .adm-sheet-panel") || {}).scrollTop || 0 : 0;
-        const single = st.single ? A.customers.find((c) => c.phone === st.single) : null;
-        const who = single ? ` لـ${esc(String(single.name || "العميل").split(" ")[0])}` : "";
-
-        if (st.step === "pick") {
-            const discounted = offerProducts().filter((p) => p.pct).length;
-            openOrderSheet(`${offerSheetHead(`📣 أرسل عرضاً${who}`)}
+${ni}`}function Dt(t,e){const a=e.product,s=a?ATHR.thumb(a.image_url,"m")||st(a.image_url):st("images/logo2.jpeg"),n=d(t).replace(/\*([^*\n]+)\*/g,"<b>$1</b>").replace(/(https?:\/\/[^\s<]+)/g,r=>{let l=r;try{l=d(decodeURI(r.replace(/&amp;/g,"&")))}catch{}return`<span class="wa-url" dir="ltr">${l}</span>`}),o=new Date;return`<div class="wa-chat"><div class="wa-bubble">
+            <div class="wa-card"><img src="${d(s)}" alt=""><div><b>${d(a?a.name:ATHR.storeName($()))}</b><small dir="ltr">${d(location.host)}</small></div></div>
+            <div class="wa-text">${n}</div>
+            <span class="wa-time">${String(o.getHours()).padStart(2,"0")}:${String(o.getMinutes()).padStart(2,"0")} ✓✓</span>
+        </div></div>`}function It(t){return`<div class="adm-sheet-head"><h2>${t}</h2><button class="adm-icon" type="button" data-a="orders-sheet-close" aria-label="إغلاق">×</button></div>`}function nn(t){const e=t.q.trim().toLowerCase();return qe().filter(s=>!e||s.name.toLowerCase().includes(e)).map(s=>`<button type="button" class="op-item" data-offer-product="${d(s.id)}">
+            <img src="${d(ATHR.thumb(s.image_url,"s")||st(s.image_url))}" alt="" loading="lazy">
+            <span class="op-info"><b>${d(s.name)}</b><small>${x(s.price)}${s.pct?` <s>${x(s.old_price)}</s>`:""}</small></span>
+            ${s.pct?`<span class="tag sale">خصم ${s.pct}%</span>`:s.is_best_seller?'<span class="tag">🔥 الأكثر طلباً</span>':""}
+        </button>`).join("")||'<div class="adm-empty">لا توجد منتجات مطابقة.</div>'}function ut({keepScroll:t=!1}={}){const e=i.offer;if(!e)return;const a=t&&(b("#admSheet .adm-sheet-panel")||{}).scrollTop||0,s=e.single?i.customers.find(r=>r.phone===e.single):null,n=s?` لـ${d(String(s.name||"العميل").split(" ")[0])}`:"";if(e.step==="pick"){const r=qe().filter(l=>l.pct).length;Tt(`${It(`📣 أرسل عرضاً${n}`)}
                 <div class="af-stack">
-                    <p class="adm-sentence">اختر المنتج الذي تريد ترويجه، ونجهّز لك رسالة جذابة ورابطاً خاصاً لكل عميل.${discounted ? "" : " 💡 لا يوجد منتج عليه خصم الآن: تقدر تضيف الخصم من لوحة التحكم ← المنتجات ← «الخصم %»."}</p>
+                    <p class="adm-sentence">اختر المنتج الذي تريد ترويجه، ونجهّز لك رسالة جذابة ورابطاً خاصاً لكل عميل.${r?"":" 💡 لا يوجد منتج عليه خصم الآن: تقدر تضيف الخصم من لوحة التحكم ← المنتجات ← «الخصم %»."}</p>
                     <button type="button" class="op-general" data-a="offer-general"><span aria-hidden="true">📣</span><span><b>رسالة عامة بدون منتج</b><small>تصاميم جديدة، خصم عام، اشتقنا لك، عرض العيد…</small></span></button>
-                    <input class="ai" type="search" id="offerProdQ" placeholder="ابحث عن منتج" value="${esc(st.q)}">
-                    <div class="op-list" id="opList">${offerProductItems(st)}</div>
-                </div>`);
-            return;
-        }
-
-        if (st.step === "compose") {
-            const p = st.product;
-            const targets = offerTargets(st);
-            const sample = targets[0] || single || { name: "أحمد" };
-            const tpls = p ? PRODUCT_OFFERS : OFFER_TEMPLATES;
-            const recentSkipped = st.single ? 0 : A.customers.filter((c) => c.marketing && (KIND_TEST[st.audience] || KIND_TEST.marketing)(c) && recentOffer(c)).length;
-            openOrderSheet(`${offerSheetHead(`📣 ${p ? "عرض على منتج" : "رسالة عامة"}${who}`)}
+                    <input class="ai" type="search" id="offerProdQ" placeholder="ابحث عن منتج" value="${d(e.q)}">
+                    <div class="op-list" id="opList">${nn(e)}</div>
+                </div>`);return}if(e.step==="compose"){const r=e.product,l=La(e),c=l[0]||s||{name:"أحمد"},p=r?be:he,u=e.single?0:i.customers.filter(m=>m.marketing&&(Yt[e.audience]||Yt.marketing)(m)&&je(m)).length;Tt(`${It(`📣 ${r?"عرض على منتج":"رسالة عامة"}${n}`)}
                 <div class="af-stack offer-compose">
-                    ${p ? `<div class="op-chosen">
-                        <img src="${esc(ATHR.thumb(p.image_url, "s") || asset(p.image_url))}" alt="">
-                        <span class="op-info"><b>${esc(p.name)}</b><small>${money(p.price)}${p.pct ? ` <s>${money(p.old_price)}</s> <span class="tag sale">خصم ${p.pct}%</span>` : ""}</small></span>
+                    ${r?`<div class="op-chosen">
+                        <img src="${d(ATHR.thumb(r.image_url,"s")||st(r.image_url))}" alt="">
+                        <span class="op-info"><b>${d(r.name)}</b><small>${x(r.price)}${r.pct?` <s>${x(r.old_price)}</s> <span class="tag sale">خصم ${r.pct}%</span>`:""}</small></span>
                         <button class="ab-mini" type="button" data-a="offer-back">تغيير</button>
                     </div>
-                    ${p.pct ? "" : `<p class="adm-note">💡 هذا المنتج بدون خصم، فتُحذف أسطر الخصم من الرسالة تلقائياً. لإضافة خصم: لوحة التحكم ← المنتجات ← «الخصم %» ثم انشر.</p>`}` : `<button class="ab-mini" type="button" data-a="offer-back">← اختيار منتج بدلاً من ذلك</button>`}
-                    <div class="af"><span>أسلوب الرسالة</span><div class="pct-chips">${tpls.map(([label], i) => `<button type="button" class="ab-mini${st.tpl === i ? " on" : ""}" data-offer-tpl="${i}" aria-pressed="${st.tpl === i}">${esc(label)}</button>`).join("")}</div></div>
+                    ${r.pct?"":'<p class="adm-note">💡 هذا المنتج بدون خصم، فتُحذف أسطر الخصم من الرسالة تلقائياً. لإضافة خصم: لوحة التحكم ← المنتجات ← «الخصم %» ثم انشر.</p>'}`:'<button class="ab-mini" type="button" data-a="offer-back">← اختيار منتج بدلاً من ذلك</button>'}
+                    <div class="af"><span>أسلوب الرسالة</span><div class="pct-chips">${p.map(([m],h)=>`<button type="button" class="ab-mini${e.tpl===h?" on":""}" data-offer-tpl="${h}" aria-pressed="${e.tpl===h}">${d(m)}</button>`).join("")}</div></div>
                     <button class="ab ab-soft ab-sm ai-btn" type="button" data-a="offer-ai">✨ اكتب رسالة بالذكاء الاصطناعي</button>
-                    <label class="af"><span>نص الرسالة (تقدر تعدّله)</span><textarea class="ai" id="offerText" rows="9">${esc(st.text)}</textarea>
+                    <label class="af"><span>نص الرسالة (تقدر تعدّله)</span><textarea class="ai" id="offerText" rows="9">${d(e.text)}</textarea>
                         <small>{name} اسم العميل · {product} المنتج · {price} السعر · {old} السعر قبل الخصم · {pct} نسبة الخصم · {save} التوفير · {ends} انتهاء العرض · {link} الرابط الخاص. السطر الذي معلومته غير موجودة يُحذف تلقائياً، ويُضاف سطر «لإيقاف العروض».</small></label>
-                    ${p ? `<div class="af"><span>⏳ مدة العرض <small class="adm-muted">(عدّاد تنازلي يظهر للعميل في صفحة المنتج)</small></span><div class="pct-chips">${OFFER_ENDS.map(([h, l]) => `<button type="button" class="ab-mini${st.hours === h ? " on" : ""}" data-offer-ends="${h}" aria-pressed="${st.hours === h}">${l}</button>`).join("")}</div></div>` : ""}
-                    ${st.single ? (single && recentOffer(single) ? `<p class="adm-note">وصله عرض ${esc(sinceText(single.last_offer_at))}. لا تكثر عليه حتى لا ينزعج.</p>` : "") : `<div class="af"><span>👥 لمن ترسل؟</span><div class="pct-chips">${OFFER_AUDIENCE.map(([k, l]) => {
-                        const n = A.customers.filter((c) => c.marketing && KIND_TEST[k](c) && !(st.skipRecent && recentOffer(c))).length;
-                        return `<button type="button" class="ab-mini${st.audience === k ? " on" : ""}" data-offer-aud="${k}" aria-pressed="${st.audience === k}">${l} (${n})</button>`;
-                    }).join("")}</div></div>
-                    <label class="at"><input type="checkbox" id="offerSkip"${st.skipRecent ? " checked" : ""}><span class="at-ui" aria-hidden="true"></span><span class="at-text"><b>تخطَّ من وصله عرض خلال آخر 3 أيام</b><small>${recentSkipped ? `${recentSkipped} عميل وصلهم عرض قريباً. ` : ""}حتى لا يشعر العميل بالإزعاج ويحظر الرقم.</small></span></label>`}
-                    <div class="af"><span>👀 هكذا تصل الرسالة لـ${esc(String(sample.name || "العميل").split(" ")[0])}</span><div id="offerPreview">${waBubble(offerText(st, sample), st)}</div></div>
-                    <button class="ab ab-primary ab-block" type="button" data-a="offer-start"${targets.length ? "" : " disabled"}>${targets.length ? `ابدأ الإرسال ${targets.length === 1 ? `لـ${esc(String(targets[0].name || "العميل").split(" ")[0])}` : `(${targets.length} عميل)`}` : "لا يوجد عملاء في هذا الاختيار"}</button>
+                    ${r?`<div class="af"><span>⏳ مدة العرض <small class="adm-muted">(عدّاد تنازلي يظهر للعميل في صفحة المنتج)</small></span><div class="pct-chips">${en.map(([m,h])=>`<button type="button" class="ab-mini${e.hours===m?" on":""}" data-offer-ends="${m}" aria-pressed="${e.hours===m}">${h}</button>`).join("")}</div></div>`:""}
+                    ${e.single?s&&je(s)?`<p class="adm-note">وصله عرض ${d(Xt(s.last_offer_at))}. لا تكثر عليه حتى لا ينزعج.</p>`:"":`<div class="af"><span>👥 لمن ترسل؟</span><div class="pct-chips">${oi.map(([m,h])=>{const M=i.customers.filter(L=>L.marketing&&Yt[m](L)&&!(e.skipRecent&&je(L))).length;return`<button type="button" class="ab-mini${e.audience===m?" on":""}" data-offer-aud="${m}" aria-pressed="${e.audience===m}">${h} (${M})</button>`}).join("")}</div></div>
+                    <label class="at"><input type="checkbox" id="offerSkip"${e.skipRecent?" checked":""}><span class="at-ui" aria-hidden="true"></span><span class="at-text"><b>تخطَّ من وصله عرض خلال آخر 3 أيام</b><small>${u?`${u} عميل وصلهم عرض قريباً. `:""}حتى لا يشعر العميل بالإزعاج ويحظر الرقم.</small></span></label>`}
+                    <div class="af"><span>👀 هكذا تصل الرسالة لـ${d(String(c.name||"العميل").split(" ")[0])}</span><div id="offerPreview">${Dt(ye(e,c),e)}</div></div>
+                    <button class="ab ab-primary ab-block" type="button" data-a="offer-start"${l.length?"":" disabled"}>${l.length?`ابدأ الإرسال ${l.length===1?`لـ${d(String(l[0].name||"العميل").split(" ")[0])}`:`(${l.length} عميل)`}`:"لا يوجد عملاء في هذا الاختيار"}</button>
                     <button class="ab ab-ghost ab-block" type="button" data-a="offer-copy">📋 نسخ الرسالة لحالة واتساب أو قائمة البث</button>
                     <p class="adm-muted">واتساب لا يسمح بالإرسال الجماعي التلقائي، لذلك تضغط «أرسل» لكل عميل وننقلك للتالي تلقائياً. كل عميل يصله رابط باسمه يفتح له العرض الخاص.</p>
-                </div>`);
-            if (prevScroll) $("#admSheet .adm-sheet-panel").scrollTop = prevScroll;
-            return;
-        }
-
-        const c = st.targets[st.i];
-        if (!c) {
-            openOrderSheet(`${offerSheetHead("تم ✅")}
+                </div>`),a&&(b("#admSheet .adm-sheet-panel").scrollTop=a);return}const o=e.targets[e.i];if(!o){Tt(`${It("تم ✅")}
                 <div class="af-stack">
-                    <div class="offer-done"><span aria-hidden="true">🎉</span><p class="adm-sentence">أرسلت العرض لـ <b>${st.sent}</b> عميل من ${st.targets.length}.</p></div>
+                    <div class="offer-done"><span aria-hidden="true">🎉</span><p class="adm-sentence">أرسلت العرض لـ <b>${e.sent}</b> عميل من ${e.targets.length}.</p></div>
                     <p class="adm-muted">📈 تابع النتائج في خانة العملاء: كم شخص فتح الرابط، وكم طلب جاء من العروض.</p>
                     <button class="ab ab-primary ab-block" type="button" data-a="orders-sheet-close">إغلاق</button>
-                </div>`);
-            renderCustomers();
-            return;
-        }
-        openOrderSheet(`${offerSheetHead("📣 إرسال العرض")}
+                </div>`),gt();return}Tt(`${It("📣 إرسال العرض")}
             <div class="af-stack offer-run">
-                <div class="offer-progress"><span style="width:${Math.round((st.i / st.targets.length) * 100)}%"></span></div>
-                <p class="adm-muted">العميل ${st.i + 1} من ${st.targets.length} · أُرسل ${st.sent}</p>
-                <div class="offer-who"><b>${esc(c.name || "بدون اسم")}${custTags(c).map(([k, l]) => ` <span class="ctag ${k}">${l}</span>`).join("")}</b><span dir="ltr">+${esc(c.phone)}</span></div>
-                ${waBubble(offerText(st, c), st)}
-                <button class="ab ab-primary ab-block offer-send" type="button" data-a="offer-send">${ATHR.views.waIcon()}أرسل لـ${esc(String(c.name || "العميل").split(" ")[0])} في واتساب</button>
+                <div class="offer-progress"><span style="width:${Math.round(e.i/e.targets.length*100)}%"></span></div>
+                <p class="adm-muted">العميل ${e.i+1} من ${e.targets.length} · أُرسل ${e.sent}</p>
+                <div class="offer-who"><b>${d(o.name||"بدون اسم")}${$e(o).map(([r,l])=>` <span class="ctag ${r}">${l}</span>`).join("")}</b><span dir="ltr">+${d(o.phone)}</span></div>
+                ${Dt(ye(e,o),e)}
+                <button class="ab ab-primary ab-block offer-send" type="button" data-a="offer-send">${ATHR.views.waIcon()}أرسل لـ${d(String(o.name||"العميل").split(" ")[0])} في واتساب</button>
                 <div class="inline"><button class="ab-mini" type="button" data-a="offer-skip">تخطي</button><button class="ab-mini" type="button" data-a="offer-stop">إيقاف</button></div>
-            </div>`);
-    }
-
-    function refreshOfferPreview() {
-        const st = A.offer;
-        const box = $("#offerPreview");
-        if (!st || !box) return;
-        const targets = offerTargets(st);
-        const single = st.single ? A.customers.find((c) => c.phone === st.single) : null;
-        box.innerHTML = waBubble(offerText(st, targets[0] || single || { name: "أحمد" }), st);
-    }
-
-    async function offerSend() {
-        const st = A.offer;
-        const c = st && st.targets[st.i];
-        if (!c) return;
-        window.open(ATHR.waLink(custWa(c), offerText(st, c)), "_blank", "noopener");
-        st.sent++;
-        st.i++;
-        const at = new Date().toISOString();
-        c.last_offer_at = at;
-        sb.from("customers").update({ last_offer_at: at }).eq("phone", c.phone).then(() => {}, () => {});
-        renderOffer();
-    }
-
-    function customersCsv() {
-        const rows = [["الاسم", "الرقم", "الدولة", "عدد الطلبات", "المجموع", "أول طلب", "آخر طلب", "يقبل العروض", "التصنيف"]];
-        filteredCustomers().forEach((c) => rows.push([c.name || "", `+${c.phone}`, c.country || "", c.orders_count, Number(c.total_spent).toFixed(3), (c.first_order_at || "").slice(0, 10), (c.last_order_at || "").slice(0, 10), c.marketing ? "نعم" : "لا", custTags(c).map((x) => x[1]).join(" ")]));
-        const csv = "﻿" + rows.map((r) => r.map((x) => `"${String(x).replace(/"/g, '""')}"`).join(",")).join("\n");
-        const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `huroof-customers-${new Date().toISOString().slice(0, 10)}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 2000);
-    }
-
-    async function toggleMarketing(phone) {
-        const c = A.customers.find((x) => x.phone === phone);
-        if (!c) return;
-        c.marketing = !c.marketing;
-        renderCustomers();
-        const { error } = await sb.from("customers").update({ marketing: c.marketing }).eq("phone", phone);
-        if (error) {
-            c.marketing = !c.marketing;
-            renderCustomers();
-            toast("تعذر الحفظ. تأكد من الإنترنت.");
-        } else toast(c.marketing ? "سيستقبل العروض" : "لن يستقبل العروض");
-    }
-
-    // أزرار الاستوديو والاختيارات داخل الورقة
-    function offerOptionClick(d) {
-        const st = A.offer;
-        if (d.custOffer) { openOffer(d.custOffer); return true; }
-        if (!st) return false;
-        if (d.offerProduct) { offerChoose(d.offerProduct); return true; }
-        if (d.offerTpl !== undefined) {
-            const tpls = st.product ? PRODUCT_OFFERS : OFFER_TEMPLATES;
-            const tpl = tpls[Number(d.offerTpl)];
-            if (tpl) {
-                st.tpl = Number(d.offerTpl);
-                st.text = tpl[1];
-                saveOfferPref(st);
-                renderOffer({ keepScroll: true });
-            }
-            return true;
-        }
-        if (d.offerEnds !== undefined) { st.hours = Number(d.offerEnds); saveOfferPref(st); renderOffer({ keepScroll: true }); return true; }
-        if (d.offerAud) { st.audience = d.offerAud; renderOffer({ keepScroll: true }); return true; }
-        return false;
-    }
-
-    async function customersClick(d) {
-        const st = A.offer;
-        switch (d.a) {
-            case "offer-open": openOffer(); return true;
-            case "offer-general": offerChoose(null); return true;
-            case "offer-back": st.step = "pick"; st.product = null; renderOffer(); return true;
-            case "offer-start":
-                st.targets = offerTargets(st);
-                st.endsAt = st.product && st.hours ? Date.now() + st.hours * 36e5 : 0;
-                st.i = 0;
-                st.sent = 0;
-                st.step = "run";
-                saveOfferPref(st);
-                renderOffer();
-                return true;
-            case "offer-copy":
-                if (!st) return true;
-                st.endsAt = st.endsAt || (st.product && st.hours ? Date.now() + st.hours * 36e5 : 0);
-                ATHR.store.copyText(offerText(st, null, { broadcast: true }), "نُسخت الرسالة ✓ الصقها في حالة واتساب أو قائمة البث");
-                return true;
-            case "offer-send": await offerSend(); return true;
-            case "offer-skip": st.i++; renderOffer(); return true;
-            case "offer-stop": st.i = st.targets.length; renderOffer(); return true;
-            case "cust-copy": {
-                const list = filteredCustomers().filter((c) => c.marketing);
-                ATHR.store.copyText(list.map((c) => `+${c.phone}`).join("\n"), `نُسخت ${list.length} أرقام`);
-                return true;
-            }
-            case "cust-csv": customersCsv(); return true;
-            default: return false;
-        }
-    }
-
-    // ---------- reviews ----------
-
-    async function loadReviews() {
-        const { data, error } = await sb.from("reviews").select("*").order("created_at", { ascending: false }).limit(500);
-        if (error) throw error;
-        A.reviews = data || [];
-        A.reviewsLoaded = true;
-    }
-
-    async function renderReviews() {
-        const body = $("#ordersBody");
-        if (!body) return;
-        if (!A.reviewsLoaded) {
-            body.innerHTML = `<div class="adm-loading">جاري تحميل التقييمات...</div>`;
-            try { await loadReviews(); } catch { body.innerHTML = `<div class="adm-empty">تعذر تحميل التقييمات. تأكد من الإنترنت.</div>`; return; }
-            if (A.book !== "reviews") return;
-        }
-        const productName = (id) => {
-            const p = (A.server ? A.server.products : []).find((x) => x.id === id);
-            return p ? ATHR.productLabel(p, cfg()) : "";
-        };
-        const order = { pending: 0, approved: 1, rejected: 2 };
-        const list = A.reviews.slice().sort((a, b) => (order[a.status] - order[b.status]) || String(b.created_at).localeCompare(String(a.created_at)));
-        const label = { pending: "بانتظار موافقتك", approved: "ظاهر في المتجر", rejected: "مخفي" };
-        body.innerHTML = `<p class="adm-note">التقييمات التي يرسلها الزبائن من صفحة «قيّم تجربتك» تظهر هنا، ولا تظهر في المتجر حتى توافق عليها. أرسل رابط التقييم للزبون من زر «اطلب تقييم» في بطاقة الطلب بعد التسليم.</p>`
-            + (list.length ? list.map((r) => `<article class="oc rv ${r.status}">
+            </div>`)}function ui(){const t=i.offer,e=b("#offerPreview");if(!t||!e)return;const a=La(t),s=t.single?i.customers.find(n=>n.phone===t.single):null;e.innerHTML=Dt(ye(t,a[0]||s||{name:"أحمد"}),t)}async function pi(){const t=i.offer,e=t&&t.targets[t.i];if(!e)return;window.open(ATHR.waLink(Ma(e),ye(t,e)),"_blank","noopener"),t.sent++,t.i++;const a=new Date().toISOString();e.last_offer_at=a,_.from("customers").update({last_offer_at:a}).eq("phone",e.phone).then(()=>{},()=>{}),ut()}function mi(){const t=[["الاسم","الرقم","الدولة","عدد الطلبات","المجموع","أول طلب","آخر طلب","يقبل العروض","التصنيف"]];Na().forEach(n=>t.push([n.name||"",`+${n.phone}`,n.country||"",n.orders_count,Number(n.total_spent).toFixed(3),(n.first_order_at||"").slice(0,10),(n.last_order_at||"").slice(0,10),n.marketing?"نعم":"لا",$e(n).map(o=>o[1]).join(" ")]));const e="\uFEFF"+t.map(n=>n.map(o=>`"${String(o).replace(/"/g,'""')}"`).join(",")).join(`
+`),a=URL.createObjectURL(new Blob([e],{type:"text/csv;charset=utf-8"})),s=document.createElement("a");s.href=a,s.download=`huroof-customers-${new Date().toISOString().slice(0,10)}.csv`,document.body.appendChild(s),s.click(),s.remove(),setTimeout(()=>URL.revokeObjectURL(a),2e3)}async function fi(t){const e=i.customers.find(s=>s.phone===t);if(!e)return;e.marketing=!e.marketing,gt();const{error:a}=await _.from("customers").update({marketing:e.marketing}).eq("phone",t);a?(e.marketing=!e.marketing,gt(),y("تعذر الحفظ. تأكد من الإنترنت.")):y(e.marketing?"سيستقبل العروض":"لن يستقبل العروض")}function bi(t){const e=i.offer;if(t.custOffer)return Ca(t.custOffer),!0;if(!e)return!1;if(t.offerProduct)return Oa(t.offerProduct),!0;if(t.offerTpl!==void 0){const s=(e.product?be:he)[Number(t.offerTpl)];return s&&(e.tpl=Number(t.offerTpl),e.text=s[1],Be(e),ut({keepScroll:!0})),!0}return t.offerEnds!==void 0?(e.hours=Number(t.offerEnds),Be(e),ut({keepScroll:!0}),!0):t.offerAud?(e.audience=t.offerAud,ut({keepScroll:!0}),!0):!1}async function hi(t){const e=i.offer;switch(t.a){case"offer-open":return Ca(),!0;case"offer-general":return Oa(null),!0;case"offer-back":return e.step="pick",e.product=null,ut(),!0;case"offer-start":return e.targets=La(e),e.endsAt=e.product&&e.hours?Date.now()+e.hours*36e5:0,e.i=0,e.sent=0,e.step="run",Be(e),ut(),!0;case"offer-copy":return e&&(e.endsAt=e.endsAt||(e.product&&e.hours?Date.now()+e.hours*36e5:0),ATHR.store.copyText(ye(e,null,{broadcast:!0}),"نُسخت الرسالة ✓ الصقها في حالة واتساب أو قائمة البث")),!0;case"offer-send":return await pi(),!0;case"offer-skip":return e.i++,ut(),!0;case"offer-stop":return e.i=e.targets.length,ut(),!0;case"cust-copy":{const a=Na().filter(s=>s.marketing);return ATHR.store.copyText(a.map(s=>`+${s.phone}`).join(`
+`),`نُسخت ${a.length} أرقام`),!0}case"cust-csv":return mi(),!0;default:return!1}}async function on(){const{data:t,error:e}=await _.from("reviews").select("*").order("created_at",{ascending:!1}).limit(500);if(e)throw e;i.reviews=t||[],i.reviewsLoaded=!0}async function gi(){const t=b("#ordersBody");if(!t)return;if(!i.reviewsLoaded){t.innerHTML='<div class="adm-loading">جاري تحميل التقييمات...</div>';try{await on()}catch{t.innerHTML='<div class="adm-empty">تعذر تحميل التقييمات. تأكد من الإنترنت.</div>';return}if(i.book!=="reviews")return}const e=o=>{const r=(i.server?i.server.products:[]).find(l=>l.id===o);return r?ATHR.productLabel(r,$()):""},a={pending:0,approved:1,rejected:2},s=i.reviews.slice().sort((o,r)=>a[o.status]-a[r.status]||String(r.created_at).localeCompare(String(o.created_at))),n={pending:"بانتظار موافقتك",approved:"ظاهر في المتجر",rejected:"مخفي"};t.innerHTML='<p class="adm-note">التقييمات التي يرسلها الزبائن من صفحة «قيّم تجربتك» تظهر هنا، ولا تظهر في المتجر حتى توافق عليها. أرسل رابط التقييم للزبون من زر «اطلب تقييم» في بطاقة الطلب بعد التسليم.</p>'+(s.length?s.map(o=>`<article class="oc rv ${o.status}">
                 <header class="oc-head">
-                    <div><b>${esc(r.name)}</b> <span class="stars-txt" aria-label="${r.rating} من 5">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</span></div>
-                    <span class="tag">${label[r.status] || r.status}</span>
+                    <div><b>${d(o.name)}</b> <span class="stars-txt" aria-label="${o.rating} من 5">${"★".repeat(o.rating)}${"☆".repeat(5-o.rating)}</span></div>
+                    <span class="tag">${n[o.status]||o.status}</span>
                 </header>
-                <p class="rv-text">${esc(r.text)}</p>
-                <p class="adm-muted oc-when">${r.verified ? `<b class="rv-ok">✓ مشتري موثّق</b> · ` : ""}${r.product_id ? `${esc(productName(r.product_id) || "منتج محذوف")} · ` : "تقييم عام للمتجر · "}${r.order_no ? `طلب ${esc(r.order_no)} · ` : ""}${esc(ATHR.muscatParts(r.created_at).date)}</p>
+                <p class="rv-text">${d(o.text)}</p>
+                <p class="adm-muted oc-when">${o.verified?'<b class="rv-ok">✓ مشتري موثّق</b> · ':""}${o.product_id?`${d(e(o.product_id)||"منتج محذوف")} · `:"تقييم عام للمتجر · "}${o.order_no?`طلب ${d(o.order_no)} · `:""}${d(ATHR.muscatParts(o.created_at).date)}</p>
                 <div class="oc-actions">
-                    ${r.status !== "approved" ? `<button type="button" class="ab-mini ok" data-review-set="${esc(r.id)}" data-value="approved">إظهار في المتجر</button>` : ""}
-                    ${r.status !== "rejected" ? `<button type="button" class="ab-mini" data-review-set="${esc(r.id)}" data-value="rejected">إخفاء</button>` : ""}
-                    <button type="button" class="ab-mini danger" data-review-del="${esc(r.id)}">حذف</button>
+                    ${o.status!=="approved"?`<button type="button" class="ab-mini ok" data-review-set="${d(o.id)}" data-value="approved">إظهار في المتجر</button>`:""}
+                    ${o.status!=="rejected"?`<button type="button" class="ab-mini" data-review-set="${d(o.id)}" data-value="rejected">إخفاء</button>`:""}
+                    <button type="button" class="ab-mini danger" data-review-del="${d(o.id)}">حذف</button>
                 </div>
-            </article>`).join("") : `<div class="adm-empty">لا توجد تقييمات بعد.</div>`);
-    }
-
-    async function setReviewStatus(id, status) {
-        const r = A.reviews.find((x) => x.id === id);
-        if (!r) return;
-        const { error } = await sb.from("reviews").update({ status }).eq("id", id);
-        if (error) { toast("تعذر الحفظ. تأكد من الإنترنت."); return; }
-        r.status = status;
-        toast(status === "approved" ? "ظهر التقييم في المتجر" : "أُخفي التقييم");
-        renderBook();
-        ATHR.store.reload().catch(() => {});
-    }
-
-    async function deleteReview(id) {
-        if (!confirm("حذف هذا التقييم نهائياً؟")) return;
-        const { error } = await sb.from("reviews").delete().eq("id", id);
-        if (error) { toast("تعذر الحذف."); return; }
-        A.reviews = A.reviews.filter((x) => x.id !== id);
-        toast("حُذف التقييم");
-        renderBook();
-        ATHR.store.reload().catch(() => {});
-    }
-
-    function reviewRequestText(o) {
-        const first = (o.items || []).find((it) => it.id);
-        const p = first && A.server ? A.server.products.find((x) => x.id === first.id) : null;
-        const query = [`o=${encodeURIComponent(o.order_no)}`, p && p.slug ? `p=${encodeURIComponent(p.slug)}` : ""].filter(Boolean).join("&");
-        const link = siteLink(ATHR.url.page("review", query));
-        return ATHR.fill(cfg().sales.review_request_msg, cfg(), { client: (o.customer_name || "").split(" ")[0], link });
-    }
-
-    // ---------- performance ----------
-
-    async function renderStats() {
-        const body = $("#ordersBody");
-        if (!body) return;
-        const days = A.statsDays;
-        const since = new Date(Date.now() - (days - 1) * 864e5 + 4 * 3600e3).toISOString().slice(0, 10);
-        body.innerHTML = `<div class="adm-loading">جاري حساب الأداء...</div>`;
-        let rows = [];
-        try {
-            const { data, error } = await sb.from("stats_daily").select("day,key,n").gte("day", since).limit(5000);
-            if (error) throw error;
-            rows = data || [];
-        } catch {
-            body.innerHTML = `<div class="adm-empty">تعذر تحميل الأرقام. تأكد من الإنترنت.</div>`;
-            return;
-        }
-        if (A.book !== "stats" || A.statsDays !== days) return;
-        const sum = (key) => rows.filter((r) => r.key === key).reduce((s2, r) => s2 + Number(r.n || 0), 0);
-        const visits = sum("visit");
-        const views = sum("view");
-        const adds = sum("add");
-        const checkouts = sum("checkout");
-        const sinceTime = new Date(`${since}T00:00:00+04:00`).getTime();
-        const inRange = A.orders.filter((o) => !o.hidden && new Date(o.ordered_at).getTime() >= sinceTime);
-        const web = inRange.filter((o) => o.source === "web");
-        const revenue = (list) => list.reduce((s2, o) => s2 + Number(o.total || 0), 0);
-        const aov = (list) => (list.length ? revenue(list) / list.length : 0);
-        const pct = (a, b) => (b > 0 ? `${Math.round((a / b) * 1000) / 10}%` : "—");
-        const step = (label, n, base) => `<div class="fn-row"><span>${label}</span><div class="fn-bar"><i style="width:${base > 0 ? Math.max(2, Math.round((n / base) * 100)) : 0}%"></i></div><b>${n}</b><small>${base > 0 && n !== base ? pct(n, base) : ""}</small></div>`;
-
-        const channels = Object.keys(CHANNELS).map((k) => ({
-            k,
-            visits: sum(`visit:${k}`),
-            orders: web.filter((o) => (o.channel || "direct") === k).length,
-            revenue: revenue(web.filter((o) => (o.channel || "direct") === k))
-        })).filter((c) => c.visits || c.orders).sort((a, b) => b.visits - a.visits || b.orders - a.orders);
-
-        const counts = new Map();
-        inRange.forEach((o) => (o.items || []).forEach((it) => {
-            const key = it.label || it.name;
-            if (!key) return;
-            const cur = counts.get(key) || { qty: 0, total: 0 };
-            cur.qty += Number(it.qty) || 0;
-            cur.total += Number(it.total) || 0;
-            counts.set(key, cur);
-        }));
-        const top = Array.from(counts.entries()).sort((a, b) => b[1].qty - a[1].qty).slice(0, 8);
-        const discounts = web.filter((o) => Number(o.discount) > 0).length;
-        const gifts = web.filter((o) => o.gift).length;
-        const countries = new Map();
-        web.forEach((o) => countries.set(o.country || "OM", (countries.get(o.country || "OM") || 0) + 1));
-
-        body.innerHTML = `
-            <div class="seg" role="group" aria-label="المدة">${[[7, "7 أيام"], [30, "30 يوماً"], [90, "90 يوماً"]].map(([d, l]) => `<button type="button" data-days="${d}" aria-pressed="${days === d}">${l}</button>`).join("")}</div>
+            </article>`).join(""):'<div class="adm-empty">لا توجد تقييمات بعد.</div>')}async function $i(t,e){const a=i.reviews.find(n=>n.id===t);if(!a)return;const{error:s}=await _.from("reviews").update({status:e}).eq("id",t);if(s){y("تعذر الحفظ. تأكد من الإنترنت.");return}a.status=e,y(e==="approved"?"ظهر التقييم في المتجر":"أُخفي التقييم"),fe(),ATHR.store.reload().catch(()=>{})}async function yi(t){if(!confirm("حذف هذا التقييم نهائياً؟"))return;const{error:e}=await _.from("reviews").delete().eq("id",t);if(e){y("تعذر الحذف.");return}i.reviews=i.reviews.filter(a=>a.id!==t),y("حُذف التقييم"),fe(),ATHR.store.reload().catch(()=>{})}function vi(t){const e=(t.items||[]).find(o=>o.id),a=e&&i.server?i.server.products.find(o=>o.id===e.id):null,s=[`o=${encodeURIComponent(t.order_no)}`,a&&a.slug?`p=${encodeURIComponent(a.slug)}`:""].filter(Boolean).join("&"),n=Y(ATHR.url.page("review",s));return ATHR.fill($().sales.review_request_msg,$(),{client:(t.customer_name||"").split(" ")[0],link:n})}async function wi(){const t=b("#ordersBody");if(!t)return;const e=i.statsDays,a=new Date(Date.now()-(e-1)*864e5+4*36e5).toISOString().slice(0,10);t.innerHTML='<div class="adm-loading">جاري حساب الأداء...</div>';let s=[];try{const{data:v,error:f}=await _.from("stats_daily").select("day,key,n").gte("day",a).limit(5e3);if(f)throw f;s=v||[]}catch{t.innerHTML='<div class="adm-empty">تعذر تحميل الأرقام. تأكد من الإنترنت.</div>';return}if(i.book!=="stats"||i.statsDays!==e)return;const n=v=>s.filter(f=>f.key===v).reduce((f,w)=>f+Number(w.n||0),0),o=n("visit"),r=n("view"),l=n("add"),c=n("checkout"),p=new Date(`${a}T00:00:00+04:00`).getTime(),u=i.orders.filter(v=>!v.hidden&&new Date(v.ordered_at).getTime()>=p),m=u.filter(v=>v.source==="web"),h=v=>v.reduce((f,w)=>f+Number(w.total||0),0),M=v=>v.length?h(v)/v.length:0,L=(v,f)=>f>0?`${Math.round(v/f*1e3)/10}%`:"—",S=(v,f,w)=>`<div class="fn-row"><span>${v}</span><div class="fn-bar"><i style="width:${w>0?Math.max(2,Math.round(f/w*100)):0}%"></i></div><b>${f}</b><small>${w>0&&f!==w?L(f,w):""}</small></div>`,E=Object.keys(Te).map(v=>({k:v,visits:n(`visit:${v}`),orders:m.filter(f=>(f.channel||"direct")===v).length,revenue:h(m.filter(f=>(f.channel||"direct")===v))})).filter(v=>v.visits||v.orders).sort((v,f)=>f.visits-v.visits||f.orders-v.orders),R=new Map;u.forEach(v=>(v.items||[]).forEach(f=>{const w=f.label||f.name;if(!w)return;const C=R.get(w)||{qty:0,total:0};C.qty+=Number(f.qty)||0,C.total+=Number(f.total)||0,R.set(w,C)}));const D=Array.from(R.entries()).sort((v,f)=>f[1].qty-v[1].qty).slice(0,8),P=m.filter(v=>Number(v.discount)>0).length,A=m.filter(v=>v.gift).length,k=new Map;m.forEach(v=>k.set(v.country||"OM",(k.get(v.country||"OM")||0)+1)),t.innerHTML=`
+            <div class="seg" role="group" aria-label="المدة">${[[7,"7 أيام"],[30,"30 يوماً"],[90,"90 يوماً"]].map(([v,f])=>`<button type="button" data-days="${v}" aria-pressed="${e===v}">${f}</button>`).join("")}</div>
             <div class="ob-stats">
-                <div><small>زيارات</small><b>${visits}</b></div>
-                <div><small>طلبات من المتجر</small><b>${web.length}</b></div>
-                <div><small>نسبة التحويل</small><b>${pct(web.length, visits)}</b></div>
-                <div><small>متوسط قيمة الطلب</small><b>${money(aov(web))}</b></div>
-                <div><small>مبيعات المتجر</small><b>${money(revenue(web))}</b></div>
-                <div><small>كل الطلبات (مع اليدوية)</small><b>${inRange.length} · ${money(revenue(inRange))}</b></div>
+                <div><small>زيارات</small><b>${o}</b></div>
+                <div><small>طلبات من المتجر</small><b>${m.length}</b></div>
+                <div><small>نسبة التحويل</small><b>${L(m.length,o)}</b></div>
+                <div><small>متوسط قيمة الطلب</small><b>${x(M(m))}</b></div>
+                <div><small>مبيعات المتجر</small><b>${x(h(m))}</b></div>
+                <div><small>كل الطلبات (مع اليدوية)</small><b>${u.length} · ${x(h(u))}</b></div>
             </div>
             <section class="adm-card">
                 <h2>رحلة الزبون</h2>
                 <p class="adm-muted">كم زائراً وصل لكل خطوة (مرة واحدة لكل زيارة). أكبر نزول بين خطوتين هو أول ما يستحق التحسين.</p>
                 <div class="funnel">
-                    ${step("دخل المتجر", visits, visits)}
-                    ${step("فتح صفحة منتج", views, visits)}
-                    ${step("أضاف للسلة", adds, visits)}
-                    ${step("بدأ إتمام الطلب", checkouts, visits)}
-                    ${step("أرسل الطلب", web.length, visits)}
+                    ${S("دخل المتجر",o,o)}
+                    ${S("فتح صفحة منتج",r,o)}
+                    ${S("أضاف للسلة",l,o)}
+                    ${S("بدأ إتمام الطلب",c,o)}
+                    ${S("أرسل الطلب",m.length,o)}
                 </div>
             </section>
             <section class="adm-card">
                 <h2>من أين يأتي الزبائن؟</h2>
-                ${channels.length ? `<table class="adm-table"><thead><tr><th>المصدر</th><th>زيارات</th><th>طلبات</th><th>مبيعات</th></tr></thead><tbody>
-                    ${channels.map((c) => `<tr><td>${esc(CHANNELS[c.k])}</td><td>${c.visits}</td><td>${c.orders}</td><td>${money(c.revenue)}</td></tr>`).join("")}
-                </tbody></table>` : `<p class="adm-muted">لا توجد زيارات مسجّلة في هذه المدة بعد.</p>`}
+                ${E.length?`<table class="adm-table"><thead><tr><th>المصدر</th><th>زيارات</th><th>طلبات</th><th>مبيعات</th></tr></thead><tbody>
+                    ${E.map(v=>`<tr><td>${d(Te[v.k])}</td><td>${v.visits}</td><td>${v.orders}</td><td>${x(v.revenue)}</td></tr>`).join("")}
+                </tbody></table>`:'<p class="adm-muted">لا توجد زيارات مسجّلة في هذه المدة بعد.</p>'}
                 <p class="adm-muted">لتعرف أثر كل منصة بدقة، أضف في آخر رابط المتجر أو المنتج الذي تنشره <code dir="ltr">?ref=instagram</code> أو <code dir="ltr">?ref=tiktok</code>.</p>
             </section>
-            ${reportSections(inRange)}
+            ${Oo(u)}
             <section class="adm-card">
                 <h2>الأكثر مبيعاً</h2>
-                ${top.length ? `<table class="adm-table"><thead><tr><th>المنتج</th><th>القطع</th><th>المبلغ</th></tr></thead><tbody>
-                    ${top.map(([name, c]) => `<tr><td>${esc(name)}</td><td>${c.qty}</td><td>${money(c.total)}</td></tr>`).join("")}
-                </tbody></table>` : `<p class="adm-muted">لا توجد طلبات في هذه المدة.</p>`}
-                ${web.length ? `<p class="adm-muted">طلبات فيها خصم (كمية أو طقم): ${discounts} من ${web.length} · طلبات هدايا: ${gifts}${countries.size > 1 || !countries.has("OM") ? ` · ${Array.from(countries.entries()).map(([c, n]) => `${countryLabel(c)}: ${n}`).join("، ")}` : ""}</p>` : ""}
+                ${D.length?`<table class="adm-table"><thead><tr><th>المنتج</th><th>القطع</th><th>المبلغ</th></tr></thead><tbody>
+                    ${D.map(([v,f])=>`<tr><td>${d(v)}</td><td>${f.qty}</td><td>${x(f.total)}</td></tr>`).join("")}
+                </tbody></table>`:'<p class="adm-muted">لا توجد طلبات في هذه المدة.</p>'}
+                ${m.length?`<p class="adm-muted">طلبات فيها خصم (كمية أو طقم): ${P} من ${m.length} · طلبات هدايا: ${A}${k.size>1||!k.has("OM")?` · ${Array.from(k.entries()).map(([v,f])=>`${Ve(v)}: ${f}`).join("، ")}`:""}</p>`:""}
             </section>
-            <p class="adm-muted">لا تُحسب زياراتك أنت من جهازك المسجّل في اللوحة. الأرقام تقريبية ولا تحفظ أي بيانات شخصية للزوار.</p>`;
-    }
-
-    function filteredOrders() {
-        const f = A.filter;
-        const q = f.q.trim().toLowerCase();
-        return A.orders.filter((o) => {
-            if (f.status === "hidden") { if (!o.hidden) return false; }
-            else {
-                if (o.hidden) return false;
-                if (f.status !== "all" && o.status !== f.status) return false;
-            }
-            if (f.pay !== "all" && o.payment_type !== f.pay) return false;
-            if (!q) return true;
-            const hay = [o.order_no, o.customer_name, o.phone, o.gift_name, o.gift_phone, o.wilaya, o.governorate, o.address, o.office, o.items_text, countryLabel(o.country),
-                ...(o.items || []).map((it) => it.label || it.name)].filter(Boolean).join(" ").toLowerCase();
-            return hay.includes(q);
-        });
-    }
-
-    function waiting(o) {
-        if (o.status === "delivered") return "تم التسليم";
-        const mins = Math.max(0, Math.round((Date.now() - new Date(o.ordered_at).getTime()) / 60000));
-        if (mins < 60) return `منذ ${mins} دقيقة`;
-        const hours = Math.round(mins / 60);
-        if (hours < 48) return `منذ ${hours} ساعة`;
-        return `منذ ${Math.round(hours / 24)} يوم`;
-    }
-
-    function itemsList(o) {
-        if (o.items_text && o.items_text.trim()) return o.items_text.split("\n").filter(Boolean);
-        return (o.items || []).map((it) => `${it.label || it.name} × ${it.qty} = ${money(it.total)}`);
-    }
-
-    function renderOrdersList() {
-        const body = $("#ordersBody");
-        if (!body) return;
-        $$(".seg [data-status]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.status === A.filter.status)));
-        const list = filteredOrders();
-        const sum = (arr) => arr.reduce((s, o) => s + Number(o.total || 0), 0);
-        const bank = list.filter((o) => o.payment_type === "bank");
-        const cod = list.filter((o) => o.payment_type === "cod");
-
-        const stats = `<div class="ob-stats">
-            <div><small>عدد الطلبات</small><b>${list.length}</b></div>
-            <div><small>المجموع</small><b>${money(sum(list))}</b></div>
-            ${bank.length && cod.length ? `<div><small>تحويل بنكي</small><b>${money(sum(bank))}</b></div><div><small>عند الاستلام</small><b>${money(sum(cod))}</b></div>` : ""}
-        </div>`;
-
-        if (!list.length) {
-            body.innerHTML = stats + `<div class="adm-empty">${A.orders.length ? "لا توجد طلبات مطابقة." : "لا توجد طلبات بعد. أي طلب يرسله الزبون من المتجر يظهر هنا تلقائياً، ويمكنك أيضاً لصق رسالة طلب من واتساب."}</div>`;
-            return;
-        }
-
-        body.innerHTML = stats + `<div class="cust-actions"><button class="ab-mini" type="button" data-a="xlsx-orders">⬇️ تنزيل الطلبات Excel (${list.length})</button></div>` + list.map((o) => {
-            const when = ATHR.muscatParts(o.ordered_at);
-            return `<article class="oc${o.status === "delivered" ? " delivered" : ""}${o.hidden ? " is-hidden" : ""}">
+            <p class="adm-muted">لا تُحسب زياراتك أنت من جهازك المسجّل في اللوحة. الأرقام تقريبية ولا تحفظ أي بيانات شخصية للزوار.</p>`}function rn(){const t=i.filter,e=t.q.trim().toLowerCase();return i.orders.filter(a=>{if(t.status==="hidden"){if(!a.hidden)return!1}else if(a.hidden||t.status!=="all"&&a.status!==t.status)return!1;return t.pay!=="all"&&a.payment_type!==t.pay?!1:e?[a.order_no,a.customer_name,a.phone,a.gift_name,a.gift_phone,a.wilaya,a.governorate,a.address,a.office,a.items_text,Ve(a.country),...(a.items||[]).map(n=>n.label||n.name)].filter(Boolean).join(" ").toLowerCase().includes(e):!0})}function _i(t){if(t.status==="delivered")return"تم التسليم";const e=Math.max(0,Math.round((Date.now()-new Date(t.ordered_at).getTime())/6e4));if(e<60)return`منذ ${e} دقيقة`;const a=Math.round(e/60);return a<48?`منذ ${a} ساعة`:`منذ ${Math.round(a/24)} يوم`}function ln(t){return t.items_text&&t.items_text.trim()?t.items_text.split(`
+`).filter(Boolean):(t.items||[]).map(e=>`${e.label||e.name} × ${e.qty} = ${x(e.total)}`)}function Mt(){const t=b("#ordersBody");if(!t)return;at(".seg [data-status]").forEach(r=>r.setAttribute("aria-pressed",String(r.dataset.status===i.filter.status)));const e=rn(),a=r=>r.reduce((l,c)=>l+Number(c.total||0),0),s=e.filter(r=>r.payment_type==="bank"),n=e.filter(r=>r.payment_type==="cod"),o=`<div class="ob-stats">
+            <div><small>عدد الطلبات</small><b>${e.length}</b></div>
+            <div><small>المجموع</small><b>${x(a(e))}</b></div>
+            ${s.length&&n.length?`<div><small>تحويل بنكي</small><b>${x(a(s))}</b></div><div><small>عند الاستلام</small><b>${x(a(n))}</b></div>`:""}
+        </div>`;if(!e.length){t.innerHTML=o+`<div class="adm-empty">${i.orders.length?"لا توجد طلبات مطابقة.":"لا توجد طلبات بعد. أي طلب يرسله الزبون من المتجر يظهر هنا تلقائياً، ويمكنك أيضاً لصق رسالة طلب من واتساب."}</div>`;return}t.innerHTML=o+`<div class="cust-actions"><button class="ab-mini" type="button" data-a="xlsx-orders">⬇️ تنزيل الطلبات Excel (${e.length})</button></div>`+e.map(r=>{const l=ATHR.muscatParts(r.ordered_at);return`<article class="oc${r.status==="delivered"?" delivered":""}${r.hidden?" is-hidden":""}">
                 <header class="oc-head">
-                    <div><b dir="ltr">${esc(o.order_no)}</b> <span class="tag">${o.source === "web" ? "من المتجر" : o.source === "paste" ? "من واتساب" : "يدوي"}</span>${o.source === "web" && o.channel && o.channel !== "direct" ? ` <span class="tag ch">عبر ${esc(CHANNELS[o.channel] || o.channel)}</span>` : ""}${o.gift ? ` <span class="tag gift">🎁 هدية</span>` : ""}${o.coupon ? ` <span class="tag cp" dir="ltr">🎟️ ${esc(o.coupon)}</span>` : ""}</div>
-                    <span class="oc-wait${o.status === "new" ? " new" : ""}">${esc(waiting(o))}</span>
+                    <div><b dir="ltr">${d(r.order_no)}</b> <span class="tag">${r.source==="web"?"من المتجر":r.source==="paste"?"من واتساب":"يدوي"}</span>${r.source==="web"&&r.channel&&r.channel!=="direct"?` <span class="tag ch">عبر ${d(Te[r.channel]||r.channel)}</span>`:""}${r.gift?' <span class="tag gift">🎁 هدية</span>':""}${r.coupon?` <span class="tag cp" dir="ltr">🎟️ ${d(r.coupon)}</span>`:""}</div>
+                    <span class="oc-wait${r.status==="new"?" new":""}">${d(_i(r))}</span>
                 </header>
-                <p class="adm-muted oc-when">${esc(when.day)} ${esc(when.date)} — ${esc(when.time)}</p>
+                <p class="adm-muted oc-when">${d(l.day)} ${d(l.date)} — ${d(l.time)}</p>
                 <div class="oc-cust">
-                    ${giftTo(o) ? `<small class="adm-muted">صاحب الهدية</small>` : ""}
-                    <b>${esc(o.customer_name || "بدون اسم")}</b>
-                    ${o.phone ? `<span dir="ltr">${esc(ATHR.phoneText(o.phone, o.country))}</span>` : ""}
-                    ${giftTo(o) ? `</div><div class="oc-cust oc-gift"><small class="adm-muted">🎁 المُهدى إليه${ATHR.giftFor(o.gift_for, cfg()) ? ` · <span class="gfor-tag ${o.gift_for}">${esc(ATHR.giftFor(o.gift_for, cfg()).emoji)} ${esc(ATHR.giftFor(o.gift_for, cfg()).label)}</span>` : ""}${giftOccTag(o)}${o.gift_hide_price ? " · لا تذكر السعر" : ""}</small>
-                    <b>${esc(o.gift_name || "")}</b>
-                    ${o.gift_phone ? `<span dir="ltr">${esc(ATHR.phoneText(o.gift_phone, o.country))}</span>` : ""}` : ""}
-                    <span>${(o.country || "OM") === "OM" ? "" : `${esc(countryLabel(o.country))} — `}${esc([o.governorate, o.wilaya].filter(Boolean).join(" — "))}</span>
-                    ${o.address || o.office ? `<span>${o.office ? `المكتب: ${esc(o.office)}` : esc(o.address)}</span>` : ""}
+                    ${te(r)?'<small class="adm-muted">صاحب الهدية</small>':""}
+                    <b>${d(r.customer_name||"بدون اسم")}</b>
+                    ${r.phone?`<span dir="ltr">${d(ATHR.phoneText(r.phone,r.country))}</span>`:""}
+                    ${te(r)?`</div><div class="oc-cust oc-gift"><small class="adm-muted">🎁 المُهدى إليه${ATHR.giftFor(r.gift_for,$())?` · <span class="gfor-tag ${r.gift_for}">${d(ATHR.giftFor(r.gift_for,$()).emoji)} ${d(ATHR.giftFor(r.gift_for,$()).label)}</span>`:""}${Ai(r)}${r.gift_hide_price?" · لا تذكر السعر":""}</small>
+                    <b>${d(r.gift_name||"")}</b>
+                    ${r.gift_phone?`<span dir="ltr">${d(ATHR.phoneText(r.gift_phone,r.country))}</span>`:""}`:""}
+                    <span>${(r.country||"OM")==="OM"?"":`${d(Ve(r.country))} — `}${d([r.governorate,r.wilaya].filter(Boolean).join(" — "))}</span>
+                    ${r.address||r.office?`<span>${r.office?`المكتب: ${d(r.office)}`:d(r.address)}</span>`:""}
                 </div>
-                <ul class="oc-items">${itemsList(o).map((l) => `<li>${esc(l.replace(/^•\s*/, ""))}</li>`).join("")}</ul>
-                ${storyItems(o).map(({ it, i }) => `<div class="oc-story">
-                    <div><b>📖 ${esc(it.label || it.name)}</b>
-                    <span>👶 ${esc(it.custom.name)} · ${it.custom.g === "f" ? "بنت" : "ولد"}${it.custom.age ? ` · ${esc(ATHR.ageText(it.custom.age))}` : ""}</span>
-                    ${it.custom.tier === "pro" ? `<span class="oc-pro">🌟 مؤلفة خصيصاً بوجه الطفل${it.custom.g === "f" ? (it.custom.hijab === false ? " · بدون حجاب" : " · بالحجاب") : ""}</span>` : ""}
-                    ${it.custom.photo_path ? `<button type="button" class="oc-photo" data-photo-view="${esc(o.id)}" data-photo-i="${i}">📷 صورة الطفل مرفوعة — اعرضها</button>`
-                        : it.custom.photo ? `<span class="oc-pro">📷 بيرسل ${it.custom.g === "f" ? "صورتها" : "صورته"} على واتساب</span>` : ""}
-                    ${it.custom.fmt === "print" ? `<span class="oc-print">📦 نسخة مطبوعة بغلاف مقوّى + PDF${it.custom.wrap ? " · 🎁 مغلّفة كهدية" : ""}</span>` : ""}
-                    ${it.custom.ded ? `<small class="oc-ded">💌 الإهداء: «${esc(it.custom.ded)}»${it.custom.ded_from ? ` — ${esc(it.custom.ded_from)}` : ""}</small>` : ""}
-                    ${(it.custom.likes || []).length ? `<small class="adm-muted">🎈 يحب: ${esc(ATHR.likesText(it.custom.likes))}</small>` : ""}
-                    ${ATHR.lessonOf(it.custom.lesson) ? `<small class="adm-muted">✨ رسالة القصة: ${esc(ATHR.lessonOf(it.custom.lesson).t)}</small>` : ""}
-                    ${it.custom.family ? `<small class="adm-muted">👨‍👩‍👧 الأسرة: ${esc(it.custom.family)}</small>` : ""}
-                    ${it.custom.friend ? `<small class="adm-muted">🤝 الصديق: ${esc(it.custom.friend)}</small>` : ""}
-                    ${it.custom.note ? `<small class="adm-muted">📝 ${esc(it.custom.note)}</small>` : ""}
+                <ul class="oc-items">${ln(r).map(c=>`<li>${d(c.replace(/^•\s*/,""))}</li>`).join("")}</ul>
+                ${Hi(r).map(({it:c,i:p})=>`<div class="oc-story">
+                    <div><b>📖 ${d(c.label||c.name)}</b>
+                    <span>👶 ${d(c.custom.name)} · ${c.custom.g==="f"?"بنت":"ولد"}${c.custom.age?` · ${d(ATHR.ageText(c.custom.age))}`:""}</span>
+                    ${c.custom.tier==="pro"?`<span class="oc-pro">🌟 مؤلفة خصيصاً بوجه الطفل${c.custom.g==="f"?c.custom.hijab===!1?" · بدون حجاب":" · بالحجاب":""}</span>`:""}
+                    ${c.custom.photo_path?`<button type="button" class="oc-photo" data-photo-view="${d(r.id)}" data-photo-i="${p}">📷 صورة الطفل مرفوعة — اعرضها</button>`:c.custom.photo?`<span class="oc-pro">📷 بيرسل ${c.custom.g==="f"?"صورتها":"صورته"} على واتساب</span>`:""}
+                    ${c.custom.fmt==="print"?`<span class="oc-print">📦 نسخة مطبوعة بغلاف مقوّى + PDF${c.custom.wrap?" · 🎁 مغلّفة كهدية":""}</span>`:""}
+                    ${c.custom.ded?`<small class="oc-ded">💌 الإهداء: «${d(c.custom.ded)}»${c.custom.ded_from?` — ${d(c.custom.ded_from)}`:""}</small>`:""}
+                    ${(c.custom.likes||[]).length?`<small class="adm-muted">🎈 يحب: ${d(ATHR.likesText(c.custom.likes))}</small>`:""}
+                    ${ATHR.lessonOf(c.custom.lesson)?`<small class="adm-muted">✨ رسالة القصة: ${d(ATHR.lessonOf(c.custom.lesson).t)}</small>`:""}
+                    ${c.custom.family?`<small class="adm-muted">👨‍👩‍👧 الأسرة: ${d(c.custom.family)}</small>`:""}
+                    ${c.custom.friend?`<small class="adm-muted">🤝 الصديق: ${d(c.custom.friend)}</small>`:""}
+                    ${c.custom.note?`<small class="adm-muted">📝 ${d(c.custom.note)}</small>`:""}
                     </div>
-                    <button type="button" class="ab ab-primary ab-sm" data-story-make="${esc(o.id)}" data-story-i="${i}">📖 اصنع ملف القصة</button>
+                    <button type="button" class="ab ab-primary ab-sm" data-story-make="${d(r.id)}" data-story-i="${p}">📖 اصنع ملف القصة</button>
                 </div>`).join("")}
                 <div class="oc-sum">
-                    ${Number(o.discount) > 0 ? `<span>${esc(o.discount_label || "الخصم")}: -${money(o.discount)}</span>` : ""}
-                    ${o.coupon ? `<span>🎟️ كود ${esc(o.coupon)}${Number(o.coupon_discount) > 0 ? `: -${money(o.coupon_discount)}` : Number(o.delivery_price) === 0 ? " (توصيل مجاني)" : ""}</span>` : ""}
-                    ${o.delivery_name ? `<span>${esc(o.delivery_name)}: ${Number(o.delivery_price) > 0 ? money(o.delivery_price) : "مجاني"}</span>` : ""}
-                    <b>الإجمالي: ${money(o.total)}</b>
+                    ${Number(r.discount)>0?`<span>${d(r.discount_label||"الخصم")}: -${x(r.discount)}</span>`:""}
+                    ${r.coupon?`<span>🎟️ كود ${d(r.coupon)}${Number(r.coupon_discount)>0?`: -${x(r.coupon_discount)}`:Number(r.delivery_price)===0?" (توصيل مجاني)":""}</span>`:""}
+                    ${r.delivery_name?`<span>${d(r.delivery_name)}: ${Number(r.delivery_price)>0?x(r.delivery_price):"مجاني"}</span>`:""}
+                    <b>الإجمالي: ${x(r.total)}</b>
                 </div>
-                ${o.notes ? `<p class="oc-note">ملاحظة العميل: ${esc(o.notes)}</p>` : ""}
-                ${o.gift && o.gift_message ? `<p class="oc-note">🎁 رسالة الهدية: ${esc(o.gift_message)}</p>` : ""}
+                ${r.notes?`<p class="oc-note">ملاحظة العميل: ${d(r.notes)}</p>`:""}
+                ${r.gift&&r.gift_message?`<p class="oc-note">🎁 رسالة الهدية: ${d(r.gift_message)}</p>`:""}
                 <div class="oc-ctrl">
-                    <label><span class="sr">الدفع</span><select class="ai sm" data-order-id="${esc(o.id)}" data-order-field="payment_type">
-                        ${[["bank", "تحويل بنكي"], ["cod", "عند الاستلام"], ["online", "دفع إلكتروني"], ["other", "أخرى"]].map(([v, l]) => `<option value="${v}"${o.payment_type === v ? " selected" : ""}>${l}</option>`).join("")}
+                    <label><span class="sr">الدفع</span><select class="ai sm" data-order-id="${d(r.id)}" data-order-field="payment_type">
+                        ${[["bank","تحويل بنكي"],["cod","عند الاستلام"],["online","دفع إلكتروني"],["other","أخرى"]].map(([c,p])=>`<option value="${c}"${r.payment_type===c?" selected":""}>${p}</option>`).join("")}
                     </select></label>
-                    <label><span class="sr">الحالة</span><select class="ai sm" data-order-id="${esc(o.id)}" data-order-field="status">
-                        <option value="new"${o.status === "new" ? " selected" : ""}>جديد</option>
-                        <option value="delivered"${o.status === "delivered" ? " selected" : ""}>تم التسليم</option>
+                    <label><span class="sr">الحالة</span><select class="ai sm" data-order-id="${d(r.id)}" data-order-field="status">
+                        <option value="new"${r.status==="new"?" selected":""}>جديد</option>
+                        <option value="delivered"${r.status==="delivered"?" selected":""}>تم التسليم</option>
                     </select></label>
                 </div>
-                <label class="af"><span>ملاحظتي (لا يراها العميل)</span><textarea class="ai" rows="1" data-order-id="${esc(o.id)}" data-order-field="admin_note">${esc(o.admin_note || "")}</textarea></label>
+                <label class="af"><span>ملاحظتي (لا يراها العميل)</span><textarea class="ai" rows="1" data-order-id="${d(r.id)}" data-order-field="admin_note">${d(r.admin_note||"")}</textarea></label>
                 <div class="oc-actions">
-                    <button type="button" class="ab-mini" data-order-edit="${esc(o.id)}">ملاحظة وتعديل</button>
-                    ${o.phone ? `<button type="button" class="ab-mini wa" data-order-wa="${esc(o.id)}">${giftTo(o) ? "واتساب صاحب الهدية" : "واتساب"}</button>` : ""}
-                    ${giftTo(o) && o.gift_phone ? `<button type="button" class="ab-mini wa" data-order-wa-gift="${esc(o.id)}">واتساب المُهدى إليه</button>` : ""}
-                    ${giftTo(o) && o.gift_phone && cfg().sales.gift_card !== false ? `<button type="button" class="ab-mini wa" data-order-gift-card="${esc(o.id)}">💌 أرسل بطاقة الإهداء</button>` : ""}
-                    ${o.status === "new" && o.phone ? `<button type="button" class="ab-mini" data-order-remind="${esc(o.id)}">تذكير بالطلب</button>` : ""}
-                    ${o.phone && orderFileItems(o).length ? `<button type="button" class="ab-mini wa" data-order-files="${esc(o.id)}">📎 أرسل الملفات</button>` : ""}
-                    ${o.status === "delivered" && o.phone ? `<button type="button" class="ab-mini wa" data-order-review="${esc(o.id)}">اطلب تقييم</button>` : ""}
-                    <button type="button" class="ab-mini" data-order-copy="${esc(o.id)}">نسخ</button>
-                    <button type="button" class="ab-mini" data-order-hide="${esc(o.id)}">${o.hidden ? "إظهار في الدفتر" : "إخفاء"}</button>
-                    <button type="button" class="ab-mini danger" data-order-delete="${esc(o.id)}">🗑️ حذف</button>
+                    <button type="button" class="ab-mini" data-order-edit="${d(r.id)}">ملاحظة وتعديل</button>
+                    ${r.phone?`<button type="button" class="ab-mini wa" data-order-wa="${d(r.id)}">${te(r)?"واتساب صاحب الهدية":"واتساب"}</button>`:""}
+                    ${te(r)&&r.gift_phone?`<button type="button" class="ab-mini wa" data-order-wa-gift="${d(r.id)}">واتساب المُهدى إليه</button>`:""}
+                    ${te(r)&&r.gift_phone&&$().sales.gift_card!==!1?`<button type="button" class="ab-mini wa" data-order-gift-card="${d(r.id)}">💌 أرسل بطاقة الإهداء</button>`:""}
+                    ${r.status==="new"&&r.phone?`<button type="button" class="ab-mini" data-order-remind="${d(r.id)}">تذكير بالطلب</button>`:""}
+                    ${r.phone&&cn(r).length?`<button type="button" class="ab-mini wa" data-order-files="${d(r.id)}">📎 أرسل الملفات</button>`:""}
+                    ${r.status==="delivered"&&r.phone?`<button type="button" class="ab-mini wa" data-order-review="${d(r.id)}">اطلب تقييم</button>`:""}
+                    <button type="button" class="ab-mini" data-order-copy="${d(r.id)}">نسخ</button>
+                    <button type="button" class="ab-mini" data-order-hide="${d(r.id)}">${r.hidden?"إظهار في الدفتر":"إخفاء"}</button>
+                    <button type="button" class="ab-mini danger" data-order-delete="${d(r.id)}">🗑️ حذف</button>
                 </div>
-            </article>`;
-        }).join("");
-    }
+            </article>`}).join("")}async function ki(t){const e=i.orders.find(s=>s.id===t);if(!e||!confirm(`تحذف الطلب ${e.order_no||""} نهائياً؟
+ما تقدر ترجعه بعد الحذف. (لو تبي تشيله من الدفتر بس، اختر «إخفاء»)`))return;const{error:a}=await _.from("orders").delete().eq("id",t);if(a){y("تعذر حذف الطلب. تأكد من الإنترنت.");return}i.orders=i.orders.filter(s=>s.id!==t),ee(),Mt(),y("انحذف الطلب ✓");try{const s=e.phone?ATHR.customerWhatsapp(e.phone,e.country||"OM"):"";if(!s)return;const{data:n}=await _.from("customers").select("phone,orders_count,total_spent,last_order_at").eq("phone",s).maybeSingle();if(!n)return;const o=Math.max(0,(Number(n.orders_count)||0)-1);if(!o)await _.from("customers").delete().eq("phone",s);else{const l=i.orders.filter(c=>c.phone&&ATHR.customerWhatsapp(c.phone,c.country||"OM")===s).reduce((c,p)=>{const u=p.ordered_at||p.created_at;return!c||u>c?u:c},null);await _.from("customers").update({orders_count:o,total_spent:Math.max(0,Math.round(((Number(n.total_spent)||0)-(Number(e.total)||0))*1e3)/1e3),...l?{last_order_at:l}:{}}).eq("phone",s)}i.customersLoaded=!1}catch(s){console.warn("Customer totals not updated:",s)}}async function Da(t,e,a){const s=i.orders.find(r=>r.id===t);if(!s)return;const n=s[e];s[e]=e==="admin_note"?String(a).trim()||null:a;const{error:o}=await _.from("orders").update({[e]:s[e]}).eq("id",t);o?(s[e]=n,y("تعذر الحفظ. تأكد من الإنترنت.")):e!=="admin_note"&&y(e==="hidden"?a?"أُخفي الطلب":"أُظهر الطلب":"حُفظ"),e!=="admin_note"&&Mt()}function cn(t){const e=(i.draft||i.server||{}).products||[],a=[];return(t.items||[]).forEach(s=>{const n=e.find(o=>o.id===s.id);n&&String(n.file_url||"").startsWith("private:")&&!a.some(o=>o.p.id===n.id)&&a.push({p:n,name:s.label||s.name||n.name})}),a}function xi(){const t="abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789",e=crypto.getRandomValues(new Uint8Array(8));return Array.from(e,a=>t[a%t.length]).join("")}async function Ti(t){const e=i.orders.find(s=>s.id===t);if(!e)return;const a=cn(e);if(!a.length){y("لا توجد ملفات مرفوعة لمنتجات هذا الطلب");return}await Lt("نجهّز روابط التحميل...",async()=>{const s=[];for(const{p:r,name:l}of a){const c=String(r.file_url).slice(8),p=xi(),{error:u}=await _.from("dl_links").insert({code:p,path:c,filename:`${r.slug||"zad-file"}.pdf`,expires_at:new Date(Date.now()+2592e5).toISOString()});if(u)throw u;s.push(`📄 ${l}
+${location.origin}${ATHR.base()}d/?${p}`)}const o=`أهلاً ${(e.customer_name||"").split(" ")[0]} 🌟
+شكراً لطلبك من ${ATHR.storeName($())}. هذه روابط تحميل ملفاتك (تعمل 3 أيام، حمّلها واحفظها على جهازك):
 
-    // حذف الطلب نهائياً (مثل الطلبات التجريبية)، ونصحّح أرقام العميل معه
-    async function deleteOrder(id) {
-        const o = A.orders.find((x) => x.id === id);
-        if (!o) return;
-        if (!confirm(`تحذف الطلب ${o.order_no || ""} نهائياً؟\nما تقدر ترجعه بعد الحذف. (لو تبي تشيله من الدفتر بس، اختر «إخفاء»)`)) return;
-        const { error } = await sb.from("orders").delete().eq("id", id);
-        if (error) { toast("تعذر حذف الطلب. تأكد من الإنترنت."); return; }
-        A.orders = A.orders.filter((x) => x.id !== id);
-        closeOrderSheet();
-        renderOrdersList();
-        toast("انحذف الطلب ✓");
-        // أرقام العميل (عدد الطلبات والمشتريات) تنحسب عند إضافة الطلب، فننقص منها هنا
-        try {
-            const phone = o.phone ? ATHR.customerWhatsapp(o.phone, o.country || "OM") : "";
-            if (!phone) return;
-            const { data: c } = await sb.from("customers").select("phone,orders_count,total_spent,last_order_at").eq("phone", phone).maybeSingle();
-            if (!c) return;
-            const count = Math.max(0, (Number(c.orders_count) || 0) - 1);
-            if (!count) {
-                await sb.from("customers").delete().eq("phone", phone);
-            } else {
-                const rest = A.orders.filter((x) => x.phone && ATHR.customerWhatsapp(x.phone, x.country || "OM") === phone);
-                const last = rest.reduce((m, x) => { const t = x.ordered_at || x.created_at; return !m || t > m ? t : m; }, null);
-                await sb.from("customers").update({
-                    orders_count: count,
-                    total_spent: Math.max(0, Math.round(((Number(c.total_spent) || 0) - (Number(o.total) || 0)) * 1000) / 1000),
-                    ...(last ? { last_order_at: last } : {})
-                }).eq("phone", phone);
-            }
-            A.customersLoaded = false;
-        } catch (error) { console.warn("Customer totals not updated:", error); }
-    }
+${s.join(`
 
-    async function updateOrderField(id, field, value) {
-        const o = A.orders.find((x) => x.id === id);
-        if (!o) return;
-        const before = o[field];
-        o[field] = field === "admin_note" ? (String(value).trim() || null) : value;
-        const { error } = await sb.from("orders").update({ [field]: o[field] }).eq("id", id);
-        if (error) {
-            o[field] = before;
-            toast("تعذر الحفظ. تأكد من الإنترنت.");
-        } else if (field !== "admin_note") {
-            toast(field === "hidden" ? (value ? "أُخفي الطلب" : "أُظهر الطلب") : "حُفظ");
-        }
-        if (field !== "admin_note") renderOrdersList();
-    }
+`)}
 
-    // منتجات الطلب التي لها ملف PDF خاص
-    function orderFileItems(o) {
-        const prods = ((A.draft || A.server || {}).products) || [];
-        const out = [];
-        (o.items || []).forEach((it) => {
-            const p = prods.find((x) => x.id === it.id);
-            if (p && String(p.file_url || "").startsWith("private:") && !out.some((x) => x.p.id === p.id)) out.push({ p, name: it.label || it.name || p.name });
-        });
-        return out;
-    }
-
-    function shortCode() {
-        const a = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789", r = crypto.getRandomValues(new Uint8Array(8));
-        return Array.from(r, (b) => a[b % a.length]).join("");
-    }
-
-    async function sendOrderFiles(id) {
-        const o = A.orders.find((x) => x.id === id);
-        if (!o) return;
-        const list = orderFileItems(o);
-        if (!list.length) { toast("لا توجد ملفات مرفوعة لمنتجات هذا الطلب"); return; }
-        await withBusy("نجهّز روابط التحميل...", async () => {
-            const lines = [];
-            for (const { p, name } of list) {
-                const path = String(p.file_url).slice(8);
-                const code = shortCode();
-                const { error } = await sb.from("dl_links").insert({ code, path, filename: `${(p.slug || "zad-file")}.pdf`, expires_at: new Date(Date.now() + 259200000).toISOString() });
-                if (error) throw error;
-                lines.push(`📄 ${name}\n${location.origin}${ATHR.base()}d/?${code}`);
-            }
-            const first = (o.customer_name || "").split(" ")[0];
-            const text = `أهلاً ${first} 🌟\nشكراً لطلبك من ${ATHR.storeName(cfg())}. هذه روابط تحميل ملفاتك (تعمل 3 أيام، حمّلها واحفظها على جهازك):\n\n${lines.join("\n\n")}\n\nبالتوفيق لأطفالك 💜`;
-            window.open(customerWa(o, text), "_blank", "noopener");
-        });
-    }
-
-    function customerWa(o, text) {
-        return ATHR.waLink(ATHR.customerWhatsapp(o.phone, o.country || "OM"), text);
-    }
-
-    function giftTo(o) {
-        return Boolean(o.gift && (o.gift_name || o.gift_phone));
-    }
-
-    // المناسبة في بطاقة الطلب، ومنها ما كتبه الزبون بنفسه (مثل: عيد الأم)
-    function giftOccTag(o) {
-        if (!o.gift_occasion) return "";
-        const occ = ATHR.giftOccasion(o.gift_occasion, cfg(), o.gift_occasion_text);
-        if (occ.id === "other") return "";
-        return ` · <span class="occ-tag${occ.id === "custom" ? " own" : ""}">${esc(occ.emoji)} ${esc(occ.name)}</span>`;
-    }
-
-    function countryLabel(code) {
-        const c = ATHR_COUNTRIES.find((x) => x.code === (code || "OM")) || ATHR_COUNTRIES[0];
-        return `${c.flag} ${c.name}`;
-    }
-
-    function reminderText(o) {
-        return ATHR.fill(cfg().sales.reminder_msg, cfg(), {
-            client: (o.customer_name || "").split(" ")[0],
-            no: o.order_no,
-            total: money(o.total)
-        });
-    }
-
-    function orderText(o) {
-        const card = giftTo(o) && cfg().sales.gift_card !== false;
-        return ATHR.orderText(o, cfg(), { cardUrl: card ? siteLink(ATHR.giftCardPath(o)) : "" });
-    }
-
-    // =====================================================
-    // القصص الشخصية: صنع ملف القصة PDF من بيانات الطفل في الطلب
-    // كل شي يصير في جوالك: الصفحات تُرسم هنا، والصورة لا تُرفع لأي مكان
-    // =====================================================
-    const STORY_OPTS = [["astro", "مستكشف الفضاء"], ["sea", "أعماق البحر"], ["dino", "أرض الديناصورات"], ["oman", "مغامرة في عُمان"], ["coloring", "كتاب التلوين"], ["abc", "أتعلّم الحروف مع اسمي"]];
-    const SM = { order: null, index: -1, photo: null, pdf: null, url: "", busy: false, timer: 0, seq: 0 };
-    let storiesLib = null;
-
-    function loadStoriesLib() {
-        if (window.HUROOF_STORIES) return Promise.resolve(window.HUROOF_STORIES);
-        if (!storiesLib) {
-            const own = $$("script[src*='admin-panel.js']")[0] || $$("script[src*='store.js']")[0];
-            const ver = (own && (own.src.match(/[?&]v=([^&]+)/) || [])[1]) || "1";
-            storiesLib = new Promise((resolve, reject) => {
-                const el = document.createElement("script");
-                el.src = `${ATHR.base()}js/stories.js?v=${ver}`;
-                el.onload = () => (window.HUROOF_STORIES ? resolve(window.HUROOF_STORIES) : reject(new Error("stories")));
-                el.onerror = () => { storiesLib = null; reject(new Error("stories")); };
-                document.head.appendChild(el);
-            });
-        }
-        return storiesLib;
-    }
-
-    function storyItems(o) {
-        return (o.items || []).map((it, i) => ({ it, i })).filter(({ it }) => it && it.custom && it.custom.name);
-    }
-
-    function storyIdOf(it) {
-        const list = (A.draft && A.draft.products) || (A.server && A.server.products) || [];
-        const p = list.find((x) => x.id === it.id);
-        if (p && p.story) return p.story;
-        const name = String(it.name || it.label || "");
-        const hit = STORY_OPTS.find(([, label]) => name.includes(label));
-        return hit ? hit[0] : "letters";
-    }
-
-    function smValues() {
-        return {
-            story: $("#smStory") ? $("#smStory").value : "letters",
-            custom: {
-                ...(SM.extra || {}),
-                name: $("#smName") ? $("#smName").value : "",
-                g: $("#smG") ? $("#smG").value : "m",
-                age: $("#smAge") ? $("#smAge").value : "",
-                photo: Boolean(SM.photo)
-            }
-        };
-    }
-
-    function smReset() {
-        if (SM.url) URL.revokeObjectURL(SM.url);
-        SM.pdf = null;
-        SM.url = "";
-        const act = $("#smActions");
-        if (act) act.innerHTML = `<button class="ab ab-primary ab-block" type="button" data-sm="make">📖 اصنع ملف القصة PDF</button>`;
-    }
-
-    // صورة الطفل المرفوعة مع الطلب: رابط مؤقت من المخزن الخاص (ساعة واحدة)
-    const PHOTO_BUCKET = "story-photos";
-    async function photoUrl(path, download = "") {
-        const { data, error } = await sb.storage.from(PHOTO_BUCKET).createSignedUrl(path, 3600, download ? { download } : undefined);
-        if (error || !data) throw error || new Error("signed url");
-        return data.signedUrl;
-    }
-
-    async function smOrderPhoto(path) {
-        const label = $("#smPhotoName");
-        if (label) label.textContent = "⏳ نحمّل صورة الطفل من الطلب...";
-        try {
-            const url = await photoUrl(path);
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`photo ${res.status}`);
-            const blob = await res.blob();
-            if (!$("#storyMaker") || SM.photo) return;
-            await smSetPhoto(blob, "✓ صورة الطفل من الطلب");
-        } catch (e) {
-            console.warn("Order photo:", e);
-            if ($("#smPhotoName")) $("#smPhotoName").textContent = "تعذر تحميل الصورة (ربما انحذفت). اختر صورة يدوياً.";
-        }
-    }
-
-    function openPhotoSheet(o, i) {
-        const it = o && Array.isArray(o.items) ? o.items[i] : null;
-        const c = (it && it.custom) || {};
-        if (!c.photo_path) return;
-        const name = `${c.name || "طفل"}-${o.order_no || ""}.jpg`.replace(/\s+/g, "-");
-        openOrderSheet(`${offerSheetHead(`📷 صورة ${esc(c.name || "الطفل")}`)}
+بالتوفيق لأطفالك 💜`;window.open(ve(e,o),"_blank","noopener")})}function ve(t,e){return ATHR.waLink(ATHR.customerWhatsapp(t.phone,t.country||"OM"),e)}function te(t){return!!(t.gift&&(t.gift_name||t.gift_phone))}function Ai(t){if(!t.gift_occasion)return"";const e=ATHR.giftOccasion(t.gift_occasion,$(),t.gift_occasion_text);return e.id==="other"?"":` · <span class="occ-tag${e.id==="custom"?" own":""}">${d(e.emoji)} ${d(e.name)}</span>`}function Ve(t){const e=ATHR_COUNTRIES.find(a=>a.code===(t||"OM"))||ATHR_COUNTRIES[0];return`${e.flag} ${e.name}`}function Si(t){return ATHR.fill($().sales.reminder_msg,$(),{client:(t.customer_name||"").split(" ")[0],no:t.order_no,total:x(t.total)})}function Ri(t){const e=te(t)&&$().sales.gift_card!==!1;return ATHR.orderText(t,$(),{cardUrl:e?Y(ATHR.giftCardPath(t)):""})}const We=[["astro","مستكشف الفضاء"],["sea","أعماق البحر"],["dino","أرض الديناصورات"],["oman","مغامرة في عُمان"],["coloring","كتاب التلوين"],["abc","أتعلّم الحروف مع اسمي"]],g={order:null,index:-1,photo:null,pdf:null,url:"",busy:!1,timer:0,seq:0};let Ge=null;function we(){if(window.HUROOF_STORIES)return Promise.resolve(window.HUROOF_STORIES);if(!Ge){const t=at("script[src*='admin-panel.js']")[0]||at("script[src*='store.js']")[0],e=t&&(t.src.match(/[?&]v=([^&]+)/)||[])[1]||"1";Ge=new Promise((a,s)=>{const n=document.createElement("script");n.src=`${ATHR.base()}js/stories.js?v=${e}`,n.onload=()=>window.HUROOF_STORIES?a(window.HUROOF_STORIES):s(new Error("stories")),n.onerror=()=>{Ge=null,s(new Error("stories"))},document.head.appendChild(n)})}return Ge}function Hi(t){return(t.items||[]).map((e,a)=>({it:e,i:a})).filter(({it:e})=>e&&e.custom&&e.custom.name)}function Mi(t){const a=(i.draft&&i.draft.products||i.server&&i.server.products||[]).find(o=>o.id===t.id);if(a&&a.story)return a.story;const s=String(t.name||t.label||""),n=We.find(([,o])=>s.includes(o));return n?n[0]:"letters"}function Ia(){return{story:b("#smStory")?b("#smStory").value:"letters",custom:{...g.extra||{},name:b("#smName")?b("#smName").value:"",g:b("#smG")?b("#smG").value:"m",age:b("#smAge")?b("#smAge").value:"",photo:!!g.photo}}}function it(){g.url&&URL.revokeObjectURL(g.url),g.pdf=null,g.url="";const t=b("#smActions");t&&(t.innerHTML='<button class="ab ab-primary ab-block" type="button" data-sm="make">📖 اصنع ملف القصة PDF</button>')}const Fa="story-photos";async function ja(t,e=""){const{data:a,error:s}=await _.storage.from(Fa).createSignedUrl(t,3600,e?{download:e}:void 0);if(s||!a)throw s||new Error("signed url");return a.signedUrl}async function Ei(t){const e=b("#smPhotoName");e&&(e.textContent="⏳ نحمّل صورة الطفل من الطلب...");try{const a=await ja(t),s=await fetch(a);if(!s.ok)throw new Error(`photo ${s.status}`);const n=await s.blob();if(!b("#storyMaker")||g.photo)return;await un(n,"✓ صورة الطفل من الطلب")}catch(a){console.warn("Order photo:",a),b("#smPhotoName")&&(b("#smPhotoName").textContent="تعذر تحميل الصورة (ربما انحذفت). اختر صورة يدوياً.")}}function Ni(t,e){const a=t&&Array.isArray(t.items)?t.items[e]:null,s=a&&a.custom||{};if(!s.photo_path)return;const n=`${s.name||"طفل"}-${t.order_no||""}.jpg`.replace(/\s+/g,"-");Tt(`${It(`📷 صورة ${d(s.name||"الطفل")}`)}
             <div class="ph-body" id="photoSheet">
-                <p class="adm-muted">طلب <b dir="ltr">${esc(o.order_no || "")}</b> · ${esc(o.customer_name || "")}</p>
+                <p class="adm-muted">طلب <b dir="ltr">${d(t.order_no||"")}</b> · ${d(t.customer_name||"")}</p>
                 <div class="ph-img" id="phImg"><span class="adm-muted">⏳ نحمّل الصورة...</span></div>
                 <div class="ph-actions" id="phActions" hidden>
                     <a class="ab ab-primary ab-block" id="phDown" href="#" target="_blank" rel="noopener">⬇️ تنزيل الصورة</a>
                     <button class="ab-mini danger" type="button" id="phDel">🗑️ احذف الصورة نهائياً (بعد تسليم القصة)</button>
                 </div>
                 <small class="adm-muted">الصورة في مخزن خاص لا يراه أحد غيرك، وتنحذف تلقائياً بعد 45 يوماً من الطلب.</small>
-            </div>`);
-        (async () => {
-            try {
-                const [view, down] = await Promise.all([photoUrl(c.photo_path), photoUrl(c.photo_path, name)]);
-                const box = $("#phImg");
-                if (!box) return;
-                box.innerHTML = `<img src="${esc(view)}" alt="صورة ${esc(c.name || "الطفل")}">`;
-                $("#phDown").href = down;
-                $("#phActions").hidden = false;
-            } catch (e) {
-                console.warn("Photo:", e);
-                const box = $("#phImg");
-                if (box) box.innerHTML = `<span class="adm-muted">تعذر فتح الصورة. ربما انحذفت، أو تأكد من الإنترنت.</span>`;
-            }
-        })();
-        $("#phDel").addEventListener("click", async (e) => {
-            e.stopPropagation();
-            if (!confirm("تحذف صورة الطفل نهائياً؟ احذفها بعد ما تسلّم القصة.")) return;
-            const { error } = await sb.storage.from(PHOTO_BUCKET).remove([c.photo_path]);
-            if (error) { toast("تعذر الحذف. تأكد من الإنترنت."); return; }
-            toast("انحذفت الصورة ✓");
-            closeOrderSheet();
-        });
-    }
-
-    // تنظيف تلقائي: صور بدون طلب بعد 14 يوماً، وصور الطلبات الأقدم من 45 يوماً
-    let photoCleanDone = false;
-    async function cleanupPhotos() {
-        if (photoCleanDone) return;
-        photoCleanDone = true;
-        try {
-            const { data, error } = await sb.rpc("huroof_photos_to_clean");
-            if (error || !Array.isArray(data) || !data.length) return;
-            const names = data.map((x) => (typeof x === "string" ? x : x && x.huroof_photos_to_clean)).filter(Boolean);
-            if (names.length) await sb.storage.from(PHOTO_BUCKET).remove(names);
-        } catch (e) { console.warn("Photo cleanup:", e); }
-    }
-
-    // =====================================================
-    // 📖 صانع القصص: تحكم كامل بالطفل وصفحات القصة
-    // =====================================================
-    const SM_STYLES = [
-        ["real", "📷", "واقعي 100%", "كل الصفحة بصورة حقيقية، والطفل بوجهه الحقيقي"],
-        ["mixed", "🎬", "وجه حقيقي + خلفية 3D", "وجه الطفل الحقيقي داخل رسم القصة"],
-        ["orig", "🧸", "الرسم الأصلي", "بدون صورة الطفل"]
-    ];
-    const SM_OUTFITS = {
-        astro: ["بدلة رائد فضاء بيضاء مع خوذة", "بدلة رائد فضاء برتقالية"],
-        sea: ["بدلة غوص زرقاء مع نظارة غوص", "ملابس سباحة وزعانف"],
-        dino: ["قبعة سفاري وقميص كاكي (مستكشف)", "سترة مستكشف خضراء"],
-        oman: ["دشداشة بيضاء وكمة عمانية", "فستان عماني تقليدي ملوّن", "ثوب عماني مطرّز مع وشاح"]
-    };
-
-    const smUseAI = () => Boolean(SM.ref && SM.style !== "orig");
-    const smSig = () => `${$("#smStory") ? $("#smStory").value : ""}|${$("#smG") ? $("#smG").value : "m"}|${SM.style}|${SM.outfit}|${SM.note}|${SM.ref ? SM.ref.length : 0}`;
-    function smSyncSig() {
-        const sig = smSig();
-        if (SM.sigFor !== sig) { SM.art = {}; SM.artNote = {}; SM.sigFor = sig; }
-    }
-
-    async function smSetPhoto(blob, label) {
-        const lib = await loadStoriesLib();
-        const img = await lib.readPhoto(blob);
-        const sc = Math.min(1, 1024 / Math.max(img.width, img.height));
-        const cv = document.createElement("canvas");
-        cv.width = Math.round(img.width * sc);
-        cv.height = Math.round(img.height * sc);
-        cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
-        SM.photo = img;
-        SM.raw = blob;
-        SM.ref = cv.toDataURL("image/jpeg", 0.9);
-        SM.art = {};
-        SM.artNote = {};
-        if ($("#smThumb")) { $("#smThumb").src = SM.ref; $("#smThumbBox").hidden = false; }
-        if ($("#smPhotoName")) $("#smPhotoName").textContent = label || "✓ الصورة جاهزة";
-        if ($("#smPhotoClear")) $("#smPhotoClear").hidden = false;
-        smSyncSig();
-        smReset();
-        smRefresh();
-    }
-
-    function smOutfitChips(story) {
-        return (SM_OUTFITS[story] || []).map((t) => `<button class="sm-chip" type="button" data-sm="outfit" data-v="${esc(t)}">${esc(t)}</button>`).join("");
-    }
-
-    function openStoryMaker(o, i) {
-        const it = o && Array.isArray(o.items) ? o.items[i] : null;
-        const c = (it && it.custom) || {};
-        SM.order = o;
-        SM.index = i;
-        SM.photo = null;
-        SM.raw = null;
-        SM.ref = null;
-        SM.art = {};
-        SM.artNote = {};
-        SM.texts = {};
-        SM.notes = {};
-        SM.style = "real";
-        SM.outfit = "";
-        SM.note = "";
-        SM.sigFor = "";
-        SM.sel = null;
-        SM.extra = { likes: Array.isArray(c.likes) ? c.likes : [], lesson: c.lesson || "", ded_t: c.ded_t || "", ded: c.ded || "", ded_from: c.ded_from || "" };
-        smReset();
-        const story = it ? storyIdOf(it) : "letters";
-        const ages = ATHR.STORY_AGES.map((a) => `<option value="${a}"${Number(c.age) === a ? " selected" : ""}>${esc(ATHR.ageText(a))}</option>`).join("");
-        openOrderSheet(`${offerSheetHead("📖 صانع القصص")}
+            </div>`),(async()=>{try{const[o,r]=await Promise.all([ja(s.photo_path),ja(s.photo_path,n)]),l=b("#phImg");if(!l)return;l.innerHTML=`<img src="${d(o)}" alt="صورة ${d(s.name||"الطفل")}">`,b("#phDown").href=r,b("#phActions").hidden=!1}catch(o){console.warn("Photo:",o);const r=b("#phImg");r&&(r.innerHTML='<span class="adm-muted">تعذر فتح الصورة. ربما انحذفت، أو تأكد من الإنترنت.</span>')}})(),b("#phDel").addEventListener("click",async o=>{if(o.stopPropagation(),!confirm("تحذف صورة الطفل نهائياً؟ احذفها بعد ما تسلّم القصة."))return;const{error:r}=await _.storage.from(Fa).remove([s.photo_path]);if(r){y("تعذر الحذف. تأكد من الإنترنت.");return}y("انحذفت الصورة ✓"),ee()})}let dn=!1;async function Ci(){if(!dn){dn=!0;try{const{data:t,error:e}=await _.rpc("huroof_photos_to_clean");if(e||!Array.isArray(t)||!t.length)return;const a=t.map(s=>typeof s=="string"?s:s&&s.huroof_photos_to_clean).filter(Boolean);a.length&&await _.storage.from(Fa).remove(a)}catch(t){console.warn("Photo cleanup:",t)}}}const Oi=[["real","📷","واقعي 100%","كل الصفحة بصورة حقيقية، والطفل بوجهه الحقيقي"],["mixed","🎬","وجه حقيقي + خلفية 3D","وجه الطفل الحقيقي داخل رسم القصة"],["orig","🧸","الرسم الأصلي","بدون صورة الطفل"]],Li={astro:["بدلة رائد فضاء بيضاء مع خوذة","بدلة رائد فضاء برتقالية"],sea:["بدلة غوص زرقاء مع نظارة غوص","ملابس سباحة وزعانف"],dino:["قبعة سفاري وقميص كاكي (مستكشف)","سترة مستكشف خضراء"],oman:["دشداشة بيضاء وكمة عمانية","فستان عماني تقليدي ملوّن","ثوب عماني مطرّز مع وشاح"]},_e=()=>!!(g.ref&&g.style!=="orig"),Pi=()=>`${b("#smStory")?b("#smStory").value:""}|${b("#smG")?b("#smG").value:"m"}|${g.style}|${g.outfit}|${g.note}|${g.ref?g.ref.length:0}`;function Ft(){const t=Pi();g.sigFor!==t&&(g.art={},g.artNote={},g.sigFor=t)}async function un(t,e){const s=await(await we()).readPhoto(t),n=Math.min(1,1024/Math.max(s.width,s.height)),o=document.createElement("canvas");o.width=Math.round(s.width*n),o.height=Math.round(s.height*n),o.getContext("2d").drawImage(s,0,0,o.width,o.height),g.photo=s,g.raw=t,g.ref=o.toDataURL("image/jpeg",.9),g.art={},g.artNote={},b("#smThumb")&&(b("#smThumb").src=g.ref,b("#smThumbBox").hidden=!1),b("#smPhotoName")&&(b("#smPhotoName").textContent=e||"✓ الصورة جاهزة"),b("#smPhotoClear")&&(b("#smPhotoClear").hidden=!1),Ft(),it(),pt()}function pn(t){return(Li[t]||[]).map(e=>`<button class="sm-chip" type="button" data-sm="outfit" data-v="${d(e)}">${d(e)}</button>`).join("")}function mn(t,e){const a=t&&Array.isArray(t.items)?t.items[e]:null,s=a&&a.custom||{};g.order=t,g.index=e,g.photo=null,g.raw=null,g.ref=null,g.art={},g.artNote={},g.texts={},g.notes={},g.style="real",g.outfit="",g.note="",g.sigFor="",g.sel=null,g.extra={likes:Array.isArray(s.likes)?s.likes:[],lesson:s.lesson||"",ded_t:s.ded_t||"",ded:s.ded||"",ded_from:s.ded_from||""},it();const n=a?Mi(a):"letters",o=ATHR.STORY_AGES.map(l=>`<option value="${l}"${Number(s.age)===l?" selected":""}>${d(ATHR.ageText(l))}</option>`).join("");Tt(`${It("📖 صانع القصص")}
             <div class="sm-body sm2" id="storyMaker">
-                <p class="adm-muted">${it ? `طلب <b dir="ltr">${esc(o.order_no || "")}</b> · ${esc(o.customer_name || "")}. راجع كل شيء قبل الصنع.` : "اصنع قصة لأي طفل، مثل طلب وصلك على واتساب."}</p>
-                ${c.tier === "pro" ? `<p class="sm-pro">🌟 قصة <b>مؤلفة خصيصاً بوجه الطفل</b>: نصها حول أسرته وتفاصيله.</p>` : ""}
-                ${c.fmt === "print" ? `<p class="sm-print">📦 العميل طلب نسخة مطبوعة: اصنع الملف وأرسله للمطبعة (A4، غلاف مقوّى).</p>` : ""}
-                ${c.ded ? `<p class="adm-muted">💌 الإهداء: «${esc(c.ded)}»${c.ded_from ? ` — ${esc(c.ded_from)}` : ""}</p>` : ""}
-                ${c.wrap ? `<p class="sm-print">🎁 غلّف الكتاب المطبوع كهدية قبل التوصيل.</p>` : ""}
-                ${(c.likes || []).length || ATHR.lessonOf(c.lesson) ? `<p class="adm-muted">${(c.likes || []).length ? `🎈 يحب: ${esc(ATHR.likesText(c.likes))}` : ""}${(c.likes || []).length && ATHR.lessonOf(c.lesson) ? " · " : ""}${ATHR.lessonOf(c.lesson) ? `✨ الرسالة: ${esc(ATHR.lessonOf(c.lesson).t)}` : ""}</p>` : ""}
+                <p class="adm-muted">${a?`طلب <b dir="ltr">${d(t.order_no||"")}</b> · ${d(t.customer_name||"")}. راجع كل شيء قبل الصنع.`:"اصنع قصة لأي طفل، مثل طلب وصلك على واتساب."}</p>
+                ${s.tier==="pro"?'<p class="sm-pro">🌟 قصة <b>مؤلفة خصيصاً بوجه الطفل</b>: نصها حول أسرته وتفاصيله.</p>':""}
+                ${s.fmt==="print"?'<p class="sm-print">📦 العميل طلب نسخة مطبوعة: اصنع الملف وأرسله للمطبعة (A4، غلاف مقوّى).</p>':""}
+                ${s.ded?`<p class="adm-muted">💌 الإهداء: «${d(s.ded)}»${s.ded_from?` — ${d(s.ded_from)}`:""}</p>`:""}
+                ${s.wrap?'<p class="sm-print">🎁 غلّف الكتاب المطبوع كهدية قبل التوصيل.</p>':""}
+                ${(s.likes||[]).length||ATHR.lessonOf(s.lesson)?`<p class="adm-muted">${(s.likes||[]).length?`🎈 يحب: ${d(ATHR.likesText(s.likes))}`:""}${(s.likes||[]).length&&ATHR.lessonOf(s.lesson)?" · ":""}${ATHR.lessonOf(s.lesson)?`✨ الرسالة: ${d(ATHR.lessonOf(s.lesson).t)}`:""}</p>`:""}
 
                 <section class="sm-card">
                     <h4><b>1</b> الطفل والقصة</h4>
-                    <label class="af"><span>القصة</span><select class="ai" id="smStory">${STORY_OPTS.map(([v, l]) => `<option value="${v}"${v === story ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
-                    <label class="af"><span>اسم الطفل</span><input class="ai" id="smName" maxlength="22" autocomplete="off" value="${esc(c.name || "")}"></label>
+                    <label class="af"><span>القصة</span><select class="ai" id="smStory">${We.map(([l,c])=>`<option value="${l}"${l===n?" selected":""}>${d(c)}</option>`).join("")}</select></label>
+                    <label class="af"><span>اسم الطفل</span><input class="ai" id="smName" maxlength="22" autocomplete="off" value="${d(s.name||"")}"></label>
                     <div class="two">
-                        <label class="af"><span>ولد أو بنت</span><select class="ai" id="smG"><option value="m"${c.g === "f" ? "" : " selected"}>ولد</option><option value="f"${c.g === "f" ? " selected" : ""}>بنت</option></select></label>
-                        <label class="af"><span>العمر</span><select class="ai" id="smAge"><option value="">اختر</option>${ages}</select></label>
+                        <label class="af"><span>ولد أو بنت</span><select class="ai" id="smG"><option value="m"${s.g==="f"?"":" selected"}>ولد</option><option value="f"${s.g==="f"?" selected":""}>بنت</option></select></label>
+                        <label class="af"><span>العمر</span><select class="ai" id="smAge"><option value="">اختر</option>${o}</select></label>
                     </div>
                 </section>
 
@@ -6523,17 +1345,17 @@
                     <div class="sm-photo">
                         <span class="sm-thumbbox" id="smThumbBox" hidden><img id="smThumb" alt=""></span>
                         <div class="sm-photo-side">
-                            <label class="ab ab-ghost ab-sm" for="smPhoto">📷 ${c.photo_path ? "صورة ثانية بدل صورة الطلب" : "اختر صورة الطفل"}</label>
+                            <label class="ab ab-ghost ab-sm" for="smPhoto">📷 ${s.photo_path?"صورة ثانية بدل صورة الطلب":"اختر صورة الطفل"}</label>
                             <input type="file" id="smPhoto" accept="image/*" hidden>
                             <span class="adm-muted" id="smPhotoName"></span>
                             <button class="ab-mini danger" type="button" data-sm="photo-clear" id="smPhotoClear" hidden>إزالة الصورة</button>
                         </div>
                     </div>
                     <div class="sm-lbl">شكل الطفل في الصفحات</div>
-                    <div class="sm-seg" id="smStyleSeg">${SM_STYLES.map(([v, ic, t, d]) => `<button type="button" class="sm-opt${v === "real" ? " on" : ""}" data-sm="style" data-v="${v}"><span>${ic}</span><b>${t}</b><small>${d}</small></button>`).join("")}</div>
+                    <div class="sm-seg" id="smStyleSeg">${Oi.map(([l,c,p,u])=>`<button type="button" class="sm-opt${l==="real"?" on":""}" data-sm="style" data-v="${l}"><span>${c}</span><b>${p}</b><small>${u}</small></button>`).join("")}</div>
                     <div id="smAiBox">
                         <div class="sm-lbl">ملابس الطفل <small>(اتركها فارغة وتُختار حسب القصة)</small></div>
-                        <div class="sm-chips" id="smChips">${smOutfitChips(story)}</div>
+                        <div class="sm-chips" id="smChips">${pn(n)}</div>
                         <input class="ai" id="smOutfit" maxlength="120" autocomplete="off" placeholder="أو اكتب ما تريده بنفسك">
                         <div class="sm-lbl">تفاصيل إضافية على شكل الطفل <small>(اختياري)</small></div>
                         <input class="ai" id="smNote" maxlength="160" autocomplete="off" placeholder="مثلاً: يضع نظارة، شعره قصير، ابتسامة كبيرة">
@@ -6554,995 +1376,140 @@
                     <div class="sm-progress" id="smProgress" hidden><span class="sm-bar"><i id="smBar"></i></span><small id="smStep"></small></div>
                     <div class="sm-actions" id="smActions"></div>
                 </section>
-            </div>`);
-        smReset();
-        smUiState();
-        if (c.photo_path) smOrderPhoto(c.photo_path);
-        const box = $("#storyMaker");
-        box.addEventListener("input", (e) => {
-            e.stopPropagation();
-            if (e.target.id === "smOutfit") SM.outfit = e.target.value.trim();
-            else if (e.target.id === "smNote") SM.note = e.target.value.trim();
-            else if (e.target.id === "smPageText") { SM.texts[SM.sel] = e.target.value; }
-            else if (e.target.id === "smPageNote") { SM.notes[SM.sel] = e.target.value; }
-            smSyncSig();
-            smReset();
-            if (e.target.id === "smName" || e.target.id === "smPageText") smRefresh(400);
-        });
-        box.addEventListener("change", async (e) => {
-            e.stopPropagation();
-            if (e.target.id === "smPhoto") {
-                const f = e.target.files && e.target.files[0];
-                if (f) {
-                    try { await smSetPhoto(f, "✓ الصورة جاهزة"); } catch { toast("تعذر فتح الصورة. جرّب صورة ثانية."); }
-                }
-                e.target.value = "";
-            }
-            if (e.target.id === "smStory") { $("#smChips").innerHTML = smOutfitChips(e.target.value); SM.texts = {}; SM.notes = {}; SM.sel = null; smCloseEditor(); }
-            smSyncSig();
-            smReset();
-            smUiState();
-            smRefresh(80);
-        });
-        box.addEventListener("click", (e) => {
-            const card = e.target.closest("[data-pg]");
-            if (card) { e.stopPropagation(); smOpenEditor(card.dataset.pg); return; }
-            const b = e.target.closest("[data-sm]");
-            if (!b) return;
-            e.stopPropagation();
-            const k = b.dataset.sm;
-            if (k === "style") { SM.style = b.dataset.v; smSyncSig(); smUiState(); smReset(); smRefresh(0); }
-            if (k === "outfit") { $("#smOutfit").value = b.dataset.v; SM.outfit = b.dataset.v; smSyncSig(); smUiState(); smReset(); }
-            if (k === "photo-clear") { SM.photo = null; SM.raw = null; SM.ref = null; SM.art = {}; $("#smThumbBox").hidden = true; $("#smPhotoName").textContent = ""; b.hidden = true; smSyncSig(); smUiState(); smReset(); smRefresh(0); }
-            if (k === "gen-all") smGenAllClick(b);
-            if (k === "gen-page") smGenPageClick(b);
-            if (k === "reset-page") { delete SM.art[SM.sel]; smReset(); smOpenEditor(SM.sel); smRefresh(0); }
-            if (k === "reset-text") { delete SM.texts[SM.sel]; smReset(); smOpenEditor(SM.sel); smRefresh(0); }
-            if (k === "close-editor") smCloseEditor();
-            if (k === "make") smMake();
-            if (k === "share") smShare();
-            if (k === "wa") smWa();
-            if (k === "done" && SM.order) { updateOrderField(SM.order.id, "status", "delivered"); b.disabled = true; b.textContent = "✓ تم التسليم"; }
-        });
-        smRefresh(0);
-    }
-
-    function smUiState() {
-        const seg = $("#smStyleSeg");
-        if (seg) $$(".sm-opt", seg).forEach((b) => b.classList.toggle("on", b.dataset.v === SM.style));
-        const ai = $("#smAiBox");
-        if (ai) ai.hidden = SM.style === "orig";
-        const tools = $("#smTools");
-        if (tools) {
-            const on = smUseAI();
-            tools.hidden = SM.style === "orig";
-            const hint = $("#smHint");
-            if (hint) hint.textContent = on ? "اضغط أي صفحة لتعديل نصها أو إعادة رسمها وحدها. الصفحات التي لم تُرسم بعد تظهر بالرسم الأصلي." : SM.style === "orig" ? "القصة بالرسومات الأصلية. اضغط أي صفحة لتعديل نصها." : "اختر صورة الطفل أولاً ليظهر في الصفحات.";
-        }
-    }
-
-    function smPageList() {
-        const lib = window.HUROOF_STORIES;
-        const story = $("#smStory") ? $("#smStory").value : "letters";
-        return lib ? lib.bookPages(story).filter((p) => p.kind === "bcover" || p.kind === "bpage").map((p) => ({ ...p, key: p.kind === "bcover" ? "cover" : p.key })) : [];
-    }
-
-    function smPageData() {
-        const { custom } = smValues();
-        return { ...custom, age: custom.age || 5, name: ATHR.storyClean(custom).name || (custom.g === "f" ? "سارة" : "سالم") };
-    }
-
-    function smRefresh(delay = 300) {
-        clearTimeout(SM.timer);
-        SM.timer = setTimeout(async () => {
-            const seq = ++SM.seq;
-            let lib;
-            try { lib = await loadStoriesLib(); } catch { const er = $("#smErr"); if (er) { er.textContent = "تعذر تحميل أداة القصص. تأكد من الإنترنت."; er.hidden = false; } return; }
-            const grid = $("#smGrid");
-            if (!grid) return;
-            const story = $("#smStory").value;
-            const list = smPageList();
-            const total = list.length;
-            if ($("#smCount")) $("#smCount").textContent = `(${total} صفحة · ${Object.keys(SM.art).length} بصورة الطفل)`;
-            if (!grid.children.length || grid.dataset.story !== story || grid.children.length !== total) {
-                grid.dataset.story = story;
-                grid.innerHTML = list.map((p) => `<button type="button" class="sm-pg" data-pg="${esc(p.key)}"><canvas></canvas><span class="sm-pgl">${p.key === "cover" ? "الغلاف" : `صفحة ${p.n}`}</span><i class="sm-pgb"></i></button>`).join("");
-            }
-            const data = smPageData();
-            for (let n = 0; n < list.length; n++) {
-                const p = list[n];
-                const cell = grid.children[n];
-                if (!cell) return;
-                const page = { ...p, text: SM.texts[p.key] != null ? SM.texts[p.key] : p.text };
-                const tmp = document.createElement("canvas");
-                await lib.renderPage(story, data, page, { width: 260, canvas: tmp, art: SM.art });
-                if (seq !== SM.seq) return;
-                const cv = cell.querySelector("canvas");
-                cv.width = tmp.width; cv.height = tmp.height;
-                cv.getContext("2d").drawImage(tmp, 0, 0);
-                const done = Boolean(SM.art[p.key]);
-                cell.classList.toggle("done", done);
-                cell.classList.toggle("sel", SM.sel === p.key);
-                cell.querySelector(".sm-pgb").textContent = done ? "✓ بصورة الطفل" : SM.busyKeys && SM.busyKeys.has(p.key) ? "⏳ يرسم" : "";
-            }
-            if (SM.sel) smDrawEditorCanvas();
-        }, delay);
-    }
-
-    function smCloseEditor() {
-        SM.sel = null;
-        const ed = $("#smEditor");
-        if (ed) ed.hidden = true;
-        $$("#smGrid .sm-pg").forEach((x) => x.classList.remove("sel"));
-    }
-
-    function smOpenEditor(key) {
-        SM.sel = key;
-        const list = smPageList();
-        const p = list.find((x) => x.key === key);
-        const ed = $("#smEditor");
-        if (!p || !ed) return;
-        $$("#smGrid .sm-pg").forEach((x) => x.classList.toggle("sel", x.dataset.pg === key));
-        const text = SM.texts[key] != null ? SM.texts[key] : p.text || "";
-        const ai = smUseAI();
-        ed.hidden = false;
-        ed.innerHTML = `
-            <div class="sm-ed-head"><b>${key === "cover" ? "الغلاف" : `صفحة ${p.n}`}</b><button type="button" class="ab-mini" data-sm="close-editor">إغلاق ✕</button></div>
+            </div>`),it(),ke(),s.photo_path&&Ei(s.photo_path);const r=b("#storyMaker");r.addEventListener("input",l=>{l.stopPropagation(),l.target.id==="smOutfit"?g.outfit=l.target.value.trim():l.target.id==="smNote"?g.note=l.target.value.trim():l.target.id==="smPageText"?g.texts[g.sel]=l.target.value:l.target.id==="smPageNote"&&(g.notes[g.sel]=l.target.value),Ft(),it(),(l.target.id==="smName"||l.target.id==="smPageText")&&pt(400)}),r.addEventListener("change",async l=>{if(l.stopPropagation(),l.target.id==="smPhoto"){const c=l.target.files&&l.target.files[0];if(c)try{await un(c,"✓ الصورة جاهزة")}catch{y("تعذر فتح الصورة. جرّب صورة ثانية.")}l.target.value=""}l.target.id==="smStory"&&(b("#smChips").innerHTML=pn(l.target.value),g.texts={},g.notes={},g.sel=null,bn()),Ft(),it(),ke(),pt(80)}),r.addEventListener("click",l=>{const c=l.target.closest("[data-pg]");if(c){l.stopPropagation(),Ke(c.dataset.pg);return}const p=l.target.closest("[data-sm]");if(!p)return;l.stopPropagation();const u=p.dataset.sm;u==="style"&&(g.style=p.dataset.v,Ft(),ke(),it(),pt(0)),u==="outfit"&&(b("#smOutfit").value=p.dataset.v,g.outfit=p.dataset.v,Ft(),ke(),it()),u==="photo-clear"&&(g.photo=null,g.raw=null,g.ref=null,g.art={},b("#smThumbBox").hidden=!0,b("#smPhotoName").textContent="",p.hidden=!0,Ft(),ke(),it(),pt(0)),u==="gen-all"&&Ii(p),u==="gen-page"&&Di(p),u==="reset-page"&&(delete g.art[g.sel],it(),Ke(g.sel),pt(0)),u==="reset-text"&&(delete g.texts[g.sel],it(),Ke(g.sel),pt(0)),u==="close-editor"&&bn(),u==="make"&&Fi(),u==="share"&&ji(),u==="wa"&&Ui(),u==="done"&&g.order&&(Da(g.order.id,"status","delivered"),p.disabled=!0,p.textContent="✓ تم التسليم")}),pt(0)}function ke(){const t=b("#smStyleSeg");t&&at(".sm-opt",t).forEach(s=>s.classList.toggle("on",s.dataset.v===g.style));const e=b("#smAiBox");e&&(e.hidden=g.style==="orig");const a=b("#smTools");if(a){const s=_e();a.hidden=g.style==="orig";const n=b("#smHint");n&&(n.textContent=s?"اضغط أي صفحة لتعديل نصها أو إعادة رسمها وحدها. الصفحات التي لم تُرسم بعد تظهر بالرسم الأصلي.":g.style==="orig"?"القصة بالرسومات الأصلية. اضغط أي صفحة لتعديل نصها.":"اختر صورة الطفل أولاً ليظهر في الصفحات.")}}function ze(){const t=window.HUROOF_STORIES,e=b("#smStory")?b("#smStory").value:"letters";return t?t.bookPages(e).filter(a=>a.kind==="bcover"||a.kind==="bpage").map(a=>({...a,key:a.kind==="bcover"?"cover":a.key})):[]}function fn(){const{custom:t}=Ia();return{...t,age:t.age||5,name:ATHR.storyClean(t).name||(t.g==="f"?"سارة":"سالم")}}function pt(t=300){clearTimeout(g.timer),g.timer=setTimeout(async()=>{const e=++g.seq;let a;try{a=await we()}catch{const c=b("#smErr");c&&(c.textContent="تعذر تحميل أداة القصص. تأكد من الإنترنت.",c.hidden=!1);return}const s=b("#smGrid");if(!s)return;const n=b("#smStory").value,o=ze(),r=o.length;b("#smCount")&&(b("#smCount").textContent=`(${r} صفحة · ${Object.keys(g.art).length} بصورة الطفل)`),(!s.children.length||s.dataset.story!==n||s.children.length!==r)&&(s.dataset.story=n,s.innerHTML=o.map(c=>`<button type="button" class="sm-pg" data-pg="${d(c.key)}"><canvas></canvas><span class="sm-pgl">${c.key==="cover"?"الغلاف":`صفحة ${c.n}`}</span><i class="sm-pgb"></i></button>`).join(""));const l=fn();for(let c=0;c<o.length;c++){const p=o[c],u=s.children[c];if(!u)return;const m={...p,text:g.texts[p.key]!=null?g.texts[p.key]:p.text},h=document.createElement("canvas");if(await a.renderPage(n,l,m,{width:260,canvas:h,art:g.art}),e!==g.seq)return;const M=u.querySelector("canvas");M.width=h.width,M.height=h.height,M.getContext("2d").drawImage(h,0,0);const L=!!g.art[p.key];u.classList.toggle("done",L),u.classList.toggle("sel",g.sel===p.key),u.querySelector(".sm-pgb").textContent=L?"✓ بصورة الطفل":g.busyKeys&&g.busyKeys.has(p.key)?"⏳ يرسم":""}g.sel&&hn()},t)}function bn(){g.sel=null;const t=b("#smEditor");t&&(t.hidden=!0),at("#smGrid .sm-pg").forEach(e=>e.classList.remove("sel"))}function Ke(t){g.sel=t;const a=ze().find(r=>r.key===t),s=b("#smEditor");if(!a||!s)return;at("#smGrid .sm-pg").forEach(r=>r.classList.toggle("sel",r.dataset.pg===t));const n=g.texts[t]!=null?g.texts[t]:a.text||"",o=_e();s.hidden=!1,s.innerHTML=`
+            <div class="sm-ed-head"><b>${t==="cover"?"الغلاف":`صفحة ${a.n}`}</b><button type="button" class="ab-mini" data-sm="close-editor">إغلاق ✕</button></div>
             <canvas id="smBig"></canvas>
-            ${key !== "cover" ? `<label class="af"><span>نص الصفحة <small>(الكلمات الملوّنة بين [ ] حسب الولد والبنت. عدّله بحرية)</small></span><textarea class="ai" id="smPageText" rows="4">${esc(text)}</textarea></label>
-            ${SM.texts[key] != null ? `<button type="button" class="ab-mini" data-sm="reset-text">↩ النص الأصلي</button>` : ""}` : ""}
-            ${ai ? `<label class="af"><span>وصف خاص بهذه الصفحة <small>(اختياري: الملابس، التعبير، حركة الطفل)</small></span><input class="ai" id="smPageNote" maxlength="160" value="${esc(SM.notes[key] || "")}" placeholder="مثلاً: يبتسم ويلوّح بيده، أو: يرتدي خوذة"></label>
-            <div class="inline"><button type="button" class="ab ab-primary ab-sm" data-sm="gen-page">${SM.art[key] ? "🔄 أعد رسم هذه الصفحة" : "🎨 ارسم هذه الصفحة"}</button>${SM.art[key] ? `<button type="button" class="ab ab-ghost ab-sm" data-sm="reset-page">↩ الرسم الأصلي</button>` : ""}</div>` : ""}`;
-        smDrawEditorCanvas();
-        ed.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
+            ${t!=="cover"?`<label class="af"><span>نص الصفحة <small>(الكلمات الملوّنة بين [ ] حسب الولد والبنت. عدّله بحرية)</small></span><textarea class="ai" id="smPageText" rows="4">${d(n)}</textarea></label>
+            ${g.texts[t]!=null?'<button type="button" class="ab-mini" data-sm="reset-text">↩ النص الأصلي</button>':""}`:""}
+            ${o?`<label class="af"><span>وصف خاص بهذه الصفحة <small>(اختياري: الملابس، التعبير، حركة الطفل)</small></span><input class="ai" id="smPageNote" maxlength="160" value="${d(g.notes[t]||"")}" placeholder="مثلاً: يبتسم ويلوّح بيده، أو: يرتدي خوذة"></label>
+            <div class="inline"><button type="button" class="ab ab-primary ab-sm" data-sm="gen-page">${g.art[t]?"🔄 أعد رسم هذه الصفحة":"🎨 ارسم هذه الصفحة"}</button>${g.art[t]?'<button type="button" class="ab ab-ghost ab-sm" data-sm="reset-page">↩ الرسم الأصلي</button>':""}</div>`:""}`,hn(),s.scrollIntoView({behavior:"smooth",block:"nearest"})}async function hn(){const t=g.sel,e=b("#smBig");if(!t||!e)return;const a=await we(),s=b("#smStory").value,n=ze().find(l=>l.key===t);if(!n)return;const o={...n,text:g.texts[t]!=null?g.texts[t]:n.text},r=document.createElement("canvas");await a.renderPage(s,fn(),o,{width:760,canvas:r,art:g.art}),!(g.sel!==t||!b("#smBig"))&&(e.width=r.width,e.height=r.height,e.getContext("2d").drawImage(r,0,0))}async function gn(t){const e=await we(),a=b("#smStory").value,s=b("#smG").value,n=[g.notes[t]||"",g.note||""].filter(Boolean).join(". ");let o=null;for(let r=0;r<2;r++)try{const l=await Kt({task:"scene",character:g.ref,scene:new URL(e.artSrc(a,s,t),location.href).href,g:s,mode:g.style,outfit:g.outfit,note:n,provider:"openai"},"ai-draw");g.art[t]=await e.readPhoto(await(await fetch(l.image)).blob());return}catch(l){if(o=l,l&&(l.code==="no_key"||l.code==="bad_key"||l.code==="not_admin"))break}throw o}function Ua(t){const e=b("#smErr");e&&(e.textContent=t&&t.code?`${zt(t)}${t.detail?` — ${String(t.detail).slice(0,160)}`:""}`:"تعذر إكمال العملية. حاول مرة ثانية.",e.hidden=!1)}async function Di(t){const e=g.sel;if(!e||g.busy)return;if(!g.ref){y("اختر صورة الطفل أولاً.");return}g.busy=!0,g.busyKeys=new Set([e]);const a=t.textContent;t.disabled=!0,t.textContent="⏳ يرسم... (حوالي نصف دقيقة)",b("#smErr").hidden=!0;try{await gn(e),it()}catch(s){console.warn("Page draw:",s),Ua(s)}g.busy=!1,g.busyKeys=null,t.disabled=!1,t.textContent=a,Ke(e),pt(0)}async function $n(t){const e=ze().map(n=>n.key),a=e.filter(n=>!g.art[n]);let s=e.length-a.length;t&&t(s,e.length);for(const n of a)g.busyKeys=new Set([n]),await gn(n),s++,t&&t(s,e.length),pt(0);return g.busyKeys=null,g.art}async function Ii(t){if(g.busy)return;if(!g.ref){y("اختر صورة الطفل أولاً.");return}g.busy=!0;const e=t.textContent;t.disabled=!0,b("#smErr").hidden=!0;const a=b("#smProgress");a.hidden=!1;try{await $n((s,n)=>{b("#smBar")&&(b("#smBar").style.width=`${Math.round(s/n*100)}%`),b("#smStep")&&(b("#smStep").textContent=s<n?`نرسم الطفل في الصفحة ${s+1} من ${n}...`:"اكتمل رسم كل الصفحات ✓"),t.textContent=`⏳ ${s}/${n}`}),it()}catch(s){console.warn("Draw all:",s),Ua(s)}g.busy=!1,g.busyKeys=null,t.disabled=!1,t.textContent=e,setTimeout(()=>{a&&(a.hidden=!0)},1200),pt(0)}const $l=pt;async function Fi(){if(g.busy)return;const{story:t,custom:e}=Ia(),a=ATHR.storyIssue(e),s=b("#smErr");if(a){s.textContent=a==="age"?"اختر عمر الطفل.":a==="g"?"اختر ولد أو بنت.":"اكتب اسم الطفل بالحروف (حرفين على الأقل).",s.hidden=!1;return}s.hidden=!0,g.busy=!0;const n=b("#smProgress");n.hidden=!1,b("#smActions").innerHTML="";try{const o=await we();let r=null;_e()&&(Ft(),r=await $n((u,m)=>{const h=b("#smBar"),M=b("#smStep");h&&(h.style.width=`${Math.round(u/m*50)}%`),M&&(M.textContent=u<m?`نرسم الطفل في الصفحة ${u+1} من ${m}...`:"جاري تجميع الملف...")}));const l=await o.buildPDF(t,e,{photo:null,art:r,texts:g.texts,onProgress:(u,m)=>{const h=b("#smBar"),M=b("#smStep");h&&(h.style.width=`${(_e()?50:0)+Math.round(u/m*(_e()?50:100))}%`),M&&(M.textContent=u<m?`نرسم الصفحة ${u+1} من ${m}...`:"جاهز ✓")}});g.pdf=new File([l],o.fileName(t,e),{type:"application/pdf"}),g.url=URL.createObjectURL(g.pdf);const c=!!(navigator.canShare&&navigator.canShare({files:[g.pdf]})),p=g.order;b("#smActions").innerHTML=`
+                <p class="sm-ready">✓ ملف «${d(g.pdf.name)}» جاهز (${(g.pdf.size/1048576).toFixed(1)} م.ب، ${o.bookPages(t,e).length} صفحة)</p>
+                ${c?'<button class="ab ab-primary ab-block" type="button" data-sm="share">📤 أرسل الملف (اختر واتساب ثم العميل)</button>':""}
+                <a class="ab ${c?"ab-ghost":"ab-primary"} ab-block" href="${g.url}" download="${d(g.pdf.name)}">⬇️ تنزيل الملف</a>
+                ${p&&p.phone?'<button class="ab ab-ghost ab-block" type="button" data-sm="wa">💬 رسالة للعميل على واتساب</button>':""}
+                ${p&&p.status!=="delivered"?'<button class="ab-mini" type="button" data-sm="done">✓ علّم الطلب «تم التسليم»</button>':""}`}catch(o){console.error("Story PDF:",o),Ua(o),it()}finally{g.busy=!1,setTimeout(()=>{n&&(n.hidden=!0)},600)}}async function ji(){if(g.pdf)try{await navigator.share({files:[g.pdf],title:g.pdf.name.replace(/\.pdf$/,"")})}catch(t){t&&t.name!=="AbortError"&&y("تعذرت المشاركة. استخدم «تنزيل الملف» ثم أرسله من واتساب.")}}function Ui(){const t=g.order;if(!t||!t.phone)return;const{custom:e}=Ia(),s=`هلا ${String(t.customer_name||"").trim().split(/\s+/)[0]} 🌟
 
-    async function smDrawEditorCanvas() {
-        const key = SM.sel;
-        const cv = $("#smBig");
-        if (!key || !cv) return;
-        const lib = await loadStoriesLib();
-        const story = $("#smStory").value;
-        const p = smPageList().find((x) => x.key === key);
-        if (!p) return;
-        const page = { ...p, text: SM.texts[key] != null ? SM.texts[key] : p.text };
-        const tmp = document.createElement("canvas");
-        await lib.renderPage(story, smPageData(), page, { width: 760, canvas: tmp, art: SM.art });
-        if (SM.sel !== key || !$("#smBig")) return;
-        cv.width = tmp.width; cv.height = tmp.height;
-        cv.getContext("2d").drawImage(tmp, 0, 0);
-    }
+قصة *${ATHR.storyClean(e).name}* جاهزة 📖✨
+أرسلت لك الملف هنا، تقدر تطبعه على ورق A4 أو تقرأه من الجوال.
 
-    // يرسم صفحة واحدة بصورة الطفل (مع إعادة محاولة)
-    async function smGenPage(key) {
-        const lib = await loadStoriesLib();
-        const story = $("#smStory").value;
-        const g = $("#smG").value;
-        const note = [SM.notes[key] || "", SM.note || ""].filter(Boolean).join(". ");
-        let last = null;
-        for (let t = 0; t < 2; t++) {
-            try {
-                const out = await aiCall({ task: "scene", character: SM.ref, scene: new URL(lib.artSrc(story, g, key), location.href).href, g, mode: SM.style, outfit: SM.outfit, note, provider: "openai" }, "ai-draw");
-                SM.art[key] = await lib.readPhoto(await (await fetch(out.image)).blob());
-                return;
-            } catch (e) { last = e; if (e && (e.code === "no_key" || e.code === "bad_key" || e.code === "not_admin")) break; }
-        }
-        throw last;
-    }
-
-    function smShowError(e) {
-        const er = $("#smErr");
-        if (!er) return;
-        er.textContent = e && e.code ? `${aiError(e)}${e.detail ? ` — ${String(e.detail).slice(0, 160)}` : ""}` : "تعذر إكمال العملية. حاول مرة ثانية.";
-        er.hidden = false;
-    }
-
-    async function smGenPageClick(btn) {
-        const key = SM.sel;
-        if (!key || SM.busy) return;
-        if (!SM.ref) { toast("اختر صورة الطفل أولاً."); return; }
-        SM.busy = true;
-        SM.busyKeys = new Set([key]);
-        const old = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = "⏳ يرسم... (حوالي نصف دقيقة)";
-        $("#smErr").hidden = true;
-        try {
-            await smGenPage(key);
-            smReset();
-        } catch (e) { console.warn("Page draw:", e); smShowError(e); }
-        SM.busy = false;
-        SM.busyKeys = null;
-        btn.disabled = false;
-        btn.textContent = old;
-        smOpenEditor(key);
-        smRefresh(0);
-    }
-
-    // يرسم كل الصفحات الناقصة، يُرجع خريطة الصور
-    async function smGenAll(onStep) {
-        const keys = smPageList().map((p) => p.key);
-        const todo = keys.filter((k) => !SM.art[k]);
-        let done = keys.length - todo.length;
-        if (onStep) onStep(done, keys.length);
-        for (const k of todo) {
-            SM.busyKeys = new Set([k]);
-            await smGenPage(k);
-            done++;
-            if (onStep) onStep(done, keys.length);
-            smRefresh(0);
-        }
-        SM.busyKeys = null;
-        return SM.art;
-    }
-
-    async function smGenAllClick(btn) {
-        if (SM.busy) return;
-        if (!SM.ref) { toast("اختر صورة الطفل أولاً."); return; }
-        SM.busy = true;
-        const old = btn.textContent;
-        btn.disabled = true;
-        $("#smErr").hidden = true;
-        const prog = $("#smProgress");
-        prog.hidden = false;
-        try {
-            await smGenAll((d, n) => {
-                if ($("#smBar")) $("#smBar").style.width = `${Math.round((d / n) * 100)}%`;
-                if ($("#smStep")) $("#smStep").textContent = d < n ? `نرسم الطفل في الصفحة ${d + 1} من ${n}...` : "اكتمل رسم كل الصفحات ✓";
-                btn.textContent = `⏳ ${d}/${n}`;
-            });
-            smReset();
-        } catch (e) { console.warn("Draw all:", e); smShowError(e); }
-        SM.busy = false;
-        SM.busyKeys = null;
-        btn.disabled = false;
-        btn.textContent = old;
-        setTimeout(() => { if (prog) prog.hidden = true; }, 1200);
-        smRefresh(0);
-    }
-
-    const smPreview = smRefresh;
-
-    async function smMake() {
-        if (SM.busy) return;
-        const { story, custom } = smValues();
-        const issue = ATHR.storyIssue(custom);
-        const err = $("#smErr");
-        if (issue) {
-            err.textContent = issue === "age" ? "اختر عمر الطفل." : issue === "g" ? "اختر ولد أو بنت." : "اكتب اسم الطفل بالحروف (حرفين على الأقل).";
-            err.hidden = false;
-            return;
-        }
-        err.hidden = true;
-        SM.busy = true;
-        const prog = $("#smProgress");
-        prog.hidden = false;
-        $("#smActions").innerHTML = "";
-        try {
-            const lib = await loadStoriesLib();
-            let art = null;
-            if (smUseAI()) {
-                smSyncSig();
-                art = await smGenAll((d, n) => {
-                    const bar = $("#smBar"), step = $("#smStep");
-                    if (bar) bar.style.width = `${Math.round((d / n) * 50)}%`;
-                    if (step) step.textContent = d < n ? `نرسم الطفل في الصفحة ${d + 1} من ${n}...` : "جاري تجميع الملف...";
-                });
-            }
-            const blob = await lib.buildPDF(story, custom, {
-                photo: null,
-                art,
-                texts: SM.texts,
-                onProgress: (i, n) => {
-                    const bar = $("#smBar"), step = $("#smStep");
-                    if (bar) bar.style.width = `${(smUseAI() ? 50 : 0) + Math.round((i / n) * (smUseAI() ? 50 : 100))}%`;
-                    if (step) step.textContent = i < n ? `نرسم الصفحة ${i + 1} من ${n}...` : "جاهز ✓";
-                }
-            });
-            SM.pdf = new File([blob], lib.fileName(story, custom), { type: "application/pdf" });
-            SM.url = URL.createObjectURL(SM.pdf);
-            const canShare = Boolean(navigator.canShare && navigator.canShare({ files: [SM.pdf] }));
-            const o = SM.order;
-            $("#smActions").innerHTML = `
-                <p class="sm-ready">✓ ملف «${esc(SM.pdf.name)}» جاهز (${(SM.pdf.size / 1048576).toFixed(1)} م.ب، ${lib.bookPages(story, custom).length} صفحة)</p>
-                ${canShare ? `<button class="ab ab-primary ab-block" type="button" data-sm="share">📤 أرسل الملف (اختر واتساب ثم العميل)</button>` : ""}
-                <a class="ab ${canShare ? "ab-ghost" : "ab-primary"} ab-block" href="${SM.url}" download="${esc(SM.pdf.name)}">⬇️ تنزيل الملف</a>
-                ${o && o.phone ? `<button class="ab ab-ghost ab-block" type="button" data-sm="wa">💬 رسالة للعميل على واتساب</button>` : ""}
-                ${o && o.status !== "delivered" ? `<button class="ab-mini" type="button" data-sm="done">✓ علّم الطلب «تم التسليم»</button>` : ""}`;
-        } catch (e) {
-            console.error("Story PDF:", e);
-            smShowError(e);
-            smReset();
-        } finally {
-            SM.busy = false;
-            setTimeout(() => { if (prog) prog.hidden = true; }, 600);
-        }
-    }
-
-    async function smShare() {
-        if (!SM.pdf) return;
-        try {
-            await navigator.share({ files: [SM.pdf], title: SM.pdf.name.replace(/\.pdf$/, "") });
-        } catch (e) {
-            if (e && e.name !== "AbortError") toast("تعذرت المشاركة. استخدم «تنزيل الملف» ثم أرسله من واتساب.");
-        }
-    }
-
-    function smWa() {
-        const o = SM.order;
-        if (!o || !o.phone) return;
-        const { custom } = smValues();
-        const first = String(o.customer_name || "").trim().split(/\s+/)[0];
-        const text = `هلا ${first} 🌟\n\nقصة *${ATHR.storyClean(custom).name}* جاهزة 📖✨\nأرسلت لك الملف هنا، تقدر تطبعه على ورق A4 أو تقرأه من الجوال.\n\nشكراً لثقتك في ${ATHR.storeName(cfg())} 🤍`;
-        window.open(customerWa(o, text), "_blank", "noopener");
-    }
-
-    // ---------- order sheet (manual / edit / paste) ----------
-
-    function openOrderSheet(html) {
-        const sheet = $("#admSheet");
-        sheet.innerHTML = `<div class="adm-sheet-backdrop" data-a="orders-sheet-close"></div><div class="adm-sheet-panel" role="dialog" aria-modal="true">${html}</div>`;
-        sheet.hidden = false;
-    }
-
-    function closeOrderSheet() {
-        const sheet = $("#admSheet");
-        if (sheet) {
-            sheet.hidden = true;
-            sheet.innerHTML = "";
-        }
-    }
-
-    function toMuscatInputs(iso) {
-        const d = new Date(iso || Date.now());
-        const shifted = new Date(d.getTime() + 4 * 3600 * 1000);
-        return { date: shifted.toISOString().slice(0, 10), time: shifted.toISOString().slice(11, 16) };
-    }
-
-    function openOrderForm(o) {
-        const isNew = !o;
-        const c = cfg();
-        const when = toMuscatInputs(o && o.ordered_at);
-        const items = o ? itemsList(o).join("\n") : "";
-        const deliveries = c.order.delivery.map((d) => d.name).filter(Boolean);
-        openOrderSheet(`
-            <div class="adm-sheet-head"><h2>${isNew ? "طلب يدوي" : `تعديل ${esc(o.order_no)}`}</h2><button class="adm-icon" type="button" data-a="orders-sheet-close" aria-label="إغلاق">×</button></div>
-            <form class="af-stack" id="orderForm" data-id="${esc(o ? o.id : "")}" novalidate>
+شكراً لثقتك في ${ATHR.storeName($())} 🤍`;window.open(ve(t,s),"_blank","noopener")}function Tt(t){const e=b("#admSheet");e.innerHTML=`<div class="adm-sheet-backdrop" data-a="orders-sheet-close"></div><div class="adm-sheet-panel" role="dialog" aria-modal="true">${t}</div>`,e.hidden=!1}function ee(){const t=b("#admSheet");t&&(t.hidden=!0,t.innerHTML="")}function Ba(t){const e=new Date(t||Date.now()),a=new Date(e.getTime()+4*3600*1e3);return{date:a.toISOString().slice(0,10),time:a.toISOString().slice(11,16)}}function yn(t){const e=!t,a=$(),s=Ba(t&&t.ordered_at),n=t?ln(t).join(`
+`):"",o=a.order.delivery.map(r=>r.name).filter(Boolean);Tt(`
+            <div class="adm-sheet-head"><h2>${e?"طلب يدوي":`تعديل ${d(t.order_no)}`}</h2><button class="adm-icon" type="button" data-a="orders-sheet-close" aria-label="إغلاق">×</button></div>
+            <form class="af-stack" id="orderForm" data-id="${d(t?t.id:"")}" novalidate>
                 <div class="two">
-                    <label class="af"><span>التاريخ</span><input class="ai" type="date" name="date" value="${when.date}"></label>
-                    <label class="af"><span>الوقت</span><input class="ai" type="time" name="time" value="${when.time}"></label>
+                    <label class="af"><span>التاريخ</span><input class="ai" type="date" name="date" value="${s.date}"></label>
+                    <label class="af"><span>الوقت</span><input class="ai" type="time" name="time" value="${s.time}"></label>
                 </div>
-                <label class="af"><span>اسم العميل</span><input class="ai" name="customer_name" value="${esc(o ? o.customer_name || "" : "")}"></label>
+                <label class="af"><span>اسم العميل</span><input class="ai" name="customer_name" value="${d(t&&t.customer_name||"")}"></label>
                 <div class="two">
-                    <label class="af"><span>الدولة</span><select class="ai" name="country">${ATHR_COUNTRIES.map((c) => `<option value="${c.code}"${(o ? o.country || "OM" : "OM") === c.code ? " selected" : ""}>${c.flag} ${esc(c.name)}</option>`).join("")}</select></label>
-                    <label class="af"><span>رقم الهاتف</span><input class="ai" name="phone" type="tel" dir="ltr" value="${esc(o ? o.phone || "" : "")}"></label>
+                    <label class="af"><span>الدولة</span><select class="ai" name="country">${ATHR_COUNTRIES.map(r=>`<option value="${r.code}"${(t&&t.country||"OM")===r.code?" selected":""}>${r.flag} ${d(r.name)}</option>`).join("")}</select></label>
+                    <label class="af"><span>رقم الهاتف</span><input class="ai" name="phone" type="tel" dir="ltr" value="${d(t&&t.phone||"")}"></label>
                 </div>
                 <div class="two">
-                    <label class="af"><span>المدينة (لطلبات الخليج)</span><input class="ai" name="governorate" value="${esc(o ? o.governorate || "" : "")}"></label>
-                    <label class="af"><span>الولاية</span><input class="ai" name="wilaya" value="${esc(o ? o.wilaya || "" : "")}"></label>
+                    <label class="af"><span>المدينة (لطلبات الخليج)</span><input class="ai" name="governorate" value="${d(t&&t.governorate||"")}"></label>
+                    <label class="af"><span>الولاية</span><input class="ai" name="wilaya" value="${d(t&&t.wilaya||"")}"></label>
                 </div>
-                <label class="af"><span>العنوان</span><input class="ai" name="address" value="${esc(o ? (o.office ? `المكتب: ${o.office}` : o.address || "") : "")}"></label>
-                <label class="af"><span>تفاصيل الطلب</span><textarea class="ai" name="items_text" rows="4" placeholder="كل منتج في سطر">${esc(items)}</textarea></label>
+                <label class="af"><span>العنوان</span><input class="ai" name="address" value="${d(t?t.office?`المكتب: ${t.office}`:t.address||"":"")}"></label>
+                <label class="af"><span>تفاصيل الطلب</span><textarea class="ai" name="items_text" rows="4" placeholder="كل منتج في سطر">${d(n)}</textarea></label>
                 <div class="two">
-                    <label class="af"><span>المبلغ</span><input class="ai" name="total" type="number" inputmode="decimal" step="0.001" min="0" value="${o ? esc(o.total) : ""}"></label>
+                    <label class="af"><span>المبلغ</span><input class="ai" name="total" type="number" inputmode="decimal" step="0.001" min="0" value="${t?d(t.total):""}"></label>
                     <label class="af"><span>الدفع</span><select class="ai" name="payment_type">
-                        ${[["bank", "تحويل بنكي"], ["cod", "عند الاستلام"], ["online", "دفع إلكتروني"], ["other", "أخرى"]].map(([v, l]) => `<option value="${v}"${(o ? o.payment_type : "bank") === v ? " selected" : ""}>${l}</option>`).join("")}
+                        ${[["bank","تحويل بنكي"],["cod","عند الاستلام"],["online","دفع إلكتروني"],["other","أخرى"]].map(([r,l])=>`<option value="${r}"${(t?t.payment_type:"bank")===r?" selected":""}>${l}</option>`).join("")}
                     </select></label>
                 </div>
                 <div class="two">
-                    <label class="af"><span>طريقة التوصيل</span><input class="ai" name="delivery_name" list="delList" value="${esc(o ? o.delivery_name || "" : "")}"></label>
+                    <label class="af"><span>طريقة التوصيل</span><input class="ai" name="delivery_name" list="delList" value="${d(t&&t.delivery_name||"")}"></label>
                     <label class="af"><span>الحالة</span><select class="ai" name="status">
-                        <option value="new"${!o || o.status === "new" ? " selected" : ""}>جديد</option>
-                        <option value="delivered"${o && o.status === "delivered" ? " selected" : ""}>تم التسليم</option>
+                        <option value="new"${!t||t.status==="new"?" selected":""}>جديد</option>
+                        <option value="delivered"${t&&t.status==="delivered"?" selected":""}>تم التسليم</option>
                     </select></label>
                 </div>
-                <datalist id="delList">${deliveries.map((d) => `<option value="${esc(d)}">`).join("")}</datalist>
-                <label class="af"><span>ملاحظاتي</span><textarea class="ai" name="admin_note" rows="2">${esc(o ? o.admin_note || "" : "")}</textarea></label>
+                <datalist id="delList">${o.map(r=>`<option value="${d(r)}">`).join("")}</datalist>
+                <label class="af"><span>ملاحظاتي</span><textarea class="ai" name="admin_note" rows="2">${d(t&&t.admin_note||"")}</textarea></label>
                 <p class="adm-error" id="orderFormErr" role="alert"></p>
-                <button class="ab ab-primary" type="submit">${isNew ? "إضافة الطلب" : "حفظ التعديلات"}</button>
-                ${isNew ? "" : `<button class="ab ab-ghost danger" type="button" data-order-delete="${esc(o.id)}">حذف الطلب</button>`}
-            </form>`);
-    }
-
-    async function saveOrderForm(form) {
-        const v = Object.fromEntries(new FormData(form).entries());
-        const id = form.dataset.id;
-        const err = $("#orderFormErr");
-        if (!String(v.customer_name || "").trim() && !String(v.items_text || "").trim()) {
-            err.textContent = "اكتب اسم العميل أو تفاصيل الطلب على الأقل.";
-            return;
-        }
-        const total = Number(ATHR.digits(v.total || "0"));
-        if (!(total >= 0)) {
-            err.textContent = "المبلغ غير صحيح.";
-            return;
-        }
-        const isOffice = /^المكتب:\s*/.test(v.address || "");
-        const row = {
-            ordered_at: new Date(`${v.date || toMuscatInputs().date}T${v.time || "12:00"}:00+04:00`).toISOString(),
-            customer_name: String(v.customer_name || "").trim() || null,
-            country: v.country || "OM",
-            phone: v.phone ? (ATHR.parsePhone(v.phone, v.country || "OM").stored || null) : null,
-            governorate: String(v.governorate || "").trim() || null,
-            wilaya: String(v.wilaya || "").trim() || null,
-            address: isOffice ? null : String(v.address || "").trim() || null,
-            office: isOffice ? v.address.replace(/^المكتب:\s*/, "").trim() : null,
-            items_text: String(v.items_text || "").trim() || null,
-            total,
-            payment_type: v.payment_type,
-            payment_name: { bank: "تحويل بنكي", cod: "الدفع عند الاستلام", online: "دفع إلكتروني", other: "أخرى" }[v.payment_type],
-            delivery_name: String(v.delivery_name || "").trim() || null,
-            status: v.status,
-            admin_note: String(v.admin_note || "").trim() || null
-        };
-
-        let res;
-        if (id) {
-            res = await sb.from("orders").update(row).eq("id", id).select("*").single();
-        } else {
-            let attempt = 0;
-            do {
-                res = await sb.from("orders").insert({ ...row, order_no: ATHR.newOrderNo(), source: "manual" }).select("*").single();
-                attempt++;
-            } while (res.error && String(res.error.code) === "23505" && attempt < 3);
-        }
-        if (res.error) {
-            console.error(res.error);
-            err.textContent = "تعذر الحفظ. تأكد من الإنترنت وحاول مرة أخرى.";
-            return;
-        }
-        if (id) A.orders = A.orders.map((o) => (o.id === id ? res.data : o));
-        else A.orders.unshift(res.data);
-        A.orders.sort((a, b) => new Date(b.ordered_at) - new Date(a.ordered_at));
-        closeOrderSheet();
-        renderOrdersList();
-        toast(id ? "حُفظت التعديلات" : "أُضيف الطلب");
-    }
-
-    // ---------- paste from WhatsApp ----------
-
-    function openPaste() {
-        openOrderSheet(`
+                <button class="ab ab-primary" type="submit">${e?"إضافة الطلب":"حفظ التعديلات"}</button>
+                ${e?"":`<button class="ab ab-ghost danger" type="button" data-order-delete="${d(t.id)}">حذف الطلب</button>`}
+            </form>`)}async function Bi(t){const e=Object.fromEntries(new FormData(t).entries()),a=t.dataset.id,s=b("#orderFormErr");if(!String(e.customer_name||"").trim()&&!String(e.items_text||"").trim()){s.textContent="اكتب اسم العميل أو تفاصيل الطلب على الأقل.";return}const n=Number(ATHR.digits(e.total||"0"));if(!(n>=0)){s.textContent="المبلغ غير صحيح.";return}const o=/^المكتب:\s*/.test(e.address||""),r={ordered_at:new Date(`${e.date||Ba().date}T${e.time||"12:00"}:00+04:00`).toISOString(),customer_name:String(e.customer_name||"").trim()||null,country:e.country||"OM",phone:e.phone&&ATHR.parsePhone(e.phone,e.country||"OM").stored||null,governorate:String(e.governorate||"").trim()||null,wilaya:String(e.wilaya||"").trim()||null,address:o?null:String(e.address||"").trim()||null,office:o?e.address.replace(/^المكتب:\s*/,"").trim():null,items_text:String(e.items_text||"").trim()||null,total:n,payment_type:e.payment_type,payment_name:{bank:"تحويل بنكي",cod:"الدفع عند الاستلام",online:"دفع إلكتروني",other:"أخرى"}[e.payment_type],delivery_name:String(e.delivery_name||"").trim()||null,status:e.status,admin_note:String(e.admin_note||"").trim()||null};let l;if(a)l=await _.from("orders").update(r).eq("id",a).select("*").single();else{let c=0;do l=await _.from("orders").insert({...r,order_no:ATHR.newOrderNo(),source:"manual"}).select("*").single(),c++;while(l.error&&String(l.error.code)==="23505"&&c<3)}if(l.error){console.error(l.error),s.textContent="تعذر الحفظ. تأكد من الإنترنت وحاول مرة أخرى.";return}a?i.orders=i.orders.map(c=>c.id===a?l.data:c):i.orders.unshift(l.data),i.orders.sort((c,p)=>new Date(p.ordered_at)-new Date(c.ordered_at)),ee(),Mt(),y(a?"حُفظت التعديلات":"أُضيف الطلب")}function qi(){Tt(`
             <div class="adm-sheet-head"><h2>لصق رسالة طلب من واتساب</h2><button class="adm-icon" type="button" data-a="orders-sheet-close" aria-label="إغلاق">×</button></div>
             <div class="af-stack">
                 <p class="adm-muted">انسخ رسالة الطلب من واتساب والصقها هنا. يمكنك لصق عدة طلبات معاً.</p>
                 <textarea class="ai" id="pasteBox" rows="10" placeholder="الصق الرسالة هنا"></textarea>
                 <p class="adm-error" id="pasteErr" role="alert"></p>
                 <button class="ab ab-primary" type="button" data-a="paste-import">إضافة إلى الدفتر</button>
-            </div>`);
-        setTimeout(() => $("#pasteBox")?.focus(), 50);
-    }
-
-    function parseNumber(text) {
-        const m = ATHR.digits(String(text || "")).replace(/[,٬]/g, "").match(/-?\d+(?:[.٫]\d+)?/);
-        return m ? Number(m[0].replace("٫", ".")) : 0;
-    }
-
-    // يقرأ رسالة الطلب بالشكل الجديد (👤 من: … · رقم) والقديم (الاسم: / الهاتف:)
-    function parseOrders(raw) {
-        const text = ATHR.digits(raw).replace(/\r/g, "");
-        const starts = [];
-        const re = /رقم الطلب\s*[:：]/g;
-        let m;
-        while ((m = re.exec(text))) {
-            const lineStart = text.lastIndexOf("\n", m.index) + 1;
-            starts.push(lineStart);
-        }
-        if (!starts.length) return [];
-        const strip = (l) => l.replace(/^[^؀-ۿA-Za-z0-9•*\-+]+/, "").trim();
-        return starts.map((start, i) => {
-            const end = i + 1 < starts.length ? starts[i + 1] : text.length;
-            const rawLines = text.slice(start, end).split("\n").map((l) => l.trim());
-            const block = rawLines.map(strip);
-            const get = (label) => {
-                const line = block.find((l) => l.startsWith(label));
-                return line ? line.slice(label.length).replace(/^\s*[:：]\s*/, "").trim() : "";
-            };
-            const byIcon = (icon) => {
-                const line = rawLines.find((l) => l.startsWith(icon));
-                return line ? strip(line) : "";
-            };
-            const split = (line) => line.split("·").map((x) => x.trim()).filter(Boolean);
-            const items = block.filter((l) => /^[•\-*]/.test(l)).map((l) => l.replace(/^[•\-*]\s*/, ""));
-
-            // التاريخ والوقت: «🗓️ الأربعاء 07/10/2026 · 9:29 م» أو «التاريخ:» و«الوقت:»
-            const whenLine = block.find((l) => /\d{1,2}\/\d{1,2}\/\d{4}/.test(l) && !/^رقم/.test(l)) || "";
-            const date = get("التاريخ") || whenLine;
-            const time = get("الوقت") || (whenLine.match(/\d{1,2}:\d{2}\s*(ص|م)?/) || [""])[0];
-            let orderedAt = new Date().toISOString();
-            const dm = date.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-            if (dm) {
-                let hh = 12;
-                let mm = 0;
-                const tm = time.match(/(\d{1,2}):(\d{2})\s*(ص|م)?/);
-                if (tm) {
-                    hh = Number(tm[1]) % 12;
-                    mm = Number(tm[2]);
-                    if (tm[3] === "م") hh += 12;
-                    if (!tm[3]) hh = Number(tm[1]);
-                }
-                const iso = `${dm[3]}-${dm[2].padStart(2, "0")}-${dm[1].padStart(2, "0")}T${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}:00+04:00`;
-                const d = new Date(iso);
-                if (!Number.isNaN(d.getTime())) orderedAt = d.toISOString();
-            }
-
-            // الزبون والهدية
-            const who = split(byIcon("👤").replace(/^من\s*[:：]\s*/, ""));
-            const giftLine = byIcon("🎁");
-            const to = /^إلى\s*[:：]/.test(giftLine) ? split(giftLine.replace(/^إلى\s*[:：]\s*/, "")) : [];
-            const isGift = Boolean(giftLine) || Boolean(get("صاحب الهدية"));
-
-            // المكان والتوصيل
-            const place = byIcon("📍");
-            const countryText = get("الدولة") || place;
-            const country = (ATHR_COUNTRIES.find((c) => countryText.includes(c.name) || countryText.includes(c.flag)) || ATHR_COUNTRIES[0]).code;
-            const placeParts = split(place).filter((x) => !ATHR_COUNTRIES.some((c) => x.includes(c.name)));
-            const isOm = country === "OM";
-            const phoneOf = (v) => (v ? ATHR.parsePhone(v, country).stored : null);
-            const name = who[0] || get("الاسم") || get("صاحب الهدية") || null;
-            const phone = who[1] || get("الهاتف") || get("رقم صاحب الهدية");
-
-            const payText = get("الدفع");
-            const payType = /تحويل|بنك/.test(payText) ? "bank" : /استلام|كاش|نقد/.test(payText) ? "cod" : /إلكتروني|الكتروني|بطاقة/.test(payText) ? "online" : payText ? "other" : "bank";
-            const office = get("المكتب");
-            const deliveryText = get("التوصيل");
-            const noMatch = get("رقم الطلب").match(/[A-Z]{1,4}-[0-9A-Z]{3,10}/i);
-            const discountLine = block.find((l) => /^(خصم|الخصم)/.test(l)) || "";
-            const giftName = to[0] || get("المُهدى إليه") || null;
-            const forText = get("الهدية لـ") || get("الهدية ل");
-            const giftFor = forText ? (ATHR.GIFT_FOR.find((id) => forText.includes(ATHR.giftFor(id, cfg()).label)) || (/بنت/.test(forText) ? "girl" : /ولد/.test(forText) ? "boy" : null)) : null;
-            const giftPhone = to[1] || get("رقم المُهدى إليه");
-            return {
-                order_no: noMatch ? noMatch[0].toUpperCase() : null,
-                ordered_at: orderedAt,
-                source: "paste",
-                customer_name: name,
-                country,
-                phone: phone ? phoneOf(phone) : null,
-                governorate: get("المحافظة") || get("المدينة") || (!isOm ? placeParts[0] || null : null),
-                wilaya: get("الولاية") || (isOm ? placeParts[0] || null : null),
-                address: office ? null : (get("العنوان") || null),
-                office: office || null,
-                notes: get("الملاحظات") || get("ملاحظة") || null,
-                delivery_name: get("طريقة التوصيل") || byIcon("🚚") || null,
-                delivery_price: /مجاني/.test(deliveryText) ? 0 : parseNumber(deliveryText),
-                discount: Math.abs(parseNumber(discountLine.replace(/^[^:：]*[:：]/, ""))),
-                discount_label: (discountLine.split(/[:：]/)[0] || "").trim().slice(0, 80) || null,
-                total: parseNumber(get("الإجمالي")),
-                payment_name: payText || null,
-                payment_type: payType,
-                items_text: items.join("\n") || null,
-                gift: isGift,
-                gift_name: isGift ? giftName : null,
-                gift_phone: isGift && giftPhone ? phoneOf(giftPhone) : null,
-                gift_message: isGift ? (get("رسالة الهدية") || null) : null,
-                gift_hide_price: isGift && block.some((l) => l.includes("لا تذكر السعر")),
-                gift_for: isGift ? giftFor : null,
-                status: "new"
-            };
-        });
-    }
-
-    async function importPasted() {
-        const raw = $("#pasteBox").value;
-        const err = $("#pasteErr");
-        const parsed = parseOrders(raw);
-        if (!parsed.length) {
-            err.textContent = "لم أجد طلباً في النص. تأكد أن الرسالة فيها سطر «رقم الطلب:».";
-            return;
-        }
-        const existing = new Set(A.orders.map((o) => o.order_no));
-        let added = 0;
-        let skipped = 0;
-        for (const row of parsed) {
-            if (row.order_no && existing.has(row.order_no)) { skipped++; continue; }
-            let res;
-            let attempt = 0;
-            const base = { ...row };
-            do {
-                const no = attempt === 0 && base.order_no ? base.order_no : ATHR.newOrderNo();
-                res = await sb.from("orders").insert({ ...base, order_no: no }).select("*").single();
-                attempt++;
-            } while (res.error && String(res.error.code) === "23505" && attempt < 4);
-            if (res.error) {
-                console.error(res.error);
-                continue;
-            }
-            A.orders.push(res.data);
-            existing.add(res.data.order_no);
-            added++;
-        }
-        A.orders.sort((a, b) => new Date(b.ordered_at) - new Date(a.ordered_at));
-        closeOrderSheet();
-        renderOrdersList();
-        toast(`أُضيف ${added} طلب${skipped ? `، و${skipped} موجود مسبقاً` : ""}`);
-    }
-
-    // =====================================================
-    // v32 — وكيل واتساب بالذكاء الاصطناعي
-    // الإعدادات في wa_settings (ما تنشر مع المتجر)، والمحادثات في wa_chats و wa_messages
-    // والإرسال والتجربة والقوالب عبر دالة الخادم wa-agent (المفاتيح ما توصل للمتصفح أبداً)
-    // =====================================================
-    const WA_DEF = {
-        enabled: false, phone_number_id: "", waba_id: "", agent_name: "", tone: "gulf", extra: "",
-        handoff_text: "أبشر، حوّلت محادثتك لصاحب المتجر ويرد عليك بأقرب وقت 🙏",
-        pause_hours: 12, handoff_hours: 24, take_orders: true, track_orders: true, send_photos: true, voice: true
-    };
-    const WA_COUNTRIES = [["OM", "🇴🇲 عُمان"], ["AE", "🇦🇪 الإمارات"], ["SA", "🇸🇦 السعودية"]];
-    const WA_CHIPS = ["السلام عليكم، عندكم ملفات للصف الثاني؟", "ابغى ملفات تلوين للأطفال", "كم سعر ملف المعلمة الخصوصية؟", "وين ملفاتي؟", "أبي أكلم صاحب المتجر"];
-
-    function waState() {
-        if (!A.wa) A.wa = { screen: "home", status: null, conn: null, cfg: { ...WA_DEF }, loaded: false, chats: [], filter: "all", chat: null, msgs: [], tryMsgs: [], tryBusy: false, tryCountry: "OM", tpls: null, tplSel: null, sending: null, err: "" };
-        return A.wa;
-    }
-
-    async function waCall(body) {
-        const { data } = await sb.auth.getSession();
-        const token = data && data.session && data.session.access_token;
-        const res = await fetch(`${window.ATHR_SUPABASE_URL}/functions/v1/wa-agent`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", apikey: window.ATHR_SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${token || ""}` },
-            body: JSON.stringify(body)
-        });
-        let out = {};
-        try { out = await res.json(); } catch { /* رد غير متوقع */ }
-        if (!res.ok && !out.error) out.error = `http_${res.status}`;
-        return out;
-    }
-
-    function waErr(out) {
-        const e = out && out.error;
-        const map = {
-            no_token: "احفظ رمز الوصول (Access Token) أول.",
-            no_phone_id: "اكتب معرّف رقم الهاتف (Phone number ID).",
-            no_waba: "اكتب معرّف حساب واتساب للأعمال (WABA ID).",
-            window: "مرّت 24 ساعة على آخر رسالة من الزبون. واتساب يسمح بالرد الحر خلال 24 ساعة فقط؛ رد عليه من تطبيق واتساب أو أرسل له عرض بقالب.",
-            no_key: "الوكيل يحتاج مفتاح Gemini (فيه استخدام مجاني).",
-            bad_key: "مفتاح Gemini غير صالح. غيّره من «النصوص».",
-            rate_limit: "انتهى حد الاستخدام المجاني للذكاء الاصطناعي مؤقتاً. جرّب بعد شوي.",
-            not_admin: "سجّل دخولك من جديد.",
-            send: "ما انرسلت الرسالة",
-            graph: "رد Meta"
-        };
-        const base = map[e] || "صار خطأ. تأكد من الاتصال وحاول مرة ثانية.";
-        return out && out.detail ? `${base}: ${out.detail}` : base;
-    }
-
-    async function waLoad({ chats = true } = {}) {
-        const w = waState();
-        const jobs = [
-            sb.from("wa_settings").select("config").eq("id", 1).maybeSingle().then(({ data }) => { w.cfg = { ...WA_DEF, ...((data && data.config) || {}) }; }),
-            sb.rpc("wa_status").then(({ data }) => { w.status = data || {}; })
-        ];
-        if (chats) jobs.push(waLoadChats());
-        await Promise.allSettled(jobs);
-        w.loaded = true;
-    }
-
-    async function waLoadChats() {
-        const w = waState();
-        const { data, error } = await sb.from("wa_chats").select("*").order("last_at", { ascending: false }).limit(200);
-        if (!error) w.chats = data || [];
-    }
-
-    async function waSaveCfg(patch) {
-        const w = waState();
-        const next = { ...w.cfg, ...patch };
-        const { error } = await sb.from("wa_settings").update({ config: next, updated_at: new Date().toISOString() }).eq("id", 1);
-        if (error) throw error;
-        w.cfg = next;
-    }
-
-    const waPaused = (c) => Boolean(c && c.paused_until && new Date(c.paused_until).getTime() > Date.now());
-    const waConnected = () => { const w = waState(); return Boolean(w.status && w.status.token && w.cfg.phone_number_id); };
-    const waPhone = (p) => (p ? `+${String(p).replace(/^(\d{3})(\d+)$/, "$1 $2")}` : "");
-    function waTime(iso) {
-        if (!iso) return "";
-        const d = new Date(iso);
-        const opts = { timeZone: "Asia/Muscat" };
-        const day = (x) => x.toLocaleDateString("en-CA", opts);
-        if (day(d) === day(new Date())) return d.toLocaleTimeString("ar-OM-u-nu-latn", { ...opts, hour: "numeric", minute: "2-digit" });
-        return d.toLocaleDateString("ar-OM-u-nu-latn", { ...opts, day: "numeric", month: "short" });
-    }
-    const waWithin24h = (c) => Boolean(c && c.last_in_at && Date.now() - new Date(c.last_in_at).getTime() < 24 * 3600e3 - 60e3);
-    const waFmt = (s) => esc(String(s || "")).replace(/\*([^*\n]+)\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
-
-    // ---------- الهيكل ----------
-    async function openWa() {
-        const w = waState();
-        w.screen = "home";
-        openSheet(`<div class="wa" id="waBody"><p class="adm-muted">جاري التحميل…</p></div>`);
-        const panel = $("#admSheet .adm-sheet-panel");
-        if (panel) panel.classList.add("wa-panel");
-        await waLoad();
-        renderWa();
-        waTimer();
-        if (!A.ai) loadAiStatus();
-    }
-
-    function waTimer() {
-        clearInterval(waTimer.id);
-        waTimer.id = setInterval(async () => {
-            const w = waState();
-            if (!$("#waBody")) { clearInterval(waTimer.id); return; }
-            if (document.hidden || w.busy) return;
-            if (w.screen === "home") { await waLoadChats(); if (w.screen === "home" && $("#waChats")) $("#waChats").outerHTML = waChatsList(); }
-            if (w.screen === "chat" && w.chat) await waRefreshChat(true);
-        }, 12000);
-    }
-
-    function waHead(title, back = true) {
-        return `<div class="adm-sheet-head wa-head">
-            ${back ? `<button class="wa-back" type="button" data-a="wa-home" aria-label="رجوع">${icon("back")}</button>` : ""}
-            <h2>${title}</h2>
+            </div>`),setTimeout(()=>b("#pasteBox")?.focus(),50)}function qa(t){const e=ATHR.digits(String(t||"")).replace(/[,٬]/g,"").match(/-?\d+(?:[.٫]\d+)?/);return e?Number(e[0].replace("٫",".")):0}function Vi(t){const e=ATHR.digits(t).replace(/\r/g,""),a=[],s=/رقم الطلب\s*[:：]/g;let n;for(;n=s.exec(e);){const r=e.lastIndexOf(`
+`,n.index)+1;a.push(r)}if(!a.length)return[];const o=r=>r.replace(/^[^؀-ۿA-Za-z0-9•*\-+]+/,"").trim();return a.map((r,l)=>{const c=l+1<a.length?a[l+1]:e.length,p=e.slice(r,c).split(`
+`).map(I=>I.trim()),u=p.map(o),m=I=>{const mt=u.find(yt=>yt.startsWith(I));return mt?mt.slice(I.length).replace(/^\s*[:：]\s*/,"").trim():""},h=I=>{const mt=p.find(yt=>yt.startsWith(I));return mt?o(mt):""},M=I=>I.split("·").map(mt=>mt.trim()).filter(Boolean),L=u.filter(I=>/^[•\-*]/.test(I)).map(I=>I.replace(/^[•\-*]\s*/,"")),S=u.find(I=>/\d{1,2}\/\d{1,2}\/\d{4}/.test(I)&&!/^رقم/.test(I))||"",E=m("التاريخ")||S,R=m("الوقت")||(S.match(/\d{1,2}:\d{2}\s*(ص|م)?/)||[""])[0];let D=new Date().toISOString();const P=E.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(P){let I=12,mt=0;const yt=R.match(/(\d{1,2}):(\d{2})\s*(ص|م)?/);yt&&(I=Number(yt[1])%12,mt=Number(yt[2]),yt[3]==="م"&&(I+=12),yt[3]||(I=Number(yt[1])));const bl=`${P[3]}-${P[2].padStart(2,"0")}-${P[1].padStart(2,"0")}T${String(I).padStart(2,"0")}:${String(mt).padStart(2,"0")}:00+04:00`,En=new Date(bl);Number.isNaN(En.getTime())||(D=En.toISOString())}const A=M(h("👤").replace(/^من\s*[:：]\s*/,"")),k=h("🎁"),v=/^إلى\s*[:：]/.test(k)?M(k.replace(/^إلى\s*[:：]\s*/,"")):[],f=!!k||!!m("صاحب الهدية"),w=h("📍"),C=m("الدولة")||w,O=(ATHR_COUNTRIES.find(I=>C.includes(I.name)||C.includes(I.flag))||ATHR_COUNTRIES[0]).code,Z=M(w).filter(I=>!ATHR_COUNTRIES.some(mt=>I.includes(mt.name))),W=O==="OM",Ut=I=>I?ATHR.parsePhone(I,O).stored:null,Bt=A[0]||m("الاسم")||m("صاحب الهدية")||null,qt=A[1]||m("الهاتف")||m("رقم صاحب الهدية"),$t=m("الدفع"),Qa=/تحويل|بنك/.test($t)?"bank":/استلام|كاش|نقد/.test($t)?"cod":/إلكتروني|الكتروني|بطاقة/.test($t)?"online":$t?"other":"bank",An=m("المكتب"),Sn=m("التوصيل"),Rn=m("رقم الطلب").match(/[A-Z]{1,4}-[0-9A-Z]{3,10}/i),Hn=u.find(I=>/^(خصم|الخصم)/.test(I))||"",ml=v[0]||m("المُهدى إليه")||null,Xe=m("الهدية لـ")||m("الهدية ل"),fl=Xe?ATHR.GIFT_FOR.find(I=>Xe.includes(ATHR.giftFor(I,$()).label))||(/بنت/.test(Xe)?"girl":/ولد/.test(Xe)?"boy":null):null,Mn=v[1]||m("رقم المُهدى إليه");return{order_no:Rn?Rn[0].toUpperCase():null,ordered_at:D,source:"paste",customer_name:Bt,country:O,phone:qt?Ut(qt):null,governorate:m("المحافظة")||m("المدينة")||(W?null:Z[0]||null),wilaya:m("الولاية")||W&&Z[0]||null,address:An?null:m("العنوان")||null,office:An||null,notes:m("الملاحظات")||m("ملاحظة")||null,delivery_name:m("طريقة التوصيل")||h("🚚")||null,delivery_price:/مجاني/.test(Sn)?0:qa(Sn),discount:Math.abs(qa(Hn.replace(/^[^:：]*[:：]/,""))),discount_label:(Hn.split(/[:：]/)[0]||"").trim().slice(0,80)||null,total:qa(m("الإجمالي")),payment_name:$t||null,payment_type:Qa,items_text:L.join(`
+`)||null,gift:f,gift_name:f?ml:null,gift_phone:f&&Mn?Ut(Mn):null,gift_message:f&&m("رسالة الهدية")||null,gift_hide_price:f&&u.some(I=>I.includes("لا تذكر السعر")),gift_for:f?fl:null,status:"new"}})}async function Wi(){const t=b("#pasteBox").value,e=b("#pasteErr"),a=Vi(t);if(!a.length){e.textContent="لم أجد طلباً في النص. تأكد أن الرسالة فيها سطر «رقم الطلب:».";return}const s=new Set(i.orders.map(r=>r.order_no));let n=0,o=0;for(const r of a){if(r.order_no&&s.has(r.order_no)){o++;continue}let l,c=0;const p={...r};do{const u=c===0&&p.order_no?p.order_no:ATHR.newOrderNo();l=await _.from("orders").insert({...p,order_no:u}).select("*").single(),c++}while(l.error&&String(l.error.code)==="23505"&&c<4);if(l.error){console.error(l.error);continue}i.orders.push(l.data),s.add(l.data.order_no),n++}i.orders.sort((r,l)=>new Date(l.ordered_at)-new Date(r.ordered_at)),ee(),Mt(),y(`أُضيف ${n} طلب${o?`، و${o} موجود مسبقاً`:""}`)}const Ze={enabled:!1,phone_number_id:"",waba_id:"",agent_name:"",tone:"gulf",extra:"",handoff_text:"أبشر، حوّلت محادثتك لصاحب المتجر ويرد عليك بأقرب وقت 🙏",pause_hours:12,handoff_hours:24,take_orders:!0,track_orders:!0,send_photos:!0,voice:!0},Gi=[["OM","🇴🇲 عُمان"],["AE","🇦🇪 الإمارات"],["SA","🇸🇦 السعودية"]],zi=["السلام عليكم، عندكم ملفات للصف الثاني؟","ابغى ملفات تلوين للأطفال","كم سعر ملف المعلمة الخصوصية؟","وين ملفاتي؟","أبي أكلم صاحب المتجر"];function j(){return i.wa||(i.wa={screen:"home",status:null,conn:null,cfg:{...Ze},loaded:!1,chats:[],filter:"all",chat:null,msgs:[],tryMsgs:[],tryBusy:!1,tryCountry:"OM",tpls:null,tplSel:null,sending:null,err:""}),i.wa}async function jt(t){const{data:e}=await _.auth.getSession(),a=e&&e.session&&e.session.access_token,s=await fetch(`${window.ATHR_SUPABASE_URL}/functions/v1/wa-agent`,{method:"POST",headers:{"Content-Type":"application/json",apikey:window.ATHR_SUPABASE_PUBLISHABLE_KEY,Authorization:`Bearer ${a||""}`},body:JSON.stringify(t)});let n={};try{n=await s.json()}catch{}return!s.ok&&!n.error&&(n.error=`http_${s.status}`),n}function ae(t){const e=t&&t.error,s={no_token:"احفظ رمز الوصول (Access Token) أول.",no_phone_id:"اكتب معرّف رقم الهاتف (Phone number ID).",no_waba:"اكتب معرّف حساب واتساب للأعمال (WABA ID).",window:"مرّت 24 ساعة على آخر رسالة من الزبون. واتساب يسمح بالرد الحر خلال 24 ساعة فقط؛ رد عليه من تطبيق واتساب أو أرسل له عرض بقالب.",no_key:"الوكيل يحتاج مفتاح Gemini (فيه استخدام مجاني).",bad_key:"مفتاح Gemini غير صالح. غيّره من «النصوص».",rate_limit:"انتهى حد الاستخدام المجاني للذكاء الاصطناعي مؤقتاً. جرّب بعد شوي.",not_admin:"سجّل دخولك من جديد.",send:"ما انرسلت الرسالة",graph:"رد Meta"}[e]||"صار خطأ. تأكد من الاتصال وحاول مرة ثانية.";return t&&t.detail?`${s}: ${t.detail}`:s}async function Va({chats:t=!0}={}){const e=j(),a=[_.from("wa_settings").select("config").eq("id",1).maybeSingle().then(({data:s})=>{e.cfg={...Ze,...s&&s.config||{}}}),_.rpc("wa_status").then(({data:s})=>{e.status=s||{}})];t&&a.push(Wa()),await Promise.allSettled(a),e.loaded=!0}async function Wa(){const t=j(),{data:e,error:a}=await _.from("wa_chats").select("*").order("last_at",{ascending:!1}).limit(200);a||(t.chats=e||[])}async function Ga(t){const e=j(),a={...e.cfg,...t},{error:s}=await _.from("wa_settings").update({config:a,updated_at:new Date().toISOString()}).eq("id",1);if(s)throw s;e.cfg=a}const za=t=>!!(t&&t.paused_until&&new Date(t.paused_until).getTime()>Date.now()),xe=()=>{const t=j();return!!(t.status&&t.status.token&&t.cfg.phone_number_id)},Ka=t=>t?`+${String(t).replace(/^(\d{3})(\d+)$/,"$1 $2")}`:"";function vn(t){if(!t)return"";const e=new Date(t),a={timeZone:"Asia/Muscat"},s=n=>n.toLocaleDateString("en-CA",a);return s(e)===s(new Date)?e.toLocaleTimeString("ar-OM-u-nu-latn",{...a,hour:"numeric",minute:"2-digit"}):e.toLocaleDateString("ar-OM-u-nu-latn",{...a,day:"numeric",month:"short"})}const Ki=t=>!!(t&&t.last_in_at&&Date.now()-new Date(t.last_in_at).getTime()<24*36e5-6e4),se=t=>d(String(t||"")).replace(/\*([^*\n]+)\*/g,"<b>$1</b>").replace(/\n/g,"<br>");async function Zi(){const t=j();t.screen="home",ot('<div class="wa" id="waBody"><p class="adm-muted">جاري التحميل…</p></div>');const e=b("#admSheet .adm-sheet-panel");e&&e.classList.add("wa-panel"),await Va(),U(),Qe(),i.ai||Zt()}function Qe(){clearInterval(Qe.id),Qe.id=setInterval(async()=>{const t=j();if(!b("#waBody")){clearInterval(Qe.id);return}document.hidden||t.busy||(t.screen==="home"&&(await Wa(),t.screen==="home"&&b("#waChats")&&(b("#waChats").outerHTML=_n())),t.screen==="chat"&&t.chat&&await Je(!0))},12e3)}function ne(t,e=!0){return`<div class="adm-sheet-head wa-head">
+            ${e?`<button class="wa-back" type="button" data-a="wa-home" aria-label="رجوع">${V("back")}</button>`:""}
+            <h2>${t}</h2>
             <button class="adm-icon" type="button" data-a="close-sheet" aria-label="إغلاق">×</button>
-        </div>`;
-    }
-
-    function renderWa(keepScroll) {
-        const box = $("#waBody");
-        if (!box) return;
-        const w = waState();
-        const panel = $("#admSheet .adm-sheet-panel");
-        const top = keepScroll && panel ? panel.scrollTop : 0;
-        const screens = { home: waHome, chat: waChatView, try: waTryView, settings: waSettingsView, setup: waSetupView, offers: waOffersView };
-        box.innerHTML = (screens[w.screen] || waHome)();
-        if (panel) panel.classList.toggle("wa-chatmode", w.screen === "chat" || w.screen === "try");
-        if (panel && !(w.screen === "chat" || w.screen === "try")) panel.scrollTop = keepScroll ? top : 0;
-        if (w.screen === "chat" || w.screen === "try") { const log = $("#waLog"); if (log) log.scrollTop = log.scrollHeight; }
-    }
-
-    // ---------- الرئيسية ----------
-    function waHome() {
-        const w = waState();
-        const st = w.status || {};
-        const connected = waConnected();
-        const needs = w.chats.filter((c) => c.needs_owner).length;
-        const statusLine = connected
-            ? `<span class="wa-dot ok"></span> مربوط${w.cfg.display_phone ? ` بالرقم <b dir="ltr">${esc(w.cfg.display_phone)}</b>` : ""}`
-            : `<span class="wa-dot"></span> غير مربوط بواتساب بعد`;
-        const rows = [
-            ["wa-try", "🧪", "جرّب الوكيل", "كلّمه كأنك زبون، بدون ما يوصل شي لأحد", "t1"],
-            ["wa-settings", "⚙️", "إعدادات الوكيل", "الأسلوب، معلومات إضافية، الطلبات والصور", "t2"],
-            ["wa-offers", "📣", "إرسال عرض للعملاء", "قوالب واتساب المعتمدة وإرسالها دفعة وحدة", "t3"],
-            ["wa-setup", "🔗", "الربط مع واتساب", connected ? "مربوط ✓ — تقدر تختبر الاتصال" : "خطوات الربط مع Meta (مرة وحدة)", "t4"]
-        ];
-        return `${waHead("🤖 وكيل واتساب", false)}
+        </div>`}function U(t){const e=b("#waBody");if(!e)return;const a=j(),s=b("#admSheet .adm-sheet-panel"),n=t&&s?s.scrollTop:0,o={home:wn,chat:Yi,try:tl,settings:el,setup:sl,offers:ol};if(e.innerHTML=(o[a.screen]||wn)(),s&&s.classList.toggle("wa-chatmode",a.screen==="chat"||a.screen==="try"),s&&!(a.screen==="chat"||a.screen==="try")&&(s.scrollTop=t?n:0),a.screen==="chat"||a.screen==="try"){const r=b("#waLog");r&&(r.scrollTop=r.scrollHeight)}}function wn(){const t=j(),e=t.status||{},a=xe(),s=t.chats.filter(r=>r.needs_owner).length,n=a?`<span class="wa-dot ok"></span> مربوط${t.cfg.display_phone?` بالرقم <b dir="ltr">${d(t.cfg.display_phone)}</b>`:""}`:'<span class="wa-dot"></span> غير مربوط بواتساب بعد',o=[["wa-try","🧪","جرّب الوكيل","كلّمه كأنك زبون، بدون ما يوصل شي لأحد","t1"],["wa-settings","⚙️","إعدادات الوكيل","الأسلوب، معلومات إضافية، الطلبات والصور","t2"],["wa-offers","📣","إرسال عرض للعملاء","قوالب واتساب المعتمدة وإرسالها دفعة وحدة","t3"],["wa-setup","🔗","الربط مع واتساب",a?"مربوط ✓ — تقدر تختبر الاتصال":"خطوات الربط مع Meta (مرة وحدة)","t4"]];return`${ne("🤖 وكيل واتساب",!1)}
             <section class="wa-hero">
                 <div class="wa-hero-top">
-                    <div><b>${connected ? "وكيلك جاهز" : "وكيل يرد على زبائنك 24 ساعة"}</b><small>${statusLine}</small></div>
-                    <label class="at wa-master"><input type="checkbox" id="waEnabled"${w.cfg.enabled ? " checked" : ""}><span class="at-ui" aria-hidden="true"></span><span class="sr">الوكيل يرد</span></label>
+                    <div><b>${a?"وكيلك جاهز":"وكيل يرد على زبائنك 24 ساعة"}</b><small>${n}</small></div>
+                    <label class="at wa-master"><input type="checkbox" id="waEnabled"${t.cfg.enabled?" checked":""}><span class="at-ui" aria-hidden="true"></span><span class="sr">الوكيل يرد</span></label>
                 </div>
-                <p class="wa-hero-note">${w.cfg.enabled ? (connected ? "شغّال: يرد على رسائل الزبائن، يرسل الصور، يسجّل الطلبات، ويحوّل لك اللي يحتاجك." : "مفعّل، لكن يبدأ يرد بعد ما تربطه بواتساب.") : "موقّف: الرسائل تنحفظ هنا، لكنه ما يرد على أحد."}</p>
-                ${st.ai === false ? `<p class="wa-warn">يحتاج مفتاح Gemini حتى يرد (فيه استخدام مجاني). <button class="link-mini" type="button" data-a="asst-key">فعّله من هنا</button></p>` : ""}
-                ${!connected ? `<button class="ab ab-primary ab-block" type="button" data-a="wa-setup">🔗 اربطه بواتساب</button>` : ""}
+                <p class="wa-hero-note">${t.cfg.enabled?a?"شغّال: يرد على رسائل الزبائن، يرسل الصور، يسجّل الطلبات، ويحوّل لك اللي يحتاجك.":"مفعّل، لكن يبدأ يرد بعد ما تربطه بواتساب.":"موقّف: الرسائل تنحفظ هنا، لكنه ما يرد على أحد."}</p>
+                ${e.ai===!1?'<p class="wa-warn">يحتاج مفتاح Gemini حتى يرد (فيه استخدام مجاني). <button class="link-mini" type="button" data-a="asst-key">فعّله من هنا</button></p>':""}
+                ${a?"":'<button class="ab ab-primary ab-block" type="button" data-a="wa-setup">🔗 اربطه بواتساب</button>'}
             </section>
-            <div class="wa-menu">${rows.map(([a, ic, t, s, c]) => `<button type="button" class="wa-row" data-a="${a}"><span class="wa-ico ${c}">${ic}</span><span class="wa-row-t"><b>${t}</b><small>${s}</small></span>${icon("back")}</button>`).join("")}</div>
-            <div class="wa-sec"><h3>المحادثات${needs ? ` <span class="wa-badge red">${needs} تحتاجك</span>` : ""}</h3>
+            <div class="wa-menu">${o.map(([r,l,c,p,u])=>`<button type="button" class="wa-row" data-a="${r}"><span class="wa-ico ${u}">${l}</span><span class="wa-row-t"><b>${c}</b><small>${p}</small></span>${V("back")}</button>`).join("")}</div>
+            <div class="wa-sec"><h3>المحادثات${s?` <span class="wa-badge red">${s} تحتاجك</span>`:""}</h3>
                 <div class="wa-seg" role="group" aria-label="تصفية المحادثات">
-                    <button type="button" data-wa-filter="all" aria-pressed="${w.filter === "all"}">الكل</button>
-                    <button type="button" data-wa-filter="needs" aria-pressed="${w.filter === "needs"}">تحتاجك</button>
-                    <button type="button" data-wa-filter="owner" aria-pressed="${w.filter === "owner"}">أنت ترد</button>
+                    <button type="button" data-wa-filter="all" aria-pressed="${t.filter==="all"}">الكل</button>
+                    <button type="button" data-wa-filter="needs" aria-pressed="${t.filter==="needs"}">تحتاجك</button>
+                    <button type="button" data-wa-filter="owner" aria-pressed="${t.filter==="owner"}">أنت ترد</button>
                 </div>
             </div>
-            ${waChatsList()}`;
-    }
-
-    function waChatsList() {
-        const w = waState();
-        let list = w.chats;
-        if (w.filter === "needs") list = list.filter((c) => c.needs_owner);
-        if (w.filter === "owner") list = list.filter((c) => waPaused(c));
-        if (!list.length) {
-            return `<div id="waChats" class="wa-empty">${w.chats.length ? "ما فيه محادثات هنا." : "لما يراسلك زبون على واتساب تظهر محادثته هنا، وتشوف رد الوكيل عليه."}</div>`;
-        }
-        return `<div id="waChats" class="wa-chats">${list.slice(0, 80).map((c) => {
-            const name = c.name || waPhone(c.phone);
-            const who = c.last_by === "customer" ? "" : c.last_by === "ai" ? "🤖 " : c.last_by === "offer" ? "📣 " : c.last_by === "system" ? "" : "أنت: ";
-            return `<button type="button" class="wa-chat" data-wa-chat="${esc(c.phone)}">
-                <span class="wa-av">${esc((c.name || "؟").trim().charAt(0) || "؟")}</span>
-                <span class="wa-chat-t"><b>${esc(name)}</b><small>${esc(who)}${esc(c.last_text || "")}</small></span>
-                <span class="wa-chat-m"><small>${esc(waTime(c.last_at))}</small>
-                    ${c.needs_owner ? `<span class="wa-badge red">يحتاجك</span>` : waPaused(c) ? `<span class="wa-badge">أنت ترد</span>` : c.unread ? `<span class="wa-badge green">${c.unread}</span>` : ""}</span>
-            </button>`;
-        }).join("")}</div>`;
-    }
-
-    // ---------- محادثة ----------
-    async function waOpenChat(phone) {
-        const w = waState();
-        w.chat = phone;
-        w.msgs = [];
-        w.screen = "chat";
-        renderWa();
-        await waRefreshChat(false);
-        const c = w.chats.find((x) => x.phone === phone);
-        if (c && c.unread) {
-            c.unread = 0;
-            sb.from("wa_chats").update({ unread: 0 }).eq("phone", phone).then(() => {}, () => {});
-        }
-    }
-
-    async function waRefreshChat(quiet) {
-        const w = waState();
-        const phone = w.chat;
-        const [m, c] = await Promise.all([
-            sb.from("wa_messages").select("id,dir,by,kind,body,status,meta,created_at").eq("phone", phone).order("id", { ascending: false }).limit(120),
-            sb.from("wa_chats").select("*").eq("phone", phone).maybeSingle()
-        ]);
-        if (w.chat !== phone || w.screen !== "chat") return;
-        const before = w.msgs.length ? w.msgs[w.msgs.length - 1].id : null;
-        if (!m.error) w.msgs = (m.data || []).reverse();
-        if (!c.error && c.data) {
-            const i = w.chats.findIndex((x) => x.phone === phone);
-            if (i >= 0) w.chats[i] = c.data; else w.chats.unshift(c.data);
-        }
-        const after = w.msgs.length ? w.msgs[w.msgs.length - 1].id : null;
-        if (!quiet || before !== after) {
-            const draft = $("#waReply") ? $("#waReply").value : "";
-            renderWa();
-            if (draft && $("#waReply")) $("#waReply").value = draft;
-        }
-    }
-
-    function waMsgHTML(m) {
-        const label = { ai: "🤖 الوكيل", owner: "أنت (من التطبيق)", panel: "أنت", offer: "📣 عرض", system: "رد تلقائي" }[m.by] || "";
-        const img = m.meta && m.meta.image ? `<span class="wa-img">🖼️ صورة منتج</span>` : "";
-        const failed = m.status === "failed" ? `<em class="wa-fail">ما انرسلت${m.meta && m.meta.error ? `: ${esc(String(m.meta.error).slice(0, 120))}` : ""}</em>` : "";
-        const ticks = m.dir === "out" && m.status ? (m.status === "read" ? "✓✓" : m.status === "delivered" ? "✓✓" : m.status === "sent" ? "✓" : "") : "";
-        return `<div class="am ${m.dir === "in" ? "wa-in" : "wa-out"}${m.by === "ai" ? " by-ai" : ""}">
-            ${m.dir === "out" && label ? `<small class="wa-by">${label}</small>` : ""}${img}<div>${waFmt(m.body)}</div>${failed}
-            <small class="wa-meta">${esc(waTime(m.created_at))}${ticks ? ` <span class="${m.status === "read" ? "rd" : ""}">${ticks}</span>` : ""}</small>
-        </div>`;
-    }
-
-    function waChatView() {
-        const w = waState();
-        const c = w.chats.find((x) => x.phone === w.chat) || { phone: w.chat };
-        const paused = waPaused(c);
-        const open = waWithin24h(c);
-        const until = paused ? new Date(c.paused_until).toLocaleString("ar-OM-u-nu-latn", { timeZone: "Asia/Muscat", weekday: "short", hour: "numeric", minute: "2-digit" }) : "";
-        return `${waHead(esc(c.name || waPhone(c.phone)))}
+            ${_n()}`}function _n(){const t=j();let e=t.chats;return t.filter==="needs"&&(e=e.filter(a=>a.needs_owner)),t.filter==="owner"&&(e=e.filter(a=>za(a))),e.length?`<div id="waChats" class="wa-chats">${e.slice(0,80).map(a=>{const s=a.name||Ka(a.phone),n=a.last_by==="customer"?"":a.last_by==="ai"?"🤖 ":a.last_by==="offer"?"📣 ":a.last_by==="system"?"":"أنت: ";return`<button type="button" class="wa-chat" data-wa-chat="${d(a.phone)}">
+                <span class="wa-av">${d((a.name||"؟").trim().charAt(0)||"؟")}</span>
+                <span class="wa-chat-t"><b>${d(s)}</b><small>${d(n)}${d(a.last_text||"")}</small></span>
+                <span class="wa-chat-m"><small>${d(vn(a.last_at))}</small>
+                    ${a.needs_owner?'<span class="wa-badge red">يحتاجك</span>':za(a)?'<span class="wa-badge">أنت ترد</span>':a.unread?`<span class="wa-badge green">${a.unread}</span>`:""}</span>
+            </button>`}).join("")}</div>`:`<div id="waChats" class="wa-empty">${t.chats.length?"ما فيه محادثات هنا.":"لما يراسلك زبون على واتساب تظهر محادثته هنا، وتشوف رد الوكيل عليه."}</div>`}async function Qi(t){const e=j();e.chat=t,e.msgs=[],e.screen="chat",U(),await Je(!1);const a=e.chats.find(s=>s.phone===t);a&&a.unread&&(a.unread=0,_.from("wa_chats").update({unread:0}).eq("phone",t).then(()=>{},()=>{}))}async function Je(t){const e=j(),a=e.chat,[s,n]=await Promise.all([_.from("wa_messages").select("id,dir,by,kind,body,status,meta,created_at").eq("phone",a).order("id",{ascending:!1}).limit(120),_.from("wa_chats").select("*").eq("phone",a).maybeSingle()]);if(e.chat!==a||e.screen!=="chat")return;const o=e.msgs.length?e.msgs[e.msgs.length-1].id:null;if(s.error||(e.msgs=(s.data||[]).reverse()),!n.error&&n.data){const l=e.chats.findIndex(c=>c.phone===a);l>=0?e.chats[l]=n.data:e.chats.unshift(n.data)}const r=e.msgs.length?e.msgs[e.msgs.length-1].id:null;if(!t||o!==r){const l=b("#waReply")?b("#waReply").value:"";U(),l&&b("#waReply")&&(b("#waReply").value=l)}}function Ji(t){const e={ai:"🤖 الوكيل",owner:"أنت (من التطبيق)",panel:"أنت",offer:"📣 عرض",system:"رد تلقائي"}[t.by]||"",a=t.meta&&t.meta.image?'<span class="wa-img">🖼️ صورة منتج</span>':"",s=t.status==="failed"?`<em class="wa-fail">ما انرسلت${t.meta&&t.meta.error?`: ${d(String(t.meta.error).slice(0,120))}`:""}</em>`:"",n=t.dir==="out"&&t.status?t.status==="read"||t.status==="delivered"?"✓✓":t.status==="sent"?"✓":"":"";return`<div class="am ${t.dir==="in"?"wa-in":"wa-out"}${t.by==="ai"?" by-ai":""}">
+            ${t.dir==="out"&&e?`<small class="wa-by">${e}</small>`:""}${a}<div>${se(t.body)}</div>${s}
+            <small class="wa-meta">${d(vn(t.created_at))}${n?` <span class="${t.status==="read"?"rd":""}">${n}</span>`:""}</small>
+        </div>`}function Yi(){const t=j(),e=t.chats.find(o=>o.phone===t.chat)||{phone:t.chat},a=za(e),s=Ki(e),n=a?new Date(e.paused_until).toLocaleString("ar-OM-u-nu-latn",{timeZone:"Asia/Muscat",weekday:"short",hour:"numeric",minute:"2-digit"}):"";return`${ne(d(e.name||Ka(e.phone)))}
             <div class="wa-chat-bar">
-                <a class="ab ab-ghost ab-sm" href="https://wa.me/${esc(c.phone)}" target="_blank" rel="noopener"><span dir="ltr">${esc(waPhone(c.phone))}</span> ↗</a>
-                ${paused || c.needs_owner
-                    ? `<button class="ab ab-soft ab-sm" type="button" data-a="wa-resume">🤖 رجّعها للوكيل</button>`
-                    : `<button class="ab ab-ghost ab-sm" type="button" data-a="wa-pause">✋ أوقف الوكيل هنا</button>`}
+                <a class="ab ab-ghost ab-sm" href="https://wa.me/${d(e.phone)}" target="_blank" rel="noopener"><span dir="ltr">${d(Ka(e.phone))}</span> ↗</a>
+                ${a||e.needs_owner?'<button class="ab ab-soft ab-sm" type="button" data-a="wa-resume">🤖 رجّعها للوكيل</button>':'<button class="ab ab-ghost ab-sm" type="button" data-a="wa-pause">✋ أوقف الوكيل هنا</button>'}
             </div>
-            ${c.needs_owner ? `<p class="wa-flag">يحتاجك: ${esc(c.note || "الزبون يحتاج صاحب المتجر")}</p>` : paused ? `<p class="wa-flag soft">الوكيل ساكت في هذي المحادثة لين ${esc(until)} لأنك ترد بنفسك.</p>` : ""}
-            <div class="asst-log wa-log" id="waLog" aria-live="polite">${w.msgs.length ? w.msgs.map(waMsgHTML).join("") : `<p class="adm-muted" style="text-align:center">جاري التحميل…</p>`}</div>
-            ${open
-                ? `<form class="asst-form" id="waSendForm" autocomplete="off"><textarea class="ai" id="waReply" rows="1" maxlength="3500" placeholder="اكتب ردك… (يوقف الوكيل هنا ${esc(String(w.cfg.pause_hours || 12))} ساعة)"></textarea><button class="ab ab-primary" type="submit">إرسال</button></form>`
-                : `<p class="wa-closed">مرّت 24 ساعة على آخر رسالة من الزبون، فواتساب ما يسمح بالرد الحر من هنا. رد عليه من تطبيق واتساب، أو أرسل له عرض بقالب.</p>`}`;
-    }
-
-    async function waSendReply(form) {
-        const w = waState();
-        const input = $("#waReply");
-        const text = String(input.value || "").trim();
-        if (!text) return;
-        const btn = form.querySelector("button[type=submit]");
-        btn.disabled = true;
-        const out = await waCall({ task: "send", phone: w.chat, text });
-        btn.disabled = false;
-        if (out.error) { toast(waErr(out)); return; }
-        input.value = "";
-        toast("انرسل ✓ والوكيل ساكت في هذي المحادثة");
-        await waRefreshChat(false);
-    }
-
-    async function waSetPause(on) {
-        const w = waState();
-        const until = on ? new Date(Date.now() + 7 * 864e5).toISOString() : null;
-        const { error } = await sb.from("wa_chats").update({ paused_until: until, needs_owner: false, note: null }).eq("phone", w.chat);
-        if (error) { toast("تعذّر الحفظ. حاول مرة ثانية."); return; }
-        toast(on ? "وقف الوكيل في هذي المحادثة (7 أيام أو لين ترجعها)" : "رجعت للوكيل ✓ يرد على رسالة الزبون الجاية");
-        await waRefreshChat(false);
-    }
-
-    // ---------- تجربة الوكيل ----------
-    function waTryView() {
-        const w = waState();
-        const msgs = w.tryMsgs.map((m) => {
-            if (m.role === "user") return `<div class="am wa-in">${waFmt(m.text)}</div>`;
-            const photos = (m.photos || []).map((p) => `<figure class="wa-photo"><img src="${esc(p.url)}" alt="" loading="lazy"><figcaption>${waFmt(p.caption)}</figcaption></figure>`).join("");
-            const after = (m.after || []).map((t) => `<div class="am wa-out by-ai">${waFmt(t)}</div>`).join("");
-            return `${photos}${m.text ? `<div class="am wa-out by-ai${m.err ? " err" : ""}">${waFmt(m.text)}${m.actions && m.actions.length ? `<small class="wa-acts">${m.actions.map((a) => `⚙︎ ${esc(a)}`).join("<br>")}</small>` : ""}</div>` : ""}${after}`;
-        }).join("") + (w.tryBusy ? `<div class="am am-bot am-typing"><span></span><span></span><span></span></div>` : "");
-        return `${waHead("🧪 جرّب الوكيل")}
+            ${e.needs_owner?`<p class="wa-flag">يحتاجك: ${d(e.note||"الزبون يحتاج صاحب المتجر")}</p>`:a?`<p class="wa-flag soft">الوكيل ساكت في هذي المحادثة لين ${d(n)} لأنك ترد بنفسك.</p>`:""}
+            <div class="asst-log wa-log" id="waLog" aria-live="polite">${t.msgs.length?t.msgs.map(Ji).join(""):'<p class="adm-muted" style="text-align:center">جاري التحميل…</p>'}</div>
+            ${s?`<form class="asst-form" id="waSendForm" autocomplete="off"><textarea class="ai" id="waReply" rows="1" maxlength="3500" placeholder="اكتب ردك… (يوقف الوكيل هنا ${d(String(t.cfg.pause_hours||12))} ساعة)"></textarea><button class="ab ab-primary" type="submit">إرسال</button></form>`:'<p class="wa-closed">مرّت 24 ساعة على آخر رسالة من الزبون، فواتساب ما يسمح بالرد الحر من هنا. رد عليه من تطبيق واتساب، أو أرسل له عرض بقالب.</p>'}`}async function Xi(t){const e=j(),a=b("#waReply"),s=String(a.value||"").trim();if(!s)return;const n=t.querySelector("button[type=submit]");n.disabled=!0;const o=await jt({task:"send",phone:e.chat,text:s});if(n.disabled=!1,o.error){y(ae(o));return}a.value="",y("انرسل ✓ والوكيل ساكت في هذي المحادثة"),await Je(!1)}async function kn(t){const e=j(),a=t?new Date(Date.now()+7*864e5).toISOString():null,{error:s}=await _.from("wa_chats").update({paused_until:a,needs_owner:!1,note:null}).eq("phone",e.chat);if(s){y("تعذّر الحفظ. حاول مرة ثانية.");return}y(t?"وقف الوكيل في هذي المحادثة (7 أيام أو لين ترجعها)":"رجعت للوكيل ✓ يرد على رسالة الزبون الجاية"),await Je(!1)}function tl(){const t=j(),e=t.tryMsgs.map(a=>{if(a.role==="user")return`<div class="am wa-in">${se(a.text)}</div>`;const s=(a.photos||[]).map(o=>`<figure class="wa-photo"><img src="${d(o.url)}" alt="" loading="lazy"><figcaption>${se(o.caption)}</figcaption></figure>`).join(""),n=(a.after||[]).map(o=>`<div class="am wa-out by-ai">${se(o)}</div>`).join("");return`${s}${a.text?`<div class="am wa-out by-ai${a.err?" err":""}">${se(a.text)}${a.actions&&a.actions.length?`<small class="wa-acts">${a.actions.map(o=>`⚙︎ ${d(o)}`).join("<br>")}</small>`:""}</div>`:""}${n}`}).join("")+(t.tryBusy?'<div class="am am-bot am-typing"><span></span><span></span><span></span></div>':"");return`${ne("🧪 جرّب الوكيل")}
             <div class="wa-try-bar">
-                <div class="wa-seg" role="group" aria-label="دولة الزبون">${WA_COUNTRIES.map(([c, l]) => `<button type="button" data-wa-country="${c}" aria-pressed="${w.tryCountry === c}">${l}</button>`).join("")}</div>
+                <div class="wa-seg" role="group" aria-label="دولة الزبون">${Gi.map(([a,s])=>`<button type="button" data-wa-country="${a}" aria-pressed="${t.tryCountry===a}">${s}</button>`).join("")}</div>
                 <button class="ab-mini" type="button" data-a="wa-try-reset">محادثة جديدة</button>
             </div>
-            <div class="asst-log wa-log" id="waLog" aria-live="polite">${msgs || `<p class="wa-try-note">كلّم الوكيل كأنك زبون. التجربة ما ترسل شي لأحد ولا تسجّل طلبات حقيقية، وتستخدم إعداداتك الحالية.</p>`}</div>
-            <div class="asst-chips">${WA_CHIPS.map((q) => `<button type="button" class="chip-q" data-wa-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
-            <form class="asst-form" id="waTryForm" autocomplete="off"><input class="ai" id="waTryInput" maxlength="600" placeholder="اكتب رسالة زبون…"><button class="ab ab-primary" type="submit">إرسال</button></form>`;
-    }
-
-    async function waTryAsk(text) {
-        const w = waState();
-        if (w.tryBusy || !text) return;
-        const history = w.tryMsgs.filter((m) => !m.err).slice(-16).map((m) => ({ role: m.role === "user" ? "user" : "bot", text: m.text || (m.photos || []).map((p) => p.caption).join("\n"), quote: m.quote || null }));
-        w.tryMsgs.push({ role: "user", text });
-        w.tryBusy = true;
-        renderWa();
-        const out = await waCall({ task: "simulate", text, history, country: w.tryCountry });
-        w.tryBusy = false;
-        if (out.error) w.tryMsgs.push({ role: "bot", err: true, text: waErr(out) });
-        else w.tryMsgs.push({ role: "bot", text: out.reply || "", photos: out.photos || [], after: out.after || [], actions: out.actions || [], quote: out.quote || null });
-        if (w.screen === "try") renderWa();
-    }
-
-    // ---------- الإعدادات ----------
-    function waSettingsView() {
-        const c = waState().cfg;
-        const tg = (k, label, help) => `<label class="at"><input type="checkbox" name="${k}"${c[k] !== false ? " checked" : ""}><span class="at-ui" aria-hidden="true"></span><span class="at-text"><b>${label}</b><small>${help}</small></span></label>`;
-        return `${waHead("⚙️ إعدادات الوكيل")}
+            <div class="asst-log wa-log" id="waLog" aria-live="polite">${e||'<p class="wa-try-note">كلّم الوكيل كأنك زبون. التجربة ما ترسل شي لأحد ولا تسجّل طلبات حقيقية، وتستخدم إعداداتك الحالية.</p>'}</div>
+            <div class="asst-chips">${zi.map(a=>`<button type="button" class="chip-q" data-wa-q="${d(a)}">${d(a)}</button>`).join("")}</div>
+            <form class="asst-form" id="waTryForm" autocomplete="off"><input class="ai" id="waTryInput" maxlength="600" placeholder="اكتب رسالة زبون…"><button class="ab ab-primary" type="submit">إرسال</button></form>`}async function xn(t){const e=j();if(e.tryBusy||!t)return;const a=e.tryMsgs.filter(n=>!n.err).slice(-16).map(n=>({role:n.role==="user"?"user":"bot",text:n.text||(n.photos||[]).map(o=>o.caption).join(`
+`),quote:n.quote||null}));e.tryMsgs.push({role:"user",text:t}),e.tryBusy=!0,U();const s=await jt({task:"simulate",text:t,history:a,country:e.tryCountry});e.tryBusy=!1,s.error?e.tryMsgs.push({role:"bot",err:!0,text:ae(s)}):e.tryMsgs.push({role:"bot",text:s.reply||"",photos:s.photos||[],after:s.after||[],actions:s.actions||[],quote:s.quote||null}),e.screen==="try"&&U()}function el(){const t=j().cfg,e=(a,s,n)=>`<label class="at"><input type="checkbox" name="${a}"${t[a]!==!1?" checked":""}><span class="at-ui" aria-hidden="true"></span><span class="at-text"><b>${s}</b><small>${n}</small></span></label>`;return`${ne("⚙️ إعدادات الوكيل")}
             <form id="waSetForm" class="af-stack wa-form" autocomplete="off">
                 <section class="adm-card"><h2>الأسلوب</h2><div class="af-stack">
-                    <label class="af"><span>اسم الوكيل (اختياري)</span><input class="ai" name="agent_name" maxlength="30" value="${esc(c.agent_name || "")}" placeholder="مثال: مساعد ${esc(ATHR.storeName(cfg()) || "زاد التعليمية")}"><small>يعرّف نفسه به إذا انسأل.</small></label>
-                    <label class="af"><span>طريقة الكلام</span><select class="ai" name="tone"><option value="gulf"${c.tone !== "formal" ? " selected" : ""}>خليجي ودود (هلا، أبشر، حياك)</option><option value="formal"${c.tone === "formal" ? " selected" : ""}>فصحى سهلة ورسمية</option></select></label>
+                    <label class="af"><span>اسم الوكيل (اختياري)</span><input class="ai" name="agent_name" maxlength="30" value="${d(t.agent_name||"")}" placeholder="مثال: مساعد ${d(ATHR.storeName($())||"زاد التعليمية")}"><small>يعرّف نفسه به إذا انسأل.</small></label>
+                    <label class="af"><span>طريقة الكلام</span><select class="ai" name="tone"><option value="gulf"${t.tone!=="formal"?" selected":""}>خليجي ودود (هلا، أبشر، حياك)</option><option value="formal"${t.tone==="formal"?" selected":""}>فصحى سهلة ورسمية</option></select></label>
                 </div></section>
                 <section class="adm-card"><h2>معلومات يعرفها الوكيل</h2><p class="adm-muted">المنتجات والأسعار وطرق الدفع ياخذها من المتجر تلقائياً. اكتب هنا أي شي ثاني تبيه يعرفه.</p><div class="af-stack">
-                    <label class="af"><textarea class="ai" name="extra" rows="5" maxlength="3000" placeholder="مثال:&#10;- البيع أونلاين فقط، ما عندنا محل.&#10;- نجهّز الطلب خلال يوم أو يومين.&#10;- التغليف للهدايا مجاني.">${esc(c.extra || "")}</textarea></label>
+                    <label class="af"><textarea class="ai" name="extra" rows="5" maxlength="3000" placeholder="مثال:&#10;- البيع أونلاين فقط، ما عندنا محل.&#10;- نجهّز الطلب خلال يوم أو يومين.&#10;- التغليف للهدايا مجاني.">${d(t.extra||"")}</textarea></label>
                 </div></section>
                 <section class="adm-card"><h2>وش يسوي الوكيل</h2><div class="af-stack">
-                    ${tg("take_orders", "يسجّل الطلبات", "يجمع الطلب، يعرض الإجمالي من نظام المتجر، ويسجله بعد موافقة الزبون")}
-                    ${tg("track_orders", "يرد على «وين طلبي؟»", "يشوف طلبات الزبون برقمه ويقول له حالتها")}
-                    ${tg("send_photos", "يرسل صور المنتجات", "مع الاسم والسعر والرابط")}
-                    ${tg("voice", "يفهم الرسائل الصوتية", "يحوّل الفويس لنص ويرد عليه")}
+                    ${e("take_orders","يسجّل الطلبات","يجمع الطلب، يعرض الإجمالي من نظام المتجر، ويسجله بعد موافقة الزبون")}
+                    ${e("track_orders","يرد على «وين طلبي؟»","يشوف طلبات الزبون برقمه ويقول له حالتها")}
+                    ${e("send_photos","يرسل صور المنتجات","مع الاسم والسعر والرابط")}
+                    ${e("voice","يفهم الرسائل الصوتية","يحوّل الفويس لنص ويرد عليه")}
                 </div></section>
                 <section class="adm-card"><h2>التحويل لك</h2><p class="adm-muted">يحوّل لك المحادثة إذا الزبون طلب يكلم شخص، أو عنده شكوى أو استرجاع، أو طلب خاص، أو سؤال ما يعرف جوابه.</p><div class="af-stack">
-                    <label class="af"><span>رسالته للزبون عند التحويل</span><input class="ai" name="handoff_text" maxlength="200" value="${esc(c.handoff_text || WA_DEF.handoff_text)}"></label>
+                    <label class="af"><span>رسالته للزبون عند التحويل</span><input class="ai" name="handoff_text" maxlength="200" value="${d(t.handoff_text||Ze.handoff_text)}"></label>
                     <div class="wa-2">
-                        <label class="af"><span>يسكت بعد ردك (ساعات)</span><input class="ai" name="pause_hours" type="number" inputmode="numeric" min="1" max="72" value="${esc(String(c.pause_hours || 12))}"><small>لما ترد بنفسك من التطبيق أو من هنا.</small></label>
-                        <label class="af"><span>يسكت بعد التحويل (ساعات)</span><input class="ai" name="handoff_hours" type="number" inputmode="numeric" min="1" max="168" value="${esc(String(c.handoff_hours || 24))}"><small>أو لين ترجعها له.</small></label>
+                        <label class="af"><span>يسكت بعد ردك (ساعات)</span><input class="ai" name="pause_hours" type="number" inputmode="numeric" min="1" max="72" value="${d(String(t.pause_hours||12))}"><small>لما ترد بنفسك من التطبيق أو من هنا.</small></label>
+                        <label class="af"><span>يسكت بعد التحويل (ساعات)</span><input class="ai" name="handoff_hours" type="number" inputmode="numeric" min="1" max="168" value="${d(String(t.handoff_hours||24))}"><small>أو لين ترجعها له.</small></label>
                     </div>
                 </div></section>
                 <p class="adm-errors-inline" id="waSetErr"></p>
                 <button class="ab ab-primary ab-block" type="submit">حفظ الإعدادات</button>
-            </form>`;
-    }
-
-    async function waSaveSettings(form) {
-        const f = new FormData(form);
-        const num = (k, min, max, def) => { const v = Math.round(Number(ATHR.digits(String(f.get(k) || "")))); return v >= min && v <= max ? v : def; };
-        const patch = {
-            agent_name: String(f.get("agent_name") || "").trim().slice(0, 30),
-            tone: f.get("tone") === "formal" ? "formal" : "gulf",
-            extra: String(f.get("extra") || "").trim().slice(0, 3000),
-            handoff_text: String(f.get("handoff_text") || "").trim().slice(0, 200) || WA_DEF.handoff_text,
-            pause_hours: num("pause_hours", 1, 72, 12),
-            handoff_hours: num("handoff_hours", 1, 168, 24),
-            take_orders: f.get("take_orders") === "on",
-            track_orders: f.get("track_orders") === "on",
-            send_photos: f.get("send_photos") === "on",
-            voice: f.get("voice") === "on"
-        };
-        const btn = form.querySelector("button[type=submit]");
-        btn.disabled = true;
-        try {
-            await waSaveCfg(patch);
-            toast("انحفظت إعدادات الوكيل ✓");
-            waState().screen = "home";
-            renderWa();
-        } catch {
-            btn.disabled = false;
-            $("#waSetErr").textContent = "تعذّر الحفظ. تأكد من الاتصال وحاول مرة ثانية.";
-        }
-    }
-
-    // ---------- الربط مع Meta ----------
-    function waSetupView() {
-        const w = waState();
-        const st = w.status || {};
-        const hook = `${window.ATHR_SUPABASE_URL}/functions/v1/wa-agent`;
-        const conn = w.conn;
-        const copyRow = (label, value) => `<div class="wa-copy"><small>${label}</small><code dir="ltr">${esc(value || "…")}</code><button class="ab-mini" type="button" data-copy-wa="${esc(value || "")}">نسخ</button></div>`;
-        return `${waHead("🔗 الربط مع واتساب")}
-            ${conn ? `<section class="wa-result ${conn.connected ? "ok" : "bad"}">${conn.connected
-                ? `<b>✅ مربوط: ${esc(conn.info.verified_name || "")} <span dir="ltr">${esc(conn.info.display_phone || "")}</span></b><small>${conn.subscribed ? "الرسائل توصل للوكيل ✓" : `⚠️ ما قدرت أشترك برسائل الحساب${conn.subscribe_error ? `: ${esc(conn.subscribe_error)}` : ""} — تأكد من WABA ID وصلاحيات الرمز.`}${conn.info.quality ? ` · الجودة: ${esc(conn.info.quality)}` : ""}</small>`
-                : `<b>❌ ما اكتمل الربط</b><small>${esc(waErr(conn))}</small>`}</section>` : ""}
+            </form>`}async function al(t){const e=new FormData(t),a=(o,r,l,c)=>{const p=Math.round(Number(ATHR.digits(String(e.get(o)||""))));return p>=r&&p<=l?p:c},s={agent_name:String(e.get("agent_name")||"").trim().slice(0,30),tone:e.get("tone")==="formal"?"formal":"gulf",extra:String(e.get("extra")||"").trim().slice(0,3e3),handoff_text:String(e.get("handoff_text")||"").trim().slice(0,200)||Ze.handoff_text,pause_hours:a("pause_hours",1,72,12),handoff_hours:a("handoff_hours",1,168,24),take_orders:e.get("take_orders")==="on",track_orders:e.get("track_orders")==="on",send_photos:e.get("send_photos")==="on",voice:e.get("voice")==="on"},n=t.querySelector("button[type=submit]");n.disabled=!0;try{await Ga(s),y("انحفظت إعدادات الوكيل ✓"),j().screen="home",U()}catch{n.disabled=!1,b("#waSetErr").textContent="تعذّر الحفظ. تأكد من الاتصال وحاول مرة ثانية."}}function sl(){const t=j(),e=t.status||{},a=`${window.ATHR_SUPABASE_URL}/functions/v1/wa-agent`,s=t.conn,n=(o,r)=>`<div class="wa-copy"><small>${o}</small><code dir="ltr">${d(r||"…")}</code><button class="ab-mini" type="button" data-copy-wa="${d(r||"")}">نسخ</button></div>`;return`${ne("🔗 الربط مع واتساب")}
+            ${s?`<section class="wa-result ${s.connected?"ok":"bad"}">${s.connected?`<b>✅ مربوط: ${d(s.info.verified_name||"")} <span dir="ltr">${d(s.info.display_phone||"")}</span></b><small>${s.subscribed?"الرسائل توصل للوكيل ✓":`⚠️ ما قدرت أشترك برسائل الحساب${s.subscribe_error?`: ${d(s.subscribe_error)}`:""} — تأكد من WABA ID وصلاحيات الرمز.`}${s.info.quality?` · الجودة: ${d(s.info.quality)}`:""}</small>`:`<b>❌ ما اكتمل الربط</b><small>${d(ae(s))}</small>`}</section>`:""}
             <section class="adm-card"><h2>قبل ما تبدأ: أي رقم؟</h2>
                 <ul class="wa-steps">
                     <li><b>للتجربة الحين:</b> Meta تعطيك رقم تجريبي مجاني، يراسل لين 5 أرقام تحددها أنت (مثل رقمك).</li>
@@ -7555,7 +1522,7 @@
                 <ol class="wa-steps">
                     <li>افتح <b dir="ltr">developers.facebook.com</b> وسجّل دخول بفيسبوك ← <b>My Apps ← Create App</b> ← اختر <b>Business</b> وسمّه مثلاً <span dir="ltr">Zad Agent</span>.</li>
                     <li>في صفحة التطبيق اضغط <b>WhatsApp ← Set up</b> واختر حسابك التجاري (أو سوّ واحد جديد).</li>
-                    <li>من <b>WhatsApp ← API Setup</b>: تلقى الرقم التجريبي. في خانة <b>To</b> أضف رقمك وأكّده بالكود. وللرقم الحقيقي اضغط <b>Add phone number</b> واكتب اسم العرض «${esc(ATHR.storeName(cfg()) || "زاد التعليمية")}» والرقم الجديد.</li>
+                    <li>من <b>WhatsApp ← API Setup</b>: تلقى الرقم التجريبي. في خانة <b>To</b> أضف رقمك وأكّده بالكود. وللرقم الحقيقي اضغط <b>Add phone number</b> واكتب اسم العرض «${d(ATHR.storeName($())||"زاد التعليمية")}» والرقم الجديد.</li>
                     <li>من نفس الصفحة انسخ <b>Phone number ID</b> و <b>WhatsApp Business Account ID</b>.</li>
                 </ol>
             </section>
@@ -7566,14 +1533,14 @@
                     <li><b>Generate new token</b> ← اختر التطبيق ← المدة <b>Never</b> ← فعّل <code>whatsapp_business_messaging</code> و <code>whatsapp_business_management</code> ← انسخ الرمز.</li>
                     <li>في صفحة التطبيق: <b>App settings ← Basic</b> ← <b>App secret ← Show</b> وانسخه، وفي نفس الصفحة الصق رابط سياسة الخصوصية (تحت) في خانة <b>Privacy Policy URL</b>.</li>
                 </ol>
-                ${copyRow("رابط سياسة الخصوصية", `${ATHR.siteUrl(cfg())}privacy/`)}
+                ${n("رابط سياسة الخصوصية",`${ATHR.siteUrl($())}privacy/`)}
             </section>
             <section class="adm-card"><h2>الخطوة 2: الصق هنا</h2>
                 <form id="waConnForm" class="af-stack" autocomplete="off">
-                    <label class="af"><span>Phone number ID</span><input class="ai" name="phone_number_id" dir="ltr" inputmode="numeric" maxlength="30" value="${esc(w.cfg.phone_number_id || "")}" placeholder="123456789012345"></label>
-                    <label class="af"><span>WhatsApp Business Account ID</span><input class="ai" name="waba_id" dir="ltr" inputmode="numeric" maxlength="30" value="${esc(w.cfg.waba_id || "")}" placeholder="123456789012345"></label>
-                    <label class="af"><span>Access Token</span><input class="ai" name="token" type="password" dir="ltr" autocomplete="off" maxlength="400" placeholder="${st.token ? `محفوظ ••••${esc(st.token.last4)} — اتركه فاضي إذا ما تبي تغيّره` : "EAAG…"}"></label>
-                    <label class="af"><span>App secret</span><input class="ai" name="app_secret" type="password" dir="ltr" autocomplete="off" maxlength="64" placeholder="${st.app_secret ? "محفوظ ✓ — اتركه فاضي إذا ما تبي تغيّره" : "32 حرف ورقم"}"></label>
+                    <label class="af"><span>Phone number ID</span><input class="ai" name="phone_number_id" dir="ltr" inputmode="numeric" maxlength="30" value="${d(t.cfg.phone_number_id||"")}" placeholder="123456789012345"></label>
+                    <label class="af"><span>WhatsApp Business Account ID</span><input class="ai" name="waba_id" dir="ltr" inputmode="numeric" maxlength="30" value="${d(t.cfg.waba_id||"")}" placeholder="123456789012345"></label>
+                    <label class="af"><span>Access Token</span><input class="ai" name="token" type="password" dir="ltr" autocomplete="off" maxlength="400" placeholder="${e.token?`محفوظ ••••${d(e.token.last4)} — اتركه فاضي إذا ما تبي تغيّره`:"EAAG…"}"></label>
+                    <label class="af"><span>App secret</span><input class="ai" name="app_secret" type="password" dir="ltr" autocomplete="off" maxlength="64" placeholder="${e.app_secret?"محفوظ ✓ — اتركه فاضي إذا ما تبي تغيّره":"32 حرف ورقم"}"></label>
                     <small class="adm-muted">الرمز والسر ينحفظون في الخادم فقط، وما ينعرضون مرة ثانية.</small>
                     <p class="adm-errors-inline" id="waConnErr"></p>
                     <button class="ab ab-primary ab-block" type="submit">حفظ واختبار الربط</button>
@@ -7581,8 +1548,8 @@
             </section>
             <section class="adm-card"><h2>الخطوة 3: Webhook في Meta</h2>
                 <p class="adm-muted">في <b>WhatsApp ← Configuration ← Webhook ← Edit</b> الصق القيمتين واضغط <b>Verify and save</b>، ثم من <b>Webhook fields</b> اشترك في <b dir="ltr">messages</b>.</p>
-                ${copyRow("Callback URL", hook)}
-                ${copyRow("Verify token", st.verify)}
+                ${n("Callback URL",a)}
+                ${n("Verify token",e.verify)}
             </section>
             <section class="adm-card"><h2>الخطوة 4: التشغيل للزبائن</h2>
                 <ol class="wa-steps">
@@ -7591,233 +1558,38 @@
                     <li>إذا ربطت رقم جديد، غيّر رقم واتساب المتجر من «الطلب والاستلام» عشان الزبائن يراسلون الوكيل.</li>
                     <li>ارجع فوق وشغّل مفتاح «الوكيل يرد».</li>
                 </ol>
-            </section>`;
-    }
-
-    async function waSaveConn(form) {
-        const w = waState();
-        const f = new FormData(form);
-        const err = $("#waConnErr");
-        const pid = ATHR.digits(String(f.get("phone_number_id") || "")).replace(/\D/g, "");
-        const waba = ATHR.digits(String(f.get("waba_id") || "")).replace(/\D/g, "");
-        const token = String(f.get("token") || "").trim();
-        const secret = String(f.get("app_secret") || "").trim();
-        if (pid && pid.length < 8) { err.textContent = "Phone number ID أرقام فقط (عادة 15 رقم)."; return; }
-        if (waba && waba.length < 8) { err.textContent = "WABA ID أرقام فقط (عادة 15 رقم)."; return; }
-        if (token && (token.length < 40 || /\s/.test(token))) { err.textContent = "الرمز قصير أو فيه مسافات. انسخه كامل."; return; }
-        if (secret && !/^[A-Za-z0-9]{16,64}$/.test(secret)) { err.textContent = "App secret حروف إنجليزية وأرقام فقط (عادة 32)."; return; }
-        const btn = form.querySelector("button[type=submit]");
-        btn.disabled = true;
-        btn.textContent = "جاري الاختبار…";
-        err.textContent = "";
-        try {
-            await waSaveCfg({ phone_number_id: pid, waba_id: waba });
-            if (token) { const { error } = await sb.rpc("set_wa_secret", { k: "token", v: token }); if (error) throw new Error("token"); }
-            if (secret) { const { error } = await sb.rpc("set_wa_secret", { k: "app_secret", v: secret }); if (error) throw new Error("secret"); }
-            await waLoad({ chats: false });
-            w.conn = await waCall({ task: "connect" });
-            if (w.conn.connected) await waLoad({ chats: false });
-            renderWa();
-        } catch (e) {
-            btn.disabled = false;
-            btn.textContent = "حفظ واختبار الربط";
-            err.textContent = e && e.message === "token" ? "الرمز ما انحفظ. تأكد إنه كامل." : e && e.message === "secret" ? "السر ما انحفظ. تأكد إنه كامل." : "تعذّر الحفظ. تأكد من الاتصال وحاول مرة ثانية.";
-        }
-    }
-
-    // ---------- العروض بقوالب واتساب ----------
-    function waOffersView() {
-        const w = waState();
-        const connected = waConnected();
-        const tpls = w.tpls;
-        const sel = w.tplSel && tpls ? tpls.find((t) => t.name === w.tplSel) : null;
-        const statusChip = (s) => s === "APPROVED" ? `<span class="wa-badge green">معتمد</span>` : s === "REJECTED" ? `<span class="wa-badge red">مرفوض</span>` : `<span class="wa-badge">قيد المراجعة</span>`;
-        const marketing = A.customers.filter((c) => c.marketing);
-        const audience = waAudience();
-        return `${waHead("📣 إرسال عرض")}
+            </section>`}async function nl(t){const e=j(),a=new FormData(t),s=b("#waConnErr"),n=ATHR.digits(String(a.get("phone_number_id")||"")).replace(/\D/g,""),o=ATHR.digits(String(a.get("waba_id")||"")).replace(/\D/g,""),r=String(a.get("token")||"").trim(),l=String(a.get("app_secret")||"").trim();if(n&&n.length<8){s.textContent="Phone number ID أرقام فقط (عادة 15 رقم).";return}if(o&&o.length<8){s.textContent="WABA ID أرقام فقط (عادة 15 رقم).";return}if(r&&(r.length<40||/\s/.test(r))){s.textContent="الرمز قصير أو فيه مسافات. انسخه كامل.";return}if(l&&!/^[A-Za-z0-9]{16,64}$/.test(l)){s.textContent="App secret حروف إنجليزية وأرقام فقط (عادة 32).";return}const c=t.querySelector("button[type=submit]");c.disabled=!0,c.textContent="جاري الاختبار…",s.textContent="";try{if(await Ga({phone_number_id:n,waba_id:o}),r){const{error:p}=await _.rpc("set_wa_secret",{k:"token",v:r});if(p)throw new Error("token")}if(l){const{error:p}=await _.rpc("set_wa_secret",{k:"app_secret",v:l});if(p)throw new Error("secret")}await Va({chats:!1}),e.conn=await jt({task:"connect"}),e.conn.connected&&await Va({chats:!1}),U()}catch(p){c.disabled=!1,c.textContent="حفظ واختبار الربط",s.textContent=p&&p.message==="token"?"الرمز ما انحفظ. تأكد إنه كامل.":p&&p.message==="secret"?"السر ما انحفظ. تأكد إنه كامل.":"تعذّر الحفظ. تأكد من الاتصال وحاول مرة ثانية."}}function ol(){const t=j(),e=xe(),a=t.tpls,s=t.tplSel&&a?a.find(l=>l.name===t.tplSel):null,n=l=>l==="APPROVED"?'<span class="wa-badge green">معتمد</span>':l==="REJECTED"?'<span class="wa-badge red">مرفوض</span>':'<span class="wa-badge">قيد المراجعة</span>',o=i.customers.filter(l=>l.marketing),r=Tn();return`${ne("📣 إرسال عرض")}
             <p class="wa-note">واتساب يسمح برسائل العروض فقط عن طريق <b>قوالب</b> توافق عليها Meta (عادةً خلال دقائق)، وكل رسالة عرض عليها رسوم من Meta حسب دولة الزبون. الرسائل توصل فقط للعملاء اللي وافقوا على العروض.</p>
-            ${!connected ? `<p class="wa-warn">اربط الوكيل بواتساب أول. <button class="link-mini" type="button" data-a="wa-setup">الربط</button></p>` : ""}
+            ${e?"":'<p class="wa-warn">اربط الوكيل بواتساب أول. <button class="link-mini" type="button" data-a="wa-setup">الربط</button></p>'}
             <section class="adm-card"><h2>1) اكتب قالب جديد</h2>
                 <form id="waTplForm" class="af-stack" autocomplete="off">
                     <label class="af"><span>نص الرسالة</span><textarea class="ai" name="body" id="waTplBody" rows="5" maxlength="1000" placeholder="هلا {name} 🎉&#10;وصلت ملفات جديدة للصفوف 1 إلى 4، وعليها *خصم 15%* لين نهاية الأسبوع."></textarea><small>اكتب <code>{name}</code> مكان اسم العميل. بدون أرقام هواتف.</small></label>
                     <div class="asst-acts"><button class="ab-mini" type="button" data-a="wa-tpl-name">+ اسم العميل</button><button class="ab-mini" type="button" data-a="wa-tpl-ai">✨ اقترح لي نص</button></div>
                     <div class="wa-2">
                         <label class="af"><span>نص الزر</span><input class="ai" name="button_text" maxlength="25" value="تسوّق الآن"></label>
-                        <label class="af"><span>رابط الزر</span><input class="ai" name="button_url" dir="ltr" maxlength="400" value="${esc(siteLink(ATHR.base()))}"></label>
+                        <label class="af"><span>رابط الزر</span><input class="ai" name="button_url" dir="ltr" maxlength="400" value="${d(Y(ATHR.base()))}"></label>
                     </div>
-                    <label class="af"><span>تذييل (اختياري)</span><input class="ai" name="footer" maxlength="60" value="${esc(ATHR.storeName(cfg()) || "زاد التعليمية")}"></label>
-                    <button class="ab ab-soft ab-block" type="submit"${connected ? "" : " disabled"}>أرسل القالب لمراجعة Meta</button>
+                    <label class="af"><span>تذييل (اختياري)</span><input class="ai" name="footer" maxlength="60" value="${d(ATHR.storeName($())||"زاد التعليمية")}"></label>
+                    <button class="ab ab-soft ab-block" type="submit"${e?"":" disabled"}>أرسل القالب لمراجعة Meta</button>
                 </form>
             </section>
             <section class="adm-card"><h2>2) اختر قالب معتمد</h2>
-                ${tpls === null ? `<p class="adm-muted">${connected ? "جاري تحميل القوالب…" : "تظهر القوالب بعد الربط."}</p>`
-                    : tpls.error ? `<p class="wa-warn">${esc(tpls.error)}</p>`
-                    : !tpls.length ? `<p class="adm-muted">ما فيه قوالب بعد. اكتب أول قالب فوق.</p>`
-                    : `<div class="wa-tpls">${tpls.map((t) => `<button type="button" class="wa-tpl${t.name === w.tplSel ? " on" : ""}" data-wa-tpl="${esc(t.name)}"${t.status !== "APPROVED" ? " disabled" : ""}><span>${statusChip(t.status)} <small dir="ltr">${esc(t.name)}</small></span><span class="wa-tpl-b">${waFmt(t.body).replace(/\{\{\s*(\d+)\s*\}\}/g, '<span class="wa-var">$1</span>')}</span></button>`).join("")}</div>`}
-                ${connected ? `<button class="ab-mini" type="button" data-a="wa-tpl-reload">تحديث القوالب</button>` : ""}
+                ${a===null?`<p class="adm-muted">${e?"جاري تحميل القوالب…":"تظهر القوالب بعد الربط."}</p>`:a.error?`<p class="wa-warn">${d(a.error)}</p>`:a.length?`<div class="wa-tpls">${a.map(l=>`<button type="button" class="wa-tpl${l.name===t.tplSel?" on":""}" data-wa-tpl="${d(l.name)}"${l.status!=="APPROVED"?" disabled":""}><span>${n(l.status)} <small dir="ltr">${d(l.name)}</small></span><span class="wa-tpl-b">${se(l.body).replace(/\{\{\s*(\d+)\s*\}\}/g,'<span class="wa-var">$1</span>')}</span></button>`).join("")}</div>`:'<p class="adm-muted">ما فيه قوالب بعد. اكتب أول قالب فوق.</p>'}
+                ${e?'<button class="ab-mini" type="button" data-a="wa-tpl-reload">تحديث القوالب</button>':""}
             </section>
-            ${sel ? `<section class="adm-card"><h2>3) أرسل</h2><div class="af-stack">
-                ${Array.from({ length: sel.body_params }, (_, i) => `<label class="af"><span>المتغير {{${i + 1}}}</span><input class="ai" data-wa-var="${i}" maxlength="200" value="${esc((w.sending && w.sending.vars && w.sending.vars[i]) ?? (i === 0 ? "{name}" : ""))}"><small>${i === 0 ? "<code>{name}</code> = الاسم الأول للعميل (أو «عميلنا»)" : "النص اللي يظهر مكانه"}</small></label>`).join("")}
-                ${sel.header && sel.header.format === "IMAGE" ? `<label class="af"><span>رابط صورة الرأس</span><input class="ai" data-wa-headimg dir="ltr" value="${esc((w.sending && w.sending.headerImage) || "")}" placeholder="https://…jpg"></label>` : ""}
-                ${sel.buttons.some((b) => b.dynamic) || (sel.header && ["VIDEO", "DOCUMENT"].includes(sel.header.format)) ? `<p class="wa-warn">هذا القالب فيه أجزاء ما تنرسل من هنا (فيديو أو ملف أو رابط متغير). اختر قالب ثاني.</p>` : ""}
+            ${s?`<section class="adm-card"><h2>3) أرسل</h2><div class="af-stack">
+                ${Array.from({length:s.body_params},(l,c)=>`<label class="af"><span>المتغير {{${c+1}}}</span><input class="ai" data-wa-var="${c}" maxlength="200" value="${d((t.sending&&t.sending.vars&&t.sending.vars[c])??(c===0?"{name}":""))}"><small>${c===0?"<code>{name}</code> = الاسم الأول للعميل (أو «عميلنا»)":"النص اللي يظهر مكانه"}</small></label>`).join("")}
+                ${s.header&&s.header.format==="IMAGE"?`<label class="af"><span>رابط صورة الرأس</span><input class="ai" data-wa-headimg dir="ltr" value="${d(t.sending&&t.sending.headerImage||"")}" placeholder="https://…jpg"></label>`:""}
+                ${s.buttons.some(l=>l.dynamic)||s.header&&["VIDEO","DOCUMENT"].includes(s.header.format)?'<p class="wa-warn">هذا القالب فيه أجزاء ما تنرسل من هنا (فيديو أو ملف أو رابط متغير). اختر قالب ثاني.</p>':""}
                 <div class="wa-seg" role="group" aria-label="من يوصله العرض">
-                    <button type="button" data-wa-aud="all" aria-pressed="${waAudKind() === "all"}">كل الموافقين (${marketing.length})</button>
-                    <button type="button" data-wa-aud="fresh" aria-pressed="${waAudKind() === "fresh"}">ما وصلهم عرض من أسبوع</button>
+                    <button type="button" data-wa-aud="all" aria-pressed="${Ye()==="all"}">كل الموافقين (${o.length})</button>
+                    <button type="button" data-wa-aud="fresh" aria-pressed="${Ye()==="fresh"}">ما وصلهم عرض من أسبوع</button>
                 </div>
-                <p class="adm-muted">بيوصل لـ <b>${audience.length}</b> عميل.${A.customersLoaded ? "" : " (جاري تحميل العملاء…)"}</p>
-                ${w.sending && w.sending.progress ? `<p class="wa-progress">${esc(w.sending.progress)}</p>` : ""}
-                <button class="ab ab-primary ab-block" type="button" data-a="wa-broadcast"${audience.length && !(w.sending && w.sending.busy) ? "" : " disabled"}>إرسال العرض لـ ${audience.length} عميل</button>
-            </div></section>` : ""}`;
-    }
+                <p class="adm-muted">بيوصل لـ <b>${r.length}</b> عميل.${i.customersLoaded?"":" (جاري تحميل العملاء…)"}</p>
+                ${t.sending&&t.sending.progress?`<p class="wa-progress">${d(t.sending.progress)}</p>`:""}
+                <button class="ab ab-primary ab-block" type="button" data-a="wa-broadcast"${r.length&&!(t.sending&&t.sending.busy)?"":" disabled"}>إرسال العرض لـ ${r.length} عميل</button>
+            </div></section>`:""}`}const Ye=()=>j().sending&&j().sending.aud||"all";function Tn(){const t=Ye()==="fresh";return i.customers.filter(e=>e.marketing&&/^[0-9]{8,15}$/.test(String(e.phone||""))&&(!t||Jt(e.last_offer_at)>=7))}async function Za(){const t=j(),e=await jt({task:"templates"});t.tpls=e.error?{error:ae(e)}:e.templates||[],Array.isArray(t.tpls)&&t.tpls.sort((a,s)=>(a.status==="APPROVED"?0:1)-(s.status==="APPROVED"?0:1)),t.screen==="offers"&&U(!0)}async function rl(t){const e=new FormData(t),a=String(e.get("body")||"").trim();if(a.length<10){y("اكتب نص القالب (10 أحرف على الأقل).");return}if(/(\+?968|\b9\d{7}\b|\b7\d{7}\b)/.test(ATHR.digits(a))){y("شيل أرقام الهواتف من نص القالب.");return}const s=t.querySelector("button[type=submit]");s.disabled=!0;const n=await jt({task:"create_template",body:a,footer:e.get("footer"),button_text:e.get("button_text"),button_url:e.get("button_url")});if(s.disabled=!1,n.error){y(ae(n));return}y("انرسل القالب للمراجعة ✓ يظهر «معتمد» عادة خلال دقائق"),t.reset(),await Za()}async function il(){const t=b("#waTplBody");if(t)try{const e=await Kt({task:"offer",note:"رسالة عرض عامة للعملاء",style:"عرض خاص"});t.value=String(e.text||"").replace(/\{link\}/g,"").replace(/\{(product|price|old|pct|ends)\}/g,"").replace(/\n{3,}/g,`
 
-    const waAudKind = () => (waState().sending && waState().sending.aud) || "all";
-    function waAudience() {
-        const fresh = waAudKind() === "fresh";
-        return A.customers.filter((c) => c.marketing && /^[0-9]{8,15}$/.test(String(c.phone || "")) && (!fresh || daysSince(c.last_offer_at) >= 7));
-    }
-
-    async function waLoadTpls() {
-        const w = waState();
-        const out = await waCall({ task: "templates" });
-        w.tpls = out.error ? { error: waErr(out) } : out.templates || [];
-        if (Array.isArray(w.tpls)) w.tpls.sort((a, b) => (a.status === "APPROVED" ? 0 : 1) - (b.status === "APPROVED" ? 0 : 1));
-        if (w.screen === "offers") renderWa(true);
-    }
-
-    async function waCreateTpl(form) {
-        const f = new FormData(form);
-        const body = String(f.get("body") || "").trim();
-        if (body.length < 10) { toast("اكتب نص القالب (10 أحرف على الأقل)."); return; }
-        if (/(\+?968|\b9\d{7}\b|\b7\d{7}\b)/.test(ATHR.digits(body))) { toast("شيل أرقام الهواتف من نص القالب."); return; }
-        const btn = form.querySelector("button[type=submit]");
-        btn.disabled = true;
-        const out = await waCall({ task: "create_template", body, footer: f.get("footer"), button_text: f.get("button_text"), button_url: f.get("button_url") });
-        btn.disabled = false;
-        if (out.error) { toast(waErr(out)); return; }
-        toast("انرسل القالب للمراجعة ✓ يظهر «معتمد» عادة خلال دقائق");
-        form.reset();
-        await waLoadTpls();
-    }
-
-    async function waAiTpl() {
-        const box = $("#waTplBody");
-        if (!box) return;
-        try {
-            const out = await aiCall({ task: "offer", note: "رسالة عرض عامة للعملاء", style: "عرض خاص" });
-            box.value = String(out.text || "").replace(/\{link\}/g, "").replace(/\{(product|price|old|pct|ends)\}/g, "").replace(/\n{3,}/g, "\n\n").trim();
-        } catch (e) {
-            toast(e && e.code === "no_key" ? "فعّل مفتاح Gemini أول من «النصوص»." : "تعذّر الاقتراح الآن.");
-        }
-    }
-
-    async function waBroadcast() {
-        const w = waState();
-        const sel = (w.tpls || []).find((t) => t.name === w.tplSel);
-        if (!sel) return;
-        const s = w.sending || (w.sending = {});
-        s.vars = $$("[data-wa-var]").map((i) => i.value.trim());
-        s.headerImage = $("[data-wa-headimg]") ? $("[data-wa-headimg]").value.trim() : "";
-        if (s.vars.some((v) => !v)) { toast("عبّ كل المتغيرات."); return; }
-        if (sel.header && sel.header.format === "IMAGE" && !/^https:\/\//.test(s.headerImage)) { toast("الصق رابط صورة الرأس (يبدأ بـ https)."); return; }
-        const list = waAudience();
-        if (!list.length) return;
-        if (!confirm(`بترسل العرض لـ ${list.length} عميل على واتساب.\nMeta تحسب رسوم على كل رسالة عرض.\nمتأكد؟`)) return;
-        s.busy = true;
-        let sent = 0;
-        const failed = [];
-        for (let i = 0; i < list.length; i += 25) {
-            s.progress = `جاري الإرسال… ${Math.min(i, list.length)} من ${list.length}`;
-            renderWa(true);
-            const batch = list.slice(i, i + 25).map((c) => ({ phone: c.phone, name: c.name || "" }));
-            const out = await waCall({ task: "broadcast", template: { name: sel.name, language: sel.language, body: sel.body }, vars: s.vars, header_image: s.headerImage, recipients: batch });
-            if (out.error) { failed.push(...batch.map((b) => ({ phone: b.phone, error: waErr(out) }))); break; }
-            sent += out.sent || 0;
-            failed.push(...(out.failed || []));
-            batch.forEach((b) => { const c = A.customers.find((x) => x.phone === b.phone); if (c && !(out.failed || []).some((f) => f.phone === b.phone)) c.last_offer_at = new Date().toISOString(); });
-        }
-        s.busy = false;
-        s.progress = `✅ انرسل لـ ${sent} عميل${failed.length ? ` · ما وصل لـ ${failed.length}${failed[0] && failed[0].error ? ` (${failed[0].error.slice(0, 80)})` : ""}` : ""}`;
-        renderWa(true);
-        toast(`انرسل العرض لـ ${sent} عميل`);
-    }
-
-    // ---------- الأحداث ----------
-    async function waClick(d) {
-        const w = waState();
-        if (d.a === "wa-open") { await openWa(); return true; }
-        if (!$("#waBody")) return false;
-        if (d.a === "wa-home") { w.screen = "home"; w.chat = null; renderWa(); waLoadChats().then(() => { if (w.screen === "home") renderWa(true); }); return true; }
-        if (d.a === "wa-try") { w.screen = "try"; renderWa(); setTimeout(() => $("#waTryInput")?.focus(), 50); return true; }
-        if (d.a === "wa-settings") { w.screen = "settings"; renderWa(); return true; }
-        if (d.a === "wa-setup") { w.screen = "setup"; w.conn = null; renderWa(); if (waConnected()) { w.conn = await waCall({ task: "status" }); if (w.screen === "setup") renderWa(true); } return true; }
-        if (d.a === "wa-offers") {
-            w.screen = "offers";
-            renderWa();
-            if (!A.customersLoaded) loadCustomers().then(() => { if (w.screen === "offers") renderWa(true); }).catch(() => {});
-            if (waConnected() && !Array.isArray(w.tpls)) await waLoadTpls();
-            return true;
-        }
-        if (d.a === "wa-tpl-reload") { w.tpls = null; renderWa(true); await waLoadTpls(); return true; }
-        if (d.a === "wa-tpl-name") { const b = $("#waTplBody"); if (b) { const p = b.selectionStart ?? b.value.length; b.value = b.value.slice(0, p) + "{name}" + b.value.slice(p); b.focus(); } return true; }
-        if (d.a === "wa-tpl-ai") { await waAiTpl(); return true; }
-        if (d.a === "wa-broadcast") { await waBroadcast(); return true; }
-        if (d.a === "wa-resume") { await waSetPause(false); return true; }
-        if (d.a === "wa-pause") { await waSetPause(true); return true; }
-        if (d.a === "wa-try-reset") { w.tryMsgs = []; renderWa(); return true; }
-        if (d.waChat) { await waOpenChat(d.waChat); return true; }
-        if (d.waFilter) { w.filter = d.waFilter; renderWa(true); return true; }
-        if (d.waCountry) { w.tryCountry = d.waCountry; w.tryMsgs = []; renderWa(); return true; }
-        if (d.waQ) { await waTryAsk(d.waQ); return true; }
-        if (d.waTpl) { w.tplSel = d.waTpl; w.sending = { aud: waAudKind() }; renderWa(true); return true; }
-        if (d.waAud) { w.sending = { ...(w.sending || {}), aud: d.waAud, vars: $$("[data-wa-var]").map((i) => i.value) }; renderWa(true); return true; }
-        if (d.copyWa !== undefined) {
-            try { await navigator.clipboard.writeText(d.copyWa); toast("انسخ ✓"); } catch { toast(d.copyWa); }
-            return true;
-        }
-        return false;
-    }
-
-    async function waChange(t) {
-        if (t.id === "waEnabled") {
-            const on = t.checked;
-            try {
-                await waSaveCfg({ enabled: on });
-                toast(on ? (waConnected() ? "الوكيل شغّال ✓ يرد على زبائنك" : "تفعّل ✓ يبدأ يرد بعد الربط") : "وقف الوكيل. الرسائل تنحفظ بدون رد.");
-                renderWa(true);
-            } catch {
-                t.checked = !on;
-                toast("تعذّر الحفظ. حاول مرة ثانية.");
-            }
-            return true;
-        }
-        return false;
-    }
-
-    function waSubmit(form) {
-        if (form.id === "waSendForm") { waSendReply(form); return true; }
-        if (form.id === "waTryForm") { const i = $("#waTryInput"); const v = String(i.value || "").trim(); i.value = ""; waTryAsk(v); return true; }
-        if (form.id === "waSetForm") { waSaveSettings(form); return true; }
-        if (form.id === "waConnForm") { waSaveConn(form); return true; }
-        if (form.id === "waTplForm") { waCreateTpl(form); return true; }
-        return false;
-    }
-
-    async function loadWaHome() {
-        try {
-            const el = $("#homeWa");
-            if (!el) return;
-            const [{ data: s }, { data: needs }] = await Promise.all([
-                sb.from("wa_settings").select("config").eq("id", 1).maybeSingle(),
-                sb.from("wa_chats").select("phone").eq("needs_owner", true).limit(100)
-            ]);
-            const c = (s && s.config) || {};
-            const count = (needs || []).length;
-            if (count) { el.textContent = count === 1 ? "محادثة وحدة تحتاجك" : `${count} محادثات تحتاجك`; el.classList.add("hot"); }
-            else el.textContent = c.enabled && c.phone_number_id ? "شغّال: يرد على زبائنك الحين" : c.phone_number_id ? "موقّف — شغّله بضغطة" : "يرد على زبائنك 24 ساعة ويسجّل طلباتهم";
-        } catch {
-            /* اختياري */
-        }
-    }
-
-    window.ATHR_ADMIN = { open, close };
-})();
+`).trim()}catch(e){y(e&&e.code==="no_key"?"فعّل مفتاح Gemini أول من «النصوص».":"تعذّر الاقتراح الآن.")}}async function ll(){const t=j(),e=(t.tpls||[]).find(r=>r.name===t.tplSel);if(!e)return;const a=t.sending||(t.sending={});if(a.vars=at("[data-wa-var]").map(r=>r.value.trim()),a.headerImage=b("[data-wa-headimg]")?b("[data-wa-headimg]").value.trim():"",a.vars.some(r=>!r)){y("عبّ كل المتغيرات.");return}if(e.header&&e.header.format==="IMAGE"&&!/^https:\/\//.test(a.headerImage)){y("الصق رابط صورة الرأس (يبدأ بـ https).");return}const s=Tn();if(!s.length||!confirm(`بترسل العرض لـ ${s.length} عميل على واتساب.
+Meta تحسب رسوم على كل رسالة عرض.
+متأكد؟`))return;a.busy=!0;let n=0;const o=[];for(let r=0;r<s.length;r+=25){a.progress=`جاري الإرسال… ${Math.min(r,s.length)} من ${s.length}`,U(!0);const l=s.slice(r,r+25).map(p=>({phone:p.phone,name:p.name||""})),c=await jt({task:"broadcast",template:{name:e.name,language:e.language,body:e.body},vars:a.vars,header_image:a.headerImage,recipients:l});if(c.error){o.push(...l.map(p=>({phone:p.phone,error:ae(c)})));break}n+=c.sent||0,o.push(...c.failed||[]),l.forEach(p=>{const u=i.customers.find(m=>m.phone===p.phone);u&&!(c.failed||[]).some(m=>m.phone===p.phone)&&(u.last_offer_at=new Date().toISOString())})}a.busy=!1,a.progress=`✅ انرسل لـ ${n} عميل${o.length?` · ما وصل لـ ${o.length}${o[0]&&o[0].error?` (${o[0].error.slice(0,80)})`:""}`:""}`,U(!0),y(`انرسل العرض لـ ${n} عميل`)}async function cl(t){const e=j();if(t.a==="wa-open")return await Zi(),!0;if(!b("#waBody"))return!1;if(t.a==="wa-home")return e.screen="home",e.chat=null,U(),Wa().then(()=>{e.screen==="home"&&U(!0)}),!0;if(t.a==="wa-try")return e.screen="try",U(),setTimeout(()=>b("#waTryInput")?.focus(),50),!0;if(t.a==="wa-settings")return e.screen="settings",U(),!0;if(t.a==="wa-setup")return e.screen="setup",e.conn=null,U(),xe()&&(e.conn=await jt({task:"status"}),e.screen==="setup"&&U(!0)),!0;if(t.a==="wa-offers")return e.screen="offers",U(),i.customersLoaded||Fe().then(()=>{e.screen==="offers"&&U(!0)}).catch(()=>{}),xe()&&!Array.isArray(e.tpls)&&await Za(),!0;if(t.a==="wa-tpl-reload")return e.tpls=null,U(!0),await Za(),!0;if(t.a==="wa-tpl-name"){const a=b("#waTplBody");if(a){const s=a.selectionStart??a.value.length;a.value=a.value.slice(0,s)+"{name}"+a.value.slice(s),a.focus()}return!0}if(t.a==="wa-tpl-ai")return await il(),!0;if(t.a==="wa-broadcast")return await ll(),!0;if(t.a==="wa-resume")return await kn(!1),!0;if(t.a==="wa-pause")return await kn(!0),!0;if(t.a==="wa-try-reset")return e.tryMsgs=[],U(),!0;if(t.waChat)return await Qi(t.waChat),!0;if(t.waFilter)return e.filter=t.waFilter,U(!0),!0;if(t.waCountry)return e.tryCountry=t.waCountry,e.tryMsgs=[],U(),!0;if(t.waQ)return await xn(t.waQ),!0;if(t.waTpl)return e.tplSel=t.waTpl,e.sending={aud:Ye()},U(!0),!0;if(t.waAud)return e.sending={...e.sending||{},aud:t.waAud,vars:at("[data-wa-var]").map(a=>a.value)},U(!0),!0;if(t.copyWa!==void 0){try{await navigator.clipboard.writeText(t.copyWa),y("انسخ ✓")}catch{y(t.copyWa)}return!0}return!1}async function dl(t){if(t.id==="waEnabled"){const e=t.checked;try{await Ga({enabled:e}),y(e?xe()?"الوكيل شغّال ✓ يرد على زبائنك":"تفعّل ✓ يبدأ يرد بعد الربط":"وقف الوكيل. الرسائل تنحفظ بدون رد."),U(!0)}catch{t.checked=!e,y("تعذّر الحفظ. حاول مرة ثانية.")}return!0}return!1}function ul(t){if(t.id==="waSendForm")return Xi(t),!0;if(t.id==="waTryForm"){const e=b("#waTryInput"),a=String(e.value||"").trim();return e.value="",xn(a),!0}return t.id==="waSetForm"?(al(t),!0):t.id==="waConnForm"?(nl(t),!0):t.id==="waTplForm"?(rl(t),!0):!1}async function pl(){try{const t=b("#homeWa");if(!t)return;const[{data:e},{data:a}]=await Promise.all([_.from("wa_settings").select("config").eq("id",1).maybeSingle(),_.from("wa_chats").select("phone").eq("needs_owner",!0).limit(100)]),s=e&&e.config||{},n=(a||[]).length;n?(t.textContent=n===1?"محادثة وحدة تحتاجك":`${n} محادثات تحتاجك`,t.classList.add("hot")):t.textContent=s.enabled&&s.phone_number_id?"شغّال: يرد على زبائنك الحين":s.phone_number_id?"موقّف — شغّله بضغطة":"يرد على زبائنك 24 ساعة ويسجّل طلباتهم"}catch{}}window.ATHR_ADMIN={open:ft,close:Ae}})();
