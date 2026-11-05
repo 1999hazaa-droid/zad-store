@@ -44,30 +44,24 @@ function wavUrl(parts, dur) {
   for (let i = 0; i < n; i++) dv.setInt16(44 + i * 2, Math.max(-1, Math.min(1, f[i] * k)) * 32767, true);
   return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
 }
-const NOTES = [523, 587, 659, 784, 880, 1047, 1175, 1319, 1568, 1760, 2093, 2349];
+const NOTES = [392, 440, 494, 523, 587, 659, 698, 784, 880, 988, 1047, 1175];
+// أصوات هادئة وناعمة: نغمات قصيرة منخفضة الشدة
 const DEFS = {
-  ok: () => wavUrl([{ f: 659, d: .14, t: 0, v: .4 }, { f: 880, d: .22, t: .09, v: .4 }], .35),
-  bad: () => wavUrl([{ f: 330, f2: 262, d: .28, v: .3 }], .32),
-  tap: () => wavUrl([{ f: 900, f2: 700, d: .05, v: .35, dec: 2.5 }], .08),
-  pop: () => wavUrl([{ f: 600, f2: 800, d: .08, v: .3, dec: 1.6 }], .12),
-  flip: () => wavUrl([{ f: 320, f2: 520, d: .07, w: "square", v: .2 }], .12),
-  star: () => wavUrl([{ f: 1047, d: .12, t: 0, v: .35 }, { f: 1319, d: .24, t: .08, v: .35 }], .4),
-  win: () => wavUrl([{ f: 523, d: .16, t: 0, v: .4 }, { f: 659, d: .16, t: .12, v: .4 }, { f: 784, d: .16, t: .24, v: .4 }, { f: 1047, d: .4, t: .36, v: .4 }], .8),
-  unlock: () => wavUrl([{ f: 523, d: .14, t: 0, v: .4 }, { f: 784, d: .14, t: .1, v: .4 }, { f: 1047, d: .4, t: .2, v: .4 }], .65),
-  whoosh: () => wavUrl([{ f: 100, d: .3, w: "noise", v: .35, dec: 1 }, { f: 300, f2: 900, d: .3, v: .12, dec: .8 }], .35),
-  boing: () => wavUrl([{ f: 180, f2: 520, d: .28, v: .5, vib: 25, dec: 1 }], .32),
-  coin: () => wavUrl([{ f: 988, d: .08, t: 0, w: "square", v: .25 }, { f: 1319, d: .3, t: .07, w: "square", v: .25 }], .4),
-  ui: () => wavUrl([{ f: 1318, d: .07, t: 0, v: .3, dec: 2.2 }, { f: 1760, d: .1, t: .035, v: .26, dec: 2.2 }], .16),
-  nav: () => wavUrl([{ f: 784, f2: 1047, d: .09, t: 0, v: .3, dec: 1.8 }, { f: 1568, d: .14, t: .06, v: .22, dec: 2 }], .22),
-  back: () => wavUrl([{ f: 1047, f2: 784, d: .09, v: .28, dec: 2 }], .12),
-  tick: () => wavUrl([{ f: 1400, d: .03, v: .3, dec: 2 }], .05),
-  clap: () => wavUrl([{ f: 800, d: .06, w: "noise", v: .4, dec: 2 }, { f: 800, d: .06, t: .12, w: "noise", v: .4, dec: 2 }, { f: 800, d: .08, t: .24, w: "noise", v: .4, dec: 2 }], .4)
+  ok: () => wavUrl([{ f: 523, d: .16, t: 0, v: .22, dec: 2 }, { f: 784, d: .22, t: .08, v: .2, dec: 2 }], .32),
+  bad: () => wavUrl([{ f: 247, d: .14, v: .16, dec: 2.4 }], .16),
+  pop: () => wavUrl([{ f: 660, d: .07, v: .16, dec: 2.4 }], .1),
+  star: () => wavUrl([{ f: 784, d: .12, t: 0, v: .2, dec: 2 }, { f: 1047, d: .22, t: .07, v: .18, dec: 2 }], .32),
+  win: () => wavUrl([{ f: 523, d: .2, t: 0, v: .2, dec: 2 }, { f: 659, d: .2, t: .13, v: .2, dec: 2 }, { f: 784, d: .3, t: .26, v: .2, dec: 2 }], .6),
+  unlock: () => wavUrl([{ f: 523, d: .2, t: 0, v: .2, dec: 2 }, { f: 784, d: .35, t: .12, v: .2, dec: 2 }], .5),
+  ui: () => wavUrl([{ f: 880, d: .05, v: .12, dec: 3 }], .07),
+  nav: () => wavUrl([{ f: 660, d: .07, v: .13, dec: 2.8 }, { f: 880, d: .09, t: .045, v: .1, dec: 2.8 }], .14),
+  back: () => wavUrl([{ f: 660, d: .06, v: .11, dec: 3 }], .08)
 };
-NOTES.forEach((f, i) => { DEFS["n" + i] = () => wavUrl([{ f, d: .22, v: .5 }, { f: f * 2, d: .1, v: .1 }], .28); });
+NOTES.forEach((f, i) => { DEFS["n" + i] = () => wavUrl([{ f, d: .18, v: .2, dec: 2 }], .22); });
 function makeSnd(name) {
   if (SND[name]) return SND[name];
   const url = DEFS[name]();
-  const els = (name === "ok" || name === "bad" ? [0, 1] : [0]).map(() => { const a = new Audio(url); a.preload = "auto"; a.volume = 0.4; return a; });
+  const els = (name === "ok" || name === "bad" ? [0, 1] : [0]).map(() => { const a = new Audio(url); a.preload = "auto"; a.volume = 0.5; return a; });
   return (SND[name] = { els, i: 0 });
 }
 function unlockAudio() {
@@ -87,9 +81,9 @@ function play(name) {
 }
 const buzz = (p) => { try { if (!muted && navigator.vibrate) navigator.vibrate(p); } catch { /* */ } };
 const sfx = {
-  ok() { play("ok"); buzz(15); }, bad() { play("bad"); }, pop() { play("pop"); }, flip() { /* صامت */ },
-  win() { play("win"); buzz(30); }, tap() { /* صامت */ }, star() { play("star"); }, unlock() { play("unlock"); buzz(30); },
-  whoosh() { /* صامت */ }, boing() { play("pop"); }, coin() { play("star"); }, tick() { /* صامت */ }, clap() { play("star"); },
+  ok() { play("ok"); buzz(8); }, bad() { play("bad"); }, pop() { play("pop"); }, flip() { /* صامت */ },
+  win() { play("win"); buzz(15); }, tap() { /* صامت */ }, star() { play("star"); }, unlock() { play("unlock"); buzz(15); },
+  whoosh() { /* صامت */ }, boing() { /* صامت */ }, coin() { play("pop"); }, tick() { /* صامت */ }, clap() { /* صامت */ },
   note(i) { play("n" + (Math.max(0, i) % NOTES.length)); }
 };
 ["pointerdown", "touchstart", "click", "keydown"].forEach((ev) => addEventListener(ev, unlockAudio, { once: false, passive: true }));
@@ -97,7 +91,7 @@ const sfx = {
 addEventListener("click", (e) => {
   const t = e.target.closest && e.target.closest(".catcard, .gcard, .feat .gcard, #back, .pill.btn, .btn-big, .lg-go, .linkbtn, .prof, .chr.on");
   if (!t || t.classList.contains("chr") || t.id === "mute") return;
-  play(t.matches("#back") ? "back" : t.matches(".catcard, .gcard") ? "nav" : "ui"); buzz(8);
+  play(t.matches("#back") ? "back" : t.matches(".catcard, .gcard") ? "nav" : "ui"); buzz(5);
 }, { passive: true, capture: true });
 /* اسم الطفل وعبارات التشجيع */
 let CHILD = "";
