@@ -702,9 +702,9 @@
         const cod = (cfg.order.payments || []).some((p) => p.enabled && p.type === "cod");
         if (ATHR.isDigital(cfg)) {
             return [
-                [V.icon.file, t("ملفات PDF جاهزة للطباعة")],
-                [V.icon.inbox, t("تصلك على واتساب")],
-                [V.icon.card, cod ? t("الدفع عند الاستلام") : t("تحويل بنكي آمن")]
+                [V.icon.file, t("PDF للطباعة")],
+                [V.icon.inbox, t("عبر واتساب")],
+                [V.icon.card, cod ? t("الدفع عند الاستلام") : t("تحويل بنكي")]
             ];
         }
         return [

@@ -3704,3 +3704,9 @@ html.tpl-apple .msg-sugs button, html.tpl-apple .sug { border: 0; background: va
 .gm-tx small { font-size: 12px !important; opacity: .88; }
 .gm-go { display: inline-block !important; padding: 7px 13px !important; font-size: 12.5px !important; font-weight: 800; color: #5B34D6 !important; }
 @media (max-width: 420px) { .gm-go { font-size: 0 !important; width: 30px; height: 30px; padding: 0 !important; display: grid !important; place-items: center; } .gm-go::before { content: "‹"; font-size: 22px; line-height: 1; font-weight: 800; transform: translateY(-1px); } }
+
+/* شارات الهيرو: سطر واحد صغير */
+.hero-mini { flex-wrap: nowrap; justify-content: flex-start; gap: 6px; }
+.hero-mini li, .hero-features li { padding: 4px 9px; font-size: 11.5px; gap: 4px; box-shadow: none; }
+.hero-mini svg, .hero-features svg { width: 13px; height: 13px; }
+@media (max-width: 360px) { .hero-mini { gap: 4px; } .hero-mini li { padding: 4px 7px; font-size: 11px; } }
