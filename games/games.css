@@ -325,3 +325,101 @@ h2.cat { font-size: 17px; font-weight: 800; color: var(--ink); margin: 22px 2px 
 .lg-feat b { display: grid; place-items: center; width: 38px; height: 38px; margin: 0 auto 6px; border-radius: 12px; font-size: 20px; color: var(--c); background: color-mix(in srgb, var(--c) 13%, #fff); }
 .lg-feat b .ics { width: 22px; height: 22px; }
 .bar .title { font-size: 19px; }
+
+/* ===== v20: شاشات اللعب: بسيطة وعصرية وخفيفة ===== */
+/* لا حركات مستمرة ولا فلاتر ثقيلة */
+.emo, .mascot, .win .trophy, .u-e { animation: none !important; filter: none; }
+.emo.shadow { filter: brightness(0) opacity(.8); }
+.cloud, .sky { display: none; }
+* { -webkit-tap-highlight-color: transparent; }
+
+.bar { gap: 8px; margin-bottom: 6px; }
+.bar .title { font-size: 17px; font-weight: 800; color: var(--ink); }
+/* شريط التقدم بدل النقاط */
+.dots { display: flex; align-items: center; gap: 10px; margin: 0 2px 12px; min-height: 0; }
+.pbar { flex: 1; height: 8px; border-radius: 99px; background: #E9E3FB; overflow: hidden; }
+.pbar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #8B5CF6, #6D3FE0); transition: width .35s ease; }
+.pcnt { font-size: 13px; font-weight: 800; color: #6B5F8C; min-width: 34px; text-align: center; direction: ltr; }
+/* منطقة اللعب */
+.stage { background: #fff; border: 1px solid #ECE7FA; border-radius: 24px; padding: 20px 14px 22px; box-shadow: 0 1px 2px rgba(43, 27, 79, .05), 0 12px 32px rgba(109, 63, 224, .08); min-height: 340px; gap: 16px; }
+.prompt { font-size: 22px; font-weight: 700; line-height: 1.55; color: var(--ink); }
+.say { display: inline-flex; align-items: center; gap: 8px; background: color-mix(in srgb, var(--pri) 10%, #fff); color: var(--pri); border-radius: 99px; padding: 8px 18px; font-size: 16px; font-weight: 800; box-shadow: none; border: 1px solid color-mix(in srgb, var(--pri) 22%, #fff); }
+.say .ics { width: 20px; height: 20px; }
+.say:active { transform: scale(.96); box-shadow: none; }
+/* الصورة/الرسمة داخل لوحة ناعمة */
+.emo { display: grid; place-items: center; width: 136px; height: 136px; border-radius: 34px; font-size: 76px; line-height: 1; background: linear-gradient(150deg, #F5F1FF, #FFFFFF 70%); box-shadow: inset 0 0 0 1px #ECE7FA, 0 10px 24px rgba(109, 63, 224, .1); }
+.emo .cal.big { min-width: 0; }
+.big { font-size: 96px; }
+.bigw { font-size: 60px; }
+/* الخيارات: بطاقات مسطحة */
+.opts { gap: 10px; }
+.opt { border: 2px solid #ECE7FA; border-radius: 18px; min-height: 86px; font-size: 46px; font-weight: 800; color: var(--ink); background: #fff; box-shadow: 0 1px 2px rgba(43, 27, 79, .05); transition: transform .1s, background .15s, border-color .15s; }
+.opt.txt { font-size: 28px; }
+.opt:active { transform: scale(.97); box-shadow: 0 1px 2px rgba(43, 27, 79, .05); background: #FAF8FF; }
+@media (hover: hover) { .opt:hover { border-color: #CDBFF5; } }
+.opt.ok { background: #E6F8EE; border-color: #22B45E; box-shadow: none; animation: pop .3s; }
+.opt.no { background: #FFEDED; border-color: #EF4444; animation: shake .3s; }
+@keyframes pop { 50% { transform: scale(1.05); } }
+.count-box { font-size: 44px; gap: 4px; }
+.count-box span { animation: none; }
+/* بناء الكلمة والترتيب */
+.slot { width: 62px; height: 74px; border: 2px dashed #CDBFF5; border-radius: 16px; font-size: 42px; background: #FAF8FF; }
+.slot.f { border: 2px solid #22B45E; background: #E6F8EE; animation: none; }
+.tile { background: #fff; border: 2px solid #ECE7FA; border-radius: 16px; width: 66px; height: 76px; font-size: 40px; color: var(--pri); box-shadow: 0 1px 2px rgba(43, 27, 79, .06); }
+.tile:active { transform: scale(.95); box-shadow: none; }
+.tile.no { background: #FFEDED; border-color: #EF4444; }
+.seqbtn { background: #fff; border: 2px solid #ECE7FA; border-radius: 14px; color: var(--ink); box-shadow: 0 1px 2px rgba(43, 27, 79, .06); font-size: 24px; }
+.seqbtn:active { transform: scale(.96); box-shadow: none; }
+.seqbtn.no { background: #FFEDED; border-color: #EF4444; }
+.seqout { border: 2px dashed #CDBFF5; background: #FAF8FF; border-radius: 16px; }
+.seqit { background: #E6F8EE; border: 2px solid #22B45E; animation: none; border-radius: 12px; font-size: 22px; }
+.seq span { border: 2px solid #ECE7FA; border-radius: 14px; width: 58px; height: 68px; font-size: 38px; }
+.seq span.q { background: #FFF4D6; border-color: #F2A100; }
+.eq { font-size: 54px; }
+.ord { border-radius: 16px; box-shadow: none; height: 76px; font-size: 40px; }
+/* التوصيل والذاكرة */
+.m-it { border: 2px solid #ECE7FA; border-radius: 16px; box-shadow: none; min-height: 84px; }
+.m-it.sel { border-color: var(--pri2); background: #F5F1FF; }
+.m-it.done { border-color: #22B45E; background: #E6F8EE; }
+.m-dot { border: 3px solid #fff; width: 18px; height: 18px; margin-top: -9px; }
+.card .f { border: 2px solid #ECE7FA; box-shadow: none; }
+.card .b { box-shadow: none; font-size: 34px; font-weight: 800; background: linear-gradient(145deg, #8B5CF6, #6D3FE0); }
+.card .f, .card .b { border-radius: 16px; }
+.card.done .f { border-color: #22B45E; background: #E6F8EE; }
+.card .in { transition: transform .35s; }
+/* الفقاعات */
+.bub-area { box-shadow: inset 0 0 0 1px #ECE7FA; border-radius: 20px; background: linear-gradient(180deg, #EAF3FF, #F8FBFF); }
+.bubble { box-shadow: 0 2px 6px rgba(0, 0, 0, .12); background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, .7) 0 10%, var(--bc, #8B5CF6) 42%); font-weight: 800; }
+.hud { font-size: 16px; font-weight: 800; align-items: center; }
+.hud .ics { width: 18px; height: 18px; margin-inline-end: 4px; }
+.hud .h1 .ics { color: var(--pri); } .hud .h2 .ics { stroke: #F2A100; fill: #FFC93C; }
+.target { border-radius: 12px; width: 52px; height: 52px; font-size: 34px; box-shadow: none; }
+/* شاشة النتيجة */
+.win { gap: 12px; padding: 6px 0 2px; }
+.win .trophy { display: grid; place-items: center; width: 92px; height: 92px; border-radius: 28px; font-size: 44px; color: #fff; background: linear-gradient(145deg, #FBBF24, #F59E0B); box-shadow: 0 12px 24px rgba(245, 158, 11, .3); }
+.win .trophy.t2 { background: linear-gradient(145deg, #94A3B8, #64748B); box-shadow: 0 12px 24px rgba(100, 116, 139, .28); }
+.win .trophy.t1 { background: linear-gradient(145deg, #F59E6B, #D9763A); box-shadow: 0 12px 24px rgba(217, 118, 58, .28); }
+.win .trophy.t0 { background: linear-gradient(145deg, #8B5CF6, #6D3FE0); box-shadow: 0 12px 24px rgba(109, 63, 224, .28); }
+.win .trophy .ics { width: 46px; height: 46px; stroke-width: 1.6; fill: rgba(255, 255, 255, .2); }
+.win h2 { font-size: 26px; font-weight: 800; }
+.stars { display: flex; gap: 6px; justify-content: center; font-size: 0; }
+.stars .ics { width: 38px; height: 38px; stroke: #D3CAEB; fill: #F1EDFB; }
+.stars .ics.on { stroke: #F2A100; fill: #FFC93C; }
+.btn-big { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--pri); color: #fff; border-radius: 16px; padding: 13px 24px; font-size: 17px; font-weight: 800; box-shadow: 0 8px 18px rgba(109, 63, 224, .25); }
+.btn-big.alt { background: #fff; color: var(--pri); border: 2px solid #E4DBFA; box-shadow: none; }
+.btn-big:active { transform: scale(.97); box-shadow: none; }
+.btn-big .ics { width: 20px; height: 20px; }
+.cta-wa { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 16px; font-size: 16px; padding: 13px 18px; box-shadow: 0 8px 18px rgba(37, 211, 102, .25); }
+.cta-wa .ics { width: 20px; height: 20px; }
+.cta-wa:active { transform: scale(.97); box-shadow: none; }
+/* حديقة الشخصيات */
+.hero { padding: 14px 0 8px; }
+.hero .mascot { display: grid; place-items: center; width: 84px; height: 84px; margin: 0 auto 6px; border-radius: 26px; font-size: 42px; color: #fff; background: linear-gradient(145deg, #FBBF24, #F59E0B); box-shadow: 0 12px 24px rgba(245, 158, 11, .28); }
+.hero .mascot .ics { width: 44px; height: 44px; fill: rgba(255, 255, 255, .2); }
+.hero h1 { font-size: 26px; font-weight: 800; text-shadow: none; }
+.hero p { font-size: 15px; color: #6B5F8C; }
+.chr { border: 1px solid #ECE7FA; box-shadow: none; border-radius: 18px; }
+.chr span { font-size: 44px; }
+.chr b { font-size: 14px; }
+.chr.off { background: #F3F0FB; }
+.gbar { height: 10px; box-shadow: none; background: #E9E3FB; }

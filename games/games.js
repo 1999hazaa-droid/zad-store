@@ -64,7 +64,7 @@ NOTES.forEach((f, i) => { DEFS["n" + i] = () => wavUrl([{ f, d: .22, v: .5 }, { 
 function makeSnd(name) {
   if (SND[name]) return SND[name];
   const url = DEFS[name]();
-  const els = [0, 1].map(() => { const a = new Audio(url); a.preload = "auto"; a.volume = 0.4; return a; });
+  const els = (name === "ok" || name === "bad" ? [0, 1] : [0]).map(() => { const a = new Audio(url); a.preload = "auto"; a.volume = 0.4; return a; });
   return (SND[name] = { els, i: 0 });
 }
 function unlockAudio() {
@@ -72,9 +72,9 @@ function unlockAudio() {
   // خفيف: عنصر واحد لأصوات الحروف والجمل، ولا نولّد كل الأصوات دفعة واحدة
   try { if (!AEL) AEL = new Audio(); AEL.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; const p = AEL.play(); if (p && p.catch) p.catch(() => {}); } catch { /* */ }
   // تسخين الأصوات تدريجياً في أوقات الفراغ (صوت كل 150ms) بدل تجميد الشاشة
-  const names = Object.keys(DEFS); let i = 0;
-  const step = () => { if (i >= names.length) return; try { makeSnd(names[i++]); } catch { /* */ } setTimeout(step, 150); };
-  setTimeout(step, 600);
+  const names = ["ok", "bad", "star", "win"]; let i = 0;
+  const step = () => { if (i >= names.length) return; try { makeSnd(names[i++]); } catch { /* */ } setTimeout(step, 250); };
+  setTimeout(step, 900);
 }
 function play(name) {
   if (muted) return;
@@ -193,11 +193,11 @@ function speak(text) {
 /* ---------- الاحتفال ---------- */
 const cv = $("#confetti"), cx = cv.getContext("2d");
 let parts = [], raf = 0;
-const DPR = Math.min(devicePixelRatio || 1, 1.5);
+const DPR = 1;
 function sizeCv() { cv.width = innerWidth * DPR; cv.height = innerHeight * DPR; }
 addEventListener("resize", sizeCv); sizeCv();
 function confetti(x = innerWidth / 2, y = innerHeight / 3, n = 70) {
-  n = Math.min(n, 60); if (parts.length > 160) return;
+  n = Math.min(n, 40); if (parts.length > 100) return;
   for (let i = 0; i < n; i++) parts.push({ x, y, vx: (Math.random() - .5) * 12, vy: -Math.random() * 12 - 3, g: .35, s: 6 + Math.random() * 7, c: COLORS[rnd(COLORS.length)], r: Math.random() * 6, vr: (Math.random() - .5) * .4, life: 70 + rnd(40) });
   if (!raf) loop();
 }
@@ -285,6 +285,12 @@ const IC = {
   half: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/>',
   shapes: '<path d="M8 4 3 13h10z"/><circle cx="16.5" cy="15.500" r="4.500"/>',
   arrows: '<path d="M4 9h13l-3-3M20 15H7l3 3"/>',
+  refresh: '<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/>',
+  grid: '<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
+  clock: '<circle cx="12" cy="12" r="8.500"/><path d="M12 7.500V12l3 2"/>',
+  lock: '<rect x="5" y="10.500" width="14" height="9.500" rx="2.500"/><path d="M8 10.500V8a4 4 0 0 1 8 0v2.500"/>',
+  gift: '<rect x="4" y="9" width="16" height="11" rx="2"/><path d="M3 9h18M12 9v11M12 9c-2.500 0-4-1-4-2.500S10 4 12 9zm0 0c2.500 0 4-1 4-2.500S14 4 12 9z"/>',
+  wa: '<path d="M4 20l1.200-4A8 8 0 1 1 8 18.800z"/><path d="M9 9.500c.3 2.500 2.500 4.700 5.500 5.500l1.300-1.300-2-1-1 .7c-.8-.4-1.500-1.100-1.900-1.900l.7-1-1-2z"/>',
   chat: '<path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4.500 3.500V17H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/>'
 };
 const GI = { letters: "letters", first: "first", build: "build", match: "match", missing: "pencil", memory: "cards", bubbles: "bubbles", count: "count", add: "add", sub: "sub", seq: "seq", cmp: "cmp", order: "bars", color: "drop", coloritem: "half", shape: "shapes", animal: "paw", sound: "sound", shadow: "user", opp: "arrows", surahorder: "book", ayahend: "spark", whichsurah: "q", duawhen: "chat", duaend: "moon", dayorder: "cal", daynext: "cal", monthorder: "moon", monthnext: "moon", gregorder: "cal" };
@@ -400,7 +406,10 @@ function frame(g) {
   g.run($("#stage"));
 }
 function setDots(n, done, curI) {
-  $("#dots").innerHTML = Array.from({ length: n }, (_, i) => `<i class="${i < done ? "on" : ""}${i === curI ? " cur" : ""}"></i>`).join("");
+  const el = $("#dots"); if (!el) return;
+  if (!n) { el.innerHTML = ""; return; }
+  const pc = Math.round(Math.min(1, Math.max(0, (curI >= 0 ? curI : done) / n)) * 100);
+  el.innerHTML = `<div class="pbar"><i style="width:${Math.max(pc, 4)}%"></i></div><span class="pcnt">${Math.min(n, (curI >= 0 ? curI : done) + 1)}/${n}</span>`;
 }
 const SID = (() => { try { let v = localStorage.getItem("hg_sid"); if (!v) { v = Math.random().toString(36).slice(2, 12) + Date.now().toString(36).slice(-4); localStorage.setItem("hg_sid", v); } return v; } catch { return "anon" + Math.random().toString(36).slice(2, 8); } })();
 function track(ev, game, stars) { try { fetch("https://zcnwzpevehudhnsuljdy.supabase.co/functions/v1/game-log", { method: "POST", headers: { "content-type": "text/plain" }, body: JSON.stringify({ sid: SID, ev, game: game || "", stars }), keepalive: true }).catch(() => {}); } catch { /* */ } }
@@ -413,12 +422,12 @@ function finish(stage, score, total, msg = "") {
   saveStars(cur.id, st); checkUnlock(before); track("finish", cur.id, st);
   setTimeout(() => speak(st >= 2 ? `أحسنت وبارك الله فيك يا ${CHILD}` : st === 1 ? `جميل يا ${CHILD}، حاول مرة ثانية` : `لا بأس يا ${CHILD}، جرّب مرة أخرى`), 1200);
   sfx.win(); setTimeout(() => sfx.clap(), 700); confetti(innerWidth / 2, innerHeight / 3, 120); setTimeout(() => confetti(innerWidth * .2, innerHeight / 2, 60), 250); setTimeout(() => confetti(innerWidth * .8, innerHeight / 2, 60), 450);
-  stage.innerHTML = `<div class="win"><div class="trophy">${st === 3 ? "🏆" : st === 2 ? "🥈" : st === 1 ? "🥉" : "💪"}</div>
+  stage.innerHTML = `<div class="win"><div class="trophy t${st}">${sv(st === 0 ? IC.spark : IC.trophy)}</div>
     <h2>${st === 3 ? "ممتاز! أنت بطل!" : st === 2 ? "أحسنت!" : st === 1 ? "جميل! حاول مرة ثانية" : "لا بأس، جرّب مرة أخرى"}</h2>
-    <div class="stars">${[1, 2, 3].map((i) => `<span class="${i <= st ? "" : "off"}">⭐</span>`).join("")}</div>
+    <div class="stars">${starsSv(st)}</div>
     ${msg ? `<p class="prompt">${msg}</p>` : `<p class="prompt">${score} من ${total}</p>`}
-    <div class="row"><button class="btn-big" id="again">🔄 العب مرة أخرى</button><button class="btn-big alt" id="menu">🏠 الألعاب</button></div>
-    <a class="cta-wa" id="wa" target="_blank" rel="noopener" href="https://wa.me/96877336242?text=${WA_TXT()}">📖 اصنع قصة باسم ${esc(CHILD)}</a></div>`;
+    <div class="row"><button class="btn-big" id="again">${sv(IC.refresh)} العب مرة أخرى</button><button class="btn-big alt" id="menu">${sv(IC.grid)} الألعاب</button></div>
+    <a class="cta-wa" id="wa" target="_blank" rel="noopener" href="https://wa.me/96877336242?text=${WA_TXT()}">${sv(IC.wa)} اصنع قصة باسم ${esc(CHILD)}</a></div>`;
   $("#wa").onclick = () => track("cta", cur.id);
   $("#again").onclick = () => go(() => frame(cur));
   $("#menu").onclick = () => go(backFn());
@@ -449,7 +458,7 @@ function quiz(stage, rounds, make, opt = {}) {
         const r = b.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top, 28);
         if (firstTry) { score++; setTimeout(() => sfx.star(), 260); }
         if (q.after) speak(q.after); else if (Math.random() < 0.6) speak(cheer());
-        await wait(q.after ? 1300 : 900); i++; next();
+        await wait(q.after ? 1100 : 700); i++; next();
       } else { b.classList.add("no"); sfx.bad(); if (firstTry && Math.random() < 0.35) speak(tryAgain()); firstTry = false; setTimeout(() => b.classList.remove("no"), 450); }
     });
   }
@@ -466,7 +475,7 @@ function gLetters(stage) {
   const seq = pick(LETTERS.map((x) => x[0]), 10);
   quiz(stage, 10, (i) => {
     const L = seq[i];
-    return { say: `أين حرف ${LN[L]}؟`, html: `<div class="prompt">أين حرف <b style="color:var(--pri)">${LN[L]}</b>؟</div><button class="say" id="say">🔊 اسمع</button>`, answers: letterOpts(L, 4) };
+    return { say: `أين حرف ${LN[L]}؟`, html: `<div class="prompt">أين حرف <b style="color:var(--pri)">${LN[L]}</b>؟</div><button class="say" id="say">${sv(IC.sound)} اسمع</button>`, answers: letterOpts(L, 4) };
   });
 }
 /* 2) الحرف الأول */
@@ -474,7 +483,7 @@ function gFirst(stage) {
   const seq = pick(WORDS, 10);
   quiz(stage, 10, (i) => {
     const w = seq[i], L = first(w);
-    return { say: `${w[1]}. بأي حرف تبدأ ${w[1]}؟`, after: `${w[1]} تبدأ بحرف ${LN[L]}`, html: `<div class="emo">${w[0]}</div><div class="prompt">بأي حرف تبدأ؟</div><button class="say" id="say">🔊 اسمع</button>`, answers: letterOpts(L, 4) };
+    return { say: `${w[1]}. بأي حرف تبدأ ${w[1]}؟`, after: `${w[1]} تبدأ بحرف ${LN[L]}`, html: `<div class="emo">${w[0]}</div><div class="prompt">بأي حرف تبدأ؟</div><button class="say" id="say">${sv(IC.sound)} اسمع</button>`, answers: letterOpts(L, 4) };
   });
 }
 /* 3) الحرف الناقص */
@@ -507,7 +516,7 @@ function gBuild(stage) {
     setDots(seq.length, i, i);
     const w = seq[i], word = w[1], chars = [...word];
     let filled = 0, mistakes = 0;
-    stage.innerHTML = `<div class="emo">${w[0]}</div><button class="say" id="say">🔊 اسمع</button>
+    stage.innerHTML = `<div class="emo">${w[0]}</div><button class="say" id="say">${sv(IC.sound)} اسمع</button>
       <div class="slots" id="slots">${chars.map(() => `<div class="slot"></div>`).join("")}</div>
       <div class="tiles" id="tiles">${shuffle(chars.map((c, k) => ({ c, k }))).map((t) => `<button class="tile" data-c="${t.c}">${t.c}</button>`).join("")}</div>`;
     $("#say").onclick = () => speak(word);
@@ -603,7 +612,7 @@ function gMemory(stage) {
   let opened = [], moves = 0, matched = 0, lock = false;
   setDots(0, 0, -1);
   stage.innerHTML = `<div class="prompt">اعثر على الصورة وكلمتها</div><div class="hud"><span>الحركات: <b id="mv">0</b></span><span>الأزواج: <b id="pr">0</b>/6</span></div>
-    <div class="mem">${cards.map((c, i) => `<button class="card" data-i="${i}"><div class="in"><div class="b">❔</div><div class="f ${c.w ? "w" : ""}">${c.f}</div></div></button>`).join("")}</div>`;
+    <div class="mem">${cards.map((c, i) => `<button class="card" data-i="${i}"><div class="in"><div class="b">؟</div><div class="f ${c.w ? "w" : ""}">${c.f}</div></div></button>`).join("")}</div>`;
   stage.querySelectorAll(".card").forEach((el) => el.onclick = async () => {
     if (lock || el.classList.contains("flip")) return;
     el.classList.add("flip"); sfx.flip(); opened.push(el);
@@ -619,7 +628,7 @@ function gMemory(stage) {
 /* 8) فقاعات الحروف */
 function gBubbles(stage) {
   let target = LETTERS[rnd(28)][0], score = 0, left = 45, popped = 0, alive = true;
-  stage.innerHTML = `<div class="hud"><span>⏱️ <b id="tm">45</b></span><span>الهدف: <span class="target" id="tg">${target}</span></span><span>⭐ <b id="sc">0</b></span></div>
+  stage.innerHTML = `<div class="hud"><span class="h1">${sv(IC.clock)} <b id="tm">45</b></span><span>الهدف: <span class="target" id="tg">${target}</span></span><span class="h2">${sv(IC.star)} <b id="sc">0</b></span></div>
     <div class="prompt">فرقع الفقاعات التي عليها هذا الحرف</div><div class="bub-area" id="area"></div>`;
   setDots(0, 0, -1);
   const area = $("#area");
@@ -792,12 +801,12 @@ function dailyFinish(stage, score) {
   sfx.win(); setTimeout(() => sfx.clap(), 700); confetti(innerWidth / 2, innerHeight / 3, 120); setTimeout(() => confetti(innerWidth * .2, innerHeight / 2, 60), 250); setTimeout(() => confetti(innerWidth * .8, innerHeight / 2, 60), 450);
   const t = $(".bar .title"); if (t) t.innerHTML = `${calIcon()} التحدي اليومي`;
   setDots(0, 0, -1);
-  stage.innerHTML = `<div class="win"><div class="trophy">${st === 3 ? "🏆" : st === 2 ? "🥈" : st === 1 ? "🥉" : "💪"}</div>
+  stage.innerHTML = `<div class="win"><div class="trophy t${st}">${sv(st === 0 ? IC.spark : IC.trophy)}</div>
     <h2>${score >= 5 ? `أحسنت يا ${esc(CHILD)}! أنجزت تحدي اليوم` : `حاول مرة ثانية يا ${esc(CHILD)}`}</h2>
-    <div class="stars">${[1, 2, 3].map((i) => `<span class="${i <= st ? "" : "off"}">⭐</span>`).join("")}</div>
+    <div class="stars">${starsSv(st)}</div>
     <p class="prompt">${score} من 10</p>
-    ${bonus ? `<p class="prompt bonus">🎁 ربحت 3 نجوم هدية · 🔥 ${dly.streak} ${dly.streak === 1 ? "يوم" : "أيام"} متتالية</p>` : score >= 5 ? `<p class="prompt">✅ سبق وربحت هدية اليوم</p>` : `<p class="prompt">أجب عن 5 أسئلة صحيحة على الأقل لتربح الهدية</p>`}
-    <div class="row"><button class="btn-big alt" id="garden">🏆 حديقتي</button><button class="btn-big" id="menu">🏠 الألعاب</button></div></div>`;
+    ${bonus ? `<p class="prompt bonus">ربحت 3 نجوم هدية · ${dly.streak} ${dly.streak === 1 ? "يوم" : "أيام"} متتالية</p>` : score >= 5 ? `<p class="prompt">✅ سبق وربحت هدية اليوم</p>` : `<p class="prompt">أجب عن 5 أسئلة صحيحة على الأقل لتربح الهدية</p>`}
+    <div class="row"><button class="btn-big alt" id="garden">${sv(IC.trophy)} حديقتي</button><button class="btn-big" id="menu">${sv(IC.grid)} الألعاب</button></div></div>`;
   setTimeout(() => speak(score >= 5 ? `أحسنت وبارك الله فيك يا ${CHILD}` : `حاول مرة ثانية يا ${CHILD}`), 1200);
   $("#garden").onclick = () => go(garden); $("#menu").onclick = () => go(home);
 }
@@ -805,8 +814,8 @@ function dailyFinish(stage, score) {
 /* ===== حديقة الشخصيات ===== */
 function garden() {
   const tot = totalStars(), nextK = CHARS.findIndex((_, k) => tot < thr(k)), uc = unlockedCount();
-  app.innerHTML = `<div class="top"><button class="pill btn" id="back">→ رجوع</button><span class="pill">⭐ ${tot}</span></div>
-    <div class="hero"><div class="mascot">🏆</div><h1>حديقة الشخصيات</h1><p>${uc} من ${CHARS.length} شخصية مفتوحة</p></div>
+  app.innerHTML = `<div class="top"><button class="pill btn" id="back">${sv(IC.back)} رجوع</button><span class="pill">${sv(IC.star)} ${tot}</span></div>
+    <div class="hero"><div class="mascot">${sv(IC.trophy)}</div><h1>حديقة الشخصيات</h1><p>${uc} من ${CHARS.length} شخصية مفتوحة</p></div>
     ${nextK >= 0 ? `<div class="gprog"><div class="gbar"><i style="width:${Math.min(100, Math.round(((tot - thr(nextK - 1 < 0 ? 0 : nextK - 1)) / (thr(nextK) - thr(nextK - 1 < 0 ? 0 : nextK - 1))) * 100))}%"></i></div><small>تحتاج ${thr(nextK) - tot} ⭐ لتفتح <b>${CHARS[nextK][0]}</b></small></div>` : `<p class="prompt">🎉 فتحت كل الشخصيات! أنت بطل حقيقي</p>`}
     <div class="chars">${CHARS.map((c, k) => tot >= thr(k) ? `<button class="chr on" data-k="${k}"><span>${c[0]}</span><b>${c[1]}</b></button>` : `<div class="chr off"><span>❓</span><b>🔒 ${thr(k)} ⭐</b></div>`).join("")}</div>`;
   $("#back").onclick = () => go(home);
