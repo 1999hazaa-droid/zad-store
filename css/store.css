@@ -3729,3 +3729,20 @@ html.tpl-apple .msg-sugs button, html.tpl-apple .sug { border: 0; background: va
 @media (min-width: 1400px) { :root { --wrap: 1240px; } }
 @media (min-width: 760px) and (max-width: 1023px) { .rail { scroll-padding-inline: var(--gutter); } }
 img, video, svg { max-width: 100%; }
+
+/* السلة والدفع: عمودان من حجم الآيباد */
+@media (min-width: 760px) {
+    .layout-2 { grid-template-columns: 1.4fr 1fr; align-items: start; gap: 18px; }
+    .layout-2 > aside { position: sticky; top: 90px; }
+    .sum-mobile { display: none; }
+}
+@media (min-width: 760px) {
+    body:has(.layout-2) .buybar { display: none; }
+    body:has(.layout-2).has-buybar { --buybar-h: 0px; }
+    body:has(.layout-2).has-buybar .footer { padding-bottom: 40px; }
+    .foot { max-width: none; width: min(100% - 2 * var(--gutter), var(--wrap)); margin-inline: auto; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 28px; }
+    .foot > * { grid-column: 1 / -1; }
+    .foot > .foot-acc { grid-column: auto; border-top: 0; border-bottom: 0 !important; }
+    .foot-acc summary { pointer-events: none; cursor: default; padding-top: 4px; }
+    .foot-acc summary svg { display: none; }
+}

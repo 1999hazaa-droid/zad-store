@@ -23,12 +23,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link id="fontLink" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap"></noscript>
-<link rel="stylesheet" href="/zad-store/css/store.css?v=75e0cf0801">
+<link rel="stylesheet" href="/zad-store/css/store.css?v=9e1ab1cd56">
 <style id="themeVars">:root{--primary:#5B34D6;--hero:#5B34D6;--bg:#F7F5FF;--text:#1B1430;--on-primary:#FFFFFF;--logo-filter:none;--font-head:"Cairo","Cairo",system-ui,sans-serif;--font-body:"Cairo",system-ui,-apple-system,"Segoe UI",sans-serif}</style>
 <script>window.ATHR_BASE = "/zad-store/";
 (function () { var d = document.documentElement; try { var m = JSON.parse(localStorage.getItem("huroof_mode")); if (m === "light" || m === "dark" || m === "auto") d.setAttribute("data-mode", m); } catch (e) {} try { if (JSON.parse(localStorage.getItem("huroof_lang")) === "en") { d.lang = "en"; d.dir = "ltr"; d.classList.add("i18n-wait"); setTimeout(function () { d.classList.remove("i18n-wait"); }, 2500); } } catch (e) {}
 /* رابط لوحة التحكم: شاشة انتظار من أول لحظة، وملفات اللوحة تبدأ التحميل مع ملفات المتجر */
-if (/^#(admin|orders)$/.test(location.hash)) { d.classList.add("owner-boot"); var B = window.ATHR_BASE; [["script", B + "js/vendor/supabase.js"], ["script", B + "js/admin-panel.js?v=bfb7051a76"], ["style", B + "css/admin-panel.css?v=bfb7051a76"]].forEach(function (x) { var l = document.createElement("link"); l.rel = "preload"; l.as = x[0]; l.href = x[1]; document.head.appendChild(l); }); } })();</script>
+if (/^#(admin|orders)$/.test(location.hash)) { d.classList.add("owner-boot"); var B = window.ATHR_BASE; [["script", B + "js/vendor/supabase.js"], ["script", B + "js/admin-panel.js?v=2bd089e369"], ["style", B + "css/admin-panel.css?v=2bd089e369"]].forEach(function (x) { var l = document.createElement("link"); l.rel = "preload"; l.as = x[0]; l.href = x[1]; document.head.appendChild(l); }); } })();</script>
 </head>
 <body>
 
@@ -407,6 +407,6 @@ if (/^#(admin|orders)$/.test(location.hash)) { d.classList.add("owner-boot"); va
 <script src="/zad-store/js/thumbs.js?v=99914b932b" defer></script>
 <script src="/zad-store/js/rates.js?v=3245f6932f" defer></script>
 <script src="/zad-store/js/catalog.js?v=adaab596f0" defer></script>
-<script src="/zad-store/js/store.js?v=bfb7051a76" defer></script>
+<script src="/zad-store/js/store.js?v=2bd089e369" defer></script>
 </body>
 </html>

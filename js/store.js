@@ -4352,7 +4352,7 @@
 /* فتح أقسام التذييل تلقائياً على الشاشات الكبيرة */
 (function () {
     try {
-        const mq = matchMedia("(min-width: 900px)");
+        const mq = matchMedia("(min-width: 760px)");
         let q = 0;
         const run = () => { q = 0; if (mq.matches) document.querySelectorAll(".foot-acc:not([open])").forEach((d) => { d.open = true; }); };
         const sched = () => { if (!q) q = requestAnimationFrame(run); };
