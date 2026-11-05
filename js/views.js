@@ -773,17 +773,17 @@
         board: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8M7 9h6M7 12h4"/>',
         file: '<path d="M6.5 3.5h7.5l4 4v13h-11.5z"/><path d="M14 3.5v4h4M9.5 12h5M9.5 15.5h5"/>'
     };
-    V.catIcon = function (c) {
+    V.catKey = function (c) {
         const n = String((c && (c.name || c.name_en)) || "");
-        const k = /معلم|teacher/i.test(n) ? "board" : /طلاب|صف|student|grade/i.test(n) ? "cap" : /أنشطة|انشطة|كتب|book|activit/i.test(n) ? "book" : /أطفال|اطفال|kid|child/i.test(n) ? "kids" : "file";
-        return `<svg viewBox="0 0 24 24" aria-hidden="true">${V.catIcons[k]}</svg>`;
+        return /معلم|teacher/i.test(n) ? "board" : /طلاب|صف|student|grade/i.test(n) ? "cap" : /أنشطة|انشطة|كتب|book|activit/i.test(n) ? "book" : /أطفال|اطفال|kid|child/i.test(n) ? "kids" : "file";
     };
+    V.catIcon = (c) => `<svg viewBox="0 0 24 24" aria-hidden="true">${V.catIcons[V.catKey(c)]}</svg>`;
 
     V.tiles = function (v, current) {
         const cats = v.categories.filter((c) => v.counts.get(c.id));
         if (!cats.length) return "";
         return `<nav class="tiles wrap" aria-label="${esc(t("الأقسام"))}">
-            ${cats.map((c) => `<a class="tile${current && current.id === c.id ? " on" : ""}" href="${ATHR.url.category(c)}"${current && current.id === c.id ? ' aria-current="page"' : ""}>
+            ${cats.map((c) => `<a class="tile${current && current.id === c.id ? " on" : ""}" data-k="${V.catKey(c)}" href="${ATHR.url.category(c)}"${current && current.id === c.id ? ' aria-current="page"' : ""}>
                     <span class="tile-img">${V.catIcon(c)}</span>
                     <span class="tile-name">${esc(V.cname(c))}</span>
                 </a>`).join("")}
