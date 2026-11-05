@@ -57,6 +57,9 @@ const DEFS = {
   whoosh: () => wavUrl([{ f: 100, d: .3, w: "noise", v: .35, dec: 1 }, { f: 300, f2: 900, d: .3, v: .12, dec: .8 }], .35),
   boing: () => wavUrl([{ f: 180, f2: 520, d: .28, v: .5, vib: 25, dec: 1 }], .32),
   coin: () => wavUrl([{ f: 988, d: .08, t: 0, w: "square", v: .25 }, { f: 1319, d: .3, t: .07, w: "square", v: .25 }], .4),
+  ui: () => wavUrl([{ f: 1318, d: .07, t: 0, v: .3, dec: 2.2 }, { f: 1760, d: .1, t: .035, v: .26, dec: 2.2 }], .16),
+  nav: () => wavUrl([{ f: 784, f2: 1047, d: .09, t: 0, v: .3, dec: 1.8 }, { f: 1568, d: .14, t: .06, v: .22, dec: 2 }], .22),
+  back: () => wavUrl([{ f: 1047, f2: 784, d: .09, v: .28, dec: 2 }], .12),
   tick: () => wavUrl([{ f: 1400, d: .03, v: .3, dec: 2 }], .05),
   clap: () => wavUrl([{ f: 800, d: .06, w: "noise", v: .4, dec: 2 }, { f: 800, d: .06, t: .12, w: "noise", v: .4, dec: 2 }, { f: 800, d: .08, t: .24, w: "noise", v: .4, dec: 2 }], .4)
 };
@@ -71,7 +74,7 @@ function unlockAudio() {
   if (unlocked) return; unlocked = true;
   // خفيف: عنصر واحد لأصوات الحروف والجمل، ولا نولّد كل الأصوات دفعة واحدة
   // تسخين الأصوات تدريجياً في أوقات الفراغ (صوت كل 150ms) بدل تجميد الشاشة
-  const names = ["ok", "bad", "star", "win"]; let i = 0;
+  const names = ["ok", "bad", "ui", "nav", "star", "win"]; let i = 0;
   const step = () => { if (i >= names.length) return; try { makeSnd(names[i++]); } catch { /* */ } setTimeout(step, 250); };
   setTimeout(step, 900);
 }
@@ -90,7 +93,12 @@ const sfx = {
   note(i) { play("n" + (Math.max(0, i) % NOTES.length)); }
 };
 ["pointerdown", "touchstart", "click", "keydown"].forEach((ev) => addEventListener(ev, unlockAudio, { once: false, passive: true }));
-// لا نقرات صوتية عند الضغط على الأزرار (هدوء)
+// نقرات واجهة ناعمة وعصرية للأقسام والأيقونات والأزرار (ليست أزرار الإجابات)
+addEventListener("click", (e) => {
+  const t = e.target.closest && e.target.closest(".catcard, .gcard, .feat .gcard, #back, .pill.btn, .btn-big, .lg-go, .linkbtn, .prof, .chr.on");
+  if (!t || t.classList.contains("chr") || t.id === "mute") return;
+  play(t.matches("#back") ? "back" : t.matches(".catcard, .gcard") ? "nav" : "ui"); buzz(8);
+}, { passive: true, capture: true });
 /* اسم الطفل وعبارات التشجيع */
 let CHILD = "";
 const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
