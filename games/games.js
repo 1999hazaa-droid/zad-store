@@ -61,16 +61,16 @@ NOTES.forEach((f, i) => { DEFS["n" + i] = () => wavUrl([{ f, d: .18, v: .2, dec:
 function makeSnd(name) {
   if (SND[name]) return SND[name];
   const url = DEFS[name]();
-  const els = (name === "ok" || name === "bad" ? [0, 1] : [0]).map(() => { const a = new Audio(url); a.preload = "auto"; a.volume = 0.5; return a; });
+  const els = [0, 1].map(() => { const a = new Audio(url); a.preload = "auto"; a.volume = 0.5; return a; });
   return (SND[name] = { els, i: 0 });
 }
 function unlockAudio() {
   if (unlocked) return; unlocked = true;
   // خفيف: عنصر واحد لأصوات الحروف والجمل، ولا نولّد كل الأصوات دفعة واحدة
   // تسخين الأصوات تدريجياً في أوقات الفراغ (صوت كل 150ms) بدل تجميد الشاشة
-  const names = ["ok", "bad", "ui", "nav", "star", "win"]; let i = 0;
-  const step = () => { if (i >= names.length) return; try { makeSnd(names[i++]); } catch { /* */ } setTimeout(step, 250); };
-  setTimeout(step, 900);
+  const names = ["ok", "star", "bad", "pop", "ui", "nav", "back", "win", "unlock"].concat(NOTES.map((_, k) => "n" + k)); let i = 0;
+  const step = () => { if (i >= names.length) return; try { makeSnd(names[i++]); } catch { /* */ } (window.requestIdleCallback || setTimeout)(() => setTimeout(step, 90)); };
+  setTimeout(step, 500);
 }
 function play(name) {
   if (muted) return;
@@ -81,7 +81,7 @@ function play(name) {
 }
 const buzz = (p) => { try { if (!muted && navigator.vibrate) navigator.vibrate(p); } catch { /* */ } };
 const sfx = {
-  ok() { play("ok"); buzz(8); }, bad() { play("bad"); }, pop() { play("pop"); }, flip() { /* صامت */ },
+  ok() { play("ok"); }, bad() { play("bad"); }, pop() { play("pop"); }, flip() { /* صامت */ },
   win() { play("win"); buzz(15); }, tap() { /* صامت */ }, star() { play("star"); }, unlock() { play("unlock"); buzz(15); },
   whoosh() { /* صامت */ }, boing() { /* صامت */ }, coin() { play("pop"); }, tick() { /* صامت */ }, clap() { /* صامت */ },
   note(i) { play("n" + (Math.max(0, i) % NOTES.length)); }
@@ -106,7 +106,7 @@ const DPR = 1;
 function sizeCv() { cv.width = innerWidth * DPR; cv.height = innerHeight * DPR; }
 addEventListener("resize", sizeCv); sizeCv();
 function confetti(x = innerWidth / 2, y = innerHeight / 3, n = 70) {
-  n = Math.min(n, 40); if (parts.length > 100) return;
+  n = Math.min(n, 24); if (parts.length > 60) return;
   for (let i = 0; i < n; i++) parts.push({ x, y, vx: (Math.random() - .5) * 12, vy: -Math.random() * 12 - 3, g: .35, s: 6 + Math.random() * 7, c: COLORS[rnd(COLORS.length)], r: Math.random() * 6, vr: (Math.random() - .5) * .4, life: 70 + rnd(40) });
   if (!raf) loop();
 }
@@ -384,8 +384,8 @@ function quiz(stage, rounds, make, opt = {}) {
       if (a.ok) {
         lock = true; b.classList.add("ok"); sfx.ok();
         const sh = stage.querySelector(".shadow"); if (sh) { sh.classList.remove("shadow"); setTimeout(() => sfx.whoosh(), 120); }
-        const r = b.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top, 28);
-        if (firstTry) { score++; setTimeout(() => sfx.star(), 260); }
+        requestAnimationFrame(() => { const r = b.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top, 16); });
+        if (firstTry) score++;
         if (q.after) speak(q.after); else if (Math.random() < 0.6) speak(cheer());
         await wait(q.after ? 1100 : 700); i++; next();
       } else { b.classList.add("no"); sfx.bad(); if (firstTry && Math.random() < 0.35) speak(tryAgain()); firstTry = false; setTimeout(() => b.classList.remove("no"), 450); }
