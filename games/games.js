@@ -252,6 +252,47 @@ function checkUnlock(before) {
 
 /* ---------- الألعاب ---------- */
 const CATS = [["abc", "🔤 الحروف والكلمات"], ["num", "🔢 الأرقام والحساب"], ["col", "🎨 الألوان والأشكال"], ["ani", "🐾 الحيوانات والمعاني"], ["rel", "🕌 القرآن والأدعية"], ["time", "📅 الأيام والأشهر"]];
+
+/* ---------- أيقونات SVG بسيطة (بديل الإيموجي في الواجهة) ---------- */
+const sv = (p, cls = "") => `<svg class="ics ${cls}" viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
+const tx = (t, fs = 12) => `<text x="12" y="${fs > 10 ? 16.5 : 15.5}" text-anchor="middle" font-size="${fs}">${t}</text>`;
+const IC = {
+  store: '<path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M4 9.5c0 1.4 1.1 2.5 2.5 2.5S9 10.9 9 9.5c0 1.4 1.1 2.5 3 2.5s3-1.1 3-2.5c0 1.4 1.1 2.5 2.5 2.5S20 10.9 20 9.5"/><path d="M5.5 12v8h13v-8M10 20v-4.5h4V20"/>',
+  sound: '<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>',
+  mute: '<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/>',
+  user: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.5-3.8 3.5-6 7-6s6.5 2.2 7 6"/>',
+  back: '<path d="M9 5l7 7-7 7"/>',
+  star: '<path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.2-4.1 5.8-.8z"/>',
+  flame: '<path d="M12 3c.6 3.200-1.600 4.600-3.100 6.600-1.300 1.800-1.400 3.600-.7 5.200.8 1.800 2.300 2.700 3.800 2.700s3-.9 3.800-2.700c1-2.200.1-4.500-1-6 0 1.500-1 2.500-2 2.500 1-2.500.5-5.500-.8-8.300z"/>',
+  trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1.5A3 3 0 0 0 8 10.5M16 6h3v1.5a3 3 0 0 1-3 3"/><path d="M12 13v4M8.5 20h7M10 17h4"/>',
+  cal: '<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  drop: '<path d="M12 3.5c3 3.5 6 6.5 6 10a6 6 0 0 1-12 0c0-3.5 3-6.5 6-10z"/>',
+  paw: '<circle cx="6.5" cy="10" r="1.7" fill="currentColor"/><circle cx="10" cy="6" r="1.7" fill="currentColor"/><circle cx="14" cy="6" r="1.7" fill="currentColor"/><circle cx="17.5" cy="10" r="1.7" fill="currentColor"/><path d="M12 11.5c-3 0-5 2.8-4.5 5 .4 1.8 2.300 2 4.500 1.500 2.200.5 4.100.3 4.500-1.500.5-2.200-1.500-5-4.500-5z"/>',
+  book: '<path d="M3 5.5c3-1 6-.8 9 1v13c-3-1.8-6-2-9-1z"/><path d="M21 5.5c-3-1-6-.8-9 1v13c3-1.8 6-2 9-1z"/>',
+  spark: '<path d="M12 3l1.800 5.200L19 10l-5.200 1.800L12 17l-1.800-5.200L5 10l5.200-1.800z"/>',
+  abc: tx("أب", 13), num: tx("123", 11.5), q: tx("؟", 19),
+  letters: tx("أ", 20), count: tx("123", 11.5), add: '<path d="M12 5v14M5 12h14"/>', sub: '<path d="M5 12h14"/>',
+  seq: tx("1 2 ؟", 9),
+  first: '<rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-4.500 4 3.500 3-2.500 4 3"/>',
+  build: '<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><path d="M16.5 13v7M13 16.5h7"/>',
+  match: '<circle cx="6" cy="8" r="2.500"/><circle cx="18" cy="16" r="2.500"/><path d="M8.500 8H13a3 3 0 0 1 3 3v2.500"/>',
+  pencil: '<path d="m4 20 1-4.500L16.500 4a2.100 2.100 0 0 1 3 3L8 18.500z"/><path d="m14.500 6 3 3"/>',
+  cards: '<rect x="3.500" y="6" width="10" height="14" rx="2.500"/><path d="m9 4.300 8.800 1.800a2 2 0 0 1 1.500 2.400L17.500 17"/>',
+  bubbles: '<circle cx="9" cy="14" r="5"/><circle cx="17" cy="7" r="3"/><circle cx="18" cy="17" r="2"/>',
+  cmp: '<path d="m9 6-5 6 5 6M15 6l5 6-5 6"/>',
+  bars: '<path d="M5 19v-5M10 19V9M15 19V5M20 19v-8"/>',
+  half: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/>',
+  shapes: '<path d="M8 4 3 13h10z"/><circle cx="16.5" cy="15.500" r="4.500"/>',
+  arrows: '<path d="M4 9h13l-3-3M20 15H7l3 3"/>',
+  chat: '<path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4.500 3.500V17H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/>'
+};
+const GI = { letters: "letters", first: "first", build: "build", match: "match", missing: "pencil", memory: "cards", bubbles: "bubbles", count: "count", add: "add", sub: "sub", seq: "seq", cmp: "cmp", order: "bars", color: "drop", coloritem: "half", shape: "shapes", animal: "paw", sound: "sound", shadow: "user", opp: "arrows", surahorder: "book", ayahend: "spark", whichsurah: "q", duawhen: "chat", duaend: "moon", dayorder: "cal", daynext: "cal", monthorder: "moon", monthnext: "moon", gregorder: "cal" };
+const GCAT = { abc: "abc", num: "num", col: "drop", ani: "paw", rel: "moon", time: "cal" };
+const gIcon = (g) => sv(IC[GI[g.id] || GCAT[g.cat] || "star"]);
+const gcol = (g) => (String(g.c || "").match(/#[0-9A-Fa-f]{6}/) || ["#8B5CF6"])[0];
+const muteIc = () => sv(muted ? IC.mute : IC.sound);
+const starsSv = (n) => [1, 2, 3].map((i) => `<svg class="ics st-i${i <= n ? " on" : ""}" viewBox="0 0 24 24" aria-hidden="true">${IC.star}</svg>`).join("");
 const GAMES = [
   { q: true, cat: "abc", id: "letters", ic: "🔤", t: "أين الحرف؟", s: "اسمع الحرف واختره", c: "linear-gradient(135deg,#8B5CF6,#6D3FE0)", run: gLetters },
   { q: true, cat: "abc", id: "first", ic: "🍎", t: "الحرف الأول", s: "بماذا تبدأ الصورة؟", c: "linear-gradient(135deg,#F97316,#EA580C)", run: gFirst },
@@ -288,12 +329,13 @@ let cleanup = null;
 function go(fn) { if (cleanup) { cleanup(); cleanup = null; } stopVoice(); fn(); window.scrollTo(0, 0); }
 
 const CATSTY = { abc: ["#8B5CF6", "#5B21B6", "ابدأ بالحروف والكلمات"], num: ["#10B981", "#047857", "أعداد وجمع وطرح"], col: ["#F59E0B", "#B45309", "ألوان وأشكال جميلة"], ani: ["#EC4899", "#9D174D", "حيوانات وأصوات ومعاني"], rel: ["#14B8A6", "#0F766E", "سور قصيرة وأدعية"], time: ["#3B82F6", "#1D4ED8", "أيام الأسبوع والأشهر"] };
-const catIcon = (name) => name.split(" ")[0], catTitle = (name) => name.split(" ").slice(1).join(" ");
-const muteBtn = () => { const m = $("#mute"); if (!m) return; m.onclick = () => { muted = !muted; try { localStorage.setItem("hg_mute", muted ? "1" : "0"); } catch { /* */ } m.textContent = muted ? "🔇" : "🔊"; }; };
+const CATEM = { "🔤": "abc", "🔢": "num", "🎨": "drop", "🐾": "paw", "🕌": "moon", "📅": "cal" };
+const catIcon = (name) => sv(IC[CATEM[name.split(" ")[0]] || "star"]), catTitle = (name) => name.split(" ").slice(1).join(" ");
+const muteBtn = () => { const m = $("#mute"); if (!m) return; m.onclick = () => { muted = !muted; try { localStorage.setItem("hg_mute", muted ? "1" : "0"); } catch { /* */ } m.innerHTML = muteIc(); }; };
 
 function login() {
   const ps = profiles();
-  app.innerHTML = `<div class="top"><a class="pill" href="../">🏪 المتجر</a><button class="pill btn" id="mute" aria-label="الصوت">${muted ? "🔇" : "🔊"}</button></div>
+  app.innerHTML = `<div class="top"><a class="pill" href="../">${sv(IC.store)} المتجر</a><button class="pill btn" id="mute" aria-label="الصوت">${muteIc()}</button></div>
     <main class="lg">
       <div class="lg-badge"><img src="../images/logo.png" alt="" width="44" height="44"></div>
       <h1 class="lg-title">ألعاب زاد التعليمية</h1>
@@ -304,7 +346,7 @@ function login() {
         <button class="lg-go" type="submit">ابدأ اللعب</button>
       </form>
       ${ps.length ? `<div class="lg-prof"><span>أو اختر اسمك</span><div class="plist">${ps.map((p) => `<button class="pchip" data-p="${esc(p)}">${esc(p)}</button>`).join("")}</div></div>` : ""}
-      <ul class="lg-feat" aria-label="محتوى الألعاب"><li><b>🔤</b>حروف</li><li><b>🔢</b>أرقام</li><li><b>🎨</b>ألوان</li><li><b>🐾</b>حيوانات</li></ul>
+      <ul class="lg-feat" aria-label="محتوى الألعاب"><li style="--c:#8B5CF6"><b>${sv(IC.abc)}</b>حروف</li><li style="--c:#10B981"><b>${sv(IC.num)}</b>أرقام</li><li style="--c:#F59E0B"><b>${sv(IC.drop)}</b>ألوان</li><li style="--c:#EC4899"><b>${sv(IC.paw)}</b>حيوانات</li></ul>
     </main>`;
   muteBtn();
   const enter = (name) => { loadProfile(name); sfx.win(); confetti(innerWidth / 2, innerHeight / 3, 60); go(home); setTimeout(() => speak(`مرحباً يا ${name}، هيا نلعب`), 500); };
@@ -317,16 +359,16 @@ function home() {
   const cnt = (k) => GAMES.filter((g) => g.cat === k);
   const doneToday = dly.last === todayKey();
   app.innerHTML = `
-    <div class="top"><button class="pill btn" id="who">${esc(CHILD)} 👤</button><button class="pill btn" id="mute" aria-label="الصوت">${muted ? "🔇" : "🔊"}</button></div>
-    <header class="hm-head"><h1>مرحباً، ${esc(CHILD)} 👋</h1><p>اختر قسماً وابدأ اللعب</p>
-      <div class="hm-stats"><span>⭐ <b>${totalStars()}</b> نجمة</span><span>🔥 <b>${streakNow()}</b> ${streakNow() === 1 ? "يوم" : "أيام"}</span></div></header>
+    <div class="top"><button class="pill btn" id="who">${sv(IC.user)} ${esc(CHILD)}</button><button class="pill btn" id="mute" aria-label="الصوت">${muteIc()}</button></div>
+    <header class="hm-head"><h1>مرحباً، ${esc(CHILD)}</h1><p>اختر قسماً وابدأ اللعب</p>
+      <div class="hm-stats"><span class="s1">${sv(IC.star)} <b>${totalStars()}</b> نجمة</span><span class="s2">${sv(IC.flame)} <b>${streakNow()}</b> ${streakNow() === 1 ? "يوم" : "أيام"}</span></div></header>
     <div class="feat">
-      <button class="gcard daily" data-g="daily" style="--c:#F97316"><span class="ic">${calIcon(true)}</span><span class="gt"><b>التحدي اليومي</b><small>${doneToday ? "أنجزته اليوم ✅" : "10 أسئلة + 3 نجوم"}</small></span></button>
-      <button class="gcard garden" data-g="garden" style="--c:#D97706"><span class="ic">🏆</span><span class="gt"><b>حديقة الشخصيات</b><small>${unlockedCount()} من ${CHARS.length} شخصية</small></span></button>
+      <button class="gcard daily" data-g="daily" style="--c:#F97316"><span class="ic">${sv(IC.cal)}</span><span class="gt"><b>التحدي اليومي</b><small>${doneToday ? "أنجزته اليوم" : "10 أسئلة + 3 نجوم"}</small></span></button>
+      <button class="gcard garden" data-g="garden" style="--c:#D97706"><span class="ic">${sv(IC.trophy)}</span><span class="gt"><b>حديقة الشخصيات</b><small>${unlockedCount()} من ${CHARS.length} شخصية</small></span></button>
     </div>
     <h2 class="cat">الأقسام</h2>
     <div class="cats">${CATS.map(([k, name]) => { const gs = cnt(k), got = gs.reduce((a, g) => a + (prog[g.id] || 0), 0), all = gs.length * 3, st = CATSTY[k]; return `<button class="catcard" data-c="${k}" style="--c:${st[0]}"><span class="ci">${catIcon(name)}</span><span class="ct"><b>${catTitle(name)}</b><small>${st[2]}</small><span class="cbar"><i style="width:${Math.round(got / all * 100)}%"></i></span></span><span class="cn">${gs.length}<small>ألعاب</small></span></button>`; }).join("")}</div>
-    <a class="cta" href="../#stories">📚 أعجبتك الألعاب؟ شاهد <b>قصصنا باسم طفلك</b></a>`;
+    <a class="cta" href="../#stories">أعجبتك الألعاب؟ شاهد <b>قصصنا باسم طفلك</b></a>`;
   muteBtn();
   $("#who").onclick = () => go(login);
   app.querySelectorAll(".catcard").forEach((b) => b.onclick = () => go(() => catView(b.dataset.c)));
@@ -335,9 +377,9 @@ function home() {
 function catView(k) {
   const [, name] = CATS.find((c) => c[0] === k), st = CATSTY[k], gs = GAMES.filter((g) => g.cat === k);
   app.innerHTML = `
-    <div class="top"><button class="pill btn" id="back">→ الأقسام</button><button class="pill btn" id="mute" aria-label="الصوت">${muted ? "🔇" : "🔊"}</button></div>
+    <div class="top"><button class="pill btn" id="back">${sv(IC.back)} الأقسام</button><button class="pill btn" id="mute" aria-label="الصوت">${muteIc()}</button></div>
     <div class="cathead" style="--c:${st[0]}"><span>${catIcon(name)}</span><div><h1>${catTitle(name)}</h1><p>${st[2]}</p></div></div>
-    <div class="grid">${gs.map((g) => `<button class="gcard" data-g="${g.id}" style="--c:${st[0]}"><span class="ic">${g.ic}</span><b>${g.t}</b><small>${g.s}</small><span class="st">${stars(prog[g.id] || 0)}</span></button>`).join("")}</div>`;
+    <div class="grid">${gs.map((g) => `<button class="gcard" data-g="${g.id}" style="--c:${gcol(g)}"><span class="ic">${gIcon(g)}</span><b>${g.t}</b><small>${g.s}</small><span class="st">${starsSv(prog[g.id] || 0)}</span></button>`).join("")}</div>`;
   muteBtn();
   $("#back").onclick = () => go(home);
   app.querySelectorAll(".gcard").forEach((b) => b.onclick = () => { const g = GAMES.find((x) => x.id === b.dataset.g); go(() => frame(g)); });
@@ -350,11 +392,11 @@ let cur = null;
 function frame(g) {
   cur = g; track("start", g.id);
   app.innerHTML = `
-    <div class="bar"><button class="pill btn" id="back">→ رجوع</button><div class="title">${g.ic} ${g.t}</div><button class="pill btn" id="mute">${muted ? "🔇" : "🔊"}</button></div>
+    <div class="bar"><button class="pill btn" id="back">${sv(IC.back)} رجوع</button><div class="title">${g.t}</div><button class="pill btn" id="mute">${muteIc()}</button></div>
     <div class="dots" id="dots"></div>
     <div class="stage" id="stage"></div>`;
   $("#back").onclick = () => go(backFn());
-  $("#mute").onclick = () => { muted = !muted; try { localStorage.setItem("hg_mute", muted ? "1" : "0"); } catch { /* */ } $("#mute").textContent = muted ? "🔇" : "🔊"; };
+  $("#mute").onclick = () => { muted = !muted; try { localStorage.setItem("hg_mute", muted ? "1" : "0"); } catch { /* */ } $("#mute").innerHTML = muteIc(); };
   g.run($("#stage"));
 }
 function setDots(n, done, curI) {

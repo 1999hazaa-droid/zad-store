@@ -293,3 +293,35 @@ h2.cat { font-size: 17px; font-weight: 800; color: var(--ink); margin: 22px 2px 
 .catcard .ci { background: linear-gradient(145deg, var(--c), color-mix(in srgb, var(--c) 68%, #1b1040)); box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 40%, transparent), inset 0 1px 0 rgba(255,255,255,.35); border-radius: 18px; width: 58px; height: 58px; }
 .catcard .ci svg, .catcard .ci img { filter: drop-shadow(0 1px 1px rgba(0,0,0,.18)); }
 .cathead .ci, .cathead > span:first-child { background: linear-gradient(145deg, var(--c), color-mix(in srgb, var(--c) 68%, #1b1040)); }
+
+/* ===== v19: أيقونات بسيطة وصغيرة وملوّنة ===== */
+.ics { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+.ics text { fill: currentColor; stroke: none; font-weight: 800; font-family: "Cairo", system-ui, sans-serif; }
+.pill .ics { width: 18px; height: 18px; color: var(--pri); }
+.pill { gap: 7px; padding: 7px 13px; }
+.gcard .ic { width: 44px; height: 44px; border-radius: 14px; font-size: 22px; color: var(--c, #8B5CF6); background: color-mix(in srgb, var(--c, #8B5CF6) 12%, #fff); }
+.gcard .ic .ics { width: 24px; height: 24px; }
+.gcard { padding: 14px 10px 12px; gap: 5px; }
+.gcard b { font-size: 16px; }
+.gcard .st { display: inline-flex; gap: 3px; padding: 4px 10px; letter-spacing: 0; }
+.gcard .st .ics { width: 15px; height: 15px; stroke: #D3CAEB; fill: #F1EDFB; }
+.gcard .st .ics.on { stroke: #F2A100; fill: #FFC93C; }
+.feat .gcard .ic { width: 44px; height: 44px; }
+.feat .gcard { padding: 12px; }
+.catcard { padding: 12px 14px; gap: 12px; }
+.catcard .ci { width: 46px; height: 46px; border-radius: 15px; font-size: 22px; color: #fff; box-shadow: 0 5px 12px color-mix(in srgb, var(--c) 34%, transparent), inset 0 1px 0 rgba(255, 255, 255, .35); }
+.catcard .ci .ics { width: 24px; height: 24px; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .15)); }
+.catcard .ct b { font-size: 16.5px; }
+.catcard .ct small { font-size: 12.5px; }
+.catcard .cn { font-size: 19px; padding: 5px 11px; border-radius: 12px; }
+.cathead { padding: 12px 14px; gap: 12px; }
+.cathead span { width: 46px; height: 46px; border-radius: 15px; font-size: 22px; color: #fff; box-shadow: 0 5px 12px color-mix(in srgb, var(--c) 34%, transparent); }
+.cathead span .ics { width: 24px; height: 24px; }
+.cathead h1 { font-size: 19px; }
+.hm-stats .ics { width: 16px; height: 16px; margin-inline-end: 2px; }
+.hm-stats .s1 .ics { stroke: #F2A100; fill: #FFC93C; }
+.hm-stats .s2 .ics { stroke: #F26B1D; fill: #FDBA74; }
+.lg-feat li { padding: 12px 4px 10px; }
+.lg-feat b { display: grid; place-items: center; width: 38px; height: 38px; margin: 0 auto 6px; border-radius: 12px; font-size: 20px; color: var(--c); background: color-mix(in srgb, var(--c) 13%, #fff); }
+.lg-feat b .ics { width: 22px; height: 22px; }
+.bar .title { font-size: 19px; }
