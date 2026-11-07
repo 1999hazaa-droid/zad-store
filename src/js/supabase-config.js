@@ -18,7 +18,8 @@ window.athrLoadSupabase = (function () {
         if (loading) return loading;
         loading = new Promise((resolve, reject) => {
             const done = () => {
-                window.athrSupabase = window.supabase.createClient(ATHR_SUPABASE_URL, ATHR_SUPABASE_PUBLISHABLE_KEY);
+                window.athrSupabase = window.supabase.createClient(ATHR_SUPABASE_URL, ATHR_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: "zad-admin-auth" } });
+                try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
                 resolve(window.athrSupabase);
             };
             if (window.supabase && window.supabase.createClient) {
