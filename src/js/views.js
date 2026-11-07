@@ -1136,7 +1136,6 @@
             ${V.hero(v)}
             ${V.tiles(v)}
             ${V.giftBanner(v)}
-            ${bundles.length ? V.rail(v, { id: "bundles", title: t("حزم التوفير"), link: { href: ATHR.url.category(bc), text: t("عرض الكل") }, items: bundles }) : ""}
             ${best.length ? V.rail(v, { id: "best", title: ct(v, "sales.best_title") || t("الأكثر طلباً"), items: best }) : ""}
             ${sets ? V.rail(v, { id: "sets", title: ct(v, "sales.sets_title") || t("أطقم بسعر أقل"), cards: sets }) : ""}
             <section class="catalog section" id="catalog" aria-labelledby="catalog-t">
