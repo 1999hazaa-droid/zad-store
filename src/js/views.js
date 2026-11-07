@@ -702,9 +702,9 @@
         const cod = (cfg.order.payments || []).some((p) => p.enabled && p.type === "cod");
         if (ATHR.isDigital(cfg)) {
             return [
-                [V.icon.file, t("ملفات PDF جاهزة للطباعة")],
-                [V.icon.inbox, t("تصلك على واتساب")],
-                [V.icon.card, cod ? t("الدفع عند الاستلام") : t("تحويل بنكي آمن")]
+                [V.icon.file, t("PDF للطباعة")],
+                [V.icon.inbox, t("عبر واتساب")],
+                [V.icon.card, cod ? t("الدفع عند الاستلام") : t("تحويل بنكي")]
             ];
         }
         return [
@@ -954,10 +954,12 @@
 
     // كل المنتجات في الرئيسية: فلترة سريعة بالقسم + «عرض المزيد»
     V.catalogHome = function (v, { sort = "default", cat = "", shown = 0 } = {}) {
-        const cats = v.categories.filter((c) => v.counts.get(c.id));
+        const bcat = V.bundleCat(v);
+        const cats = v.categories.filter((c) => v.counts.get(c.id) && !(bcat && c.id === bcat.id));
         const current = cat && cats.find((c) => c.id === cat) ? cat : "";
-        const all = V.sortList(V.listings(v, v.products.filter((p) => !current || p.category_id === current)), sort);
-        const total = V.listings(v, v.products).length;
+        const notBundle = (p) => !(bcat && p.category_id === bcat.id);
+        const all = V.sortList(V.listings(v, v.products.filter((p) => notBundle(p) && (!current || p.category_id === current))), sort);
+        const total = V.listings(v, v.products.filter(notBundle)).length;
         const chips = v.cfg.theme.home_filter !== false && cats.length > 1
             ? `<div class="cat-chips" role="group" aria-label="${esc(t("تصفية حسب القسم"))}">
                 <button type="button" class="chip${current ? "" : " on"}" data-home-cat="" aria-pressed="${!current}">${esc(ct(v, "texts.all_label") || t("الكل"))} <small>${total}</small></button>
@@ -1120,8 +1122,11 @@
             ${V.homeFaq(v)}`;
     };
 
+    V.bundleCat = (v) => (v.categories || []).find((c) => /حزم|bundle/i.test(c.name || "") || /bundle/i.test(c.slug || ""));
     V.home = function (v, { sort = "default", cat = "", shown = 0 } = {}) {
         if (V.isStoryStore(v)) return V.storyHome(v);
+        const bc = V.bundleCat(v);
+        const bundles = bc ? V.listings(v, v.products.filter((p) => p.category_id === bc.id && p.is_available !== false)) : [];
         const best = V.bestSellers(v);
         const sets = V.setCards(v);
         const fresh = V.newArrivals(v);
@@ -1131,6 +1136,7 @@
             ${V.hero(v)}
             ${V.tiles(v)}
             ${V.giftBanner(v)}
+            ${bundles.length ? V.rail(v, { id: "bundles", title: t("حزم التوفير"), link: { href: ATHR.url.category(bc), text: t("عرض الكل") }, items: bundles }) : ""}
             ${best.length ? V.rail(v, { id: "best", title: ct(v, "sales.best_title") || t("الأكثر طلباً"), items: best }) : ""}
             ${sets ? V.rail(v, { id: "sets", title: ct(v, "sales.sets_title") || t("أطقم بسعر أقل"), cards: sets }) : ""}
             <section class="catalog section" id="catalog" aria-labelledby="catalog-t">
