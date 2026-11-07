@@ -1173,16 +1173,16 @@
 
     // تقسيم داخلي لقسم الصفوف حسب الصف (بدون أقسام جديدة)
     V.subjectGroups = function (v, cat, list) {
-        if (!/الصفوف-1-إلى-4/.test(cat.slug || "")) return "";
-        const extra = { 1: /تتبّع وكتابة الحروف العربية|English Letters Tracing/, 2: /جدول الضرب/, 3: /قراءة وفهم|الكسور/, 4: /$^/ };
-        const names = ["الصف الأول", "الصف الثاني", "الصف الثالث", "الصف الرابع"];
+        if (!/الصفوف-1-إلى-[46]/.test(cat.slug || "")) return "";
+        const extra = { 1: /تتبّع وكتابة الحروف العربية|English Letters Tracing/, 2: /جدول الضرب/, 3: /قراءة وفهم|الكسور/, 4: /$^/, 5: /$^/, 6: /$^/ };
+        const names = ["الصف الأول", "الصف الثاني", "الصف الثالث", "الصف الرابع", "الصف الخامس", "الصف السادس"];
         const gr = (p) => {
             const m = names.findIndex((n) => p.name.includes(n));
             if (m >= 0) return m + 1;
-            for (const k of [1, 2, 3, 4]) if (extra[k].test(p.name)) return k;
+            for (const k of [1, 2, 3, 4, 5, 6]) if (extra[k].test(p.name)) return k;
             return 0;
         };
-        const buckets = [1, 2, 3, 4].map((g) => list.filter((p) => gr(p) === g));
+        const buckets = [1, 2, 3, 4, 5, 6].map((g) => list.filter((p) => gr(p) === g));
         const rest = list.filter((p) => !gr(p));
         const chips = `<div class="cat-chips grade-jump">${names.map((n, i) => buckets[i].length ? `<a class="chip" href="#grade-${i + 1}">${esc(t(n))} <small>${buckets[i].length}</small></a>` : "").join("")}</div>`;
         const out = buckets.map((items, i) => items.length ? `<h2 class="sub-h" id="grade-${i + 1}">${esc(t(names[i]))} <small class="muted">(${items.length})</small></h2>${V.grid(v, items)}` : "").join("");
