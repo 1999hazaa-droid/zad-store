@@ -4348,3 +4348,40 @@
     try { S.coupon = JSON.parse(session.get(KEYS.coupon) || "null"); } catch { S.coupon = null; }
     loadData().then(() => { captureCouponParam(); return checkAdmin(); });
 })();
+
+/* فتح أقسام التذييل تلقائياً على الشاشات الكبيرة */
+(function () {
+    try {
+        const mq = matchMedia("(min-width: 760px)");
+        let q = 0;
+        const run = () => { q = 0; if (mq.matches) document.querySelectorAll(".foot-acc:not([open])").forEach((d) => { d.open = true; }); };
+        const sched = () => { if (!q) q = requestAnimationFrame(run); };
+        new MutationObserver(sched).observe(document.body, { childList: true, subtree: true });
+        mq.addEventListener("change", sched); sched();
+    } catch (e) { /* */ }
+})();
+
+/* تحريك صف الأقسام تلقائياً ليرى الزائر كل الأقسام؛ يتوقف عند اللمس */
+(function () {
+    try {
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        let dir = 1, hold = Date.now() + 1500, pos = 0, last = 0;
+        const bump = (e) => { if (e.target && e.target.closest && e.target.closest(".tiles")) hold = Date.now() + 5000; };
+        ["touchstart", "pointerdown", "wheel", "mouseover"].forEach((ev) => document.addEventListener(ev, bump, { passive: true, capture: true }));
+        const step = (ts) => {
+            requestAnimationFrame(step);
+            const el = document.querySelector(".tiles");
+            if (!el || document.hidden || Date.now() < hold) { if (el) pos = Math.abs(el.scrollLeft); return; }
+            const max = el.scrollWidth - el.clientWidth;
+            if (max <= 4) return;
+            if (ts - last < 16) return;
+            last = ts;
+            const rtl = getComputedStyle(el).direction === "rtl";
+            pos += dir * 1;
+            if (pos >= max) { pos = max; dir = -1; hold = Date.now() + 1500; }
+            else if (pos <= 0) { pos = 0; dir = 1; hold = Date.now() + 1500; }
+            el.scrollLeft = rtl ? -pos : pos;
+        };
+        requestAnimationFrame(step);
+    } catch (e) { /* لا شيء */ }
+})();

@@ -3649,3 +3649,105 @@ html.tpl-apple .msg-sugs button, html.tpl-apple .sug { border: 0; background: va
 /* زر «أضف للسلة» في بطاقات المنتجات: مستطيل بنفسجي والكلام أبيض */
 .card-action .btn.btn-primary:not(.free-dl) { background: var(--primary); color: #fff; border: 0; }
 .card-action .btn.btn-primary:not(.free-dl):hover, .card-action .btn.btn-primary:not(.free-dl):active { background: var(--primary); color: #fff; filter: brightness(1.1); }
+
+/* زر السلة العائم بألوان الهوية */
+.cf-ring { background: conic-gradient(var(--primary) var(--p, 0%), color-mix(in srgb, var(--primary) 18%, #fff) 0); box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 30%, transparent); }
+.cf-in, html[data-mode="dark"] .cf-in { background: #fff; color: var(--primary); }
+.cf-count { background: var(--primary); color: #fff; border: 2px solid #fff; }
+.cf-pill { background: var(--primary); color: #fff; border: 2px solid #fff; line-height: 1.3; }
+.cf-pill.ok { background: var(--ok); color: #fff; }
+
+/* ===== واجهة عصرية: العنوان وأيقونات الأقسام ===== */
+.hero { background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 9%, #fff) 0%, var(--bg) 100%); }
+.hero-compact .hero-inner, html[class] .hero.hero-compact:not(.has-image) .hero-inner { padding: 26px 0 12px; gap: 14px; }
+.hero-compact h1, .hero h1, html[class] .hero.hero-compact:not(.has-image) h1 { font-size: clamp(24px, 6.8vw, 40px); line-height: 1.4; font-weight: 800; letter-spacing: 0; max-width: none; color: var(--text); }
+.hero h1 .hl { display: block; width: fit-content; margin-top: 4px; color: var(--primary); background: linear-gradient(transparent 62%, color-mix(in srgb, var(--primary) 16%, transparent) 62% 92%, transparent 92%); }
+.hero-mini { gap: 8px; }
+.hero-mini li, .hero-features li { padding: 6px 12px; font-weight: 600; box-shadow: 0 1px 2px rgba(27, 20, 48, .05); }
+
+.tiles { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(78px, 1fr); gap: 10px; padding: 10px var(--gutter) 12px; scroll-snap-type: x proximity; }
+.tile { flex: initial; gap: 8px; min-width: 0; }
+.tile-img { display: grid; place-items: center; width: 100%; max-width: 84px; height: auto; aspect-ratio: 1; margin-inline: auto; border: 1px solid color-mix(in srgb, var(--primary) 14%, #fff); outline: 0; border-radius: 22px; background: color-mix(in srgb, var(--primary) 8%, #fff); box-shadow: 0 1px 2px rgba(27, 20, 48, .04); transition: transform .18s ease, background .18s ease, box-shadow .18s ease; }
+.tile-img svg { width: 40%; min-width: 28px; fill: none; stroke: var(--primary); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transition: stroke .18s ease; }
+.tile-img svg circle { fill: var(--primary); stroke: none; }
+.tile-name { font-size: 12.5px; font-weight: 700; line-height: 1.4; }
+.tile.on .tile-img { background: var(--primary); border-color: var(--primary); box-shadow: 0 6px 14px color-mix(in srgb, var(--primary) 30%, transparent); outline: 0; }
+.tile.on .tile-img svg { stroke: #fff; }
+.tile.on .tile-img svg circle { fill: #fff; }
+.tile.on .tile-name { color: var(--primary); }
+@media (hover: hover) { .tile:hover .tile-img { transform: translateY(-3px); box-shadow: 0 8px 18px color-mix(in srgb, var(--primary) 18%, transparent); outline: 0; } }
+@media (min-width: 760px) { .tiles { grid-auto-columns: 120px; justify-content: start; } .tile-img { max-width: 96px; } }
+
+/* أيقونات الأقسام: ملوّنة، لكل قسم لونه */
+.tile { --tc: var(--primary); --tc2: color-mix(in srgb, var(--primary) 70%, #fff); }
+.tile[data-k="kids"] { --tc: #F0457A; --tc2: #FF8FB0; }
+.tile[data-k="book"] { --tc: #F59E0B; --tc2: #FFCB57; }
+.tile[data-k="cap"] { --tc: #2F6BF0; --tc2: #6FA0FF; }
+.tile[data-k="board"] { --tc: #12A877; --tc2: #55D6A8; }
+.tile .tile-img { background: linear-gradient(145deg, var(--tc2), var(--tc)); border: 0; box-shadow: 0 8px 16px color-mix(in srgb, var(--tc) 32%, transparent), inset 0 1px 0 rgba(255, 255, 255, .45); position: relative; overflow: hidden; }
+.tile .tile-img::after { content: ""; position: absolute; width: 70%; height: 70%; inset-inline-end: -22%; top: -26%; border-radius: 50%; background: rgba(255, 255, 255, .22); }
+.tile .tile-img svg { position: relative; z-index: 1; width: 44%; stroke: #fff; stroke-width: 1.8; fill: rgba(255, 255, 255, .2); filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .16)); }
+.tile .tile-img svg circle { fill: #fff; }
+.tile.on .tile-img { background: linear-gradient(145deg, var(--tc2), var(--tc)); box-shadow: 0 0 0 3px #fff, 0 0 0 5.5px var(--tc), 0 10px 18px color-mix(in srgb, var(--tc) 34%, transparent); }
+.tile.on .tile-img svg { stroke: #fff; }
+.tile.on .tile-img svg circle { fill: #fff; }
+.tile.on .tile-name { color: color-mix(in srgb, var(--tc) 72%, #000); }
+@media (hover: hover) { .tile:hover .tile-img { box-shadow: 0 12px 22px color-mix(in srgb, var(--tc) 38%, transparent), inset 0 1px 0 rgba(255, 255, 255, .45); } .tile.on:hover .tile-img { box-shadow: 0 0 0 3px #fff, 0 0 0 5.5px var(--tc), 0 12px 22px color-mix(in srgb, var(--tc) 38%, transparent); } }
+
+/* بانر الألعاب: مضغوط وعصري */
+.gm-banner, .gm-banner.gm-home { gap: 12px; padding: 10px 14px !important; border-radius: 18px !important; background: linear-gradient(120deg, #5B34D6 0%, #7A4DF0 60%, #9B6BFF 100%) !important; box-shadow: 0 8px 20px rgba(91, 52, 214, .25) !important; position: relative; overflow: hidden; }
+.gm-banner::after { display: block; content: ""; position: absolute; width: 110px; height: 110px; top: -52px; inset-inline-start: 30%; left: auto; border-radius: 50%; background: rgba(255, 255, 255, .12); }
+.gm-ic { display: grid; place-items: center; width: 42px; height: 42px; font-size: 0 !important; border-radius: 13px; background: rgba(255, 255, 255, .18); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28); animation: none !important; }
+.gm-ic svg { width: 24px; height: 24px; fill: rgba(255, 255, 255, .22); stroke: #fff; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.gm-ic svg circle { fill: #fff; stroke: none; }
+.gm-tx b { font-size: 15.5px !important; font-weight: 800; }
+.gm-tx small { font-size: 12px !important; opacity: .88; }
+.gm-go { display: inline-block !important; padding: 7px 13px !important; font-size: 12.5px !important; font-weight: 800; color: #5B34D6 !important; }
+@media (max-width: 420px) { .gm-go { font-size: 0 !important; width: 30px; height: 30px; padding: 0 !important; display: grid !important; place-items: center; } .gm-go::before { content: "‹"; font-size: 22px; line-height: 1; font-weight: 800; transform: translateY(-1px); } }
+
+/* شارات الهيرو: سطر واحد صغير */
+.hero-mini { flex-wrap: nowrap; justify-content: flex-start; gap: 6px; }
+.hero-mini li, .hero-features li { padding: 4px 9px; font-size: 11.5px; gap: 4px; box-shadow: none; }
+.hero-mini svg, .hero-features svg { width: 13px; height: 13px; }
+@media (max-width: 360px) { .hero-mini { gap: 4px; } .hero-mini li { padding: 4px 7px; font-size: 11px; } }
+
+/* ===== تجاوب: آيباد / لابتوب / كمبيوتر ===== */
+@media (min-width: 900px) {
+    .tiles { grid-auto-columns: 128px; justify-content: start; gap: 18px; padding-inline: calc((100% - var(--wrap)) / 2); }
+    .tile-img { max-width: 76px; border-radius: 22px; }
+    .hero h1 { max-width: 24ch; }
+    .gm-banner { max-width: var(--wrap); margin-inline: auto; }
+    .stage { aspect-ratio: auto; height: min(74vh, 620px); }
+    .gallery { top: 80px; }
+    .foot { max-width: none; width: min(100% - 2 * var(--gutter), var(--wrap)); margin-inline: auto; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 36px; }
+    .foot > * { grid-column: 1 / -1; }
+    .foot > .foot-acc { grid-column: auto; border-top: 0; border-bottom: 0 !important; }
+    .foot-acc summary { pointer-events: none; cursor: default; padding-top: 4px; }
+    .foot-acc summary svg { display: none; }
+    .foot-points { max-width: 560px; }
+}
+@media (min-width: 1400px) { :root { --wrap: 1240px; } }
+@media (min-width: 760px) and (max-width: 1023px) { .rail { scroll-padding-inline: var(--gutter); } }
+img, video, svg { max-width: 100%; }
+
+/* السلة والدفع: عمودان من حجم الآيباد */
+@media (min-width: 760px) {
+    .layout-2 { grid-template-columns: 1.4fr 1fr; align-items: start; gap: 18px; }
+    .layout-2 > aside { position: sticky; top: 90px; }
+    .sum-mobile { display: none; }
+}
+@media (min-width: 760px) {
+    body:has(.layout-2) .buybar { display: none; }
+    body:has(.layout-2).has-buybar { --buybar-h: 0px; }
+    body:has(.layout-2).has-buybar .footer { padding-bottom: 40px; }
+    .foot { max-width: none; width: min(100% - 2 * var(--gutter), var(--wrap)); margin-inline: auto; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 28px; }
+    .foot > * { grid-column: 1 / -1; }
+    .foot > .foot-acc { grid-column: auto; border-top: 0; border-bottom: 0 !important; }
+    .foot-acc summary { pointer-events: none; cursor: default; padding-top: 4px; }
+    .foot-acc summary svg { display: none; }
+}
+
+/* مسافة بين بانر الألعاب وسطر الترتيب */
+.gm-banner.gm-home { margin-bottom: 22px; }
+.gm-banner.gm-home + .section-head { margin-top: 0; padding-top: 4px; }
+.tiles { scroll-snap-type: none; }
