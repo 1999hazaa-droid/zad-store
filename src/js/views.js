@@ -729,6 +729,7 @@
             return `<section class="hero hero-compact${cfg.theme.hero_pattern ? " pattern" : ""}">
             <div class="wrap hero-inner">
                 <h1>${V.heroTitle(v)}</h1>
+                ${ct(v, "texts.hero_text") ? `<p class="hero-sub">${esc(fill(v, ct(v, "texts.hero_text")))}</p>` : ""}
                 <ul class="hero-mini">${V.storePoints(v).map(([ico, label]) => `<li>${ico}<span>${esc(label)}</span></li>`).join("")}</ul>
                 ${V.storeTotal(v) ? `<p class="hero-proof">${ICON.users}<span>${esc(V.storeTotal(v))}</span></p>` : ""}
             </div>
