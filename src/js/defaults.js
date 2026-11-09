@@ -109,13 +109,13 @@ const ATHR_DEFAULTS = {
         // ملفات رقمية: لا شحن ولا عنوان، والملفات تصل للزبون على واتساب بعد تأكيد الدفع
         digital: true,
         delivery: [
-            { id: "wa", enabled: true, name: "استلام الملفات على واتساب", name_en: "Files on WhatsApp", type: "digital", pricing: "fixed", price: 0, countries: ["OM", "AE", "SA", "KW", "QA", "BH"], note: "نرسل لك القصة في محادثة واتساب بعد تأكيد الدفع.", note_en: "We send your story in a WhatsApp chat once payment is confirmed.", duration: "خلال ساعات" },
+            { id: "wa", enabled: true, name: "استلام الملفات على واتساب", name_en: "Files on WhatsApp", type: "digital", pricing: "fixed", price: 0, countries: ["OM"], note: "نرسل لك القصة في محادثة واتساب بعد تأكيد الدفع.", note_en: "We send your story in a WhatsApp chat once payment is confirmed.", duration: "خلال ساعات" },
             { id: "print", enabled: true, name: "توصيل القصة المطبوعة", name_en: "Printed book delivery", type: "home", pricing: "fixed", price: 2, countries: ["OM"], note: "نطبع القصة بغلاف مقوّى ونوصلها لبيتك، ونرسل لك نسخة PDF على واتساب.", note_en: "We print a hardcover copy and deliver it to your door, plus a PDF on WhatsApp.", duration: "3 إلى 5 أيام" }
         ],
         free_enabled: false,
         free_min: 0,
         free_countries: [],
-        countries: ATHR_COUNTRIES.map((c) => ({ ...c })),
+        countries: ATHR_COUNTRIES.filter((c) => c.code === "OM").map((c) => ({ ...c })),
         default_weight_g: 1,
         governorates: ATHR_GOVERNORATES.slice(),
         max_qty: 1,
@@ -123,7 +123,7 @@ const ATHR_DEFAULTS = {
         wilaya_required: false,
         show_notes: true,
         payments: [
-            { id: "bank", enabled: true, name: "تحويل بنكي", name_en: "Bank transfer", type: "bank", countries: ["OM", "AE", "SA", "KW", "QA", "BH"], note: "حوّل المبلغ ثم أرسل صورة الإيصال على واتساب، ونرسل لك القصة.", note_en: "Transfer the amount, then send the receipt on WhatsApp and we send your story.", bank: { number: "", bank: "", holder: "", account: "", swift: "", iban: "" } }
+            { id: "bank", enabled: true, name: "تحويل بنكي", name_en: "Bank transfer", type: "bank", countries: ["OM"], note: "حوّل المبلغ ثم أرسل صورة الإيصال على واتساب، ونرسل لك القصة.", note_en: "Transfer the amount, then send the receipt on WhatsApp and we send your story.", bank: { number: "", bank: "", holder: "", account: "", swift: "", iban: "" } }
         ]
     },
 
