@@ -109,8 +109,7 @@ const ATHR_DEFAULTS = {
         // ملفات رقمية: لا شحن ولا عنوان، والملفات تصل للزبون على واتساب بعد تأكيد الدفع
         digital: true,
         delivery: [
-            { id: "wa", enabled: true, name: "استلام الملفات على واتساب", name_en: "Files on WhatsApp", type: "digital", pricing: "fixed", price: 0, countries: ["OM"], note: "نرسل لك القصة في محادثة واتساب بعد تأكيد الدفع.", note_en: "We send your story in a WhatsApp chat once payment is confirmed.", duration: "خلال ساعات" },
-            { id: "print", enabled: true, name: "توصيل القصة المطبوعة", name_en: "Printed book delivery", type: "home", pricing: "fixed", price: 2, countries: ["OM"], note: "نطبع القصة بغلاف مقوّى ونوصلها لبيتك، ونرسل لك نسخة PDF على واتساب.", note_en: "We print a hardcover copy and deliver it to your door, plus a PDF on WhatsApp.", duration: "3 إلى 5 أيام" }
+            { id: "wa", enabled: true, name: "استلام الملفات على واتساب", name_en: "Files on WhatsApp", type: "digital", pricing: "fixed", price: 0, countries: ["OM"], note: "نرسل لك الملفات في محادثة واتساب بعد تأكيد الدفع.", note_en: "We send your story in a WhatsApp chat once payment is confirmed.", duration: "خلال ساعات" },
         ],
         free_enabled: false,
         free_min: 0,
