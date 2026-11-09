@@ -3773,3 +3773,11 @@ html .hero-compact .hero-mini svg { width: 15px; height: 15px; stroke: var(--pri
     html .hero-compact .hero-sub { font-size: 16.5px; }
     html .hero-compact .hero-mini li { font-size: 14px; padding: 8px 16px; }
 }
+
+/* لمسة عصرية للواجهة العلوية */
+html .hero-compact .hero-inner::after { content: ""; position: absolute; inset-inline-end: -46px; top: -46px; width: 150px; height: 150px; border-radius: 50%; background: color-mix(in srgb, var(--primary) 12%, transparent); pointer-events: none; }
+html .hero-compact .hero-inner > * { position: relative; z-index: 1; }
+html .hero-compact .hero-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, #fff); padding: 5px 12px; border-radius: 999px; }
+html .hero-compact .hero-eyebrow i { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
+html .hero-compact .hero-cta { margin-top: 6px; min-height: 46px; padding: 0 22px; border-radius: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 28%, transparent); }
+html .hero-compact .hero-cta svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }

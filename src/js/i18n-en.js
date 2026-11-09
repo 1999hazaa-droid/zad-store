@@ -105,6 +105,8 @@
         "التوصيل إلى {flag} {country}": "Delivery to {flag} {country}",
         "غير متاح حاليًا، تواصل معنا عبر واتساب.": "Not available right now. Contact us on WhatsApp.",
         "مجاني للطلبات من {free} أو أكثر": "Free on orders of {free} or more",
+        "متجر عُماني · ملفات PDF جاهزة": "Omani store · Ready PDF files",
+        "تصفّح الملفات": "Browse files",
         "الدفع": "Payment",
         "لست في {country}؟ غيّر الدولة": "Not in {country}? Change country",
         "الدفع عند الاستلام": "Cash on delivery",

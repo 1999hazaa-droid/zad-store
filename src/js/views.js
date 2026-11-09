@@ -728,9 +728,11 @@
         if (cfg.theme.hero_compact !== false && !cfg.theme.hero_image) {
             return `<section class="hero hero-compact${cfg.theme.hero_pattern ? " pattern" : ""}">
             <div class="wrap hero-inner">
+                <span class="hero-eyebrow"><i></i>${esc(t("متجر عُماني · ملفات PDF جاهزة"))}</span>
                 <h1>${V.heroTitle(v)}</h1>
                 ${ct(v, "texts.hero_text") ? `<p class="hero-sub">${esc(fill(v, ct(v, "texts.hero_text")))}</p>` : ""}
                 <ul class="hero-mini">${V.storePoints(v).map(([ico, label]) => `<li>${ico}<span>${esc(label)}</span></li>`).join("")}</ul>
+                <a class="btn btn-primary hero-cta" href="#catalog">${esc(ct(v, "texts.hero_button") || t("تصفّح الملفات"))}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a>
                 ${V.storeTotal(v) ? `<p class="hero-proof">${ICON.users}<span>${esc(V.storeTotal(v))}</span></p>` : ""}
             </div>
         </section>`;

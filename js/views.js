@@ -90,9 +90,11 @@
                 ${p?`<a class="btn" href="${s($)}"${f?' target="_blank" rel="noopener"':""}>${s(M(e,p))}</a>`:""}
             </div>`}return""},i.storePoints=function(e){const t=e.cfg,a=c.countries(t).some(l=>l.enabled&&l.code!==c.BASE_COUNTRY),r=t.order.free_enabled&&Number(t.order.free_min)>0,o=(t.order.payments||[]).some(l=>l.enabled&&l.type==="cod");return c.isDigital(t)?[[i.icon.file,n("PDF للطباعة")],[i.icon.inbox,n("عبر واتساب")],[i.icon.card,n(o?"الدفع عند الاستلام":"تحويل بنكي")]]:[r?[i.icon.tag,n("توصيل مجاني فوق {amount}",{amount:c.trimZeros(B(e,t.order.free_min))})]:null,[i.icon.card,n(o?"الدفع عند الاستلام":"تحويل بنكي آمن")],[i.icon.truck,n(a?"توصيل للخليج":"توصيل لكل عُمان")]].filter(Boolean)},i.heroTitle=function(e){const t=M(e,y(e,"texts.hero_title"))||"",a=t.match(/^(.+?)\s*[،,]\s*(.+)$/);return a?`${s(a[1])}<span class="hl">${s(a[2])}</span>`:s(t)},i.hero=function(e){const t=e.cfg;if(!t.theme.hero_show)return`<h1 class="sr-only">${s(c.storeName(t))}</h1>`;if(t.theme.hero_compact!==!1&&!t.theme.hero_image)return`<section class="hero hero-compact${t.theme.hero_pattern?" pattern":""}">
             <div class="wrap hero-inner">
+                <span class="hero-eyebrow"><i></i>${s(n("متجر عُماني · ملفات PDF جاهزة"))}</span>
                 <h1>${i.heroTitle(e)}</h1>
                 ${y(e,"texts.hero_text")?`<p class="hero-sub">${s(M(e,y(e,"texts.hero_text")))}</p>`:""}
                 <ul class="hero-mini">${i.storePoints(e).map(([l,d])=>`<li>${l}<span>${s(d)}</span></li>`).join("")}</ul>
+                <a class="btn btn-primary hero-cta" href="#catalog">${s(y(e,"texts.hero_button")||n("تصفّح الملفات"))}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a>
                 ${i.storeTotal(e)?`<p class="hero-proof">${x.users}<span>${s(i.storeTotal(e))}</span></p>`:""}
             </div>
         </section>`;const a=(y(e,"texts.hero_features")||[]).filter(Boolean).slice(0,4).map(l=>`<li>${x.check}${s(M(e,l))}</li>`).join(""),r=t.theme.hero_image&&(c.isUrl(t.theme.hero_image)||!t.theme.hero_image.includes(":"))?t.theme.hero_image:"",o=y(e,"texts.hero_text");return`<section class="hero${t.theme.hero_pattern?" pattern":""}${r?" has-image":""}">

@@ -796,7 +796,7 @@ ATHR.countries = function (config) {
         const auto = live ? Number(live.rates[base.currency]) : 0;
         return {
             ...base,
-            enabled: base.code === ATHR.BASE_COUNTRY ? true : own.enabled !== false,
+            enabled: base.code === ATHR.BASE_COUNTRY ? true : (saved.length ? Boolean(saved.find((c) => c && c.code === base.code)) && own.enabled !== false : own.enabled !== false),
             rate: base.code === ATHR.BASE_COUNTRY ? 1 : (auto > 0 ? auto : rate > 0 ? rate : base.rate),
             symbol: own.symbol || base.symbol
         };
