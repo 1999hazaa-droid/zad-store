@@ -3788,3 +3788,6 @@ html .hero-compact .hero-inner { padding: 14px 16px 14px; gap: 8px; border-radiu
 html .hero-compact h1 { font-size: clamp(20px, 5.4vw, 30px); line-height: 1.35; }
 html .hero-compact .hero-inner::after { width: 100px; height: 100px; inset-inline-end: -34px; top: -34px; }
 @media (min-width: 760px) { html .hero-compact .hero-inner { padding: 22px 28px; gap: 10px; } }
+
+/* اسم القسم يظهر كاملاً (حتى 3 أسطر) */
+.tile-name { -webkit-line-clamp: 3; line-height: 1.3; }

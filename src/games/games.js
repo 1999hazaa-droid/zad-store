@@ -5,7 +5,7 @@ const app = $("#app");
 const rnd = (n) => Math.floor(Math.random() * n);
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const pick = (a, n) => shuffle(a).slice(0, n);
-const wait = (ms) => Promise.all([new Promise((r) => setTimeout(r, ms)), voiceIdle()]);
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const LETTERS = [["ا","الألف"],["ب","الباء"],["ت","التاء"],["ث","الثاء"],["ج","الجيم"],["ح","الحاء"],["خ","الخاء"],["د","الدال"],["ذ","الذال"],["ر","الراء"],["ز","الزاي"],["س","السين"],["ش","الشين"],["ص","الصاد"],["ض","الضاد"],["ط","الطاء"],["ظ","الظاء"],["ع","العين"],["غ","الغين"],["ف","الفاء"],["ق","القاف"],["ك","الكاف"],["ل","اللام"],["م","الميم"],["ن","النون"],["ه","الهاء"],["و","الواو"],["ي","الياء"]];
 const LN = Object.fromEntries(LETTERS);
@@ -44,37 +44,33 @@ function wavUrl(parts, dur) {
   for (let i = 0; i < n; i++) dv.setInt16(44 + i * 2, Math.max(-1, Math.min(1, f[i] * k)) * 32767, true);
   return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
 }
-const NOTES = [523, 587, 659, 784, 880, 1047, 1175, 1319, 1568, 1760, 2093, 2349];
+const NOTES = [392, 440, 494, 523, 587, 659, 698, 784, 880, 988, 1047, 1175];
+// أصوات هادئة وناعمة: نغمات قصيرة منخفضة الشدة
 const DEFS = {
-  ok: () => wavUrl([{ f: 659, d: .14, t: 0, v: .4 }, { f: 880, d: .22, t: .09, v: .4 }], .35),
-  bad: () => wavUrl([{ f: 330, f2: 262, d: .28, v: .3 }], .32),
-  tap: () => wavUrl([{ f: 900, f2: 700, d: .05, v: .35, dec: 2.5 }], .08),
-  pop: () => wavUrl([{ f: 600, f2: 800, d: .08, v: .3, dec: 1.6 }], .12),
-  flip: () => wavUrl([{ f: 320, f2: 520, d: .07, w: "square", v: .2 }], .12),
-  star: () => wavUrl([{ f: 1047, d: .12, t: 0, v: .35 }, { f: 1319, d: .24, t: .08, v: .35 }], .4),
-  win: () => wavUrl([{ f: 523, d: .16, t: 0, v: .4 }, { f: 659, d: .16, t: .12, v: .4 }, { f: 784, d: .16, t: .24, v: .4 }, { f: 1047, d: .4, t: .36, v: .4 }], .8),
-  unlock: () => wavUrl([{ f: 523, d: .14, t: 0, v: .4 }, { f: 784, d: .14, t: .1, v: .4 }, { f: 1047, d: .4, t: .2, v: .4 }], .65),
-  whoosh: () => wavUrl([{ f: 100, d: .3, w: "noise", v: .35, dec: 1 }, { f: 300, f2: 900, d: .3, v: .12, dec: .8 }], .35),
-  boing: () => wavUrl([{ f: 180, f2: 520, d: .28, v: .5, vib: 25, dec: 1 }], .32),
-  coin: () => wavUrl([{ f: 988, d: .08, t: 0, w: "square", v: .25 }, { f: 1319, d: .3, t: .07, w: "square", v: .25 }], .4),
-  tick: () => wavUrl([{ f: 1400, d: .03, v: .3, dec: 2 }], .05),
-  clap: () => wavUrl([{ f: 800, d: .06, w: "noise", v: .4, dec: 2 }, { f: 800, d: .06, t: .12, w: "noise", v: .4, dec: 2 }, { f: 800, d: .08, t: .24, w: "noise", v: .4, dec: 2 }], .4)
+  ok: () => wavUrl([{ f: 523, d: .16, t: 0, v: .22, dec: 2 }, { f: 784, d: .22, t: .08, v: .2, dec: 2 }], .32),
+  bad: () => wavUrl([{ f: 247, d: .14, v: .16, dec: 2.4 }], .16),
+  pop: () => wavUrl([{ f: 660, d: .07, v: .16, dec: 2.4 }], .1),
+  star: () => wavUrl([{ f: 784, d: .12, t: 0, v: .2, dec: 2 }, { f: 1047, d: .22, t: .07, v: .18, dec: 2 }], .32),
+  win: () => wavUrl([{ f: 523, d: .2, t: 0, v: .2, dec: 2 }, { f: 659, d: .2, t: .13, v: .2, dec: 2 }, { f: 784, d: .3, t: .26, v: .2, dec: 2 }], .6),
+  unlock: () => wavUrl([{ f: 523, d: .2, t: 0, v: .2, dec: 2 }, { f: 784, d: .35, t: .12, v: .2, dec: 2 }], .5),
+  ui: () => wavUrl([{ f: 880, d: .05, v: .12, dec: 3 }], .07),
+  nav: () => wavUrl([{ f: 660, d: .07, v: .13, dec: 2.8 }, { f: 880, d: .09, t: .045, v: .1, dec: 2.8 }], .14),
+  back: () => wavUrl([{ f: 660, d: .06, v: .11, dec: 3 }], .08)
 };
-NOTES.forEach((f, i) => { DEFS["n" + i] = () => wavUrl([{ f, d: .22, v: .5 }, { f: f * 2, d: .1, v: .1 }], .28); });
+NOTES.forEach((f, i) => { DEFS["n" + i] = () => wavUrl([{ f, d: .18, v: .2, dec: 2 }], .22); });
 function makeSnd(name) {
   if (SND[name]) return SND[name];
   const url = DEFS[name]();
-  const els = [0, 1].map(() => { const a = new Audio(url); a.preload = "auto"; a.volume = 0.4; return a; });
+  const els = [0, 1].map(() => { const a = new Audio(url); a.preload = "auto"; a.volume = 0.5; return a; });
   return (SND[name] = { els, i: 0 });
 }
 function unlockAudio() {
   if (unlocked) return; unlocked = true;
   // خفيف: عنصر واحد لأصوات الحروف والجمل، ولا نولّد كل الأصوات دفعة واحدة
-  try { if (!AEL) AEL = new Audio(); AEL.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="; const p = AEL.play(); if (p && p.catch) p.catch(() => {}); } catch { /* */ }
   // تسخين الأصوات تدريجياً في أوقات الفراغ (صوت كل 150ms) بدل تجميد الشاشة
-  const names = Object.keys(DEFS); let i = 0;
-  const step = () => { if (i >= names.length) return; try { makeSnd(names[i++]); } catch { /* */ } setTimeout(step, 150); };
-  setTimeout(step, 600);
+  const names = ["ok", "star", "bad", "pop", "ui", "nav", "back", "win", "unlock"].concat(NOTES.map((_, k) => "n" + k)); let i = 0;
+  const step = () => { if (i >= names.length) return; try { makeSnd(names[i++]); } catch { /* */ } (window.requestIdleCallback || setTimeout)(() => setTimeout(step, 90)); };
+  setTimeout(step, 500);
 }
 function play(name) {
   if (muted) return;
@@ -85,119 +81,32 @@ function play(name) {
 }
 const buzz = (p) => { try { if (!muted && navigator.vibrate) navigator.vibrate(p); } catch { /* */ } };
 const sfx = {
-  ok() { play("ok"); buzz(15); }, bad() { play("bad"); }, pop() { play("pop"); }, flip() { /* صامت */ },
-  win() { play("win"); buzz(30); }, tap() { /* صامت */ }, star() { play("star"); }, unlock() { play("unlock"); buzz(30); },
-  whoosh() { /* صامت */ }, boing() { play("pop"); }, coin() { play("star"); }, tick() { /* صامت */ }, clap() { play("star"); },
+  ok() { play("ok"); }, bad() { play("bad"); }, pop() { play("pop"); }, flip() { /* صامت */ },
+  win() { play("win"); buzz(15); }, tap() { /* صامت */ }, star() { play("star"); }, unlock() { play("unlock"); buzz(15); },
+  whoosh() { /* صامت */ }, boing() { /* صامت */ }, coin() { play("pop"); }, tick() { /* صامت */ }, clap() { /* صامت */ },
   note(i) { play("n" + (Math.max(0, i) % NOTES.length)); }
 };
 ["pointerdown", "touchstart", "click", "keydown"].forEach((ev) => addEventListener(ev, unlockAudio, { once: false, passive: true }));
-// لا نقرات صوتية عند الضغط على الأزرار (هدوء)
+// نقرات واجهة ناعمة وعصرية للأقسام والأيقونات والأزرار (ليست أزرار الإجابات)
+addEventListener("click", (e) => {
+  const t = e.target.closest && e.target.closest(".catcard, .gcard, .feat .gcard, #back, .pill.btn, .btn-big, .lg-go, .linkbtn, .prof, .chr.on");
+  if (!t || t.classList.contains("chr") || t.id === "mute") return;
+  play(t.matches("#back") ? "back" : t.matches(".catcard, .gcard") ? "nav" : "ui"); buzz(5);
+}, { passive: true, capture: true });
 /* اسم الطفل وعبارات التشجيع */
 let CHILD = "";
 const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const CHEERS_N = ["أحسنت يا {n}", "بارك الله فيك يا {n}", "ممتاز يا {n}", "رائع يا {n}", "شاطر يا {n}", "برافو يا {n}", "أحسنت وبارك الله فيك يا {n}"];
-const TRY_N = ["حاول مرة ثانية يا {n}", "لا بأس يا {n}، جرّب مرة أخرى", "أنت تستطيع يا {n}"];
-const cheer = () => { const has = AMAN && AMAN.praise[anorm(CHILD)]; return (has && Math.random() < 0.7 ? CHEERS_N[0] : CHEERS_N[rnd(CHEERS_N.length)]).replace("{n}", CHILD); };
-const tryAgain = () => TRY_N[rnd(TRY_N.length)].replace("{n}", CHILD);
-/* ---------- صوت وئام (تسجيلات حقيقية فقط، بلا صوت الجهاز) ---------- */
-let AMAN = null, AEL = null, AKEYS = [], AQ = [], AGEN = {};
-fetch("audio/manifest.json?v=12").then((r) => r.json()).then((m) => { AMAN = m; AGEN = m.gen || {}; AKEYS = Object.assign({}, m.w, AGEN); }).catch(() => { /* */ });
-const anorm = (t) => String(t).replace(/[ً-ٰٟـ]/g, "").replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه").replace(/[^ء-يa-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
-function segment(t) {
-  const tok = t.split(" "), out = []; let all = true;
-  for (let i = 0; i < tok.length;) {
-    let hit = null, n = 0;
-    for (let j = Math.min(tok.length, i + 5); j > i; j--) { const k = tok.slice(i, j).join(" "); if (AKEYS[k]) { hit = AKEYS[k]; n = j - i; break; } }
-    if (hit) { out.push(hit); i += n; } else { all = false; i++; }
-  }
-  return { out, all };
-}
-/* ---------- صوت حي لأي نص أو اسم (يُحفظ بعد أول مرة) ---------- */
-const LIVE_URL = "https://zcnwzpevehudhnsuljdy.supabase.co/functions/v1/wiam-tts";
-const LIVE = new Map(); let PEND = 0, SEQ = 0;
-const clean = (t) => String(t).replace(/[^؀-ۿ0-9 .!?,]/g, " ").replace(/\s+/g, " ").trim().replace(/[؟?!.،,\s]+$/, "").slice(0, 90);
-const SB = "https://zcnwzpevehudhnsuljdy.supabase.co/storage/v1/object/public/wiam/";
-let VSET = new Set();
-const VREADY = fetch(SB + "voice.json").then((r) => r.json()).then((a) => { VSET = new Set(a); }).catch(() => { /* */ });
-async function vpath(t) {
-  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("v2|" + t));
-  return [...new Uint8Array(b)].slice(0, 12).map((x) => x.toString(16).padStart(2, "0")).join("") + ".mp3";
-}
-function liveUrl(text) {
-  text = clean(text); if (!text) return Promise.resolve(null);
-  if (LIVE.has(text)) return LIVE.get(text);
-  const p = Promise.all([vpath(text), VREADY]).then(([h]) => {
-    if (VSET.has(h)) return SB + h;
-    return fetch(LIVE_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) })
-      .then((r) => (r.ok ? r.json() : null)).then((j) => (j && j.url) || null);
-  }).catch(() => null);
-  LIVE.set(text, p); p.then((u) => { if (!u) LIVE.delete(text); else warm(u); });
-  return p;
-}
-const WARMED = new Set();
-function warm(u) { if (WARMED.has(u) || WARMED.size > 60) return; WARMED.add(u); try { const a = new Audio(); a.preload = "auto"; a.src = u; } catch { /* */ } }
-function planFor(text) {
-  const raw = String(text).trim(); if (!AMAN) return { local: [] };
-  const t = anorm(raw);
-  const mm = raw.match(/(?:^|\s)يا\s+([^،.!؟?]+)/);
-  let fb = [];
-  if (mm) {
-    const nn = anorm(mm[1].trim()), pre = t.split(" يا ")[0];
-    if (/حاول|جرب|لا باس|تستطيع/.test(pre)) fb = [AGEN["حاول مره اخري"]];
-    else if (/^مرحبا/.test(pre)) fb = [AGEN["هيا نلعب"]];
-    else if (/احسنت|بارك الله|ممتاز|رائع|شاطر|برافو|جميل|بطل/.test(pre)) {
-      const pk = AMAN.praise[nn] || AMAN.praise[nn.split(" ")[0]];
-      fb = pk ? [pk] : [AGEN[/وبارك|بارك الله/.test(pre) ? "احسنت وبارك الله فيك" : /ممتاز/.test(pre) ? "ممتاز" : /رائع/.test(pre) ? "رائع" : "احسنت"]];
-    }
-    return { live: raw, fallback: fb.filter(Boolean) };
-  }
-  if (AKEYS[t]) return { live: raw, fallback: [AKEYS[t]] };
-  const sg = segment(t);
-  return { live: raw, fallback: sg.out };
-}
-function clipsFor(text) { const p = planFor(text); return p.fallback || p.local || []; }
-const clipFor = (t) => clipsFor(t)[0] || null;
-window.__hg = { clipFor, clipsFor: (t) => clipsFor(t), planFor, speak: (t) => speak(t) };
-function prefetch(text) { try { const p = planFor(text); if (p.live) liveUrl(p.live); } catch { /* */ } }
-function voiceIdle() {
-  return new Promise((res) => {
-    const t0 = Date.now();
-    (function chk() {
-      const busy = PEND || AQ.length || (AEL && !AEL.paused && !AEL.ended);
-      if (!busy || Date.now() - t0 > 8000) setTimeout(res, 150); else setTimeout(chk, 80);
-    })();
-  });
-}
-function stopVoice() { SEQ++; AQ = []; try { if (AEL) AEL.pause(); } catch { /* */ } }
-function nextClip() {
-  const fn = AQ.shift(); if (!fn) return;
-  try { AEL.src = /^https?:/.test(fn) ? fn : "audio/" + fn + "?v=12"; const p = AEL.play(); if (p && p.catch) p.catch(() => {}); } catch { /* */ }
-}
-function playQ(q) {
-  if (!q.length) return;
-  try {
-    if (!AEL) { AEL = new Audio(); AEL.preload = "auto"; AEL.addEventListener("ended", nextClip); }
-    AEL.pause(); AQ = q.slice(0, 6); nextClip();
-  } catch { /* */ }
-}
-function speak(text) {
-  if (muted) return;
-  const my = ++SEQ, p = planFor(text);
-  if (p.local) { playQ(p.local); return; }
-  try { if (AEL) AEL.pause(); } catch { /* */ } AQ = [];
-  PEND++;
-  const lim = new Promise((res) => setTimeout(() => res(null), 3500));
-  Promise.race([liveUrl(p.live), lim]).then((u) => { PEND--; if (my !== SEQ || muted) return; playQ(u ? [u] : (p.fallback || [])); });
-}
+// لا صوت ناطق: الألعاب صامتة وخفيفة (المؤثرات القصيرة فقط)
+const speak = () => {}, prefetch = () => {}, stopVoice = () => {}, cheer = () => "", tryAgain = () => "";
 
 /* ---------- الاحتفال ---------- */
 const cv = $("#confetti"), cx = cv.getContext("2d");
 let parts = [], raf = 0;
-const DPR = Math.min(devicePixelRatio || 1, 1.5);
+const DPR = 1;
 function sizeCv() { cv.width = innerWidth * DPR; cv.height = innerHeight * DPR; }
 addEventListener("resize", sizeCv); sizeCv();
 function confetti(x = innerWidth / 2, y = innerHeight / 3, n = 70) {
-  n = Math.min(n, 60); if (parts.length > 160) return;
+  n = Math.min(n, 24); if (parts.length > 60) return;
   for (let i = 0; i < n; i++) parts.push({ x, y, vx: (Math.random() - .5) * 12, vy: -Math.random() * 12 - 3, g: .35, s: 6 + Math.random() * 7, c: COLORS[rnd(COLORS.length)], r: Math.random() * 6, vr: (Math.random() - .5) * .4, life: 70 + rnd(40) });
   if (!raf) loop();
 }
@@ -216,7 +125,7 @@ function loop() {
 
 /* ---------- التقدّم ---------- */
 let prog = {};
-let dly = { last: "", streak: 0, done: 0 };
+let dly = { last: "", streak: 0, done: 0, sd: "", sk: 0, pd: "", pn: 0, pl: 0 };
 const PK = (k) => `${k}:${CHILD}`;
 const readJ = (k, d) => { try { return Object.assign(Array.isArray(d) ? [] : {}, JSON.parse(localStorage.getItem(k) || "null") || d); } catch { return d; } };
 const writeJ = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* */ } };
@@ -230,7 +139,7 @@ function loadProfile(name) {
   }
   try { localStorage.setItem("hg_cur", name); } catch { /* */ }
   prog = readJ(PK("hg_prog"), {});
-  dly = Object.assign({ last: "", streak: 0, done: 0 }, readJ(PK("hg_daily"), {}));
+  dly = Object.assign({ last: "", streak: 0, done: 0, sd: "", sk: 0, pd: "", pn: 0, pl: 0 }, readJ(PK("hg_daily"), {}));
 }
 const saveStars = (id, n) => { if ((prog[id] || 0) < n) { prog[id] = n; writeJ(PK("hg_prog"), prog); } };
 const saveDly = () => writeJ(PK("hg_daily"), dly);
@@ -238,6 +147,27 @@ const totalStars = () => Object.values(prog).reduce((a, b) => a + b, 0) + dly.do
 const CHARS = [["🐣", "كتكوت"], ["🐰", "أرنوب"], ["🐱", "قطوة"], ["🐶", "جرجور"], ["🐼", "باندا"], ["🦊", "ثعلوب"], ["🦁", "الأسد ليو"], ["🐯", "نمرود"], ["🐨", "كوالا"], ["🐸", "قفقف"], ["🐵", "قرقور"], ["🦄", "يونيكورن"], ["🐬", "دلفين"], ["🐙", "أخطوط"], ["🦋", "فراشة"], ["🐢", "سلحوف"], ["🦉", "بومة الحكمة"], ["🐘", "دمبو"], ["🦒", "زرافة"], ["🐧", "بطريق"], ["🦕", "ديناصور"], ["🐲", "التنين"], ["🚀", "الصاروخ"], ["👑", "تاج الأبطال"]];
 const thr = (k) => k * 3;
 const unlockedCount = () => CHARS.filter((_, k) => totalStars() >= thr(k)).length;
+const LEVELS = [["مبتدئ", 0], ["مستكشف", 6], ["متعلّم", 15], ["نشيط", 30], ["ماهر", 50], ["مبدع", 75], ["نجم", 105], ["بطل", 140], ["خبير", 180], ["أسطورة", 225]];
+const GOAL = 3;
+const levelOf = (t = totalStars()) => { let i = 0; LEVELS.forEach((l, k) => { if (t >= l[1]) i = k; }); return i; };
+function touchDay(counted = true) {
+  const t = todayKey();
+  if (dly.sd !== t) { dly.sk = dly.sd === yesterdayKey() ? dly.sk + 1 : 1; dly.sd = t; }
+  if (counted) { if (dly.pd !== t) { dly.pd = t; dly.pn = 0; } dly.pn++; dly.pl++; }
+  saveDly();
+}
+const goalNow = () => (dly.pd === todayKey() ? dly.pn : 0);
+const BADGES = [
+  ["first", "البداية", "أنهِ لعبتك الأولى", "play", () => dly.pl >= 1],
+  ["p10", "لاعب نشيط", "أنهِ 10 ألعاب", "grid", () => dly.pl >= 10],
+  ["s30", "جامع النجوم", "اجمع 30 نجمة", "star", () => totalStars() >= 30],
+  ["s100", "نجم ساطع", "اجمع 100 نجمة", "spark", () => totalStars() >= 100],
+  ["tri", "ثلاث نجوم", "احصل على 3 نجوم في لعبة", "trophy", () => Object.values(prog).some((v) => v >= 3)],
+  ["st3", "ثلاثة أيام", "العب 3 أيام متتالية", "flame", () => Math.max(dly.sk, dly.streak) >= 3],
+  ["day", "بطل التحدي", "أنجز التحدي اليومي", "cal", () => dly.done >= 1],
+  ["goal", "هدف اليوم", "أنهِ 3 ألعاب في يوم واحد", "target", () => goalNow() >= GOAL],
+  ["cat", "متقن قسم", "أكمل 3 نجوم في كل ألعاب قسم", "book", () => CATS.some(([k]) => GAMES.filter((g) => g.cat === k).every((g) => (prog[g.id] || 0) >= 3))]
+];
 function checkUnlock(before) {
   const after = totalStars(), nw = CHARS.map((c, k) => [c, k]).filter(([, k]) => thr(k) > before && thr(k) <= after);
   if (!nw.length) return;
@@ -245,15 +175,64 @@ function checkUnlock(before) {
   setTimeout(() => {
     sfx.unlock(); confetti(innerWidth / 2, innerHeight / 2, 100);
     const el = document.createElement("div"); el.className = "unlock";
-    el.innerHTML = `<div class="u-in"><div class="u-e">${c[0]}</div><b>فتحت شخصية جديدة!</b><span>${c[1]}</span><small>شاهدها في «حديقة الشخصيات»</small></div>`;
+    el.innerHTML = `<div class="u-in"><div class="u-e">${c[0]}</div><b>فتحت شخصية جديدة!</b><span>${c[1]}</span><small>شاهدها في «رحلتي»</small></div>`;
     document.body.appendChild(el); el.onclick = () => el.remove(); setTimeout(() => el.remove(), 4500);
   }, 900);
 }
 
 /* ---------- الألعاب ---------- */
 const CATS = [["abc", "🔤 الحروف والكلمات"], ["num", "🔢 الأرقام والحساب"], ["col", "🎨 الألوان والأشكال"], ["ani", "🐾 الحيوانات والمعاني"], ["rel", "🕌 القرآن والأدعية"], ["time", "📅 الأيام والأشهر"]];
+
+/* ---------- أيقونات SVG بسيطة (بديل الإيموجي في الواجهة) ---------- */
+const sv = (p, cls = "") => `<svg class="ics ${cls}" viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
+const tx = (t, fs = 12) => `<text x="12" y="${fs > 10 ? 16.5 : 15.5}" text-anchor="middle" font-size="${fs}">${t}</text>`;
+const IC = {
+  play: '<path d="M8 5.5v13l11-6.5z"/>',
+  target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".8"/>',
+  store: '<path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M4 9.5c0 1.4 1.1 2.5 2.5 2.5S9 10.9 9 9.5c0 1.4 1.1 2.5 3 2.5s3-1.1 3-2.5c0 1.4 1.1 2.5 2.5 2.5S20 10.9 20 9.5"/><path d="M5.5 12v8h13v-8M10 20v-4.5h4V20"/>',
+  sound: '<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>',
+  mute: '<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/>',
+  user: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.5-3.8 3.5-6 7-6s6.5 2.2 7 6"/>',
+  back: '<path d="M9 5l7 7-7 7"/>',
+  star: '<path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.2-4.1 5.8-.8z"/>',
+  flame: '<path d="M12 3c.6 3.200-1.600 4.600-3.100 6.600-1.300 1.800-1.400 3.600-.7 5.200.8 1.800 2.300 2.700 3.800 2.700s3-.9 3.800-2.700c1-2.200.1-4.500-1-6 0 1.500-1 2.500-2 2.500 1-2.500.5-5.500-.8-8.300z"/>',
+  trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1.5A3 3 0 0 0 8 10.5M16 6h3v1.5a3 3 0 0 1-3 3"/><path d="M12 13v4M8.5 20h7M10 17h4"/>',
+  cal: '<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  drop: '<path d="M12 3.5c3 3.5 6 6.5 6 10a6 6 0 0 1-12 0c0-3.5 3-6.5 6-10z"/>',
+  paw: '<circle cx="6.5" cy="10" r="1.7" fill="currentColor"/><circle cx="10" cy="6" r="1.7" fill="currentColor"/><circle cx="14" cy="6" r="1.7" fill="currentColor"/><circle cx="17.5" cy="10" r="1.7" fill="currentColor"/><path d="M12 11.5c-3 0-5 2.8-4.5 5 .4 1.8 2.300 2 4.500 1.500 2.200.5 4.100.3 4.500-1.500.5-2.200-1.500-5-4.500-5z"/>',
+  book: '<path d="M3 5.5c3-1 6-.8 9 1v13c-3-1.8-6-2-9-1z"/><path d="M21 5.5c-3-1-6-.8-9 1v13c3-1.8 6-2 9-1z"/>',
+  spark: '<path d="M12 3l1.800 5.200L19 10l-5.200 1.800L12 17l-1.800-5.200L5 10l5.200-1.800z"/>',
+  abc: tx("أب", 13), num: tx("123", 11.5), q: tx("؟", 19),
+  letters: tx("أ", 20), count: tx("123", 11.5), add: '<path d="M12 5v14M5 12h14"/>', sub: '<path d="M5 12h14"/>',
+  seq: tx("1 2 ؟", 9),
+  first: '<rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-4.500 4 3.500 3-2.500 4 3"/>',
+  build: '<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><path d="M16.5 13v7M13 16.5h7"/>',
+  match: '<circle cx="6" cy="8" r="2.500"/><circle cx="18" cy="16" r="2.500"/><path d="M8.500 8H13a3 3 0 0 1 3 3v2.500"/>',
+  pencil: '<path d="m4 20 1-4.500L16.500 4a2.100 2.100 0 0 1 3 3L8 18.500z"/><path d="m14.500 6 3 3"/>',
+  cards: '<rect x="3.500" y="6" width="10" height="14" rx="2.500"/><path d="m9 4.300 8.800 1.800a2 2 0 0 1 1.500 2.400L17.500 17"/>',
+  bubbles: '<circle cx="9" cy="14" r="5"/><circle cx="17" cy="7" r="3"/><circle cx="18" cy="17" r="2"/>',
+  cmp: '<path d="m9 6-5 6 5 6M15 6l5 6-5 6"/>',
+  bars: '<path d="M5 19v-5M10 19V9M15 19V5M20 19v-8"/>',
+  half: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/>',
+  shapes: '<path d="M8 4 3 13h10z"/><circle cx="16.5" cy="15.500" r="4.500"/>',
+  arrows: '<path d="M4 9h13l-3-3M20 15H7l3 3"/>',
+  refresh: '<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/>',
+  grid: '<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
+  clock: '<circle cx="12" cy="12" r="8.500"/><path d="M12 7.500V12l3 2"/>',
+  lock: '<rect x="5" y="10.500" width="14" height="9.500" rx="2.500"/><path d="M8 10.500V8a4 4 0 0 1 8 0v2.500"/>',
+  gift: '<rect x="4" y="9" width="16" height="11" rx="2"/><path d="M3 9h18M12 9v11M12 9c-2.500 0-4-1-4-2.500S10 4 12 9zm0 0c2.500 0 4-1 4-2.500S14 4 12 9z"/>',
+  wa: '<path d="M4 20l1.200-4A8 8 0 1 1 8 18.800z"/><path d="M9 9.500c.3 2.500 2.500 4.700 5.500 5.500l1.300-1.300-2-1-1 .7c-.8-.4-1.500-1.100-1.900-1.900l.7-1-1-2z"/>',
+  chat: '<path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4.500 3.500V17H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/>'
+};
+const GI = { letters: "letters", first: "first", build: "build", match: "match", missing: "pencil", memory: "cards", bubbles: "bubbles", count: "count", add: "add", sub: "sub", seq: "seq", cmp: "cmp", order: "bars", color: "drop", coloritem: "half", shape: "shapes", animal: "paw", sound: "sound", shadow: "user", opp: "arrows", surahorder: "book", ayahend: "spark", whichsurah: "q", duawhen: "chat", duaend: "moon", dayorder: "cal", daynext: "cal", monthorder: "moon", monthnext: "moon", gregorder: "cal" };
+const GCAT = { abc: "abc", num: "num", col: "drop", ani: "paw", rel: "moon", time: "cal" };
+const gIcon = (g) => sv(IC[GI[g.id] || GCAT[g.cat] || "star"]);
+const gcol = (g) => (String(g.c || "").match(/#[0-9A-Fa-f]{6}/) || ["#8B5CF6"])[0];
+const muteIc = () => sv(muted ? IC.mute : IC.sound);
+const starsSv = (n) => [1, 2, 3].map((i) => `<svg class="ics st-i${i <= n ? " on" : ""}" viewBox="0 0 24 24" aria-hidden="true">${IC.star}</svg>`).join("");
 const GAMES = [
-  { q: true, cat: "abc", id: "letters", ic: "🔤", t: "أين الحرف؟", s: "اسمع الحرف واختره", c: "linear-gradient(135deg,#8B5CF6,#6D3FE0)", run: gLetters },
+  { q: true, cat: "abc", id: "letters", ic: "🔤", t: "أين الحرف؟", s: "اختر الحرف المطلوب", c: "linear-gradient(135deg,#8B5CF6,#6D3FE0)", run: gLetters },
   { q: true, cat: "abc", id: "first", ic: "🍎", t: "الحرف الأول", s: "بماذا تبدأ الصورة؟", c: "linear-gradient(135deg,#F97316,#EA580C)", run: gFirst },
   { cat: "abc", id: "build", ic: "🧩", t: "رتّب الكلمة", s: "كوّن الكلمة من الحروف", c: "linear-gradient(135deg,#10B981,#059669)", run: gBuild },
   { cat: "abc", id: "match", ic: "🔗", t: "وصّل بخط", s: "وصّل الصورة بالكلمة", c: "linear-gradient(135deg,#EC4899,#DB2777)", run: gMatch },
@@ -288,14 +267,16 @@ let cleanup = null;
 function go(fn) { if (cleanup) { cleanup(); cleanup = null; } stopVoice(); fn(); window.scrollTo(0, 0); }
 
 const CATSTY = { abc: ["#8B5CF6", "#5B21B6", "ابدأ بالحروف والكلمات"], num: ["#10B981", "#047857", "أعداد وجمع وطرح"], col: ["#F59E0B", "#B45309", "ألوان وأشكال جميلة"], ani: ["#EC4899", "#9D174D", "حيوانات وأصوات ومعاني"], rel: ["#14B8A6", "#0F766E", "سور قصيرة وأدعية"], time: ["#3B82F6", "#1D4ED8", "أيام الأسبوع والأشهر"] };
-const catIcon = (name) => name.split(" ")[0], catTitle = (name) => name.split(" ").slice(1).join(" ");
-const muteBtn = () => { const m = $("#mute"); if (!m) return; m.onclick = () => { muted = !muted; try { localStorage.setItem("hg_mute", muted ? "1" : "0"); } catch { /* */ } m.textContent = muted ? "🔇" : "🔊"; }; };
+const CATEM = { "🔤": "abc", "🔢": "num", "🎨": "drop", "🐾": "paw", "🕌": "moon", "📅": "cal" };
+const catIcon = (name) => sv(IC[CATEM[name.split(" ")[0]] || "star"]), catTitle = (name) => name.split(" ").slice(1).join(" ");
+const muteBtn = () => { const m = $("#mute"); if (!m) return; m.onclick = () => { muted = !muted; try { localStorage.setItem("hg_mute", muted ? "1" : "0"); } catch { /* */ } m.innerHTML = muteIc(); }; };
 
+const MASCOT = `<svg class="mas" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9B72FF"/><stop offset="1" stop-color="#6D3FE0"/></linearGradient></defs><path d="M32 13V7" stroke="#6D3FE0" stroke-width="3" stroke-linecap="round"/><path d="m32 1 2.2 4.4 4.8.7-3.5 3.4.8 4.8L32 11.9l-4.3 2.4.8-4.8L25 6.1l4.8-.7z" fill="#FFC93C" stroke="#F2A100" stroke-width="1.2" stroke-linejoin="round"/><circle cx="32" cy="38" r="24" fill="url(#mg)"/><ellipse cx="17" cy="43" rx="4.5" ry="3" fill="#FF9EC4" opacity=".75"/><ellipse cx="47" cy="43" rx="4.5" ry="3" fill="#FF9EC4" opacity=".75"/><g class="eyes"><circle cx="23.5" cy="34" r="6.4" fill="#fff"/><circle cx="40.5" cy="34" r="6.4" fill="#fff"/><circle cx="24.6" cy="35" r="3.4" fill="#2B1B4F"/><circle cx="41.6" cy="35" r="3.4" fill="#2B1B4F"/><circle cx="25.8" cy="33.6" r="1.1" fill="#fff"/><circle cx="42.8" cy="33.6" r="1.1" fill="#fff"/></g><path d="M25 45q7 8 14 0" fill="none" stroke="#2B1B4F" stroke-width="3" stroke-linecap="round"/></svg>`;
 function login() {
   const ps = profiles();
-  app.innerHTML = `<div class="top"><a class="pill" href="../">🏪 المتجر</a><button class="pill btn" id="mute" aria-label="الصوت">${muted ? "🔇" : "🔊"}</button></div>
+  app.innerHTML = `<div class="top"><a class="pill" href="../">${sv(IC.store)} المتجر</a><button class="pill btn" id="mute" aria-label="الصوت">${muteIc()}</button></div>
     <main class="lg">
-      <div class="lg-badge"><img src="../images/logo.png" alt="" width="44" height="44"></div>
+      <div class="lg-badge lg-mas">${MASCOT}</div>
       <h1 class="lg-title">ألعاب زاد التعليمية</h1>
       <p class="lg-sub">تعلّم الحروف والأرقام واللعب بطريقة ممتعة</p>
       <form class="lg-card" id="lf">
@@ -304,7 +285,7 @@ function login() {
         <button class="lg-go" type="submit">ابدأ اللعب</button>
       </form>
       ${ps.length ? `<div class="lg-prof"><span>أو اختر اسمك</span><div class="plist">${ps.map((p) => `<button class="pchip" data-p="${esc(p)}">${esc(p)}</button>`).join("")}</div></div>` : ""}
-      <ul class="lg-feat" aria-label="محتوى الألعاب"><li><b>🔤</b>حروف</li><li><b>🔢</b>أرقام</li><li><b>🎨</b>ألوان</li><li><b>🐾</b>حيوانات</li></ul>
+      <ul class="lg-feat" aria-label="محتوى الألعاب"><li style="--c:#8B5CF6"><b>${sv(IC.abc)}</b>حروف</li><li style="--c:#10B981"><b>${sv(IC.num)}</b>أرقام</li><li style="--c:#F59E0B"><b>${sv(IC.drop)}</b>ألوان</li><li style="--c:#EC4899"><b>${sv(IC.paw)}</b>حيوانات</li></ul>
     </main>`;
   muteBtn();
   const enter = (name) => { loadProfile(name); sfx.win(); confetti(innerWidth / 2, innerHeight / 3, 60); go(home); setTimeout(() => speak(`مرحباً يا ${name}، هيا نلعب`), 500); };
@@ -317,16 +298,15 @@ function home() {
   const cnt = (k) => GAMES.filter((g) => g.cat === k);
   const doneToday = dly.last === todayKey();
   app.innerHTML = `
-    <div class="top"><button class="pill btn" id="who">${esc(CHILD)} 👤</button><button class="pill btn" id="mute" aria-label="الصوت">${muted ? "🔇" : "🔊"}</button></div>
-    <header class="hm-head"><h1>مرحباً، ${esc(CHILD)} 👋</h1><p>اختر قسماً وابدأ اللعب</p>
-      <div class="hm-stats"><span>⭐ <b>${totalStars()}</b> نجمة</span><span>🔥 <b>${streakNow()}</b> ${streakNow() === 1 ? "يوم" : "أيام"}</span></div></header>
+    <div class="top"><button class="pill btn" id="who">${sv(IC.user)} ${esc(CHILD)}</button><button class="pill btn" id="mute" aria-label="الصوت">${muteIc()}</button></div>
+    <header class="hm-head"><span class="hm-mas">${MASCOT}</span><div class="hm-t"><h1>مرحباً، ${esc(CHILD)}</h1><p>ماذا نلعب اليوم؟</p>
+      <div class="hm-stats"><span class="s1">${sv(IC.star)} <b>${totalStars()}</b> نجمة</span><span class="s2">${sv(IC.flame)} <b>${streakNow()}</b> ${streakNow() === 1 ? "يوم" : "أيام"}</span></div></div></header>
     <div class="feat">
-      <button class="gcard daily" data-g="daily" style="--c:#F97316"><span class="ic">${calIcon(true)}</span><span class="gt"><b>التحدي اليومي</b><small>${doneToday ? "أنجزته اليوم ✅" : "10 أسئلة + 3 نجوم"}</small></span></button>
-      <button class="gcard garden" data-g="garden" style="--c:#D97706"><span class="ic">🏆</span><span class="gt"><b>حديقة الشخصيات</b><small>${unlockedCount()} من ${CHARS.length} شخصية</small></span></button>
+      <button class="gcard daily" data-g="daily" style="--c:#F97316"><span class="ic">${sv(IC.cal)}</span><span class="gt"><b>التحدي اليومي</b><small>${doneToday ? "أنجزته اليوم" : "10 أسئلة + 3 نجوم"}</small></span></button>
+      <button class="gcard garden" data-g="garden" style="--c:#D97706"><span class="ic">${sv(IC.trophy)}</span><span class="gt"><b>رحلتي</b><small>المستوى ${levelOf() + 1} · ${LEVELS[levelOf()][0]}</small></span></button>
     </div>
     <h2 class="cat">الأقسام</h2>
-    <div class="cats">${CATS.map(([k, name]) => { const gs = cnt(k), got = gs.reduce((a, g) => a + (prog[g.id] || 0), 0), all = gs.length * 3, st = CATSTY[k]; return `<button class="catcard" data-c="${k}" style="--c:${st[0]}"><span class="ci">${catIcon(name)}</span><span class="ct"><b>${catTitle(name)}</b><small>${st[2]}</small><span class="cbar"><i style="width:${Math.round(got / all * 100)}%"></i></span></span><span class="cn">${gs.length}<small>ألعاب</small></span></button>`; }).join("")}</div>
-    <a class="cta" href="../#stories">📚 أعجبتك الألعاب؟ شاهد <b>قصصنا باسم طفلك</b></a>`;
+    <div class="cats">${CATS.map(([k, name]) => { const gs = cnt(k), got = gs.reduce((a, g) => a + (prog[g.id] || 0), 0), all = gs.length * 3, st = CATSTY[k]; return `<button class="catcard" data-c="${k}" style="--c:${st[0]}"><span class="ci">${catIcon(name)}</span><span class="ct"><b>${catTitle(name)}</b><small>${st[2]}</small><span class="cbar"><i style="width:${Math.round(got / all * 100)}%"></i></span></span><span class="cn">${gs.length}<small>ألعاب</small></span></button>`; }).join("")}</div>`;
   muteBtn();
   $("#who").onclick = () => go(login);
   app.querySelectorAll(".catcard").forEach((b) => b.onclick = () => go(() => catView(b.dataset.c)));
@@ -335,9 +315,9 @@ function home() {
 function catView(k) {
   const [, name] = CATS.find((c) => c[0] === k), st = CATSTY[k], gs = GAMES.filter((g) => g.cat === k);
   app.innerHTML = `
-    <div class="top"><button class="pill btn" id="back">→ الأقسام</button><button class="pill btn" id="mute" aria-label="الصوت">${muted ? "🔇" : "🔊"}</button></div>
+    <div class="top"><button class="pill btn" id="back">${sv(IC.back)} الأقسام</button><button class="pill btn" id="mute" aria-label="الصوت">${muteIc()}</button></div>
     <div class="cathead" style="--c:${st[0]}"><span>${catIcon(name)}</span><div><h1>${catTitle(name)}</h1><p>${st[2]}</p></div></div>
-    <div class="grid">${gs.map((g) => `<button class="gcard" data-g="${g.id}" style="--c:${st[0]}"><span class="ic">${g.ic}</span><b>${g.t}</b><small>${g.s}</small><span class="st">${stars(prog[g.id] || 0)}</span></button>`).join("")}</div>`;
+    <div class="grid">${gs.map((g) => `<button class="gcard" data-g="${g.id}" style="--c:${gcol(g)}"><span class="ic">${gIcon(g)}</span><b>${g.t}</b><small>${g.s}</small><span class="st">${starsSv(prog[g.id] || 0)}</span></button>`).join("")}</div>`;
   muteBtn();
   $("#back").onclick = () => go(home);
   app.querySelectorAll(".gcard").forEach((b) => b.onclick = () => { const g = GAMES.find((x) => x.id === b.dataset.g); go(() => frame(g)); });
@@ -350,34 +330,37 @@ let cur = null;
 function frame(g) {
   cur = g; track("start", g.id);
   app.innerHTML = `
-    <div class="bar"><button class="pill btn" id="back">→ رجوع</button><div class="title">${g.ic} ${g.t}</div><button class="pill btn" id="mute">${muted ? "🔇" : "🔊"}</button></div>
+    <div class="bar"><button class="pill btn" id="back">${sv(IC.back)} رجوع</button><div class="title">${g.t}</div><button class="pill btn" id="mute">${muteIc()}</button></div>
     <div class="dots" id="dots"></div>
     <div class="stage" id="stage"></div>`;
   $("#back").onclick = () => go(backFn());
-  $("#mute").onclick = () => { muted = !muted; try { localStorage.setItem("hg_mute", muted ? "1" : "0"); } catch { /* */ } $("#mute").textContent = muted ? "🔇" : "🔊"; };
+  $("#mute").onclick = () => { muted = !muted; try { localStorage.setItem("hg_mute", muted ? "1" : "0"); } catch { /* */ } $("#mute").innerHTML = muteIc(); };
   g.run($("#stage"));
 }
 function setDots(n, done, curI) {
-  $("#dots").innerHTML = Array.from({ length: n }, (_, i) => `<i class="${i < done ? "on" : ""}${i === curI ? " cur" : ""}"></i>`).join("");
+  const el = $("#dots"); if (!el) return;
+  if (!n) { el.innerHTML = ""; return; }
+  const pc = Math.round(Math.min(1, Math.max(0, (curI >= 0 ? curI : done) / n)) * 100);
+  el.innerHTML = `<div class="pbar"><i style="width:${Math.max(pc, 4)}%"></i></div><span class="pcnt">${Math.min(n, (curI >= 0 ? curI : done) + 1)}/${n}</span>`;
 }
 const SID = (() => { try { let v = localStorage.getItem("hg_sid"); if (!v) { v = Math.random().toString(36).slice(2, 12) + Date.now().toString(36).slice(-4); localStorage.setItem("hg_sid", v); } return v; } catch { return "anon" + Math.random().toString(36).slice(2, 8); } })();
 function track(ev, game, stars) { try { fetch("https://zcnwzpevehudhnsuljdy.supabase.co/functions/v1/game-log", { method: "POST", headers: { "content-type": "text/plain" }, body: JSON.stringify({ sid: SID, ev, game: game || "", stars }), keepalive: true }).catch(() => {}); } catch { /* */ } }
 track("open");
-const WA_TXT = () => encodeURIComponent(`السلام عليكم، لعب طفلي ${CHILD} في ألعاب زاد التعليمية وأرغب بقصة باسمه`);
 function finish(stage, score, total, msg = "") {
   const ratio = score / total;
   const st = ratio >= 0.9 ? 3 : ratio >= 0.65 ? 2 : ratio >= 0.35 ? 1 : 0;
   const before = totalStars();
-  saveStars(cur.id, st); checkUnlock(before); track("finish", cur.id, st);
-  setTimeout(() => speak(st >= 2 ? `أحسنت وبارك الله فيك يا ${CHILD}` : st === 1 ? `جميل يا ${CHILD}، حاول مرة ثانية` : `لا بأس يا ${CHILD}، جرّب مرة أخرى`), 1200);
+  saveStars(cur.id, st); touchDay(); checkUnlock(before); track("finish", cur.id, st);
+  const gn = goalNow(), goalHit = gn === GOAL;
   sfx.win(); setTimeout(() => sfx.clap(), 700); confetti(innerWidth / 2, innerHeight / 3, 120); setTimeout(() => confetti(innerWidth * .2, innerHeight / 2, 60), 250); setTimeout(() => confetti(innerWidth * .8, innerHeight / 2, 60), 450);
-  stage.innerHTML = `<div class="win"><div class="trophy">${st === 3 ? "🏆" : st === 2 ? "🥈" : st === 1 ? "🥉" : "💪"}</div>
+  stage.innerHTML = `<div class="win"><div class="trophy t${st}">${sv(st === 0 ? IC.spark : IC.trophy)}</div>
     <h2>${st === 3 ? "ممتاز! أنت بطل!" : st === 2 ? "أحسنت!" : st === 1 ? "جميل! حاول مرة ثانية" : "لا بأس، جرّب مرة أخرى"}</h2>
-    <div class="stars">${[1, 2, 3].map((i) => `<span class="${i <= st ? "" : "off"}">⭐</span>`).join("")}</div>
+    <div class="stars">${starsSv(st)}</div>
     ${msg ? `<p class="prompt">${msg}</p>` : `<p class="prompt">${score} من ${total}</p>`}
-    <div class="row"><button class="btn-big" id="again">🔄 العب مرة أخرى</button><button class="btn-big alt" id="menu">🏠 الألعاب</button></div>
-    <a class="cta-wa" id="wa" target="_blank" rel="noopener" href="https://wa.me/96877336242?text=${WA_TXT()}">📖 اصنع قصة باسم ${esc(CHILD)}</a></div>`;
-  $("#wa").onclick = () => track("cta", cur.id);
+    <div class="goalline ${goalHit ? "hit" : ""}">${sv(IC.target)} <span>${goalHit ? "حققت هدف اليوم!" : gn > GOAL ? "هدف اليوم محقق" : `هدف اليوم ${gn} من ${GOAL}`}</span><i class="gdots">${[1, 2, 3].map((k) => `<u class="${k <= gn ? "on" : ""}"></u>`).join("")}</i></div>
+    <div class="row"><button class="btn-big" id="again">${sv(IC.refresh)} العب مرة أخرى</button><button class="btn-big alt" id="menu">${sv(IC.grid)} الألعاب</button></div>
+    <button class="linkbtn" id="jr">${sv(IC.trophy)} رحلتي</button></div>`;
+  $("#jr").onclick = () => go(garden);
   $("#again").onclick = () => go(() => frame(cur));
   $("#menu").onclick = () => go(backFn());
 }
@@ -393,8 +376,6 @@ function quiz(stage, rounds, make, opt = {}) {
     const q = make(i);
     let firstTry = true;
     stage.innerHTML = `${q.html}<div class="opts ${q.one ? "one" : q.answers.length === 3 ? "three" : ""}" id="opts">${q.answers.map((a, k) => `<button class="opt ${a.txt ? "txt" : ""} ${q.one ? "long" : ""}" data-k="${k}">${a.label}</button>`).join("")}</div>`;
-    const say = $("#say"); if (say) say.onclick = () => speak(q.say);
-    if (q.say) setTimeout(() => speak(q.say), 250);
     if (q.after) prefetch(q.after);
     if (q.onload) q.onload();
     lock = false;
@@ -404,10 +385,10 @@ function quiz(stage, rounds, make, opt = {}) {
       if (a.ok) {
         lock = true; b.classList.add("ok"); sfx.ok();
         const sh = stage.querySelector(".shadow"); if (sh) { sh.classList.remove("shadow"); setTimeout(() => sfx.whoosh(), 120); }
-        const r = b.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top, 28);
-        if (firstTry) { score++; setTimeout(() => sfx.star(), 260); }
+        requestAnimationFrame(() => { const r = b.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top, 16); });
+        if (firstTry) score++;
         if (q.after) speak(q.after); else if (Math.random() < 0.6) speak(cheer());
-        await wait(q.after ? 1300 : 900); i++; next();
+        await wait(q.after ? 1100 : 700); i++; next();
       } else { b.classList.add("no"); sfx.bad(); if (firstTry && Math.random() < 0.35) speak(tryAgain()); firstTry = false; setTimeout(() => b.classList.remove("no"), 450); }
     });
   }
@@ -424,7 +405,7 @@ function gLetters(stage) {
   const seq = pick(LETTERS.map((x) => x[0]), 10);
   quiz(stage, 10, (i) => {
     const L = seq[i];
-    return { say: `أين حرف ${LN[L]}؟`, html: `<div class="prompt">أين حرف <b style="color:var(--pri)">${LN[L]}</b>؟</div><button class="say" id="say">🔊 اسمع</button>`, answers: letterOpts(L, 4) };
+    return { say: `أين حرف ${LN[L]}؟`, html: `<div class="prompt">أين حرف <b style="color:var(--pri)">${LN[L]}</b>؟</div>`, answers: letterOpts(L, 4) };
   });
 }
 /* 2) الحرف الأول */
@@ -432,7 +413,7 @@ function gFirst(stage) {
   const seq = pick(WORDS, 10);
   quiz(stage, 10, (i) => {
     const w = seq[i], L = first(w);
-    return { say: `${w[1]}. بأي حرف تبدأ ${w[1]}؟`, after: `${w[1]} تبدأ بحرف ${LN[L]}`, html: `<div class="emo">${w[0]}</div><div class="prompt">بأي حرف تبدأ؟</div><button class="say" id="say">🔊 اسمع</button>`, answers: letterOpts(L, 4) };
+    return { say: `${w[1]}. بأي حرف تبدأ ${w[1]}؟`, after: `${w[1]} تبدأ بحرف ${LN[L]}`, html: `<div class="emo">${w[0]}</div><div class="prompt">بأي حرف تبدأ؟</div>`, answers: letterOpts(L, 4) };
   });
 }
 /* 3) الحرف الناقص */
@@ -465,10 +446,9 @@ function gBuild(stage) {
     setDots(seq.length, i, i);
     const w = seq[i], word = w[1], chars = [...word];
     let filled = 0, mistakes = 0;
-    stage.innerHTML = `<div class="emo">${w[0]}</div><button class="say" id="say">🔊 اسمع</button>
+    stage.innerHTML = `<div class="emo">${w[0]}</div>
       <div class="slots" id="slots">${chars.map(() => `<div class="slot"></div>`).join("")}</div>
       <div class="tiles" id="tiles">${shuffle(chars.map((c, k) => ({ c, k }))).map((t) => `<button class="tile" data-c="${t.c}">${t.c}</button>`).join("")}</div>`;
-    $("#say").onclick = () => speak(word);
     setTimeout(() => speak(word), 250);
     stage.querySelectorAll(".tile").forEach((t) => t.onclick = async () => {
       if (t.classList.contains("used")) return;
@@ -561,7 +541,7 @@ function gMemory(stage) {
   let opened = [], moves = 0, matched = 0, lock = false;
   setDots(0, 0, -1);
   stage.innerHTML = `<div class="prompt">اعثر على الصورة وكلمتها</div><div class="hud"><span>الحركات: <b id="mv">0</b></span><span>الأزواج: <b id="pr">0</b>/6</span></div>
-    <div class="mem">${cards.map((c, i) => `<button class="card" data-i="${i}"><div class="in"><div class="b">❔</div><div class="f ${c.w ? "w" : ""}">${c.f}</div></div></button>`).join("")}</div>`;
+    <div class="mem">${cards.map((c, i) => `<button class="card" data-i="${i}"><div class="in"><div class="b">؟</div><div class="f ${c.w ? "w" : ""}">${c.f}</div></div></button>`).join("")}</div>`;
   stage.querySelectorAll(".card").forEach((el) => el.onclick = async () => {
     if (lock || el.classList.contains("flip")) return;
     el.classList.add("flip"); sfx.flip(); opened.push(el);
@@ -577,7 +557,7 @@ function gMemory(stage) {
 /* 8) فقاعات الحروف */
 function gBubbles(stage) {
   let target = LETTERS[rnd(28)][0], score = 0, left = 45, popped = 0, alive = true;
-  stage.innerHTML = `<div class="hud"><span>⏱️ <b id="tm">45</b></span><span>الهدف: <span class="target" id="tg">${target}</span></span><span>⭐ <b id="sc">0</b></span></div>
+  stage.innerHTML = `<div class="hud"><span class="h1">${sv(IC.clock)} <b id="tm">45</b></span><span>الهدف: <span class="target" id="tg">${target}</span></span><span class="h2">${sv(IC.star)} <b id="sc">0</b></span></div>
     <div class="prompt">فرقع الفقاعات التي عليها هذا الحرف</div><div class="bub-area" id="area"></div>`;
   setDots(0, 0, -1);
   const area = $("#area");
@@ -722,7 +702,7 @@ const GM_AR = ["يناير", "فبراير", "مارس", "أبريل", "مايو
 const calIcon = (big) => { const d = new Date(); return `<span class="cal${big ? " big" : ""}"><i>${GM_AR[d.getMonth()]}</i><b>${d.getDate()}</b></span>`; };
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 const yesterdayKey = () => { const d = new Date(Date.now() - 86400000); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
-const streakNow = () => (dly.last === todayKey() || dly.last === yesterdayKey()) ? dly.streak : 0;
+const streakNow = () => (dly.sd === todayKey() || dly.sd === yesterdayKey()) ? dly.sk : 0;
 function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const hashStr = (s2) => { let h = 2166136261; for (const c of s2) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
 const DAILYGAME = { id: "daily", get ic() { return calIcon(); }, t: "التحدي اليومي", run: dailyRun };
@@ -735,7 +715,7 @@ function dailyRun(stage) {
     if (idx >= list.length) { DAILY.active = false; return dailyFinish(stage, total); }
     DAILY.offset = idx * 2;
     DAILY.cb = (sc) => { total += sc; idx++; sfx.whoosh(); runNext(); };
-    const t = $(".bar .title"); if (t) t.innerHTML = `${calIcon()} ${list[idx].ic} ${list[idx].t}`;
+    const t = $(".bar .title"); if (t) t.innerHTML = `التحدي اليومي · ${list[idx].t}`;
     list[idx].run(stage);
   };
   cleanup = () => { DAILY.active = false; };
@@ -745,30 +725,52 @@ function dailyFinish(stage, score) {
   const ratio = score / 10, st = ratio >= 0.9 ? 3 : ratio >= 0.65 ? 2 : ratio >= 0.35 ? 1 : 0;
   const before = totalStars();
   let bonus = false;
+  touchDay(false);
   if (dly.last !== todayKey() && score >= 5) { dly.streak = dly.last === yesterdayKey() ? dly.streak + 1 : 1; dly.last = todayKey(); dly.done++; saveDly(); bonus = true; }
   checkUnlock(before);
   sfx.win(); setTimeout(() => sfx.clap(), 700); confetti(innerWidth / 2, innerHeight / 3, 120); setTimeout(() => confetti(innerWidth * .2, innerHeight / 2, 60), 250); setTimeout(() => confetti(innerWidth * .8, innerHeight / 2, 60), 450);
-  const t = $(".bar .title"); if (t) t.innerHTML = `${calIcon()} التحدي اليومي`;
+  const t = $(".bar .title"); if (t) t.innerHTML = `التحدي اليومي`;
   setDots(0, 0, -1);
-  stage.innerHTML = `<div class="win"><div class="trophy">${st === 3 ? "🏆" : st === 2 ? "🥈" : st === 1 ? "🥉" : "💪"}</div>
+  stage.innerHTML = `<div class="win"><div class="trophy t${st}">${sv(st === 0 ? IC.spark : IC.trophy)}</div>
     <h2>${score >= 5 ? `أحسنت يا ${esc(CHILD)}! أنجزت تحدي اليوم` : `حاول مرة ثانية يا ${esc(CHILD)}`}</h2>
-    <div class="stars">${[1, 2, 3].map((i) => `<span class="${i <= st ? "" : "off"}">⭐</span>`).join("")}</div>
+    <div class="stars">${starsSv(st)}</div>
     <p class="prompt">${score} من 10</p>
-    ${bonus ? `<p class="prompt bonus">🎁 ربحت 3 نجوم هدية · 🔥 ${dly.streak} ${dly.streak === 1 ? "يوم" : "أيام"} متتالية</p>` : score >= 5 ? `<p class="prompt">✅ سبق وربحت هدية اليوم</p>` : `<p class="prompt">أجب عن 5 أسئلة صحيحة على الأقل لتربح الهدية</p>`}
-    <div class="row"><button class="btn-big alt" id="garden">🏆 حديقتي</button><button class="btn-big" id="menu">🏠 الألعاب</button></div></div>`;
-  setTimeout(() => speak(score >= 5 ? `أحسنت وبارك الله فيك يا ${CHILD}` : `حاول مرة ثانية يا ${CHILD}`), 1200);
+    ${bonus ? `<p class="prompt bonus">ربحت 3 نجوم هدية · ${streakNow()} ${streakNow() === 1 ? "يوم" : "أيام"} متتالية</p>` : score >= 5 ? `<p class="prompt">سبق وربحت هدية اليوم</p>` : `<p class="prompt">أجب عن 5 أسئلة صحيحة على الأقل لتربح الهدية</p>`}
+    <div class="row"><button class="btn-big alt" id="garden">${sv(IC.trophy)} رحلتي</button><button class="btn-big" id="menu">${sv(IC.grid)} الألعاب</button></div></div>`;
   $("#garden").onclick = () => go(garden); $("#menu").onclick = () => go(home);
 }
 
-/* ===== حديقة الشخصيات ===== */
+/* ===== رحلتي ===== */
 function garden() {
-  const tot = totalStars(), nextK = CHARS.findIndex((_, k) => tot < thr(k)), uc = unlockedCount();
-  app.innerHTML = `<div class="top"><button class="pill btn" id="back">→ رجوع</button><span class="pill">⭐ ${tot}</span></div>
-    <div class="hero"><div class="mascot">🏆</div><h1>حديقة الشخصيات</h1><p>${uc} من ${CHARS.length} شخصية مفتوحة</p></div>
-    ${nextK >= 0 ? `<div class="gprog"><div class="gbar"><i style="width:${Math.min(100, Math.round(((tot - thr(nextK - 1 < 0 ? 0 : nextK - 1)) / (thr(nextK) - thr(nextK - 1 < 0 ? 0 : nextK - 1))) * 100))}%"></i></div><small>تحتاج ${thr(nextK) - tot} ⭐ لتفتح <b>${CHARS[nextK][0]}</b></small></div>` : `<p class="prompt">🎉 فتحت كل الشخصيات! أنت بطل حقيقي</p>`}
-    <div class="chars">${CHARS.map((c, k) => tot >= thr(k) ? `<button class="chr on" data-k="${k}"><span>${c[0]}</span><b>${c[1]}</b></button>` : `<div class="chr off"><span>❓</span><b>🔒 ${thr(k)} ⭐</b></div>`).join("")}</div>`;
+  const tot = totalStars(), lv = levelOf(), cur0 = LEVELS[lv], nxt = LEVELS[lv + 1];
+  const pct = nxt ? Math.round((tot - cur0[1]) / (nxt[1] - cur0[1]) * 100) : 100;
+  const R = 44, C = 2 * Math.PI * R;
+  const gn = Math.min(goalNow(), GOAL);
+  const played = GAMES.filter((g) => prog[g.id]);
+  const sug = GAMES.filter((g) => (prog[g.id] || 0) < 3).sort((a, b) => (prog[a.id] || 0) - (prog[b.id] || 0) || 0)[0] || pick(GAMES, 1)[0];
+  const sugNew = sug && !prog[sug.id];
+  const nextK = CHARS.findIndex((_, k) => tot < thr(k)), uc = unlockedCount();
+  const bd = BADGES.map((b) => ({ b, on: b[4]() })), got = bd.filter((x) => x.on).length;
+  app.innerHTML = `<div class="top"><button class="pill btn" id="back">${sv(IC.back)} رجوع</button><span class="pill">${sv(IC.star)} ${tot}</span></div>
+    <section class="jr-hero">
+      <div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="${R}" class="bg"/><circle cx="50" cy="50" r="${R}" class="fg" style="stroke-dasharray:${C.toFixed(1)};stroke-dashoffset:${(C * (1 - pct / 100)).toFixed(1)}"/></svg><b>${lv + 1}</b><small>المستوى</small></div>
+      <div class="jr-t"><h1>${cur0[0]}</h1><p>${nxt ? `باقي ${nxt[1] - tot} نجمة للمستوى «${nxt[0]}»` : "وصلت لأعلى مستوى!"}</p></div>
+    </section>
+    <div class="jr-row">
+      <div class="jr-card"><span class="k">${sv(IC.target)} هدف اليوم</span><b>${gn} من ${GOAL}</b><i class="gdots">${[1, 2, 3].map((k) => `<u class="${k <= gn ? "on" : ""}"></u>`).join("")}</i></div>
+      <div class="jr-card"><span class="k">${sv(IC.flame)} أيام متتالية</span><b>${streakNow()}</b><small>${streakNow() ? "استمر ولا تتوقف" : "العب اليوم لتبدأ"}</small></div>
+    </div>
+    ${sug ? `<button class="jr-next" id="sug" style="--c:${gcol(sug)}"><span class="ic">${gIcon(sug)}</span><span class="gt"><small>${sugNew ? "جرّب لعبة جديدة" : "اقتراح لك"}</small><b>${sug.t}</b></span><span class="go">${sv(IC.play)}</span></button>` : ""}
+    <h2 class="cat">تقدّمك في الأقسام</h2>
+    <div class="jr-cats">${CATS.map(([k, name]) => { const gs = GAMES.filter((g) => g.cat === k), s2 = gs.reduce((a, g) => a + (prog[g.id] || 0), 0), all = gs.length * 3, st = CATSTY[k]; return `<div class="jr-cat" style="--c:${st[0]}"><span class="ci">${catIcon(name)}</span><b>${catTitle(name)}</b><span class="cbar"><i style="width:${Math.round(s2 / all * 100)}%"></i></span><small>${s2}/${all}</small></div>`; }).join("")}</div>
+    <h2 class="cat">الأوسمة <small>${got} من ${BADGES.length}</small></h2>
+    <div class="badges">${bd.map(({ b, on }) => `<div class="bdg ${on ? "on" : ""}"><span class="bi">${sv(on ? IC[b[3]] || IC.star : IC.lock)}</span><b>${b[1]}</b><small>${b[2]}</small></div>`).join("")}</div>
+    <h2 class="cat">شخصياتي <small>${uc} من ${CHARS.length}</small></h2>
+    ${nextK >= 0 ? `<p class="jr-hint">${CHARS[nextK][0]} تُفتح عند ${thr(nextK)} نجمة · باقي ${thr(nextK) - tot}</p>` : ""}
+    <div class="chars">${CHARS.map((c, k) => tot >= thr(k) ? `<button class="chr on" data-k="${k}"><span>${c[0]}</span><b>${c[1]}</b></button>` : `<div class="chr off ${k === nextK ? "nx" : ""}"><span>${k === nextK ? c[0] : sv(IC.lock)}</span><b>${thr(k)} نجمة</b></div>`).join("")}</div>`;
   $("#back").onclick = () => go(home);
-  app.querySelectorAll(".chr.on").forEach((b) => b.onclick = () => { const c = CHARS[+b.dataset.k]; sfx.note(+b.dataset.k); b.classList.remove("jump"); void b.offsetWidth; b.classList.add("jump"); speak(c[1]); confetti(b.getBoundingClientRect().left + 40, b.getBoundingClientRect().top, 16); });
+  const sb = $("#sug"); if (sb) sb.onclick = () => go(() => frame(sug));
+  app.querySelectorAll(".chr.on").forEach((b) => b.onclick = () => { sfx.note(+b.dataset.k); confetti(b.getBoundingClientRect().left + 40, b.getBoundingClientRect().top, 12); });
 }
 
 /* ===== لعبة الترتيب العامة ===== */

@@ -8,10 +8,8 @@
 <link rel="icon" href="{{BASE}}images/icons/favicon-64.png" type="image/png">
 <link rel="apple-touch-icon" href="{{BASE}}images/icons/apple-touch-icon.png">
 <link rel="preconnect" href="{{API_ORIGIN}}" crossorigin>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link id="fontLink" rel="stylesheet" href="{{FONT_HREF}}" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="{{FONT_HREF}}"></noscript>
+<link rel="preload" href="{{BASE}}fonts/cairo-regular.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="{{BASE}}fonts/cairo-bold.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="{{BASE}}css/store.css?v={{V_CSS}}">
 <style id="themeVars">{{THEME_CSS}}</style>
 <script>window.ATHR_BASE = "{{BASE}}";

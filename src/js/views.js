@@ -634,7 +634,7 @@
         if (pays.some((p) => p.type === "bank")) items.push(pays.some((p) => p.type === "bank" && /دولي/.test(p.name)) ? t("تحويل بنكي دولي") : t("تحويل بنكي مباشر"));
         if (pays.some((p) => p.type === "online")) items.push(t("دفع إلكتروني آمن"));
         const gulf = (cfg.order.delivery || []).some((d) => d.enabled && Array.isArray(d.countries) && d.countries.some((x) => x !== "OM"));
-        if (ATHR.isDigital(cfg)) items.push(t("تصلك القصة على واتساب"));
+        if (ATHR.isDigital(cfg)) items.push(t("تصلك الملفات على واتساب"));
         else items.push(gulf ? t("توصيل لكل دول الخليج") : t("توصيل داخل سلطنة عُمان"));
         if (ATHR.isValidWhatsapp(cfg.order.whatsapp)) items.push(t("تواصل مباشر عبر واتساب"));
         return `<ul class="trust">${items.map((x) => `<li>${ICON.check}${esc(x)}</li>`).join("")}</ul>`;
@@ -1185,8 +1185,8 @@
         const buckets = [1, 2, 3, 4, 5, 6].map((g) => list.filter((p) => gr(p) === g));
         const rest = list.filter((p) => !gr(p));
         const chips = `<div class="cat-chips grade-jump">${names.map((n, i) => buckets[i].length ? `<a class="chip" href="#grade-${i + 1}">${esc(t(n))} <small>${buckets[i].length}</small></a>` : "").join("")}</div>`;
-        const out = buckets.map((items, i) => items.length ? `<h2 class="sub-h" id="grade-${i + 1}">${esc(t(names[i]))} <small class="muted">(${items.length})</small></h2>${V.grid(v, items)}` : "").join("");
-        return chips + out + (rest.length ? V.grid(v, rest) : "");
+        const out = buckets.map((items, i) => items.length ? `<h2 class="sub-h" id="grade-${i + 1}">${esc(t(names[i]))} <small class="muted">(${items.length})</small></h2>${V.grid(v, items, { eagerCount: i === buckets.findIndex((b) => b.length) ? 4 : 0 })}` : "").join("");
+        return chips + out + (rest.length ? V.grid(v, rest, { eagerCount: 0 }) : "");
     };
 
     V.category = function (v, cat, { sort = "default", shown = 0 } = {}) {

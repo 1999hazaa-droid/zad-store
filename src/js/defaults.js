@@ -740,8 +740,8 @@ ATHR.volumeFor = function (config, count, subtotal) {
 
 // «قطعة واحدة» «قطعتين» «3 قطع»
 ATHR.piecesText = (n) => {
-    if (ATHR.lang === "en") return n === 1 ? "1 story" : `${n} stories`;
-    return n === 1 ? "قصة واحدة" : n === 2 ? "قصتان" : n <= 10 ? `${n} قصص` : `${n} قصة`;
+    if (ATHR.lang === "en") return n === 1 ? "1 file" : `${n} files`;
+    return n === 1 ? "ملف واحد" : n === 2 ? "ملفان" : n <= 10 ? `${n} ملفات` : `${n} ملفاً`;
 };
 
 // اسم الخصم للعرض بلغة الزائر (discountLabel يبقى بالعربي للطلب ورسالة واتساب)
