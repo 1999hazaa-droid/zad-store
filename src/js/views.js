@@ -858,6 +858,16 @@
         return href ? `<a class="gift-cta" href="${href}" ${attrs}>${inner}</a>` : `<button class="gift-cta" type="button" ${attrs}>${inner}</button>`;
     };
 
+    V.customBanner = function (v) {
+        return `<section class="wrap gift-promo custom-promo" aria-label="${esc(t("ملف باسم طفلك"))}">
+            <a class="gp" href="${V.asset("custom/")}">
+                <span class="gp-art" aria-hidden="true" style="font-size:24px">✨</span>
+                <span class="gp-text"><b>${esc(t("ملف باسم طفلك"))}</b><small>${esc(t("ورقة عمل مخصّصة لطفلك حسب صفه وموضوعه ومستواه."))}</small></span>
+                <span class="gp-go">${esc(t("اطلب"))}${V.icon.side}</span>
+            </a>
+        </section>`;
+    };
+
     V.giftBanner = function (v) {
         const s = v.cfg.sales;
         if (!s.gift_enabled || s.gift_banner === false) return "";
@@ -1134,6 +1144,7 @@
         const intro = about ? `<p class="intro">${esc(fill(v, about))}</p>` : "";
         return `${V.ad(v)}
             ${V.hero(v)}
+            ${V.customBanner(v)}
             ${V.tiles(v)}
             ${V.giftBanner(v)}
             ${best.length ? V.rail(v, { id: "best", title: ct(v, "sales.best_title") || t("الأكثر طلباً"), items: best }) : ""}
@@ -1890,6 +1901,7 @@
         const bottom = [
             `© ${new Date().getFullYear()} ${esc(ATHR.storeName(cfg))}`,
             cfg.contact.policy_show ? `<a href="${ATHR.url.page("shipping")}">${esc(ct(v, "contact.policy_title"))}</a>` : "",
+            `<a href="${V.asset("custom/")}">${esc(t("ملف باسم طفلك"))}</a>`,
             `<a href="${ATHR.url.page("privacy")}">${esc(t("سياسة الخصوصية"))}</a>`,
             cfg.contact.reviews_share_btn ? `<a href="${ATHR.url.page("review")}" rel="nofollow">${esc(ct(v, "contact.reviews_share_text"))}</a>` : ""
         ].filter(Boolean);

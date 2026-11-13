@@ -126,7 +126,13 @@
                 ${t.video?`<video src="${s(t.video)}" controls playsinline preload="metadata"></video>`:""}
             </div>`:""}
             <figcaption>${t.name?s(t.name):s(n("عميل"))}${t.verified&&e.cfg.proof&&e.cfg.proof.verified!==!1?` <span class="rv-verified">${x.verified}${s(c.isEn()?"Verified buyer":"مشتري موثّق")}</span>`:""}${r?` · <a href="${c.url.product(r)}">${s(a.pname(r))}</a>`:""}</figcaption>
-        </figure>`},a.giftSub=e=>e.cfg.sales.gift_card!==!1?y(e,"gift.cta_sub")||n("بطاقة إهداء رقمية فيها رسالتك، وبدون ذكر السعر"):n("نوصلها لمن تحب، وبدون ذكر السعر"),a.giftCta=function(e,{attrs:t="",href:i="",title:r,sub:o=a.giftSub(e)}){const l=`<span class="gcta-ico">${a.icon.gift}</span><span class="gcta-txt"><b>${s(r)}</b>${o?`<small>${s(o)}</small>`:""}</span><span class="gcta-go">${a.icon.side}</span>`;return i?`<a class="gift-cta" href="${i}" ${t}>${l}</a>`:`<button class="gift-cta" type="button" ${t}>${l}</button>`},a.giftBanner=function(e){const t=e.cfg.sales;return!t.gift_enabled||t.gift_banner===!1?"":`<section class="wrap gift-promo" aria-label="${s(n("أرسل هدية"))}">
+        </figure>`},a.giftSub=e=>e.cfg.sales.gift_card!==!1?y(e,"gift.cta_sub")||n("بطاقة إهداء رقمية فيها رسالتك، وبدون ذكر السعر"):n("نوصلها لمن تحب، وبدون ذكر السعر"),a.giftCta=function(e,{attrs:t="",href:i="",title:r,sub:o=a.giftSub(e)}){const l=`<span class="gcta-ico">${a.icon.gift}</span><span class="gcta-txt"><b>${s(r)}</b>${o?`<small>${s(o)}</small>`:""}</span><span class="gcta-go">${a.icon.side}</span>`;return i?`<a class="gift-cta" href="${i}" ${t}>${l}</a>`:`<button class="gift-cta" type="button" ${t}>${l}</button>`},a.customBanner=function(e){return`<section class="wrap gift-promo custom-promo" aria-label="${s(n("ملف باسم طفلك"))}">
+            <a class="gp" href="${a.asset("custom/")}">
+                <span class="gp-art" aria-hidden="true" style="font-size:24px">✨</span>
+                <span class="gp-text"><b>${s(n("ملف باسم طفلك"))}</b><small>${s(n("ورقة عمل مخصّصة لطفلك حسب صفه وموضوعه ومستواه."))}</small></span>
+                <span class="gp-go">${s(n("اطلب"))}${a.icon.side}</span>
+            </a>
+        </section>`},a.giftBanner=function(e){const t=e.cfg.sales;return!t.gift_enabled||t.gift_banner===!1?"":`<section class="wrap gift-promo" aria-label="${s(n("أرسل هدية"))}">
             <a class="gp" href="${c.url.page("checkout","gift=1")}" data-gift-start>
                 <span class="gp-art" aria-hidden="true">${a.icon.gift}</span>
                 <span class="gp-text"><b>${s(y(e,"gift.banner_title")||n("أرسلها هدية لمن تحب"))}</b><small>${s(y(e,"gift.banner_text")||(t.gift_card!==!1?n("نوصلها لمن تحب مع بطاقة إهداء رقمية فيها رسالتك، وبدون ذكر السعر."):n("نوصلها لمن تحب مع رسالتك، وبدون ذكر السعر.")))}</small></span>
@@ -232,6 +238,7 @@
             ${a.storeReviews(e)}
             ${a.homeFaq(e)}`},a.bundleCat=e=>(e.categories||[]).find(t=>/حزم|bundle/i.test(t.name||"")||/bundle/i.test(t.slug||"")),a.home=function(e,{sort:t="default",cat:i="",shown:r=0}={}){if(a.isStoryStore(e))return a.storyHome(e);const o=a.bundleCat(e),l=o?a.listings(e,e.products.filter(p=>p.category_id===o.id&&p.is_available!==!1)):[],d=a.bestSellers(e),f=a.setCards(e),u=a.newArrivals(e),h=y(e,"texts.about"),g=h?`<p class="intro">${s(S(e,h))}</p>`:"";return`${a.ad(e)}
             ${a.hero(e)}
+            ${a.customBanner(e)}
             ${a.tiles(e)}
             ${a.giftBanner(e)}
             ${d.length?a.rail(e,{id:"best",title:y(e,"sales.best_title")||n("الأكثر طلباً"),items:d}):""}
