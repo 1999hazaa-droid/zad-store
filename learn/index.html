@@ -1454,7 +1454,7 @@ const GM = { lab: readLab, adv: () => advPlay(0), acad: acadMenu,  math: mathGam
 const SECS = [
   { id: "a2", grp: "age", name: "سنة إلى سنتين", em: "🍼", c: ["#F472B6", "#BE185D"], age: "4", sub: "زوزو الصغير: اكتشاف ولعب مع الوالدين", games: ["cards", "mix", "mem", "odd", "ord", "story"] },
   { id: "a3", grp: "age", name: "٣ سنوات", em: "🧸", c: ["#FB923C", "#C2410C"], age: "4", sub: "مدينة زوزو الصغيرة: ألعاب وأنشطة مع الوالدين", games: ["cards", "mix", "math", "mem", "odd", "foc", "ord", "story"] },
-  { id: "a4", grp: "age", name: "٤ سنوات", em: "🎈", c: ["#14B8A6", "#0F766E"], age: "4", sub: "مغامرات زوزو: ٢٤ لعبة في ٦ مناطق", games: ["letters", "race", "pos", "math", "cards", "mem", "odd", "foc", "ord", "story"] },
+  { id: "a4", grp: "age", name: "٤ سنوات", em: "🎈", c: ["#14B8A6", "#0F766E"], age: "4", sub: "مغامرات زوزو: ٥ عوالم ومغامرة كل أسبوع", games: ["letters", "race", "pos", "math", "cards", "mem", "odd", "foc", "ord", "story"] },
   { id: "a5", grp: "age", name: "٥ سنوات", em: "✏️", c: ["#8B5CF6", "#5B21B6"], age: "6", sub: "حروف وكلمات وقراءة أولية", games: ["letters", "treasure", "race", "pos", "miss", "wpic", "math", "mem", "foc", "lab", "story"] },
   { id: "a6", grp: "age", name: "٦ سنوات", em: "🎒", c: ["#3B82F6", "#1D4ED8"], age: "6", sub: "قراءة وكتابة وجمع وطرح", games: ["letters", "treasure", "acad", "adv", "lab", "wsim", "miss", "wpic", "math", "mix", "story"] },
   { id: "g1", grp: "grade", name: "الصف الأول", em: "1️⃣", c: ["#8B5CF6", "#5B21B6"], age: "8", sub: "قراءة وجمع وطرح حتى ٢٠", games: ["adv", "lab", "acad", "miss", "wpic", "g_add20", "g_sub20", "g_cmp", "g_opp", "g_day", "g_dua"] },
@@ -1928,7 +1928,7 @@ function zDone(k) {
   const z = ZU[k]; S.zl = S.zl || []; S.zl.push({ d: dayKey(), t: Date.now(), k }); if (S.zl.length > 300) S.zl = S.zl.slice(-300);
   star(2); save(); SCR++; stopVoice(); sfx.win(); confetti(60);
   app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:14px;justify-content:flex-start">
-    <div class="zcard"><div class="zc1">🏅</div><h2>بطاقة إنجاز</h2><b>${zNm()}</b><p>شارك مع ولي أمره في<br><strong>${z.e} ${z.t}</strong></p><small>${zDate(Date.now())}</small></div>
+    <div class="zcard"><div class="zc1">🏅</div><h2>بطاقة إنجاز</h2><b>${zNm()}</b><p>شارك مع ولي أمره في<br><strong>${z.e} ${z.t}</strong></p>${z.badge ? `<p style="font-size:20px">🎖️ شارة «${z.badge}»</p>` : ""}<small>${zDate(Date.now())}</small></div>
     ${zBreak() || `<div class="zbr">🌿 جميل! الآن اتركا الجهاز وانتقلا إلى لعب حقيقي. القليل من الشاشة أفضل لطفلك.</div>`}
     <button class="btn ghost" id="zpr" style="min-width:0">🖨️ اطبع البطاقة</button>
     <button class="btn" id="zhm">تم</button></div>`;
@@ -1941,6 +1941,7 @@ function zWeek() {
   SCR++; stopVoice();
   app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:12px;justify-content:flex-start">
     <div class="sch" style="background:linear-gradient(135deg,#8B5CF6,#5B21B6)"><b>📚</b><div><h1>أنشطة هذا الأسبوع</h1><small>تتجدد كل أسبوع</small></div></div>
+    ${S.sec === "a4" ? `<div class="sec">مغامرة الأسبوع</div><button class="feat" id="zwa"><b>${ZU[advWeekKey()].e}</b><span>${ZU[advWeekKey()].t}<small>شارة «${ZU[advWeekKey()].badge}»</small></span></button>` : ""}
     <div class="sec">٣ أنشطة تفاعلية قصيرة</div>
     <div class="games">${dig.map((k) => `<button class="gm" data-z="${k}"><b>${ZU[k].e}</b>${ZU[k].t}<small>رقمي قصير</small></button>`).join("")}</div>
     <div class="sec">قصة الأسبوع الصوتية</div>
@@ -1950,7 +1951,7 @@ function zWeek() {
     <button class="btn ghost" id="zpr" style="min-width:0">🖨️ اطبع بطاقات الأنشطة</button></div>`;
   zTop(zHome);
   app.querySelectorAll("[data-z]").forEach((b) => b.onclick = () => zRun(b.dataset.z));
-  $("#zs").onclick = () => zStory(st);
+  $("#zs").onclick = () => zStory(st); if ($("#zwa")) $("#zwa").onclick = () => zRun(advWeekKey());
   $("#zpr").onclick = () => zPrint(`<h1 style="text-align:center">بطاقات أنشطة الأسبوع · زاد التعليمية</h1>${real.map((r) => `<div class="pc"><h2>${r[0]}</h2><p style="font-size:20px">${r[1]}</p></div>`).join("")}<p style="text-align:center;font-size:13px">استخدم أشياء آمنة وكبيرة الحجم، وابقَ بجانب طفلك دائماً.</p>`);
 }
 async function zStory(st) {
@@ -2092,6 +2093,7 @@ function cStart(k) {
   const P = ZC[k]; sfx.ok();
   if (k === "c_box") return cBox(k, 0);
   if (k === "c_hare") return zHide(k, 0);
+  if (P.ch) return cAdv(k);
   if (P.sp === "mem") return cMem(k);
   if (P.sp === "maze") return cMaze(k, 0);
   const vi = ((S.zv = S.zv || {})[k] = ((S.zv[k] ?? -1) + 1) % P.v.length); save();
@@ -2143,7 +2145,7 @@ const STORY4 = [["زوزو عنده كرة. رمى زوزو الكرة بعيد�
 const ANUM = ["🐱", "🐶", "🐰", "🦆", "🐟", "🍎", "🍌", "🍊"];
 const dg = (n) => `<b class="zdg">${AD(n)}</b>`;
 const grp = (n, e) => `<span class="zgrp s">${e.repeat(n)}</span>`;
-const REG = [["lang", "اللغة العربية", "📖", "#EC4899"], ["math", "الرياضيات المبكرة", "🔢", "#F97316"], ["think", "التفكير والذكاء", "🧩", "#8B5CF6"], ["imag", "الخيال والقصص", "🎭", "#14B8A6"], ["feel", "المشاعر والتواصل", "💛", "#F59E0B"], ["sci", "العلوم والاكتشاف", "🔭", "#3B82F6"]];
+const REG = [["lang", "غابة الكلمات", "🌳", "#EC4899"], ["math", "مملكة الأرقام", "👑", "#F97316"], ["think", "جزيرة الألغاز", "🏝️", "#8B5CF6"], ["sci", "عالم الاكتشاف", "🔭", "#3B82F6"], ["imag", "مدينة الخيال", "🏙️", "#14B8A6"]];
 const mkA = (reg, t, e, c, intro, talk, real, sk, v, sp, par) => ({ reg, t, e, c: [c, c], intro, par: par || "دع طفلك يختار بنفسه، وعلّق على اختياره بجملة قصيرة. الخطأ فرصة للتجربة وليس فشلاً.", talk, real, sk, v, sp });
 const ZA = {
   a_words: mkA("lang", "مغامرة الكلمات", "🔤", "#EC4899", "نسمع الكلمة ونجد صورتها", "اسأله: «ما هذه؟» ثم استعمل الكلمة في جملة.", "اختر ٣ أشياء في البيت وسمِّها، ثم اطلب منه أن يعطيك «الملعقة» ثم «الكتاب» ثم «الكوب».", "المفردات والاستماع", [() => pickN(WP, 4).map((a) => { const op = shf(pickN(WP.filter((x) => x[0] !== a[0]), 3).concat([a])); return { say: `أين ال${a[0]}؟`, opts: op.map((x) => x[1]), ans: op.indexOf(a) }; })]),
@@ -2171,6 +2173,7 @@ const ZA = {
   a_plant: mkA("sci", "النباتات والحدائق", "🌱", "#3B82F6", "نعتني بالنباتات", "اسأله: «ماذا يحتاج النبات ليكبر؟»", "ازرعا بذرة (فاصوليا) في كوب مع قطن مبلل، وراقباها كل يوم معاً.", "النباتات", [() => qa([["ماذا يحتاج النبات ليكبر؟", "💧", ["🧱", "🍞", "🧦"]], ["أين الزهرة؟", "🌸", ["🌵", "🍃", "🌳"]], ["ماذا يخرج من البذرة؟", "🌱", ["🐟", "🚗", "🧱"]], ["أين نزرع النبتة؟", "🪴", ["🧦", "🥄", "🚗"]], ["ماذا يعطينا ضوءاً لتكبر النبتة؟", "☀️", ["🌙", "🧱", "🌧️"]]])]),
   a_float: mkA("sci", "يطفو أم يغرق؟", "🛟", "#3B82F6", "نكتشف الطفو والضوء", "اسأله قبل التجربة: «هل سيطفو أم يغرق؟» ثم جرّبا.", "جرّبا في وعاء ماء كبير: ورقة، كرة بلاستيك، حجر كبير. هل تطفو أم تغرق؟ (بإشراف دائم).", "الطفو والضوء", [() => qa([["أيّها يطفو على الماء؟", "🦆", ["🪨", "🔑", "🔩"]], ["أيّها يغرق في الماء؟", "🪨", ["🦆", "🍃", "⛵"]], ["أيّها يطفو على الماء؟", "⛵", ["🪨", "🔑", "🔩"]], ["من يعطينا الضوء؟", "💡", ["🧱", "🪨", "🧦"]], ["أين الشمس التي تضيء النهار؟", "☀️", ["🧱", "🪨", "🧦"]]])])
 };
+["a_feel", "a_needs", "a_share"].forEach((k) => (ZA[k].reg = "imag"));
 const AKEYS = Object.keys(ZA);
 for (const [k, v] of Object.entries(ZA)) { v.sec = "a4"; ZC[k] = v; ZU[k] = v; }
 const ZREAL4 = [
@@ -2183,6 +2186,25 @@ const ZSTORY4 = [
   { t: "زوزو والمطر", e: "🌧️", s: ["غيّمت السماء فوق بيت زوزو.", "سقط المطر قطرة قطرة.", "أخذ زوزو مظلته الصغيرة.", "قفز زوزو في الماء وضحك كثيراً.", "ثم عاد إلى البيت وشرب شاياً دافئاً."] },
   { t: "زوزو والمزارع", e: "👨‍🌾", s: ["زار زوزو مزرعة جميلة.", "قال المزارع هيا نزرع بذرة.", "حفر زوزو حفرة صغيرة.", "وضع البذرة وسقاها بالماء.", "وبعد أيام خرجت نبتة خضراء. شكراً أيها المزارع."] }
 ];
+/* ===== مغامرة الأسبوع (٤ سنوات): مغامرة تجمع اللغة والرياضيات والتفكير والخيال ===== */
+const ADVS = {
+  adv_garden: { t: "إنقاذ حديقة زوزو", e: "🌻", badge: "حارس الحديقة", intro: "الريح بعثرت حديقة زوزو ونحتاج مساعدتك", real: "ازرعا بذرة (فاصوليا) في كوب مع قطن مبلل، وراقباها كل يوم معاً وتحدّثا عمّا تحتاجه النبتة.", talk: "اسأله: «ماذا تحتاج الحديقة لتكبر؟ كيف ساعدنا زوزو؟»", sk: "مغامرة: حيوانات وألغاز وأشكال وكلمات",
+    ch: [{ s: "هبّت الريح وهرب حيوانان من الحديقة. ساعدنا نجدهما", g: "c_farm", n: 2 }, { s: "الباب مغلق ويحتاج حل لغز", g: "a_riddle", n: 1 }, { s: "نجمع الأشكال المناسبة لإصلاح السور", g: "a_shape", v: 1, n: 1 }, { s: "نتعلم كلمة جديدة في الحديقة", g: "a_letters", v: 1, n: 1 }, { s: "الآن نزرع نبتة جديدة", r: { say: "رتّب خطوات نمو النبتة", seq: ["🌰", "🌱", "🌻"] } }] },
+  adv_space: { t: "رحلة زوزو إلى القمر", e: "🚀", badge: "رائد الفضاء", intro: "زوزو يريد أن يصعد إلى القمر", real: "انظرا إلى السماء ليلاً وسمِّ ما ترونه، ثم ارسما صاروخاً معاً.", talk: "اسأله: «ماذا رأى زوزو في رحلته؟ ماذا تحب أن ترى في الفضاء؟»", sk: "مغامرة: فضاء وعدّ وأنماط وألغاز",
+    ch: [{ s: "نبحث عن الأشياء التي نراها في السماء", g: "a_space", n: 2 }, { s: "نعدّ النجوم قبل الإقلاع", g: "a_num", n: 1 }, { s: "نكمل نمط أضواء الصاروخ", g: "a_pat", n: 1 }, { s: "لغز من سكان السماء", g: "a_riddle", n: 1 }, { s: "نرتّب خطوات الرحلة", r: { say: "رتّب خطوات الرحلة", seq: ["🧑‍🚀", "🚀", "🌙"] } }] },
+  adv_sea: { t: "كنز البحر", e: "🐚", badge: "مستكشف البحار", intro: "زوزو وجد خريطة كنز في البحر", real: "تحدّثا عن البحر وارسما سمكة وصدفة، ثم ابحثا عن شيء مخبّأ في البيت كأنه كنز.", talk: "اسأله: «من قابلنا في البحر؟ أين وجدنا الكنز؟»", sk: "مغامرة: بحار وفروق وعدّ وحروف",
+    ch: [{ s: "نقابل أصدقاء زوزو في البحر", g: "a_sea", n: 2 }, { s: "من هو المختلف بين الأسماك؟", g: "a_diff", n: 1 }, { s: "نعدّ الصدف على الشاطئ", g: "a_num", n: 1 }, { s: "نتعلم حرفاً جديداً من الكنز", g: "a_letters", n: 1 }, { s: "نرتّب خطوات فتح الكنز", r: { say: "رتّب خطوات فتح الكنز", seq: ["🗺️", "🔑", "💎"] } }] },
+  adv_city: { t: "يوم في مدينة المهن", e: "👷", badge: "بطل المدينة", intro: "زوزو يزور أصحاب المهن في المدينة", real: "العبا دور الطبيب أو الطباخ بأدوات لعبة وتبادلا الأدوار مع جمل قصيرة.", talk: "اسأله: «من قابلنا اليوم؟ ماذا تريد أن تصبح؟»", sk: "مغامرة: مهن ومشاعر وتصنيف وقرارات",
+    ch: [{ s: "نقابل أصحاب المهن في المدينة", g: "a_jobs", n: 2 }, { s: "صديق زوزو يحتاج المساعدة", g: "a_share", n: 1 }, { s: "زوزو يشعر بشعور جديد", g: "a_feel", n: 1 }, { s: "نصنّف ما في المدينة", g: "a_class", n: 1 }, { s: "نرتّب خطوات بناء البيت", r: { say: "رتّب خطوات بناء البيت", seq: ["🧱", "🏠", "🎉"] } }] }
+};
+const ADVK = Object.keys(ADVS);
+for (const [k, a] of Object.entries(ADVS)) { const o = { sec: "a4", t: a.t, e: a.e, c: ["#14B8A6", "#3B82F6"], intro: a.intro, par: "هذه مغامرة قصيرة من عدة محطات، تجمع اللغة والرياضيات والتفكير. اجلس بجانب طفلك وشجّعه، وبعدها نفّذا النشاط الواقعي.", talk: a.talk, real: a.real, sk: a.sk, badge: a.badge, ch: a.ch, v: [] }; ZC[k] = o; ZU[k] = o; }
+function cAdv(k) {
+  const A = ZU[k], rounds = [];
+  A.ch.forEach((c) => { const rs = c.r ? [Object.assign({}, c.r)] : ZC[c.g].v[c.v || 0]().slice(0, c.n || 1); rs[0] = Object.assign({}, rs[0], { intro: [c.s].concat(rs[0].intro || []) }); rounds.push(...rs); });
+  cRound(k, rounds, 0, 0);
+}
+const advWeekKey = () => ADVK[Math.floor(weekStart().getTime() / 6048e5) % ADVK.length];
 const REGN = Object.fromEntries(REG.map((r) => [r[0], r]));
 function advHome() {
   SCR++; stopVoice(); HOLD = false;
@@ -2190,23 +2212,24 @@ function advHome() {
   const dk = AKEYS[Math.floor(new Date().setHours(0, 0, 0, 0) / 864e5) % AKEYS.length], dz = ZU[dk], done = (S.zl || []).some((x) => x.d === dayKey() && x.k === dk), n = (S.zl || []).filter((x) => ZU[x.k] && ZU[x.k].sec === "a4").length;
   app.innerHTML = `${topBar()}
   <div class="stage" style="justify-content:flex-start;gap:12px">
-    <div class="sch" style="background:linear-gradient(135deg,#14B8A6,#3B82F6)"><b>🧭</b><div><h1>مغامرات زوزو</h1><small>عالم الاكتشاف · ${AKEYS.length} لعبة في ٦ مناطق · ٤ سنوات</small></div></div>
+    <div class="sch" style="background:linear-gradient(135deg,#14B8A6,#3B82F6)"><b>🧭</b><div><h1>مغامرات زوزو</h1><small>عالم الاكتشاف · ${AKEYS.length} لعبة في ٥ عوالم + مغامرة كل أسبوع · ٤ سنوات</small></div></div>
     ${zBreak()}
     <button class="feat" id="zd"><span class="nw">${done ? "أنجزتماها اليوم ✅" : "مغامرة اليوم"}</span><b>${dz.e}</b><span>${dz.t}<small>لعبة رقمية قصيرة + نشاط حقيقي مع ولي الأمر + بطاقة إنجاز</small></span></button>
-    <div class="sec">مناطق الاستكشاف</div>
-    <div class="games">${REG.map((r) => { const ks = AKEYS.filter((k) => ZU[k].reg === r[0]), dn = ks.filter((k) => (S.zl || []).some((x) => x.k === k)).length; return `<button class="gm" data-r="${r[0]}" style="background:${r[3]}22"><b>${r[2]}</b>${r[1]}<small>${dn}/${ks.length} ألعاب</small></button>`; }).join("")}</div>
+    ${(() => { const wk = advWeekKey(), w = ZU[wk], dn = (S.zl || []).some((x) => x.k === wk && x.t >= weekStart().getTime()); return `<button class="feat" id="zwa"><span class="nw">${dn ? "أنجزتها هذا الأسبوع 🎖️" : "مغامرة الأسبوع"}</span><b>${w.e}</b><span>${w.t}<small>مغامرة تجمع اللغة والرياضيات والتفكير · شارة «${w.badge}»</small></span></button>`; })()}
+    <div class="sec">عوالم زوزو الخمسة</div>
+    <div class="games">${REG.map((r) => { const ks = AKEYS.filter((k) => ZU[k].reg === r[0]), dn = ks.filter((k) => (S.zl || []).some((x) => x.k === k)).length; return `<button class="gm" data-r="${r[0]}" style="background:${r[3]}22"><b>${r[2]}</b>${r[1]}<small>${dn}/${ks.length} ألعاب</small></button>`; }).join("")}<button class="gm" data-r="adv"><b>🎖️</b>كل المغامرات<small>${ADVK.filter((k) => (S.zl || []).some((x) => x.k === k)).length}/${ADVK.length} شارات</small></button></div>
     <div class="rw"><button class="rb" id="zw"><b>📚</b>أنشطة الأسبوع<small>تتجدد كل أسبوع</small></button><button class="rb" id="zl"><b>📒</b>سجل الأسرة<small>${n ? n + " نشاط" : "ابدأوا اليوم"}</small></button><button class="rb" id="zg"><b>👨‍👩‍👧</b>دليل الوالدين<small>اللعب المشترك</small></button></div>
     <button class="btn ghost" id="chg" style="min-width:0">🔁 تغيير القسم</button>
     <button class="quick" id="par" style="margin-top:2px">👨‍👩‍👧 لولي الأمر · تقرير التقدّم</button></div>`;
-  bindToggles(); $("#back").onclick = secPick; $("#chg").onclick = secPick; $("#par").onclick = gate;
+  bindToggles(); $("#back").onclick = secPick; $("#chg").onclick = secPick; $("#par").onclick = gate; $("#zwa").onclick = () => zRun(advWeekKey());
   $("#zd").onclick = () => zRun(dk); $("#zw").onclick = zWeek; $("#zl").onclick = zLog; $("#zg").onclick = zGuide;
   app.querySelectorAll("[data-r]").forEach((b) => b.onclick = () => advRegion(b.dataset.r));
 }
 function advRegion(r) {
-  SCR++; stopVoice(); const R = REGN[r], ks = AKEYS.filter((k) => ZU[k].reg === r);
+  SCR++; stopVoice(); const R = r === "adv" ? ["adv", "كل المغامرات", "🎖️", "#14B8A6"] : REGN[r], ks = r === "adv" ? ADVK : AKEYS.filter((k) => ZU[k].reg === r);
   app.innerHTML = `${topBar("◀")}<div class="stage" style="justify-content:flex-start;gap:12px">
     <div class="sch" style="background:linear-gradient(135deg,${R[3]},#5B34D6)"><b>${R[2]}</b><div><h1>${R[1]}</h1><small>اختر مغامرتك</small></div></div>
-    <div class="games">${ks.map((k) => `<button class="gm" data-z="${k}"><b>${ZU[k].e}</b>${ZU[k].t}<small>${(S.zl || []).some((x) => x.k === k) ? "أنجزتها ✅" : "مغامرة جديدة"}</small></button>`).join("")}</div></div>`;
+    <div class="games">${ks.map((k) => `<button class="gm" data-z="${k}"><b>${ZU[k].e}</b>${ZU[k].t}<small>${(S.zl || []).some((x) => x.k === k) ? (ZU[k].badge ? "🎖️ " + ZU[k].badge : "أنجزتها ✅") : (ZU[k].badge ? "مغامرة جديدة" : "مغامرة جديدة")}</small></button>`).join("")}</div></div>`;
   zTop(advHome); app.querySelectorAll("[data-z]").forEach((b) => b.onclick = () => zRun(b.dataset.z));
 }
 async function cSeq(k, rounds, i) {
