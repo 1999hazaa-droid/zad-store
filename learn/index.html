@@ -93,6 +93,19 @@ input.nm:focus{border-color:var(--p)}
 @keyframes pop{from{transform:scale(0) rotate(-30deg)}}
 @keyframes pulse{50%{transform:scale(1.06)}}
 
+
+.stats{display:flex;gap:8px;justify-content:center;width:100%}
+.stats span{background:#fff;border-radius:99px;padding:5px 14px;font-weight:700;box-shadow:0 3px 0 #d9d0f7}
+.games{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.gm{position:relative;border:0;font:inherit;font-weight:700;background:#fff;color:var(--t);border-radius:22px;padding:12px 8px;box-shadow:0 5px 0 #d9d0f7;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:16px}
+.gm b{font-size:38px;line-height:1.1}.gm small{font-size:12px;color:#6d6684}.gm.wide{grid-column:1/-1;flex-direction:row;justify-content:center;gap:10px}
+.gm.wide small{margin-inline-start:6px}.gm em{font-style:normal;background:var(--no);color:#fff;border-radius:99px;padding:0 9px;font-size:14px}
+.gm:active{transform:translateY(3px);box-shadow:0 2px 0 #d9d0f7}
+.isl{width:100%}.isl .ih{font-weight:700;color:var(--p);margin:6px 2px 6px;display:flex;justify-content:space-between;align-items:center}
+.isl .ih small{color:#6d6684}.isl.lk{opacity:.55}
+.isl .map{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.isl .cell{font-size:26px;border-radius:14px;min-width:0;padding:0}.isl .cell small{font-size:9px;height:10px}
+@media (min-width:640px){.games{grid-template-columns:repeat(4,1fr)}.gm.wide{grid-column:1/-1}.isl .cell{font-size:40px}.isl .cell small{font-size:12px}}
 /* ===== متجاوب: هاتف / تابلت / كمبيوتر ===== */
 @media (min-width:640px){
   :root{--tw:min(380px,46vh)}
@@ -210,7 +223,7 @@ const NAMES = Object.fromEntries(LET.map((l) => [l.ch, "ال" + l.name.replace(/
 /* ======================= الحفظ ======================= */
 const KEY = "zad-learn-v2";
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
-let S = Object.assign({ name: "", stars: 0, sfx: true, voice: true, prog: {} }, load());
+let S = Object.assign({ name: "", stars: 0, sfx: true, voice: true, prog: {}, gems: 0, box: 0, stk: [], streak: 0, day: "", bx: { d: "", n: 0 } }, load());
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
 const P = (id) => (S.prog[id] = S.prog[id] || { best: 0, runs: 0, last: null, seen: 0 });
 const unlocked = (i) => i === 0 || P(LET[i - 1].id).best >= 60;
@@ -435,16 +448,29 @@ function hub(first) {
   <div class="stage" style="justify-content:flex-start;gap:12px">
     <button class="next" id="nx"><span class="L">${nl.ch}</span><span><b>${P(nl.id).best >= 60 ? "أعد الدرس" : "الدرس التالي"}: حرف ${nl.name}</b><small>نحو ١٠ دقائق · ألعاب وكتابة وكلمات</small></span></button>
     ${due.length ? `<button class="quick" id="qk">⚡ تدريب سريع على ${due.slice(0, 3).map((l) => l.ch).join(" ")}</button>` : ""}
-    <div class="sec">خريطة الحروف</div>
-    <div class="map">${LET.map((l, k) => {
-      const p = P(l.id), lk = !unlocked(k), dn = p.best >= 60;
-      return `<button class="cell ${lk ? "lock" : dn ? "done" : k === ni ? "cur" : ""}" data-i="${k}">${lk ? "🔒" : l.ch}<small>${lk ? "" : stars3(p.best)}</small></button>`;
-    }).join("")}</div>
+    <div class="sec">عالم الألعاب</div>
+    <div class="stats"><span>🔥 ${streakNow()}</span><span>💎 ${S.gems}</span><span>🎒 ${S.stk.length}/${STK.length}</span></div>
+    <div class="games">
+      <button class="gm" id="g-daily"><b>📅</b>تحدّي اليوم<small>${S.day === dayKey() ? "أنجزته ✅" : "جديد كل يوم"}</small></button>
+      <button class="gm" id="g-race"><b>🏁</b>سباق الحروف<small>اسمع واختر</small></button>
+      <button class="gm" id="g-tre"><b>💎</b>كنز الكلمات<small>ركّب واجمع</small></button>
+      <button class="gm" id="g-pos"><b>📍</b>أين الحرف؟<small>أول · وسط · آخر</small></button>
+      <button class="gm wide" id="g-box"><b>🎁</b>صندوق المفاجآت ${S.box ? `<em>${S.box}</em>` : ""}<small>مجموعتي ${S.stk.length}/${STK.length}</small></button>
+    </div>
+    <div class="sec">🏝️ جزيرة الحروف</div>
+    ${ISL.map(([em, nmz], g) => {
+      const from = g * 7, ls = LET.slice(from, from + 7), dn = ls.filter((l) => P(l.id).best >= 60).length, lk = !unlocked(from);
+      return `<div class="isl ${lk ? "lk" : ""}"><div class="ih">${lk ? "🔒" : em} ${nmz}<small>${dn}/${ls.length}</small></div><div class="map">${ls.map((l, j) => {
+        const k = from + j, p = P(l.id), lock = !unlocked(k), d2 = p.best >= 60;
+        return `<button class="cell ${lock ? "lock" : d2 ? "done" : k === ni ? "cur" : ""}" data-i="${k}">${lock ? "🔒" : l.ch}<small>${lock ? "" : stars3(p.best)}</small></button>`;
+      }).join("")}</div></div>`;
+    }).join("")}
     <button class="quick" id="par" style="margin-top:6px">👨‍👩‍👧 لولي الأمر · تقرير التقدّم</button>
   </div>`;
   bindToggles();
   $("#back").onclick = start; $("#par").onclick = gate;
   $("#nx").onclick = () => begin(ni, "lesson");
+  $("#g-daily").onclick = daily; $("#g-race").onclick = race; $("#g-tre").onclick = () => treasure(); $("#g-pos").onclick = posGame; $("#g-box").onclick = collection;
   if ($("#qk")) $("#qk").onclick = () => begin(due[0].i, "review");
   app.querySelectorAll(".cell").forEach((c) => c.onclick = () => {
     const k = +c.dataset.i;
@@ -685,6 +711,143 @@ function printSheet() {
   window.print();
 }
 
+
+/* ======================= عالم الألعاب ======================= */
+const STK = ["🐰","🦁","🦆","🍎","🦊","🐪","🥕","🐴","🐋","🐑","⛺","🐻","🐔","🌽","🦒","🌸","🐟","🚗","☀️","🌳","🦅","🚀","🦚","🥁","🍇","🐘","🦋","🌙","🐱","📖","⚽","🍋","🧸","🍌","🔑","⭐","🐝","🎁","🌹","🕊️","🦄","🐉","🏆","👑"];
+const ISL = [["🏖️", "شاطئ الأبجدية"], ["🌴", "غابة الكلمات"], ["⛰️", "جبل القراءة"], ["🏰", "قلعة الإتقان"]];
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+const yesterdayKey = () => dayKey(new Date(Date.now() - 864e5));
+const streakNow = () => (S.day === dayKey() || S.day === yesterdayKey() ? S.streak : 0);
+const seeded = (str) => { let h = 1779033703 ^ str.length; for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; } return () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; }; };
+const pickN = (arr, n, rnd = Math.random) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, n); };
+const norm = (c) => (c === "أ" || c === "إ" || c === "آ" ? "ا" : c);
+const letOf = (c) => LET.find((l) => l.ch === norm(c));
+const learned = () => LET.filter((l) => P(l.id).best >= 60);
+const wordPool = () => learned().flatMap((l) => l.w.map((w, k) => ({ ...w, own: l, key: l.id + "." + "w" + (k + 1) })));
+const GAMES_NEED = 2;
+const note = (t) => { const el = $("#say"); if (el) el.textContent = t; };
+const mkOpts = (ch, rnd) => {
+  const pool = [...new Set([...simOf(ch), ...ALLCH.filter((c) => c !== ch)])];
+  const d = simOf(ch).slice(0, 2);
+  for (const c of pickN(pool, 8, rnd)) if (d.length < 3 && !d.includes(c) && c !== ch) d.push(c);
+  return pickN([ch, ...d], 4, rnd).map((c) => ({ h: c, v: c }));
+};
+function qSound(rnd) {
+  const l = pickN(learned(), 1, rnd)[0];
+  return { top: '<button class="play" id="pl" aria-label="استمع">🔊</button>', text: "اسمع اسم الحرف، ثم اختر الحرف الصحيح.", key: l.id + ".name", opts: mkOpts(l.ch, rnd), ans: l.ch, auto: true };
+}
+function qPic(rnd) {
+  const w = pickN(wordPool(), 1, rnd)[0], f = norm(w.l[0]);
+  if (!ALLCH.includes(f)) return qSound(rnd);
+  return { top: `<div class="pic">${w.e}</div>`, text: `ما الحرف الذي تبدأ به كلمة ${w.t}؟`, key: w.key, opts: mkOpts(f, rnd), ans: f, auto: true };
+}
+function qPos(rnd) {
+  const w = pickN(wordPool(), 1, rnd)[0], L = w.l, cnt = (c) => L.filter((x) => norm(x) === norm(c)).length;
+  const idx = L.map((c, i) => i).filter((i) => letOf(L[i]) && cnt(L[i]) === 1);
+  if (!idx.length) return qPic(rnd);
+  const i = pickN(idx, 1, rnd)[0], tl = letOf(L[i]);
+  const word = L.map((c, k) => (k === i ? `<span style="color:var(--no)">${c}</span>` : c)).join("");
+  const ans = i === 0 ? 0 : i === L.length - 1 ? 2 : 1;
+  return { top: `<div class="pic">${w.e}</div><div class="word" style="min-height:0;font-size:64px">${word}</div>`, text: `أين حرف ${tl.name} في كلمة ${w.t}؟`, key: w.key,
+    opts: [["في الأول", 0], ["في الوسط", 1], ["في الآخر", 2]].map(([h, v]) => ({ h, v, s: "font-size:24px;padding:22px 0" })), ans, auto: true };
+}
+function lockedGame() {
+  shell(0, `<div class="sticker">🔒</div><div class="card" style="text-align:center"><h2 style="margin:0 0 6px;color:var(--p)">أتقن ${GAMES_NEED} حروف أولاً</h2><p style="margin:0;font-weight:700">أكمل الدروس لتفتح الألعاب والكنوز. أتقنت الآن ${learned().length}.</p></div><button class="btn" id="bk">إلى الدروس ◀</button>`, 1);
+  note("الألعاب تنتظرك بعد إتقان حرفين!"); $("#bk").onclick = hub;
+}
+async function quiz(kind, qs, i = 0, hit = 0) {
+  if (i >= qs.length) return endGame(kind, hit, qs.length);
+  const q = qs[i]; let tried = false; window.__cur = q;
+  shell(i, `${q.top || ""}<div class="opts" style="grid-template-columns:repeat(${q.opts.length === 4 ? 2 : 3},1fr)">${q.opts.map((o, k) => `<button class="opt" data-k="${k}" style="${o.s || ""}">${o.h}</button>`).join("")}</div>`, qs.length);
+  const pl = $("#pl"); if (pl) pl.onclick = () => speak(q.text, q.key);
+  app.querySelectorAll(".opt").forEach((b) => b.onclick = async () => {
+    const o = q.opts[+b.dataset.k];
+    if (o.v === q.ans) {
+      b.classList.add("ok"); sfx.ok(); app.querySelectorAll(".opt").forEach((x) => x.onclick = null);
+      if (!tried) { hit++; star(); }
+      await wait(750); quiz(kind, qs, i + 1, hit);
+    } else { tried = true; b.classList.add("no"); sfx.no(); note("حاول مرة أخرى."); setTimeout(() => b.classList.remove("no"), 500); }
+  });
+  say(`${i + 1}/${qs.length}  ${q.text}`, q.key);
+}
+function race() { if (learned().length < GAMES_NEED) return lockedGame(); const qs = Array.from({ length: 10 }, (_, k) => (k % 2 ? qPic() : qSound())); quiz("race", qs); }
+function posGame() { if (learned().length < GAMES_NEED) return lockedGame(); quiz("pos", Array.from({ length: 8 }, () => qPos())); }
+function daily() {
+  if (learned().length < GAMES_NEED) return lockedGame();
+  const t = dayKey();
+  if (S.day === t) {
+    shell(1, `<div class="sticker">✅</div><div class="card" style="text-align:center"><h2 style="margin:0 0 6px;color:var(--p)">أنجزت تحدي اليوم!</h2><p style="margin:0;font-weight:700">🔥 ${streakNow()} أيام متتالية · عُد غداً لتحدٍّ جديد</p></div><button class="btn ghost" id="bk">الخريطة</button>`, 1);
+    note("عُد غداً يا بطل!"); $("#bk").onclick = hub; return;
+  }
+  const rnd = seeded(t), mk = [qSound, qPic, qPos, qSound, qPos];
+  quiz("daily", mk.map((f) => f(rnd)));
+}
+async function treasure(i = 0, hit = 0, miss = 0) {
+  if (learned().length < GAMES_NEED) return lockedGame();
+  const N = 5; if (i >= N) return endGame("treasure", Math.max(0, N - miss), N);
+  const W0 = pickN(wordPool(), 1)[0], L = W0.l;
+  const extra = pickN(ALLCH.filter((c) => !L.map(norm).includes(c)), 2);
+  const tiles = shuffle([...L, ...extra]); let got = [], missed = false;
+  shell(i, `<div class="pic">${W0.e}</div><div class="word" id="wd">&nbsp;</div><div class="slots">${L.map(() => "<i></i>").join("")}</div><div class="row" id="tl">${tiles.map((t) => `<button class="tile">${t}</button>`).join("")}</div>`, N);
+  window.__need = () => L[got.length];
+  say(`كنز ${i + 1}: ركّب كلمة ${W0.t}.`, W0.key);
+  app.querySelectorAll(".tile").forEach((b) => b.onclick = async () => {
+    const need = L[got.length];
+    if (b.textContent === need) {
+      got.push(need); b.classList.add("used"); sfx.place(); $("#wd").textContent = got.join(""); app.querySelectorAll(".slots i")[got.length - 1].classList.add("f");
+      if (got.length === L.length) {
+        sfx.win(); S.gems++; star(2); confetti(40); app.querySelectorAll(".tile").forEach((t) => t.onclick = null); save();
+        note(`💎 وجدت كنزاً! ${W0.t}`); await wait(1100); treasure(i + 1, hit + 1, miss + (missed ? 1 : 0));
+      }
+    } else { missed = true; sfx.no(); b.classList.add("shake"); setTimeout(() => b.classList.remove("shake"), 400); note("جرّب حرفاً آخر."); }
+  });
+}
+function grantBox() {
+  if (S.bx.d !== dayKey()) S.bx = { d: dayKey(), n: 0 };
+  if (S.bx.n >= 3) return false;
+  S.bx.n++; S.box++; return true;
+}
+function endGame(kind, hit, total) {
+  const pct = hit / total, ok = pct >= .7; let box = false, extra = "";
+  if (kind === "daily") {
+    S.streak = S.day === yesterdayKey() ? S.streak + 1 : 1; S.day = dayKey(); S.box++; box = true; S.gems += 2;
+    extra = `<p style="margin:8px 0 0;font-weight:700;color:var(--ok)">🔥 ${S.streak} أيام متتالية · +💎٢</p>`;
+  } else if (ok) box = grantBox();
+  save();
+  shell(total, `<div class="sticker">${ok ? "🏆" : "💪"}</div>
+    <div class="card" style="text-align:center"><h2 style="margin:0 0 4px;color:var(--p)">${ok ? "رائع يا " + nm() + "!" : "قرّبت جداً!"}</h2>
+    <p style="margin:0;font-weight:700">إجابات صحيحة من أول مرة: ${hit} من ${total}</p>${extra}
+    ${box ? '<p style="margin:8px 0 0;font-weight:700;color:var(--ok)">🎁 ربحت صندوق مفاجآت!</p>' : ""}</div>
+    ${S.box > 0 ? `<button class="btn alt" id="ob">🎁 افتح الصندوق (${S.box})</button>` : ""}
+    ${kind !== "daily" ? '<button class="btn" id="ag">العب مرة أخرى</button>' : ""}
+    <button class="btn ghost" id="mp">الخريطة</button>`, total);
+  note(ok ? "أحسنت! أنت بطل." : "كل مرة تتحسّن أكثر!"); sfx.level(); if (ok) confetti(90);
+  if ($("#ob")) $("#ob").onclick = openBox;
+  if ($("#ag")) $("#ag").onclick = () => ({ race, treasure: () => treasure(), pos: posGame }[kind] || hub)();
+  $("#mp").onclick = hub;
+}
+async function openBox() {
+  if (S.box < 1) return hub();
+  S.box--; const have = new Set(S.stk), left = STK.filter((x) => !have.has(x));
+  let item, dup = false;
+  if (left.length) item = left[Math.random() * left.length | 0]; else { item = STK[Math.random() * STK.length | 0]; dup = true; S.gems += 3; }
+  if (!dup) S.stk.push(item); save();
+  shell(7, `<div class="sticker" id="bx" style="animation:shake .5s infinite">🎁</div><div id="rs" class="hide"></div>`);
+  note("نفتح الصندوق… مفاجأة!"); sfx.whoosh(); await wait(900); sfx.pop();
+  const bx = $("#bx"); if (!bx) return;
+  bx.style.animation = ""; bx.textContent = item; sfx.win(); confetti(90);
+  note(dup ? "عندك هذا الملصق! ربحت 💎٣" : "ملصق جديد في مجموعتك!");
+  const st = bx.parentNode;
+  st.insertAdjacentHTML("beforeend", `<span class="badge">${dup ? "مكرر → +💎٣" : "جديد! " + S.stk.length + " من " + STK.length}</span>${S.box > 0 ? `<button class="btn alt" id="ob">افتح التالي (${S.box})</button>` : ""}<button class="btn" id="cl">مجموعتي 🎒</button><button class="btn ghost" id="mp">الخريطة</button>`);
+  if ($("#ob")) $("#ob").onclick = openBox; $("#cl").onclick = collection; $("#mp").onclick = hub;
+}
+function collection() {
+  shell(7, `<div class="card" style="text-align:center"><b style="color:var(--p)">مجموعتي: ${S.stk.length} من ${STK.length}</b></div>
+    <div class="map" style="grid-template-columns:repeat(6,1fr)">${STK.map((x) => `<div class="cell ${S.stk.includes(x) ? "done" : "lock"}" style="font-size:30px;cursor:default">${S.stk.includes(x) ? x : "❔"}</div>`).join("")}</div>
+    ${S.box > 0 ? `<button class="btn alt" id="ob">🎁 افتح صندوقاً (${S.box})</button>` : ""}<button class="btn ghost" id="mp">الخريطة</button>`);
+  note("اجمع كل الملصقات!"); if ($("#ob")) $("#ob").onclick = openBox; $("#mp").onclick = hub;
+}
+
 /* ======================= ولي الأمر ======================= */
 function gate() {
   const a = 3 + (Math.random() * 5 | 0), b = 4 + (Math.random() * 5 | 0);
@@ -722,7 +885,7 @@ function parent() {
   const sh = $("#sh"); if (sh) sh.onclick = () => { location.href = "https://wa.me/?text=" + encodeURIComponent(report); };
 }
 
-window.__zad = { LET, S, begin, hub, start, AUD, brk };
+window.__zad = { LET, S, begin, hub, start, AUD, brk, race, posGame, daily, treasure, openBox, collection, learned };
 start();
 })();
 </script>
