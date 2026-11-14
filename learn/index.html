@@ -14,7 +14,7 @@
 :root{--p:#5B34D6;--p2:#8b5cf6;--bg:#f3efff;--t:#1B1430;--ok:#1fb57a;--no:#ff6b6b;--y:#ffc83d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
-body{font-family:Cairo,system-ui,sans-serif;color:var(--t);background:var(--bg) radial-gradient(#ddd3ff 1.2px,transparent 1.3px) 0 0/22px 22px;overflow-x:hidden;user-select:none;-webkit-user-select:none}
+body{font-family:Cairo,system-ui,sans-serif;color:var(--t);background:var(--bg);overflow-x:hidden;user-select:none;-webkit-user-select:none}
 #app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding:10px 14px calc(16px + env(safe-area-inset-bottom))}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px}
 .prog{flex:1;height:14px;background:#fff;border-radius:99px;overflow:hidden;box-shadow:inset 0 1px 2px #0001}
@@ -83,7 +83,7 @@ input.nm:focus{border-color:var(--p)}
 .cell.done{background:#eafaf3;box-shadow:0 5px 0 #b9e8d3}
 .cell.lock{background:#ece7fa;color:#b6abd9;box-shadow:0 5px 0 #ddd5f5;font-size:24px}
 .sec{width:100%;font-weight:700;color:#6d6684;margin:2px 0 -4px}
-#fx{position:fixed;inset:0;pointer-events:none;z-index:9}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:9;display:none}
 .hide{display:none!important}
 @keyframes bob{50%{transform:translateY(-5px) rotate(-2deg)}}
 @keyframes talk{to{transform:scaleY(.4)}}
@@ -231,26 +231,33 @@ function pickVoice() {
 if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
 let lastSpeech = ["", ""];
 const BUF = {};
+function preload(id) {
+  if (!S.voice) return;
+  ["name", "intro", "fa", "da", "ka", "w1", "w2"].forEach((k) => { const f = MAN[id + "." + k]; if (f && !BUF[f]) loadBuf(f).catch(() => {}); });
+}
+async function loadBuf(file) {
+  if (BUF[file]) return BUF[file];
+  const c = ac(), ab = await (await fetch("audio/" + file + "?v=2")).arrayBuffer();
+  return (BUF[file] = await new Promise((ok, no) => { const r = c.decodeAudioData(ab, ok, no); if (r && r.then) r.then(ok, no); }));
+}
 let curSrc = null;
 async function playClip(file, onEnd, onFail) {
   try {
     const c = ac(); if (c.state === "suspended") await c.resume();
-    if (!BUF[file]) {
-      const ab = await (await fetch("audio/" + file + "?v=2")).arrayBuffer();
-      BUF[file] = await new Promise((ok, no) => { const r = c.decodeAudioData(ab, ok, no); if (r && r.then) r.then(ok, no); });
-    }
+    await loadBuf(file);
     if (c.state !== "running") throw new Error("ctx");
-    const src = c.createBufferSource(); src.buffer = BUF[file]; src.connect(c.destination);
+    const src = c.createBufferSource(); src.buffer = BUF[file]; if (BUF[file].duration > 3.5) src.playbackRate.value = 1.15; src.connect(c.destination);
     src.onended = () => { if (curSrc === src) curSrc = null; onEnd(); };
     curSrc = src; src.start();
   } catch (e) { onFail(); }
 }
 function stopVoice() { if (curSrc) { try { curSrc.onended = null; curSrc.stop(); } catch {} curSrc = null; } try { speechSynthesis.cancel(); } catch {} if (curAudio) { try { curAudio.pause(); } catch {} curAudio = null; } }
 function speak(text, key) {
-  lastSpeech = [text, key];
+  lastSpeech = [text, key]; const tok = SCR;
   const owl = $(".owl"), talk = (on) => owl && owl.classList.toggle("talk", on);
   stopVoice();
-  return new Promise((res) => {
+  return new Promise((res0) => {
+    const res = () => { if (tok === SCR) res0(); };
     if (!S.voice) { setTimeout(res, 250); return; }
     if (key && MAN[key]) {
       let done = false; const end = () => { if (done) return; done = true; talk(false); res(); };
@@ -281,7 +288,7 @@ function speakTTS(text, res) {
 /* ======================= الاحتفال ======================= */
 const fx = $("#fx"), fc = fx.getContext("2d"); let parts = [], raf = 0;
 function confetti(n = 70) {
-  const d = Math.min(2, devicePixelRatio || 1);
+  const d = 1; fx.style.display = "block";
   fx.width = innerWidth * d; fx.height = innerHeight * d; fc.setTransform(d, 0, 0, d, 0, 0);
   const cols = ["#5B34D6", "#ffc83d", "#1fb57a", "#ff6b6b", "#3c9df0"];
   for (let i = 0; i < n; i++) parts.push({ x: innerWidth / 2, y: innerHeight * .35, vx: (Math.random() - .5) * 12, vy: -Math.random() * 12 - 4, s: 6 + Math.random() * 6, c: cols[i % 5], r: Math.random() * 6, life: 90 });
@@ -291,7 +298,7 @@ function loop() {
   fc.clearRect(0, 0, innerWidth, innerHeight);
   parts = parts.filter((p) => p.life-- > 0);
   parts.forEach((p) => { p.vy += .35; p.x += p.vx; p.y += p.vy; p.r += .2; fc.save(); fc.translate(p.x, p.y); fc.rotate(p.r); fc.fillStyle = p.c; fc.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); fc.restore(); });
-  raf = parts.length ? requestAnimationFrame(loop) : (fc.clearRect(0, 0, innerWidth, innerHeight), 0);
+  if (parts.length) raf = requestAnimationFrame(loop); else { fc.clearRect(0, 0, innerWidth, innerHeight); fx.style.display = "none"; raf = 0; }
 }
 
 /* ======================= البومة زوزو ======================= */
@@ -320,8 +327,11 @@ const nm = () => S.name || "بطلنا";
 const PRAISE = ["أحسنت!", "رائع!", "ممتاز!", "برافو!", "ما شاء الله!"];
 const praise = () => PRAISE[Math.random() * PRAISE.length | 0];
 const star = (n = 1) => { S.stars += n; save(); sfx.star(); const s = $(".stars"); if (s) s.textContent = `⭐ ${S.stars}`; };
+const sayQ = (t, key) => Promise.race([say(t, key), new Promise((r) => setTimeout(r, 1500))]);
 const say = (t, key) => { const el = $("#say"); if (el) el.textContent = t; return speak(t, key); };
+let SCR = 0;
 function shell(step, body, total = STEPS) {
+  SCR++; stopVoice();
   sfx.whoosh();
   app.innerHTML = `
   <div class="top">
@@ -342,7 +352,7 @@ function bindToggles() {
 
 /* ======================= 0) البداية ======================= */
 function start() {
-  stopVoice();
+  SCR++; stopVoice();
   app.innerHTML = `
   <div class="top"><span class="badge">تعلّم والعب</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
   <div class="stage" style="gap:18px">
@@ -371,7 +381,7 @@ function start() {
 /* ======================= الخريطة ======================= */
 function stars3(b) { return b >= 85 ? "★★★" : b >= 70 ? "★★" : b >= 1 ? "★" : ""; }
 function hub(first) {
-  stopVoice(); if (!S.name) return start();
+  SCR++; stopVoice(); if (!S.name) return start();
   const ni = nextIdx(), nl = LET[ni], due = dueList();
   app.innerHTML = `
   <div class="top"><button class="icon-btn" id="back" aria-label="رجوع">🏠</button><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
@@ -398,7 +408,7 @@ function hub(first) {
   if (first) { speak(`مرحباً يا ${S.name}! اختر حرفاً وهيا نتعلّم.`, "hello"); }
 }
 function begin(i, mode) {
-  LT = LET[i]; MODE = mode; R = newRun();
+  LT = LET[i]; MODE = mode; R = newRun(); preload(LT.id);
   try { ac().resume(); } catch {}
   sfx.pop();
   if (mode === "review") find(0); else intro();
@@ -414,11 +424,10 @@ async function intro() {
       <div class="forms">${[a, b, c].filter(Boolean).map((f) => `<span>${f}</span>`).join("")}</div>
       <p class="cap">${LT.ch} مثل <b style="color:var(--p)">${w.t}</b> و<b style="color:var(--p)">${LT.w[1].t}</b> ${LT.w[1].e}</p>
     </div>
-    <button class="btn hide" id="nx">التالي ◀</button>`);
+    <button class="btn" id="nx">التالي ◀</button>`);
+  $("#nx").onclick = () => find(0);
   $("#L").onclick = () => { sfx.pop(); speak(LT.name, LT.id + ".name"); };
-  await say(`أهلاً يا ${nm()}! اليوم نتعلّم حرف ${LT.name}.`, "i.hello");
   await say(`هذا حرف ${LT.name}. ${LT.ch} مثل ${w.t}. اضغط على الحرف لتسمعه.`, LT.id + ".intro");
-  $("#nx").classList.remove("hide"); sfx.pop(); $("#nx").onclick = () => find(0);
 }
 
 /* ======================= 2) اصطد الحرف ======================= */
@@ -440,7 +449,7 @@ async function find(round) {
         app.querySelectorAll(".bub:not(.ok)").forEach((x) => x.classList.add("gone"));
         await wait(700);
         if (round + 1 < rounds) find(round + 1);
-        else { await say(`${praise()} عيونك قوية يا ${nm()}.`, "p.eyes"); MODE === "review" ? sounds(0) : trace(); }
+        else { await sayQ(`${praise()} عيونك قوية يا ${nm()}.`, "p.eyes"); MODE === "review" ? sounds(0) : trace(); }
       }
     } else {
       sfx.no(); R.find.miss++; b.classList.add("shake"); setTimeout(() => b.classList.remove("shake"), 400);
@@ -480,8 +489,8 @@ async function trace() {
   g.fillStyle = "#fff"; g.font = "700 11px Cairo"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("ابدأ", sx - 4, sy + 15);
   let drawing = false, lastP = null;
   x.lineWidth = 22; x.lineCap = "round"; x.lineJoin = "round"; x.strokeStyle = "#5B34D6";
-  const pos = (e) => { const r = cd.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * W / r.height]; };
-  cd.onpointerdown = (e) => { drawing = true; lastP = pos(e); x.beginPath(); x.arc(lastP[0], lastP[1], 11, 0, 7); x.fillStyle = "#5B34D6"; x.fill(); cd.setPointerCapture(e.pointerId); sfx.tap(); };
+  let rc = cd.getBoundingClientRect(); const pos = (e) => { const r = rc; return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * W / r.height]; };
+  cd.onpointerdown = (e) => { rc = cd.getBoundingClientRect(); drawing = true; lastP = pos(e); x.beginPath(); x.arc(lastP[0], lastP[1], 11, 0, 7); x.fillStyle = "#5B34D6"; x.fill(); cd.setPointerCapture(e.pointerId); sfx.tap(); };
   cd.onpointermove = (e) => { if (!drawing) return; const p = pos(e); x.beginPath(); x.moveTo(lastP[0], lastP[1]); x.lineTo(p[0], p[1]); x.stroke(); lastP = p; };
   cd.onpointerup = cd.onpointercancel = () => { drawing = false; };
   $("#clr").onclick = () => { x.clearRect(0, 0, W, W); sfx.pop(); };
@@ -498,7 +507,7 @@ async function trace() {
     const cover = M ? C / M : 0, prec = U ? Pm / U : 0;
     if (cover > .5 && prec > .6) {
       sfx.win(); star(2); confetti(80);
-      await say(`${praise()} كتبت حرف ${LT.name} بنفسك يا ${nm()}.`, "p.trace");
+      await sayQ(`${praise()} كتبت حرف ${LT.name} بنفسك يا ${nm()}.`, "p.trace");
       brk();
     } else {
       sfx.no();
@@ -540,7 +549,7 @@ async function sounds(q) {
       if (!tried) star();
       await wait(800);
       if (q + 1 < total) sounds(q + 1);
-      else { await say("أذنك ذكية جداً!", "p.ear"); MODE === "review" ? finish() : build(0); }
+      else { await sayQ("أذنك ذكية جداً!", "p.ear"); MODE === "review" ? finish() : build(0); }
     } else {
       if (!tried) R.sound.total++; tried = true;
       b.classList.add("no"); sfx.no(); setTimeout(() => b.classList.remove("no"), 500);
@@ -667,7 +676,7 @@ function parent() {
   const sh = $("#sh"); if (sh) sh.onclick = () => { location.href = "https://wa.me/?text=" + encodeURIComponent(report); };
 }
 
-window.__zad = { LET, S, begin, hub, start, AUD };
+window.__zad = { LET, S, begin, hub, start, AUD, brk };
 start();
 })();
 </script>
