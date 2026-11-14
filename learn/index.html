@@ -518,11 +518,11 @@ async function trace() {
 }
 
 /* ======================= 4) استراحة حركة ======================= */
-const MOVES = [["🐸", "قِف واقفز مثل الضفدع!"], ["🦅", "افرد ذراعيك وطِر مثل الصقر!"], ["🐘", "تمايل يميناً ويساراً مثل الفيل!"], ["🦆", "امشِ في مكانك مثل البطة!"]];
+const MOVES = [["🦅", "افرد ذراعيك وطِر مثل الصقر!", "move1"], ["🐘", "تمايل يميناً ويساراً مثل الفيل!", "move2"], ["🦆", "امشِ في مكانك مثل البطة!", "move3"]];
 async function brk() {
-  const [em, tx] = MOVES[LT.i % MOVES.length];
+  const [em, tx, mk] = MOVES[LT.i % MOVES.length];
   shell(4, `<div class="move">${em}</div><div class="timer" id="tm">15</div><button class="btn ghost hide" id="nx">رجعت! ◀</button>`);
-  await say(`استراحة! ${tx}`, "move" + (LT.i % MOVES.length));
+  await say(`استراحة! ${tx}`, mk);
   let n = 15; const tm = $("#tm");
   const iv = setInterval(() => {
     n--; if (tm) tm.textContent = n; if (n <= 3 && n > 0) sfx.tick();
