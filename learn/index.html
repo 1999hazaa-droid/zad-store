@@ -424,6 +424,26 @@ function speak(text, key) {
     speakTTS(text, res); return;
   });
 }
+/* صوت الفتاة (ElevenLabs) لجمل فيها اسم الطفل: تُولَّد مرة وتُخزَّن، وإن تعذّر نرجع لصوت الجهاز */
+const GIRL = {};
+async function speakGirl(text) {
+  const tok = SCR; lastSpeech = [text, undefined];
+  if (!S.voice) return;
+  try {
+    stopVoice();
+    let url = GIRL[text];
+    if (!url) {
+      const ctl = new AbortController(); setTimeout(() => ctl.abort(), 7000);
+      const r = await fetch(SB + "/functions/v1/wiam-tts", { method: "POST", headers: { apikey: SBK, "Content-Type": "application/json", Authorization: "Bearer " + SBK }, body: JSON.stringify({ text }), signal: ctl.signal });
+      const j = await r.json(); if (!j.url) throw new Error("no url"); url = GIRL[text] = j.url;
+    }
+    if (tok !== SCR) return;
+    const owl = $(".owl"), a = AUD; curAudio = a; a.playbackRate = 1;
+    a.onended = () => { owl && owl.classList.remove("talk"); }; a.onerror = () => { owl && owl.classList.remove("talk"); speak(text); };
+    a.src = url; owl && owl.classList.add("talk");
+    const p = a.play(); if (p && p.catch) p.catch(() => { owl && owl.classList.remove("talk"); });
+  } catch { if (tok === SCR) speak(text); }
+}
 function speakTTS(text, res) {
   {
     const talk = (on) => { const o = $(".owl"); o && o.classList.toggle("talk", on); };
@@ -614,7 +634,7 @@ function lettersHub(first) {
     if (!unlocked(k)) { sfx.no(); c.classList.add("shake"); setTimeout(() => c.classList.remove("shake"), 400); return; }
     begin(k, P(LET[k].id).best >= 60 ? "review" : "lesson");
   });
-  if (first) { speak(`مرحباً يا ${S.name}! اختر حرفاً وهيا نتعلّم.`); }
+  if (first) { speakGirl(`مرحباً يا ${S.name}! اختر حرفاً وهيا نتعلّم.`); }
 }
 function begin(i, mode) {
   if (!subOk() && i >= FREE_L) return payScreen();
@@ -1467,7 +1487,7 @@ function secPick() {
     <button class="quick" id="par" style="margin-top:6px">👨‍👩‍👧 لولي الأمر · تقرير التقدّم</button></div>`;
   bindToggles(); $("#back").onclick = start; $("#par").onclick = gate;
   app.querySelectorAll(".sc").forEach((b) => b.onclick = () => { S.sec = b.dataset.s; S.age = SECS.find((x) => x.id === S.sec).age; save(); sfx.ok(); secHome(S.sec); });
-  speak(`مرحباً يا ${S.name}! اختر قسمك.`);
+  speakGirl(`مرحباً يا ${S.name}! اختر قسمك.`);
 }
 /* ======================= محتوى الأقسام: مستويات ومراحل وتحديات ======================= */
 let LKEYS = null, MIXK = null;
