@@ -244,10 +244,15 @@
             ${a.storeReviews(e)}
             ${a.homeFaq(e)}`},a.bundleCat=e=>(e.categories||[]).find(s=>/حزم|bundle/i.test(s.name||"")||/bundle/i.test(s.slug||"")),a.heroHome=function(e){const s=e.cfg;if(!s.theme.hero_show)return`<h1 class="sr-only">${t(c.storeName(s))}</h1>`;const i=a.homeList(e,"").length;return`<section class="hx" aria-label="${t(c.storeName(s))}">
             <div class="wrap"><div class="hx-in">
-                <h1>${a.heroTitle(e)}</h1>
-                <a class="hx-btn main" href="#printables">${a.icon.file}<span>${t(n("تصفّح الملفات"))}</span><small>${i}</small></a>
+                <span class="fl f1" aria-hidden="true">✏️</span><span class="fl f2" aria-hidden="true">⭐</span><span class="fl f3" aria-hidden="true">🎨</span><span class="fl f4" aria-hidden="true">🔤</span><span class="fl f5" aria-hidden="true">🌈</span>
+                <span class="hx-owl" aria-hidden="true">🦉</span>
+                <div class="hx-txt">
+                    <h1>${a.heroTitle(e)}</h1>
+                    <ul class="hx-pills"><li>📄 ${i} ${t(n("ملف"))}</li><li>⚡ ${t(n("تصلك فوراً"))}</li></ul>
+                    <a class="hx-btn main" href="#printables" data-home-cat="" data-jump>${a.icon.file}<span>${t(n("تصفّح الملفات"))}</span></a>
+                </div>
             </div></div>
-        </section>`},a.learnPromo=function(e){const s=e.products.filter(r=>a.isLearn(r)&&r.is_available!==!1).sort((r,o)=>Number(r.price)-Number(o.price)),i=r=>/year|سنة/.test(r.slug+r.name)?n("سنة"):/3/.test(r.slug+r.name)?n("٣ أشهر"):n("شهر");return`<section class="wrap lp-sec" id="learn" aria-label="${t(n("تعلّم والعب"))}">
+        </section>`},a.catTiles=function(e){const s=e.categories.filter(r=>a.printables(e).some(o=>o.category_id===r.id&&o.is_available!==!1)),i=["🎨","🖍️","📚","🎓","👩‍🏫","🎁","📊","🧩"];return`<section class="wrap ct-sec" aria-label="${t(n("تصفح حسب القسم"))}"><div class="ct-row">${s.map((r,o)=>`<button type="button" class="ct c${o%6}" data-home-cat="${t(r.id)}" data-jump><span class="ct-e">${i[o%i.length]}</span><b>${t(a.cname(r))}</b></button>`).join("")}</div></section>`},a.learnPromo=function(e){const s=e.products.filter(r=>a.isLearn(r)&&r.is_available!==!1).sort((r,o)=>Number(r.price)-Number(o.price)),i=r=>/year|سنة/.test(r.slug+r.name)?n("سنة"):/3/.test(r.slug+r.name)?n("٣ أشهر"):n("شهر");return`<section class="wrap lp-sec" id="learn" aria-label="${t(n("تعلّم والعب"))}">
             <div class="lp">
                 <div class="lp-top">
                     <span class="lp-owl" aria-hidden="true">🦉</span>
@@ -271,12 +276,13 @@
                 <div class="pr-body" id="catalogInner">${a.catalogHome(e,{sort:s,cat:i,shown:r})}</div>
             </div>
         </section>`},a.extras=function(e){const s=e.cfg.sales,i=s.gift_enabled&&s.gift_banner!==!1?`<a class="ex" href="${c.url.page("checkout","gift=1")}" data-gift-start><span class="ex-i">${a.icon.gift}</span><span class="ex-t"><b>${t(y(e,"gift.banner_title")||n("أرسلها هدية"))}</b><small>${t(n("بطاقة إهداء بدون ذكر السعر"))}</small></span></a>`:"";return`<section class="wrap ex-sec" aria-label="${t(n("خدمات خاصة"))}">
-            <a class="ex" href="${a.asset("custom/")}"><span class="ex-i">✨</span><span class="ex-t"><b>${t(n("ملف باسم طفلك"))}</b><small>${t(n("مخصّص لصفه ومستواه"))}</small></span></a>
-            <a class="ex" href="${c.base()}games/"><span class="ex-i">🎮</span><span class="ex-t"><b>${t(n("ألعاب مجانية"))}</b><small>${t(n("العب وتعلّم الحروف والأرقام"))}</small></span></a>
+            <a class="ex ex1" href="${a.asset("custom/")}"><span class="ex-i">✨</span><span class="ex-t"><b>${t(n("ملف باسم طفلك"))}</b><small>${t(n("مخصّص لصفه ومستواه"))}</small></span></a>
+            <a class="ex ex2" href="${c.base()}games/"><span class="ex-i">🎮</span><span class="ex-t"><b>${t(n("ألعاب مجانية"))}</b><small>${t(n("العب وتعلّم الحروف والأرقام"))}</small></span></a>
         </section>`},a.home=function(e,{sort:s="default",cat:i="",shown:r=0}={}){if(a.isStoryStore(e))return a.storyHome(e);const o=a.setCards(e),l=y(e,"texts.about"),d=l?`<p class="intro">${t(S(e,l))}</p>`:"";return`${a.ad(e)}
             ${a.heroHome(e)}
             ${a.extras(e)}
             ${a.learnPromo(e)}
+            ${a.catTiles(e)}
             ${a.printBanner(e,{sort:s,cat:i,shown:r})}
             ${o?a.rail(e,{id:"sets",title:y(e,"sales.sets_title")||n("أطقم بسعر أقل"),cards:o}):""}
             ${a.storeReviews(e)}
