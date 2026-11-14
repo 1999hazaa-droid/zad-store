@@ -101,6 +101,7 @@ input.nm:focus{border-color:var(--p)}
 .gm b{font-size:38px;line-height:1.1}.gm small{font-size:12px;color:#6d6684}.gm.wide{grid-column:1/-1;flex-direction:row;justify-content:center;gap:10px}
 .gm.wide small{margin-inline-start:6px}.gm em{font-style:normal;background:var(--no);color:#fff;border-radius:99px;padding:0 9px;font-size:14px}
 .gm:active{transform:translateY(3px);box-shadow:0 2px 0 #d9d0f7}
+.storelink{display:inline-flex;align-items:center;gap:4px;background:#fff;color:var(--p);font-weight:800;font-size:15px;text-decoration:none;border-radius:99px;padding:8px 14px;box-shadow:0 3px 0 #d9d0f7;white-space:nowrap}
 .scs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%}
 .sc{border:0;font:inherit;color:#fff;border-radius:22px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 5px 0 rgba(0,0,0,.18);cursor:pointer;min-height:118px;justify-content:center}
 .sc b{font-size:38px;line-height:1.1}.sc span{font-weight:800;font-size:18px}.sc small{font-size:12px;opacity:.92;text-align:center}.sc:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
@@ -516,7 +517,7 @@ function start() {
   const named = Object.entries(DB.kids).filter(([, k]) => k.name);
   if (S.name && named.length) {
     app.innerHTML = `
-    <div class="top"><span class="badge">تعلّم والعب</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
+    <div class="top"><a class="storelink" href="../" aria-label="العودة للمتجر">🏠 المتجر</a><span class="badge">تعلّم والعب</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
     <div class="stage" style="gap:16px">
       <div style="width:110px">${OWL}</div>
       <h1 style="margin:0;color:var(--p);font-size:26px">مَن سيلعب اليوم؟</h1>
@@ -536,7 +537,7 @@ function start() {
     return;
   }
   app.innerHTML = `
-  <div class="top"><span class="badge">تعلّم والعب</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
+  <div class="top"><a class="storelink" href="../" aria-label="العودة للمتجر">🏠 المتجر</a><span class="badge">تعلّم والعب</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
   <div class="stage" style="gap:18px">
     <div style="width:150px">${OWL}</div>
     <div class="card" style="text-align:center">
@@ -1497,7 +1498,7 @@ function qDua() { const d = pickN(DUAS, 1)[0], wr = pickN(DUAS.filter((x) => x !
 function secPick() {
   SCR++; stopVoice(); HOLD = false;
   const card = (s) => `<button class="sc" data-s="${s.id}" style="background:linear-gradient(135deg,${s.c[0]},${s.c[1]})"><b>${s.em}</b><span>${s.name}</span><small>${s.sub}</small></button>`;
-  app.innerHTML = `<div class="top"><button class="icon-btn" id="back" aria-label="رجوع">🏠</button><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
+  app.innerHTML = `<div class="top"><button class="icon-btn" id="back" aria-label="رجوع">🏠</button><a class="storelink" href="../">المتجر</a><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
   <div class="stage" style="justify-content:flex-start;gap:12px"><div style="width:92px">${OWL}</div>
     <h1 style="margin:0;color:var(--p);font-size:24px;text-align:center">مرحباً يا ${S.name}! اختر قسمك</h1>
     <div class="sec">حسب العمر</div><div class="scs">${SECS.filter((s) => s.grp === "age").map(card).join("")}</div>
