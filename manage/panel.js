@@ -35,6 +35,8 @@ const fail = (e) => { console.error(e); toast("تعذّر الحفظ. تأكد �
 
 /* ---------- الدخول ---------- */
 async function boot() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get("type") === "recovery" && h.get("access_token")) return recoveryView(h);
   const { data } = await sb.auth.getSession();
   if (!data.session) return loginView();
   const { data: row } = await sb.from("admin_users").select("id").eq("id", data.session.user.id).maybeSingle();
@@ -43,16 +45,38 @@ async function boot() {
 }
 function loginView(err = "") {
   app.innerHTML = `<div class="login"><div style="font-size:54px">🔐</div><h1>لوحة تحكم زاد</h1>
-  <label class="f"><span>البريد الإلكتروني</span><input type="email" id="em" dir="ltr" autocomplete="username"></label>
-  <label class="f"><span>كلمة المرور</span><input type="password" id="pw" dir="ltr" autocomplete="current-password"></label>
-  <p id="er" style="color:var(--no);font-weight:700">${esc(err)}</p><button class="btn" id="go">دخول</button></div>`;
+  <label class="f"><span>البريد الإلكتروني</span><input type="email" id="em" dir="ltr" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email"></label>
+  <label class="f"><span>كلمة المرور</span><input type="password" id="pw" dir="ltr" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+  <label class="sw" style="justify-content:flex-start"><input type="checkbox" id="sh"><span>إظهار كلمة المرور</span></label>
+  <p id="er" style="color:var(--no);font-weight:700;min-height:24px">${esc(err)}</p><button class="btn" id="go">دخول</button>
+  <button class="btn g" id="fg" style="margin-top:10px">نسيت كلمة المرور؟</button></div>`;
+  $("#sh").onchange = (e) => $("#pw").type = e.target.checked ? "text" : "password";
   const go = async () => {
-    $("#er").textContent = "…";
-    const { error } = await sb.auth.signInWithPassword({ email: $("#em").value.trim(), password: $("#pw").value });
-    if (error) { $("#er").textContent = "البريد أو كلمة المرور غير صحيحة"; return; }
-    boot();
+    const email = $("#em").value.trim().toLowerCase(), pw = $("#pw").value.replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+    if (!email || !pw) { $("#er").textContent = "اكتب البريد وكلمة المرور"; return; }
+    $("#er").textContent = "جاري الدخول…"; $("#go").disabled = true;
+    try {
+      const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+      if (error) { $("#er").textContent = /invalid/i.test(error.message) ? "البريد أو كلمة المرور غير صحيحة. جرّب «نسيت كلمة المرور»" : "خطأ: " + error.message; $("#go").disabled = false; return; }
+      await boot();
+    } catch (e) { $("#er").textContent = "تعذّر الاتصال: " + (e && e.message || e); $("#go").disabled = false; }
   };
   $("#go").onclick = go; $("#pw").onkeydown = (e) => e.key === "Enter" && go();
+  $("#fg").onclick = async () => {
+    const email = $("#em").value.trim().toLowerCase(); if (!email) { $("#er").textContent = "اكتب بريدك أولاً ثم اضغط «نسيت كلمة المرور»"; return; }
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    $("#er").style.color = error ? "var(--no)" : "var(--ok)"; $("#er").textContent = error ? "تعذّر الإرسال: " + error.message : "أرسلنا رابط تغيير كلمة المرور إلى بريدك ✓";
+  };
+}
+function recoveryView(h) {
+  app.innerHTML = `<div class="login"><div style="font-size:54px">🔑</div><h1>كلمة مرور جديدة</h1><label class="f"><span>كلمة المرور الجديدة (8 أحرف فأكثر)</span><input type="password" id="np" dir="ltr" autocapitalize="none"></label><p id="er" style="color:var(--no);font-weight:700"></p><button class="btn" id="go">حفظ ودخول</button></div>`;
+  $("#go").onclick = async () => {
+    const v = $("#np").value; if (v.length < 8) { $("#er").textContent = "كلمة المرور قصيرة"; return; }
+    await sb.auth.setSession({ access_token: h.get("access_token"), refresh_token: h.get("refresh_token") });
+    const { error } = await sb.auth.updateUser({ password: v });
+    if (error) { $("#er").textContent = "تعذّر: " + error.message; return; }
+    history.replaceState(null, "", location.pathname); boot();
+  };
 }
 
 /* ---------- الهيكل ---------- */
