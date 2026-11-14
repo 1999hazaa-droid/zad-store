@@ -213,6 +213,15 @@ const sfx = {
 
 /* ======================= الصوت: تسجيلات + صوت الجهاز احتياطاً ======================= */
 let MAN = {}, curAudio = null;
+const AUD = new Audio(); AUD.preload = "auto";
+const SIL = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+let unlockedA = false;
+const unlockAudio = () => {
+  try { ac().resume(); } catch {}
+  if (unlockedA) return; unlockedA = true;
+  try { AUD.src = SIL; const p = AUD.play(); p && p.catch(() => { unlockedA = false; }); } catch { unlockedA = false; }
+};
+["pointerdown", "touchstart", "click"].forEach((e) => document.addEventListener(e, unlockAudio, { passive: true, capture: true }));
 fetch("audio/manifest.json").then((r) => r.ok ? r.json() : {}).then((m) => { MAN = m || {}; }).catch(() => {});
 let VOICE = null;
 function pickVoice() {
@@ -229,18 +238,26 @@ function speak(text, key) {
   return new Promise((res) => {
     if (!S.voice) { setTimeout(res, 250); return; }
     if (key && MAN[key]) {
-      const a = new Audio("audio/" + MAN[key]); curAudio = a;
+      const a = AUD; curAudio = a;
       let done = false; const end = () => { if (done) return; done = true; talk(false); res(); };
-      a.onended = end; a.onerror = end; setTimeout(end, 15000);
-      talk(true); a.play().catch(end); return;
+      const fallback = () => { if (done) return; done = true; talk(false); speakTTS(text, res); };
+      a.onended = end; a.onerror = fallback; setTimeout(end, 15000);
+      a.src = "audio/" + MAN[key]; talk(true);
+      const pr = a.play(); if (pr && pr.catch) pr.catch(fallback); return;
     }
+    speakTTS(text, res); return;
+  });
+}
+function speakTTS(text, res) {
+  {
+    const talk = (on) => { const o = $(".owl"); o && o.classList.toggle("talk", on); };
     if (!window.speechSynthesis || !VOICE) { talk(true); setTimeout(() => { talk(false); res(); }, Math.min(3500, 300 + text.length * 55)); return; }
     const u = new SpeechSynthesisUtterance(text);
     u.voice = VOICE; u.lang = VOICE.lang; u.rate = .88; u.pitch = 1.15;
     let done = false; const end = () => { if (done) return; done = true; talk(false); res(); };
     u.onend = end; u.onerror = end; setTimeout(end, 9000);
     talk(true); speechSynthesis.speak(u);
-  });
+  }
 }
 
 /* ======================= الاحتفال ======================= */
@@ -632,7 +649,7 @@ function parent() {
   const sh = $("#sh"); if (sh) sh.onclick = () => { location.href = "https://wa.me/?text=" + encodeURIComponent(report); };
 }
 
-window.__zad = { LET, S, begin, hub, start };
+window.__zad = { LET, S, begin, hub, start, AUD };
 start();
 })();
 </script>
