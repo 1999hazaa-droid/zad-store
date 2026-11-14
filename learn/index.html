@@ -222,7 +222,7 @@ const unlockAudio = () => {
   try { AUD.src = SIL; const p = AUD.play(); p && p.catch(() => { unlockedA = false; }); } catch { unlockedA = false; }
 };
 ["pointerdown", "touchstart", "click"].forEach((e) => document.addEventListener(e, unlockAudio, { passive: true, capture: true }));
-fetch("audio/manifest.json").then((r) => r.ok ? r.json() : {}).then((m) => { MAN = m || {}; }).catch(() => {});
+fetch("audio/manifest.json?v=2").then((r) => r.ok ? r.json() : {}).then((m) => { MAN = m || {}; }).catch(() => {});
 let VOICE = null;
 function pickVoice() {
   const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
@@ -230,7 +230,22 @@ function pickVoice() {
 }
 if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
 let lastSpeech = ["", ""];
-function stopVoice() { try { speechSynthesis.cancel(); } catch {} if (curAudio) { try { curAudio.pause(); } catch {} curAudio = null; } }
+const BUF = {};
+let curSrc = null;
+async function playClip(file, onEnd, onFail) {
+  try {
+    const c = ac(); if (c.state === "suspended") await c.resume();
+    if (!BUF[file]) {
+      const ab = await (await fetch("audio/" + file + "?v=2")).arrayBuffer();
+      BUF[file] = await new Promise((ok, no) => { const r = c.decodeAudioData(ab, ok, no); if (r && r.then) r.then(ok, no); });
+    }
+    if (c.state !== "running") throw new Error("ctx");
+    const src = c.createBufferSource(); src.buffer = BUF[file]; src.connect(c.destination);
+    src.onended = () => { if (curSrc === src) curSrc = null; onEnd(); };
+    curSrc = src; src.start();
+  } catch (e) { onFail(); }
+}
+function stopVoice() { if (curSrc) { try { curSrc.onended = null; curSrc.stop(); } catch {} curSrc = null; } try { speechSynthesis.cancel(); } catch {} if (curAudio) { try { curAudio.pause(); } catch {} curAudio = null; } }
 function speak(text, key) {
   lastSpeech = [text, key];
   const owl = $(".owl"), talk = (on) => owl && owl.classList.toggle("talk", on);
@@ -238,12 +253,15 @@ function speak(text, key) {
   return new Promise((res) => {
     if (!S.voice) { setTimeout(res, 250); return; }
     if (key && MAN[key]) {
-      const a = AUD; curAudio = a;
       let done = false; const end = () => { if (done) return; done = true; talk(false); res(); };
       const fallback = () => { if (done) return; done = true; talk(false); speakTTS(text, res); };
-      a.onended = end; a.onerror = fallback; setTimeout(end, 15000);
-      a.src = "audio/" + MAN[key]; talk(true);
-      const pr = a.play(); if (pr && pr.catch) pr.catch(fallback); return;
+      talk(true); setTimeout(end, 20000);
+      playClip(MAN[key], end, () => {
+        // احتياط: عنصر الصوت العادي ثم صوت الجهاز
+        const a = AUD; curAudio = a; a.onended = end; a.onerror = fallback;
+        a.src = "audio/" + MAN[key] + "?v=2"; const pr = a.play(); if (pr && pr.catch) pr.catch(fallback);
+      });
+      return;
     }
     speakTTS(text, res); return;
   });
