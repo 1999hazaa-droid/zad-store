@@ -106,6 +106,30 @@ input.nm:focus{border-color:var(--p)}
 .isl .map{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
 .isl .cell{font-size:26px;border-radius:14px;min-width:0;padding:0}.isl .cell small{font-size:9px;height:10px}
 @media (min-width:640px){.games{grid-template-columns:repeat(4,1fr)}.gm.wide{grid-column:1/-1}.isl .cell{font-size:40px}.isl .cell small{font-size:12px}}
+/* ===== تحفيز وتخصيص ===== */
+.av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;position:relative;box-shadow:0 2px 0 rgba(91,52,214,.18);flex:none}
+.av i{position:absolute;font-style:normal;line-height:1}
+.hubhead{display:flex;align-items:center;gap:12px}.avb{border:0;background:none;padding:0;cursor:pointer}
+.xp{height:10px;border-radius:9px;background:#e9e3fb;overflow:hidden;margin:6px 0 2px}.xp i{display:block;height:100%;background:linear-gradient(90deg,#8b6cf0,#5B34D6);border-radius:9px;transition:width .4s}
+.xl{font-weight:700;color:#6d6684}
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#2b1d63;color:#fff;padding:10px 18px;border-radius:30px;font-weight:700;z-index:9999;box-shadow:0 6px 18px rgba(0,0,0,.25);max-width:90vw;text-align:center}
+.wk{background:#fff;border-radius:18px;padding:12px 14px;margin:10px 0;box-shadow:0 2px 0 rgba(91,52,214,.12);text-align:center}
+.wk .wh{font-weight:800;color:var(--p);display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.wh small{color:#6d6684}
+.wd{display:flex;gap:6px;justify-content:center;margin-bottom:6px}.wd span{width:34px;height:34px;border-radius:50%;background:#eee9fb;display:flex;align-items:center;justify-content:center;font-weight:800;color:#8d85a8}.wd span.on{background:var(--p);color:#fff}
+.chip{border:0;background:#fff3c4;border-radius:20px;padding:4px 12px;font:inherit;font-weight:800;cursor:pointer}
+.bdg{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px;margin:12px 0}.bdg .b{background:#fff;border-radius:16px;padding:10px 4px;text-align:center;display:flex;flex-direction:column;gap:4px;box-shadow:0 2px 0 rgba(91,52,214,.12)}.bdg .b span{font-size:34px}.bdg .b small{font-weight:700}.bdg .b.off{opacity:.45}
+.avg{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:6px}.pk{width:54px;height:54px;border-radius:50%;border:3px solid transparent;background:#fff;font-size:28px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;box-shadow:0 2px 0 rgba(91,52,214,.15)}.pk.on{border-color:var(--p)}.pk.lk{opacity:.5}.pk small{font-size:11px;font-weight:800}
+.sec{font-weight:800;color:var(--p);margin:10px 0 6px;text-align:center}
+.kids{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}.kid{display:flex;flex-direction:column;align-items:center;gap:4px;background:#fff;border:3px solid transparent;border-radius:20px;padding:12px 14px;font:inherit;cursor:pointer;min-width:116px;box-shadow:0 2px 0 rgba(91,52,214,.15)}.kid.on{border-color:var(--p)}.kid small{color:#6d6684;font-weight:700}
+.tu{position:fixed;inset:0;background:rgba(43,29,99,.92);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.tabs button{border:2px solid #e3dcf9;background:#fff;border-radius:20px;padding:4px 12px 4px 8px;font:inherit;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px}.tabs .on{border-color:var(--p);background:#f1ecff}
+.parent h2 small{font-size:14px;color:#6d6684;font-weight:700}
+.sec2{font-weight:800;color:var(--p);margin:16px 0 6px}
+.lgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.lgrid span{background:#eee9fb;border-radius:9px;text-align:center;padding:5px 0;font-weight:800;font-size:18px;color:#8d85a8}.lgrid .g{background:#c9f3d8;color:#137a3a}.lgrid .y{background:#ffe9a8;color:#8a5a00}
+.lg{display:flex;gap:10px;margin-top:6px;font-weight:700;color:#6d6684}.lg b{display:inline-block;width:12px;height:12px;border-radius:4px;background:#eee9fb;vertical-align:-1px}.lg b.g{background:#c9f3d8}.lg b.y{background:#ffe9a8}
+.wds{display:flex;flex-wrap:wrap;gap:6px}.wds span{background:#f1ecff;border-radius:14px;padding:3px 12px;font-weight:800;color:var(--p)}
+.wb{display:flex;gap:6px;align-items:flex-end;justify-content:space-between;margin:8px 0}.wb div{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}.wb i{width:70%;background:#c9bcf5;border-radius:6px 6px 0 0}.wb i.t{background:var(--p)}.wb small{font-weight:700;color:#6d6684;font-size:11px}
+.st{display:block;font-weight:800;margin:10px 0}.st select{display:block;width:100%;margin-top:4px;padding:10px;border-radius:12px;border:2px solid #e3dcf9;font:inherit;background:#fff}
 /* ===== متجاوب: هاتف / تابلت / كمبيوتر ===== */
 @media (min-width:640px){
   :root{--tw:min(380px,46vh)}
@@ -221,12 +245,18 @@ const ALLCH = LET.map((l) => l.ch);
 const NAMES = Object.fromEntries(LET.map((l) => [l.ch, "ال" + l.name.replace(/^أ/, "أ")]));
 
 /* ======================= الحفظ ======================= */
-const KEY = "zad-learn-v2";
-const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
-let S = Object.assign({ name: "", stars: 0, sfx: true, voice: true, prog: {}, gems: 0, box: 0, stk: [], streak: 0, day: "", bx: { d: "", n: 0 } }, load());
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
+const KEY = "zad-learn-v3", OLDKEY = "zad-learn-v2";
+const DEF = () => ({ name: "", stars: 0, sfx: true, voice: true, prog: {}, gems: 0, box: 0, stk: [], streak: 0, day: "", bx: { d: "", n: 0 }, xp: 0, av: { b: "🦊", a: "", c: 0, set: false }, bd: [], words: [], log: {}, skill: 1, lim: 0, lvl: "beg", wk: { k: "", d: [], c: false } });
+let DB = null;
+try { DB = JSON.parse(localStorage.getItem(KEY)); } catch {}
+if (!DB || !DB.kids) { let old = {}; try { old = JSON.parse(localStorage.getItem(OLDKEY)) || {}; } catch {} DB = { cur: "k1", kids: { k1: old } }; }
+Object.keys(DB.kids).forEach((k) => { DB.kids[k] = Object.assign(DEF(), DB.kids[k]); DB.kids[k].av = Object.assign(DEF().av, DB.kids[k].av); });
+if (!DB.kids[DB.cur]) { DB.cur = Object.keys(DB.kids)[0] || "k1"; DB.kids[DB.cur] = DB.kids[DB.cur] || DEF(); }
+let S = DB.kids[DB.cur];
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch {} };
+const useKid = (k) => { DB.cur = k; S = DB.kids[k]; save(); };
 const P = (id) => (S.prog[id] = S.prog[id] || { best: 0, runs: 0, last: null, seen: 0 });
-const unlocked = (i) => i === 0 || P(LET[i - 1].id).best >= 60;
+const unlocked = (i) => i === 0 || S.lvl !== "beg" || P(LET[i - 1].id).best >= 60;
 const doneCount = () => LET.filter((l) => P(l.id).best >= 60).length;
 const nextIdx = () => { const i = LET.findIndex((l, k) => P(l.id).best < 60 && unlocked(k)); return i < 0 ? LET.length - 1 : i; };
 const dueList = () => LET.filter((l) => { const p = P(l.id); return p.best >= 60 && (p.best < 85 || Date.now() - p.seen > 3 * 864e5); });
@@ -385,7 +415,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const nm = () => S.name || "بطلنا";
 const PRAISE = ["أحسنت!", "رائع!", "ممتاز!", "برافو!", "ما شاء الله!"];
 const praise = () => PRAISE[Math.random() * PRAISE.length | 0];
-const star = (n = 1) => { S.stars += n; save(); sfx.star(); const s = $(".stars"); if (s) s.textContent = `⭐ ${S.stars}`; };
+const star = (n = 1) => { S.stars += n; addXP(5 * n); markActive(); save(); sfx.star(); const s = $(".stars"); if (s) s.textContent = `⭐ ${S.stars}`; };
 const sayQ = (t, key) => Promise.race([say(t, key), new Promise((r) => setTimeout(r, 1500))]);
 const say = (t, key) => { const el = $("#say"); if (el) el.textContent = t; return speak(t, key); };
 let SCR = 0;
@@ -400,7 +430,7 @@ function shell(step, body, total = STEPS) {
   </div>
   <div class="guide">${OWL}<div class="bubble"><span id="say"></span><button class="rep" id="rep" aria-label="أعد الكلام">🔊</button></div></div>
   <div class="stage">${body}</div>`;
-  $("#home").onclick = hub;
+  $("#home").onclick = () => hub();
   $("#rep").onclick = () => speak(...lastSpeech);
 }
 const toggles = () => `<button class="icon-btn" id="tsfx" aria-label="المؤثرات">${S.sfx ? "🔔" : "🔕"}</button><button class="icon-btn" id="tvo" aria-label="الصوت">${S.voice ? "🔊" : "🔇"}</button>`;
@@ -411,7 +441,30 @@ function bindToggles() {
 
 /* ======================= 0) البداية ======================= */
 function start() {
-  SCR++; stopVoice();
+  SCR++; stopVoice(); HOLD = false;
+  if (Object.keys(DB.kids).length > 1) Object.keys(DB.kids).forEach((k) => { if (!DB.kids[k].name && k !== DB.cur) delete DB.kids[k]; });
+  const named = Object.entries(DB.kids).filter(([, k]) => k.name);
+  if (S.name && named.length) {
+    app.innerHTML = `
+    <div class="top"><span class="badge">تعلّم والعب</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
+    <div class="stage" style="gap:16px">
+      <div style="width:110px">${OWL}</div>
+      <h1 style="margin:0;color:var(--p);font-size:26px">مَن سيلعب اليوم؟</h1>
+      <div class="kids">${named.map(([id, k]) => `<button class="kid ${id === DB.cur ? "on" : ""}" data-k="${id}">${avatar(k.av, 72)}<b>${k.name}</b><small>مستوى ${1 + Math.floor(k.xp / 120)} · ⭐ ${k.stars}</small></button>`).join("")}
+        <button class="kid add" id="addk"><span class="av" style="width:72px;height:72px;font-size:36px;background:#fff">➕</span><b>طفل جديد</b></button></div>
+      <button class="icon-btn" id="par" aria-label="لولي الأمر" style="width:auto;padding:0 16px;font-weight:700;font-size:15px;gap:6px">👨‍👩‍👧 لولي الأمر</button>
+    </div>`;
+    bindToggles();
+    app.querySelectorAll(".kid[data-k]").forEach((b) => b.onclick = () => {
+      useKid(b.dataset.k);
+      try { ac().resume(); } catch {}
+      if (window.speechSynthesis) speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
+      sfx.ok(); hub(true);
+    });
+    $("#addk").onclick = () => { const id = "k" + Date.now(); DB.kids[id] = DEF(); useKid(id); start(); };
+    $("#par").onclick = gate;
+    return;
+  }
   app.innerHTML = `
   <div class="top"><span class="badge">تعلّم والعب</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
   <div class="stage" style="gap:18px">
@@ -422,6 +475,7 @@ function start() {
       <input class="nm" id="nm" maxlength="20" placeholder="اكتب اسمك هنا" value="${S.name.replace(/"/g, "")}">
     </div>
     <button class="btn" id="go">هيا نبدأ ▶</button>
+    ${named.length ? '<button class="btn ghost" id="bk" style="min-width:0">رجوع</button>' : ""}
     <button class="icon-btn" id="par" aria-label="لولي الأمر" style="width:auto;padding:0 16px;font-weight:700;font-size:15px;gap:6px">👨‍👩‍👧 لولي الأمر</button>
   </div>`;
   bindToggles();
@@ -431,8 +485,9 @@ function start() {
     S.name = v; save();
     try { ac().resume(); } catch {}
     if (window.speechSynthesis) speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
-    sfx.ok(); hub(true);
+    sfx.ok(); S.av.set ? hub(true) : avatarScreen(() => hub(true));
   };
+  if ($("#bk")) $("#bk").onclick = () => { useKid(named[0][0]); start(); };
   $("#par").onclick = gate;
   if (S.name) setTimeout(() => $("#go").focus(), 0);
 }
@@ -440,16 +495,18 @@ function start() {
 /* ======================= الخريطة ======================= */
 function stars3(b) { return b >= 85 ? "★★★" : b >= 70 ? "★★" : b >= 1 ? "★" : ""; }
 function hub(first) {
-  SCR++; stopVoice(); if (!S.name) return start();
+  SCR++; stopVoice(); HOLD = false; if (!S.name) return start();
   const ni = nextIdx(), nl = LET[ni], due = dueList();
   app.innerHTML = `
   <div class="top"><button class="icon-btn" id="back" aria-label="رجوع">🏠</button><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
-  <div class="hubhead">${OWL}<div><h1>مرحباً يا ${S.name}!</h1><p>أتقنت ${doneCount()} من ٢٨ حرفاً</p></div></div>
+  <div class="hubhead"><button class="avb" id="avb" aria-label="شخصيتي">${avatar(S.av, 68)}</button><div style="flex:1"><h1>مرحباً يا ${S.name}!</h1><p>أتقنت ${doneCount()} من ٢٨ حرفاً</p><div class="xp"><i style="width:${Math.round((S.xp % 120) / 120 * 100)}%"></i></div><small class="xl">مستوى ${lvl()} · ${lvName()}</small></div></div>
   <div class="stage" style="justify-content:flex-start;gap:12px">
     <button class="next" id="nx"><span class="L">${nl.ch}</span><span><b>${P(nl.id).best >= 60 ? "أعد الدرس" : "الدرس التالي"}: حرف ${nl.name}</b><small>نحو ١٠ دقائق · ألعاب وكتابة وكلمات</small></span></button>
     ${due.length ? `<button class="quick" id="qk">⚡ تدريب سريع على ${due.slice(0, 3).map((l) => l.ch).join(" ")}</button>` : ""}
+    ${(() => { const w = wkNow(), ws = weekStart(), ok = w.d.length >= WK_GOAL, ds = ["س", "ح", "ن", "ث", "ر", "خ", "ج"];
+      return `<div class="wk"><div class="wh">🎁 مكافأة الأسبوع<small>${w.c ? "استلمتها ✅" : ok ? "جاهزة!" : `${w.d.length} من ${WK_GOAL} أيام`}</small></div><div class="wd">${ds.map((x, i) => `<span class="${w.d.includes(dayKey(new Date(ws.getTime() + i * 864e5))) ? "on" : ""}">${x}</span>`).join("")}</div>${ok && !w.c ? '<button class="btn alt" id="wkc" style="min-width:0;padding:10px 20px;font-size:18px">🎁 استلم مكافأتك</button>' : ""}</div>`; })()}
     <div class="sec">عالم الألعاب</div>
-    <div class="stats"><span>🔥 ${streakNow()}</span><span>💎 ${S.gems}</span><span>🎒 ${S.stk.length}/${STK.length}</span></div>
+    <div class="stats"><span>🔥 ${streakNow()}</span><span>💎 ${S.gems}</span><span>🎒 ${S.stk.length}/${STK.length}</span><button class="chip" id="bdg">🏅 ${S.bd.length}</button></div>
     <div class="games">
       <button class="gm" id="g-daily"><b>📅</b>تحدّي اليوم<small>${S.day === dayKey() ? "أنجزته ✅" : "جديد كل يوم"}</small></button>
       <button class="gm" id="g-race"><b>🏁</b>سباق الحروف<small>اسمع واختر</small></button>
@@ -470,6 +527,7 @@ function hub(first) {
   bindToggles();
   $("#back").onclick = start; $("#par").onclick = gate;
   $("#nx").onclick = () => begin(ni, "lesson");
+  $("#avb").onclick = () => avatarScreen(); $("#bdg").onclick = badgesScreen; if ($("#wkc")) $("#wkc").onclick = claimWeek;
   $("#g-daily").onclick = daily; $("#g-race").onclick = race; $("#g-tre").onclick = () => treasure(); $("#g-pos").onclick = posGame; $("#g-box").onclick = collection;
   if ($("#qk")) $("#qk").onclick = () => begin(due[0].i, "review");
   app.querySelectorAll(".cell").forEach((c) => c.onclick = () => {
@@ -651,7 +709,7 @@ async function build(w) {
       got.push(need); b.classList.add("used"); sfx.place();
       $("#wd").textContent = got.join(""); app.querySelectorAll(".slots i")[got.length - 1].classList.add("f");
       if (got.length === W0.l.length) {
-        sfx.win(); star(2); confetti(60); app.querySelectorAll(".tile").forEach((t) => t.onclick = null);
+        sfx.win(); learnWord(W0.t); star(2); confetti(60); app.querySelectorAll(".tile").forEach((t) => t.onclick = null);
         await say(`${W0.t}! قرأتها بنفسك.`, LT.id + ".w" + (w + 1));
         if (w < LT.w.length - 1) build(w + 1); else finish();
       }
@@ -673,7 +731,7 @@ async function finish() {
   const keep = MODE === "review" && p.last ? { ...p.last } : {};
   p.runs++; p.seen = Date.now(); p.last = { ...keep, ...Object.fromEntries(Object.entries(sc).filter(([, v]) => v !== null)), date: new Date().toISOString() };
   if (MODE === "review") p.best = Math.max(p.best, Math.round((p.best * 2 + sc.all) / 3)); else p.best = Math.max(p.best, sc.all);
-  save();
+  addXP(was ? 10 : 40); markActive(); save(); checkBadges();
   const pass = p.best >= 60, nextL = LET[LT.i + 1];
   const body = pass ? `
     <div class="sticker">${LT.w[0].e}</div>
@@ -712,6 +770,88 @@ function printSheet() {
 }
 
 
+
+/* ======================= الشخصية والتحفيز ======================= */
+const AV_B = ["🦊","🐼","🐯","🐰","🐻","🦁","🐸","🐵","🦄","🐧"], AV_BL = [0,0,0,0,0,1,2,3,4,5];
+const AV_A = ["","🎓","🧢","😎","🎀","🎩","👑"], AV_AL = [0,1,1,2,2,3,4];
+const AV_C = ["#ffe9a8","#cfe8ff","#ffd3e2","#d5f5e3","#e4d9ff"];
+const LV_NAMES = ["مبتدئ","مستكشف","نجم","بطل","فارس الحروف","أسطورة"];
+const lvl = () => 1 + Math.floor(S.xp / 120);
+const lvName = () => LV_NAMES[Math.min(LV_NAMES.length - 1, lvl() - 1)];
+function avatar(av, size = 64) {
+  const a = av.a, pos = a === "😎" ? "top:34%;left:50%;transform:translateX(-50%);font-size:.42em" : "top:-16%;left:50%;transform:translateX(-50%) rotate(-8deg);font-size:.5em";
+  return `<span class="av" style="width:${size}px;height:${size}px;font-size:${Math.round(size * .6)}px;background:${AV_C[av.c % AV_C.length]}">${av.b}${a ? `<i style="${pos}">${a}</i>` : ""}</span>`;
+}
+function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2800); }
+function addXP(n) { const before = lvl(); S.xp += n; if (lvl() > before) setTimeout(() => { toast(`⬆️ مستوى جديد: ${lvName()} (${lvl()})`); sfx.level(); }, 400); }
+const WK_GOAL = 4;
+const weekStart = () => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 1) % 7)); return d; };
+const wkKey = () => dayKey(weekStart());
+const wkNow = () => (S.wk.k === wkKey() ? S.wk : { k: wkKey(), d: [], c: false });
+function markActive() { if (S.wk.k !== wkKey()) S.wk = { k: wkKey(), d: [], c: false }; const t = dayKey(); if (!S.wk.d.includes(t)) S.wk.d.push(t); }
+function claimWeek() {
+  const w = wkNow(); if (w.c || w.d.length < WK_GOAL) return;
+  S.wk = { ...w, c: true }; S.box += 2; S.gems += 5; save(); sfx.win(); confetti(120); toast("🎁 مكافأة الأسبوع: صندوقان و ٥ 💎"); hub();
+}
+const BADGES = [
+  ["first","🌟","أول درس",() => doneCount() >= 1], ["a7","🏖️","بطل الشاطئ",() => doneCount() >= 7], ["a14","🌴","مستكشف الغابة",() => doneCount() >= 14],
+  ["a21","⛰️","متسلّق الجبل",() => doneCount() >= 21], ["a28","👑","بطل الحروف",() => doneCount() >= 28], ["rd","📚","بطل القراءة",() => S.words.length >= 20],
+  ["tr","💎","صائد الكنوز",() => S.gems >= 10], ["s3","🔥","٣ أيام متتالية",() => S.streak >= 3], ["s7","🚀","أسبوع كامل",() => S.streak >= 7],
+  ["cl","🎒","جامع الملصقات",() => S.stk.length >= 10], ["lv4","⭐","نجم ساطع",() => lvl() >= 4], ["pf","🎯","نتيجة كاملة",() => LET.some((l) => P(l.id).best >= 95)]
+];
+function checkBadges() {
+  let n = 0;
+  for (const [id, , t, f] of BADGES) if (!S.bd.includes(id) && f()) { S.bd.push(id); n++; setTimeout(() => { toast(`🏅 شارة جديدة: ${t}`); sfx.level(); }, 900 * n); }
+  if (n) save();
+}
+const learnWord = (t) => { if (!S.words.includes(t)) { S.words.push(t); save(); } };
+function badgesScreen() {
+  shell(7, `<div class="card" style="text-align:center"><b style="color:var(--p)">شاراتي: ${S.bd.length} من ${BADGES.length}</b></div>
+    <div class="bdg">${BADGES.map(([id, em, t]) => `<div class="b ${S.bd.includes(id) ? "" : "off"}"><span>${S.bd.includes(id) ? em : "🔒"}</span><small>${t}</small></div>`).join("")}</div>
+    <button class="btn ghost" id="mp">الخريطة</button>`);
+  note("كل شارة إنجاز جديد!"); $("#mp").onclick = () => hub();
+}
+function avatarScreen(next) {
+  const av = { ...S.av };
+  const draw = () => {
+    app.innerHTML = `<div class="top"><span class="badge">شخصيتي</span><span class="stars">مستوى ${lvl()}</span></div>
+    <div class="stage" style="justify-content:flex-start">
+      <div style="margin:10px 0 18px">${avatar(av, 120)}</div>
+      <div class="sec">الشخصية</div><div class="avg">${AV_B.map((b, i) => `<button class="pk ${av.b === b ? "on" : ""} ${lvl() < AV_BL[i] + 1 ? "lk" : ""}" data-t="b" data-i="${i}">${lvl() < AV_BL[i] + 1 ? "🔒<small>م" + (AV_BL[i] + 1) + "</small>" : b}</button>`).join("")}</div>
+      <div class="sec">الإكسسوار</div><div class="avg">${AV_A.map((a, i) => `<button class="pk ${av.a === a ? "on" : ""} ${lvl() < AV_AL[i] + 1 ? "lk" : ""}" data-t="a" data-i="${i}">${lvl() < AV_AL[i] + 1 ? "🔒<small>م" + (AV_AL[i] + 1) + "</small>" : a || "✖"}</button>`).join("")}</div>
+      <div class="sec">اللون</div><div class="avg">${AV_C.map((c, i) => `<button class="pk ${av.c === i ? "on" : ""}" data-t="c" data-i="${i}" style="background:${c}"></button>`).join("")}</div>
+      <button class="btn" id="avok" style="margin-top:12px">تمّ ✔</button>
+    </div>`;
+    app.querySelectorAll(".pk").forEach((b) => b.onclick = () => {
+      const i = +b.dataset.i, t = b.dataset.t;
+      if (t === "b") { if (lvl() < AV_BL[i] + 1) return sfx.no(); av.b = AV_B[i]; }
+      if (t === "a") { if (lvl() < AV_AL[i] + 1) return sfx.no(); av.a = AV_A[i]; }
+      if (t === "c") av.c = i;
+      sfx.pop(); draw();
+    });
+    $("#avok").onclick = () => { S.av = { ...av, set: true }; save(); sfx.ok(); next ? next() : hub(); };
+  };
+  SCR++; stopVoice(); draw();
+}
+/* ---- وقت الاستخدام ---- */
+let lastTouch = Date.now(), HOLD = false, tick = 0;
+["pointerdown", "keydown"].forEach((e) => document.addEventListener(e, () => { lastTouch = Date.now(); }, true));
+const logDay = () => (S.log[dayKey()] = S.log[dayKey()] || { sec: 0 });
+const timeUp = () => S.lim > 0 && logDay().sec >= S.lim * 60;
+function timeScreen() {
+  if ($("#tu")) return; stopVoice();
+  const a = 3 + (Math.random() * 5 | 0), b = 4 + (Math.random() * 5 | 0), d = document.createElement("div");
+  d.id = "tu"; d.className = "tu";
+  d.innerHTML = `<div class="card" style="text-align:center;max-width:420px"><div class="sticker">🌙</div><h2 style="margin:6px 0;color:var(--p)">انتهى وقت اللعب اليوم</h2><p style="margin:0 0 12px;font-weight:700">أحسنت يا ${nm()}! نكمل غداً بإذن الله.</p>
+    <input class="nm" id="tg" inputmode="numeric" maxlength="3" placeholder="لولي الأمر: ${a} × ${b} = ؟"><button class="btn alt" id="tok" style="margin-top:12px">زيادة ١٠ دقائق</button></div>`;
+  document.body.appendChild(d);
+  $("#tok").onclick = () => { if (+$("#tg").value === a * b) { logDay().sec = Math.max(0, logDay().sec - 600); save(); d.remove(); } else { $("#tg").value = ""; sfx.no(); } };
+}
+setInterval(() => {
+  if (document.hidden || !S.name || HOLD || Date.now() - lastTouch > 45000) return;
+  logDay().sec += 5; if (++tick % 6 === 0) save(); if (timeUp()) timeScreen();
+}, 5000);
+
 /* ======================= عالم الألعاب ======================= */
 const STK = ["🐰","🦁","🦆","🍎","🦊","🐪","🥕","🐴","🐋","🐑","⛺","🐻","🐔","🌽","🦒","🌸","🐟","🚗","☀️","🌳","🦅","🚀","🦚","🥁","🍇","🐘","🦋","🌙","🐱","📖","⚽","🍋","🧸","🍌","🔑","⭐","🐝","🎁","🌹","🕊️","🦄","🐉","🏆","👑"];
 const ISL = [["🏖️", "شاطئ الأبجدية"], ["🌴", "غابة الكلمات"], ["⛰️", "جبل القراءة"], ["🏰", "قلعة الإتقان"]];
@@ -723,17 +863,20 @@ const pickN = (arr, n, rnd = Math.random) => { const a = arr.slice(); for (let i
 const norm = (c) => (c === "أ" || c === "إ" || c === "آ" ? "ا" : c);
 const letOf = (c) => LET.find((l) => l.ch === norm(c));
 const learned = () => LET.filter((l) => P(l.id).best >= 60);
-const wordPool = () => learned().flatMap((l) => l.w.map((w, k) => ({ ...w, own: l, key: l.id + "." + "w" + (k + 1) })));
+const pool = () => (S.lvl === "beg" ? learned() : LET.slice());
+const skillNow = () => Math.max(S.skill, S.lvl === "adv" ? 3 : S.lvl === "mid" ? 2 : 1);
+const wordPool = () => pool().flatMap((l) => l.w.map((w, k) => ({ ...w, own: l, key: l.id + "." + "w" + (k + 1) })));
 const GAMES_NEED = 2;
 const note = (t) => { const el = $("#say"); if (el) el.textContent = t; };
 const mkOpts = (ch, rnd) => {
-  const pool = [...new Set([...simOf(ch), ...ALLCH.filter((c) => c !== ch)])];
-  const d = simOf(ch).slice(0, 2);
-  for (const c of pickN(pool, 8, rnd)) if (d.length < 3 && !d.includes(c) && c !== ch) d.push(c);
-  return pickN([ch, ...d], 4, rnd).map((c) => ({ h: c, v: c }));
+  const sk = skillNow(), need = sk === 1 ? 2 : 3;
+  const pl = [...new Set([...(sk >= 3 ? simOf(ch) : []), ...ALLCH.filter((c) => c !== ch)])];
+  const d = sk >= 3 ? simOf(ch).slice(0, 2) : [];
+  for (const c of pickN(pl, 8, rnd)) if (d.length < need && !d.includes(c) && c !== ch) d.push(c);
+  return pickN([ch, ...d], need + 1, rnd).map((c) => ({ h: c, v: c }));
 };
 function qSound(rnd) {
-  const l = pickN(learned(), 1, rnd)[0];
+  const l = pickN(pool(), 1, rnd)[0];
   return { top: '<button class="play" id="pl" aria-label="استمع">🔊</button>', text: "اسمع اسم الحرف، ثم اختر الحرف الصحيح.", key: l.id + ".name", opts: mkOpts(l.ch, rnd), ans: l.ch, auto: true };
 }
 function qPic(rnd) {
@@ -753,7 +896,7 @@ function qPos(rnd) {
 }
 function lockedGame() {
   shell(0, `<div class="sticker">🔒</div><div class="card" style="text-align:center"><h2 style="margin:0 0 6px;color:var(--p)">أتقن ${GAMES_NEED} حروف أولاً</h2><p style="margin:0;font-weight:700">أكمل الدروس لتفتح الألعاب والكنوز. أتقنت الآن ${learned().length}.</p></div><button class="btn" id="bk">إلى الدروس ◀</button>`, 1);
-  note("الألعاب تنتظرك بعد إتقان حرفين!"); $("#bk").onclick = hub;
+  note("الألعاب تنتظرك بعد إتقان حرفين!"); $("#bk").onclick = () => hub();
 }
 async function quiz(kind, qs, i = 0, hit = 0) {
   if (i >= qs.length) return endGame(kind, hit, qs.length);
@@ -770,23 +913,23 @@ async function quiz(kind, qs, i = 0, hit = 0) {
   });
   say(`${i + 1}/${qs.length}  ${q.text}`, q.key);
 }
-function race() { if (learned().length < GAMES_NEED) return lockedGame(); const qs = Array.from({ length: 10 }, (_, k) => (k % 2 ? qPic() : qSound())); quiz("race", qs); }
-function posGame() { if (learned().length < GAMES_NEED) return lockedGame(); quiz("pos", Array.from({ length: 8 }, () => qPos())); }
+function race() { if (pool().length < GAMES_NEED) return lockedGame(); const qs = Array.from({ length: 10 }, (_, k) => (k % 2 ? qPic() : qSound())); quiz("race", qs); }
+function posGame() { if (pool().length < GAMES_NEED) return lockedGame(); quiz("pos", Array.from({ length: 8 }, () => qPos())); }
 function daily() {
-  if (learned().length < GAMES_NEED) return lockedGame();
+  if (pool().length < GAMES_NEED) return lockedGame();
   const t = dayKey();
   if (S.day === t) {
     shell(1, `<div class="sticker">✅</div><div class="card" style="text-align:center"><h2 style="margin:0 0 6px;color:var(--p)">أنجزت تحدي اليوم!</h2><p style="margin:0;font-weight:700">🔥 ${streakNow()} أيام متتالية · عُد غداً لتحدٍّ جديد</p></div><button class="btn ghost" id="bk">الخريطة</button>`, 1);
-    note("عُد غداً يا بطل!"); $("#bk").onclick = hub; return;
+    note("عُد غداً يا بطل!"); $("#bk").onclick = () => hub(); return;
   }
   const rnd = seeded(t), mk = [qSound, qPic, qPos, qSound, qPos];
   quiz("daily", mk.map((f) => f(rnd)));
 }
 async function treasure(i = 0, hit = 0, miss = 0) {
-  if (learned().length < GAMES_NEED) return lockedGame();
+  if (pool().length < GAMES_NEED) return lockedGame();
   const N = 5; if (i >= N) return endGame("treasure", Math.max(0, N - miss), N);
   const W0 = pickN(wordPool(), 1)[0], L = W0.l;
-  const extra = pickN(ALLCH.filter((c) => !L.map(norm).includes(c)), 2);
+  const extra = pickN(ALLCH.filter((c) => !L.map(norm).includes(c)), [0, 0, 2, 3][skillNow()]);
   const tiles = shuffle([...L, ...extra]); let got = [], missed = false;
   shell(i, `<div class="pic">${W0.e}</div><div class="word" id="wd">&nbsp;</div><div class="slots">${L.map(() => "<i></i>").join("")}</div><div class="row" id="tl">${tiles.map((t) => `<button class="tile">${t}</button>`).join("")}</div>`, N);
   window.__need = () => L[got.length];
@@ -796,7 +939,7 @@ async function treasure(i = 0, hit = 0, miss = 0) {
     if (b.textContent === need) {
       got.push(need); b.classList.add("used"); sfx.place(); $("#wd").textContent = got.join(""); app.querySelectorAll(".slots i")[got.length - 1].classList.add("f");
       if (got.length === L.length) {
-        sfx.win(); S.gems++; star(2); confetti(40); app.querySelectorAll(".tile").forEach((t) => t.onclick = null); save();
+        sfx.win(); S.gems++; learnWord(W0.t); star(2); confetti(40); checkBadges(); app.querySelectorAll(".tile").forEach((t) => t.onclick = null); save();
         note(`💎 وجدت كنزاً! ${W0.t}`); await wait(1100); treasure(i + 1, hit + 1, miss + (missed ? 1 : 0));
       }
     } else { missed = true; sfx.no(); b.classList.add("shake"); setTimeout(() => b.classList.remove("shake"), 400); note("جرّب حرفاً آخر."); }
@@ -808,30 +951,33 @@ function grantBox() {
   S.bx.n++; S.box++; return true;
 }
 function endGame(kind, hit, total) {
-  const pct = hit / total, ok = pct >= .7; let box = false, extra = "";
+  const pct = hit / total, ok = pct >= .7; let box = false, extra = "", lvmsg = "";
+  addXP(kind === "daily" ? 30 : 20); markActive();
+  if (pct >= .9 && S.skill < 3) { S.skill++; lvmsg = "⬆️ ارتفع مستوى التحدّي!"; } else if (pct < .5 && S.skill > 1) { S.skill--; lvmsg = "نخفّف التحدّي قليلاً 🌱"; }
   if (kind === "daily") {
     S.streak = S.day === yesterdayKey() ? S.streak + 1 : 1; S.day = dayKey(); S.box++; box = true; S.gems += 2;
     extra = `<p style="margin:8px 0 0;font-weight:700;color:var(--ok)">🔥 ${S.streak} أيام متتالية · +💎٢</p>`;
   } else if (ok) box = grantBox();
-  save();
+  save(); checkBadges();
   shell(total, `<div class="sticker">${ok ? "🏆" : "💪"}</div>
     <div class="card" style="text-align:center"><h2 style="margin:0 0 4px;color:var(--p)">${ok ? "رائع يا " + nm() + "!" : "قرّبت جداً!"}</h2>
     <p style="margin:0;font-weight:700">إجابات صحيحة من أول مرة: ${hit} من ${total}</p>${extra}
-    ${box ? '<p style="margin:8px 0 0;font-weight:700;color:var(--ok)">🎁 ربحت صندوق مفاجآت!</p>' : ""}</div>
+    ${box ? '<p style="margin:8px 0 0;font-weight:700;color:var(--ok)">🎁 ربحت صندوق مفاجآت!</p>' : ""}
+    <p style="margin:8px 0 0;font-weight:700;color:#6d6684">مستوى التحدّي: ${["", "سهل", "متوسط", "صعب"][skillNow()]} ${lvmsg}</p></div>
     ${S.box > 0 ? `<button class="btn alt" id="ob">🎁 افتح الصندوق (${S.box})</button>` : ""}
     ${kind !== "daily" ? '<button class="btn" id="ag">العب مرة أخرى</button>' : ""}
     <button class="btn ghost" id="mp">الخريطة</button>`, total);
   note(ok ? "أحسنت! أنت بطل." : "كل مرة تتحسّن أكثر!"); sfx.level(); if (ok) confetti(90);
   if ($("#ob")) $("#ob").onclick = openBox;
   if ($("#ag")) $("#ag").onclick = () => ({ race, treasure: () => treasure(), pos: posGame }[kind] || hub)();
-  $("#mp").onclick = hub;
+  $("#mp").onclick = () => hub();
 }
 async function openBox() {
   if (S.box < 1) return hub();
   S.box--; const have = new Set(S.stk), left = STK.filter((x) => !have.has(x));
   let item, dup = false;
   if (left.length) item = left[Math.random() * left.length | 0]; else { item = STK[Math.random() * STK.length | 0]; dup = true; S.gems += 3; }
-  if (!dup) S.stk.push(item); save();
+  if (!dup) S.stk.push(item); save(); checkBadges();
   shell(7, `<div class="sticker" id="bx" style="animation:shake .5s infinite">🎁</div><div id="rs" class="hide"></div>`);
   note("نفتح الصندوق… مفاجأة!"); sfx.whoosh(); await wait(900); sfx.pop();
   const bx = $("#bx"); if (!bx) return;
@@ -839,13 +985,13 @@ async function openBox() {
   note(dup ? "عندك هذا الملصق! ربحت 💎٣" : "ملصق جديد في مجموعتك!");
   const st = bx.parentNode;
   st.insertAdjacentHTML("beforeend", `<span class="badge">${dup ? "مكرر → +💎٣" : "جديد! " + S.stk.length + " من " + STK.length}</span>${S.box > 0 ? `<button class="btn alt" id="ob">افتح التالي (${S.box})</button>` : ""}<button class="btn" id="cl">مجموعتي 🎒</button><button class="btn ghost" id="mp">الخريطة</button>`);
-  if ($("#ob")) $("#ob").onclick = openBox; $("#cl").onclick = collection; $("#mp").onclick = hub;
+  if ($("#ob")) $("#ob").onclick = openBox; $("#cl").onclick = collection; $("#mp").onclick = () => hub();
 }
 function collection() {
   shell(7, `<div class="card" style="text-align:center"><b style="color:var(--p)">مجموعتي: ${S.stk.length} من ${STK.length}</b></div>
     <div class="map" style="grid-template-columns:repeat(6,1fr)">${STK.map((x) => `<div class="cell ${S.stk.includes(x) ? "done" : "lock"}" style="font-size:30px;cursor:default">${S.stk.includes(x) ? x : "❔"}</div>`).join("")}</div>
     ${S.box > 0 ? `<button class="btn alt" id="ob">🎁 افتح صندوقاً (${S.box})</button>` : ""}<button class="btn ghost" id="mp">الخريطة</button>`);
-  note("اجمع كل الملصقات!"); if ($("#ob")) $("#ob").onclick = openBox; $("#mp").onclick = hub;
+  note("اجمع كل الملصقات!"); if ($("#ob")) $("#ob").onclick = openBox; $("#mp").onclick = () => hub();
 }
 
 /* ======================= ولي الأمر ======================= */
@@ -860,32 +1006,59 @@ function gate() {
   $("#home").onclick = start;
   $("#gok").onclick = () => { if (+$("#ga").value === a * b) parent(); else { $("#ga").value = ""; sfx.no(); $("#ga").classList.add("shake"); setTimeout(() => $("#ga").classList.remove("shake"), 400); } };
 }
-function parent() {
-  const lvl = (v) => (v >= .85 ? "متقن ✅" : v >= .6 ? "جيد 👍" : "يحتاج تكرار 🔁");
+function parent(kid) {
+  if (kid && DB.kids[kid]) useKid(kid);
+  HOLD = true;
+  const tag = (v) => (v >= .85 ? "متقن ✅" : v >= .6 ? "جيد 👍" : "يحتاج تكرار 🔁");
   const done = LET.filter((l) => P(l.id).runs > 0);
-  const best = done.filter((l) => P(l.id).best >= 85), weak = done.filter((l) => P(l.id).best < 85);
+  const best = LET.filter((l) => P(l.id).best >= 85), weak = done.filter((l) => P(l.id).best < 85);
   const avg = (k) => { const v = done.map((l) => P(l.id).last && P(l.id).last[k]).filter((x) => typeof x === "number"); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
-  const skills = [["التعرّف على الحرف بين حروف تشبهه", avg("fAcc")], ["كتابة الحرف بالتتبّع", avg("tAcc")], ["تمييز أصوات الحركات", avg("sAcc")], ["تركيب الكلمات", avg("bAcc")]].filter((s) => s[1] !== null);
-  const mins = done.reduce((a, l) => a + (P(l.id).last ? P(l.id).last.mins || 0 : 0), 0);
-  const tip = !done.length ? "" : weak.length ? `ننصح بإعادة تدريب: ${weak.slice(0, 4).map((l) => l.ch).join("، ")} (٥ دقائق يومياً تكفي).` : doneCount() >= 28 ? "ما شاء الله! أتقن الطفل الحروف كلها، وهو جاهز للقراءة." : `أداء ممتاز! الحرف التالي: ${LET[nextIdx()].ch}.`;
-  const report = done.length ? `تقرير «تعلّم والعب» – زاد التعليمية\nالطفل: ${S.name}\nالحروف المتقنة: ${doneCount()} من ٢٨\n${done.map((l) => `${l.ch}: ${P(l.id).best}%`).join(" · ")}\n${skills.map((s) => `• ${s[0]}: ${lvl(s[1])}`).join("\n")}\nالنجوم: ${S.stars}\n${tip}` : "";
-  app.innerHTML = `<div class="top"><button class="icon-btn" id="home">🏠</button><span class="badge">تقرير ولي الأمر</span></div>
+  const skills = [["التعرّف على الحرف بين حروف تشبهه", avg("fAcc")], ["كتابة الحرف بالتتبّع", avg("tAcc")], ["تمييز أصوات الحركات", avg("sAcc")], ["تركيب الكلمات", avg("bAcc")]].filter((x) => x[1] !== null);
+  const mins = Object.values(S.log).reduce((a, d) => a + d.sec, 0) / 60 | 0, today = Math.round((S.log[dayKey()] || { sec: 0 }).sec / 60);
+  const ws = weekStart(), days = [...Array(7)].map((_, i) => dayKey(new Date(ws.getTime() + i * 864e5)));
+  const wmin = days.map((d) => Math.round(((S.log[d] || { sec: 0 }).sec) / 60)), wmax = Math.max(10, ...wmin), dn = ["س", "ح", "ن", "ث", "ر", "خ", "ج"];
+  const nxt = doneCount() < 28 ? LET[nextIdx()] : null;
+  const sug = [];
+  if (nxt) sug.push(`درس «${nxt.ch}» التالي (٥–٧ دقائق).`);
+  if (weak.length) sug.push(`راجعوا الحروف: ${weak.slice(0, 4).map((l) => l.ch).join("، ")} بالتتبّع على الهواء ثم على الورق.`);
+  if (S.words.length) sug.push(`اطلبوا منه قراءة كلمة مما تعلّم ثم البحث عن شيء في البيت يبدأ بحرفها.`);
+  sug.push(S.lvl === "beg" ? "لعبة: اختر حرفاً وابحث معه عن ٣ أشياء في البيت تبدأ به." : S.lvl === "mid" ? "لعبة: «من يجد الحرف أولاً» في لافتة أو علبة منتج." : "تحدَّ طفلك: يكتب كلمة من ٣ حروف بحروف مفرّقة ثم يقرؤها.");
+  const report = `تقرير «تعلّم والعب» الأسبوعي – زاد التعليمية\nالطفل: ${S.name}\nالمستوى: ${lvName()} (${lvl()}) · ⭐ ${S.stars} · 🏅 ${S.bd.length}\nالحروف المتقنة: ${doneCount()} من ٢٨\nكلمات يقرؤها: ${S.words.slice(-12).join("، ") || "—"}\nأيام النشاط هذا الأسبوع: ${wkNow().d.length} من ٧ · ${wmin.reduce((a, b) => a + b, 0)} دقيقة\n${skills.map((x) => `• ${x[0]}: ${tag(x[1])}`).join("\n")}\n💡 ${sug[0]}`;
+  const ids = Object.keys(DB.kids).filter((k) => DB.kids[k].name);
+  app.innerHTML = `<div class="top"><button class="icon-btn" id="home">🏠</button><span class="badge">لوحة ولي الأمر</span></div>
   <div class="stage" style="justify-content:flex-start"><div class="card parent">
-    ${done.length ? `<h2>${S.name}</h2>
+    <div class="tabs">${ids.map((k) => `<button class="${k === DB.cur ? "on" : ""}" data-k="${k}">${avatar(DB.kids[k].av, 30)} ${DB.kids[k].name}</button>`).join("")}<button id="pk-add">➕ طفل</button></div>
+    <h2>${S.name} <small>مستوى ${lvl()} · ${lvName()}</small></h2>
     <div class="kv"><span>الحروف المتقنة</span><span>${doneCount()} / ٢٨</span></div><div class="bar"><i style="width:${Math.round(doneCount() / 28 * 100)}%"></i></div>
-    ${skills.map((s) => `<div class="kv"><span>${s[0]}</span><span>${lvl(s[1])}</span></div><div class="bar"><i style="width:${Math.round(s[1] * 100)}%"></i></div>`).join("")}
-    <div class="kv"><span>حروف جرّبها</span><span>${done.map((l) => l.ch).join(" ")}</span></div>
-    <div class="kv" style="margin-top:6px"><span>النجوم</span><span>⭐ ${S.stars}</span></div>
-    <div class="kv" style="margin-top:6px"><span>مدة التعلّم التقريبية</span><span>${mins} دقيقة</span></div>
-    <div class="note">💡 ${tip}${best.length ? `<br>أتقن: ${best.map((l) => l.ch).join("، ")}` : ""}</div>
-    <div class="row" style="margin-top:14px"><button class="btn" id="sh">📲 أرسل التقرير واتساب</button></div>`
-    : `<h2>لا توجد نتائج بعد</h2><p>بعد أن يكمل طفلك أول درس يظهر هنا تقرير مفصّل بما أتقنه وما يحتاج تكراراً.</p>`}
+    <div class="sec2">الحروف</div><div class="lgrid">${LET.map((l) => { const b = P(l.id).best, r = P(l.id).runs; return `<span class="${b >= 85 ? "g" : r ? "y" : ""}" title="${b}%">${l.ch}</span>`; }).join("")}</div>
+    <small class="lg"><b class="g"></b> متقن <b class="y"></b> يحتاج تكرار <b></b> لم يبدأ</small>
+    <div class="sec2">كلمات يستطيع قراءتها (${S.words.length})</div>
+    <div class="wds">${S.words.length ? S.words.map((w) => `<span>${w}</span>`).join("") : '<small>ستظهر هنا بعد ألعاب الكلمات.</small>'}</div>
+    ${skills.map((x) => `<div class="kv"><span>${x[0]}</span><span>${tag(x[1])}</span></div><div class="bar"><i style="width:${Math.round(x[1] * 100)}%"></i></div>`).join("")}
+    <div class="sec2">تقرير الأسبوع</div>
+    <div class="kv"><span>أيام النشاط</span><span>${wkNow().d.length} من ٧</span></div>
+    <div class="wb">${wmin.map((m, i) => `<div><i style="height:${Math.max(4, Math.round(m / wmax * 60))}px" class="${days[i] === dayKey() ? "t" : ""}"></i><small>${dn[i]}</small><small>${m}د</small></div>`).join("")}</div>
+    <div class="kv"><span>اليوم</span><span>${today} دقيقة</span></div><div class="kv"><span>المجموع</span><span>${mins} دقيقة</span></div>
+    <div class="note">💡 <b>أنشطة مقترحة</b><br>${sug.map((x) => "• " + x).join("<br>")}</div>
+    <div class="sec2">الإعدادات</div>
+    <label class="st">المستوى التعليمي
+      <select id="lv"><option value="beg" ${S.lvl === "beg" ? "selected" : ""}>مبتدئ — بالترتيب، الحرف يفتح بعد إتقان السابق</option><option value="mid" ${S.lvl === "mid" ? "selected" : ""}>متوسط — كل الحروف مفتوحة وتحديات متوسطة</option><option value="adv" ${S.lvl === "adv" ? "selected" : ""}>متقدّم — كل الحروف وتحديات أصعب</option></select></label>
+    <label class="st">حدّ الاستخدام اليومي
+      <select id="lm">${[[0, "بلا حدّ"], [10, "١٠ دقائق"], [15, "١٥ دقيقة"], [20, "٢٠ دقيقة"], [30, "٣٠ دقيقة"], [45, "٤٥ دقيقة"]].map(([v, t]) => `<option value="${v}" ${S.lim === v ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+    <div class="row" style="margin-top:14px"><button class="btn" id="sh">📲 أرسل التقرير واتساب</button></div>
+    ${ids.length > 1 ? '<button class="btn ghost" id="rm" style="min-width:0;margin-top:8px">حذف ملف هذا الطفل</button>' : ""}
   </div></div>`;
-  $("#home").onclick = start;
-  const sh = $("#sh"); if (sh) sh.onclick = () => { location.href = "https://wa.me/?text=" + encodeURIComponent(report); };
+  const out = () => { HOLD = false; start(); };
+  $("#home").onclick = out;
+  app.querySelectorAll(".tabs [data-k]").forEach((b) => b.onclick = () => parent(b.dataset.k));
+  $("#pk-add").onclick = () => { const id = "k" + Date.now(); DB.kids[id] = DEF(); useKid(id); out(); };
+  $("#lv").onchange = (e) => { S.lvl = e.target.value; if (S.lvl === "mid") S.skill = Math.max(S.skill, 2); if (S.lvl === "adv") S.skill = 3; save(); };
+  $("#lm").onchange = (e) => { S.lim = +e.target.value; save(); };
+  $("#sh").onclick = () => { location.href = "https://wa.me/?text=" + encodeURIComponent(report); };
+  if ($("#rm")) $("#rm").onclick = () => { if (!confirm(`حذف ملف ${S.name} نهائياً؟`)) return; delete DB.kids[DB.cur]; DB.cur = Object.keys(DB.kids).find((k) => DB.kids[k].name) || Object.keys(DB.kids)[0]; S = DB.kids[DB.cur]; save(); out(); };
 }
 
-window.__zad = { LET, S, begin, hub, start, AUD, brk, race, posGame, daily, treasure, openBox, collection, learned };
+window.__zad = { LET, DB, get S() { return S; }, lvl, addXP, checkBadges, avatarScreen, badgesScreen, parent, gate, begin, hub, start, AUD, brk, race, posGame, daily, treasure, openBox, collection, learned };
 start();
 })();
 </script>
