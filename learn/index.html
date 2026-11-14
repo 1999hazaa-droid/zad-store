@@ -265,7 +265,7 @@ if (!DB || !DB.kids) { let old = {}; try { old = JSON.parse(localStorage.getItem
 Object.keys(DB.kids).forEach((k) => { DB.kids[k] = Object.assign(DEF(), DB.kids[k]); DB.kids[k].av = Object.assign(DEF().av, DB.kids[k].av); });
 if (!DB.kids[DB.cur]) { DB.cur = Object.keys(DB.kids)[0] || "k1"; DB.kids[DB.cur] = DB.kids[DB.cur] || DEF(); }
 let S = DB.kids[DB.cur];
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch {} };
+const save = () => { DB._t = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch {} syncSoon(); };
 const useKid = (k) => { DB.cur = k; S = DB.kids[k]; save(); };
 const P = (id) => (S.prog[id] = S.prog[id] || { best: 0, runs: 0, last: null, seen: 0 });
 const unlocked = (i) => i === 0 || S.lvl !== "beg" || P(LET[i - 1].id).best >= 60;
@@ -1284,6 +1284,93 @@ function dlReport() {
   a.href = URL.createObjectURL(b); a.download = `تقرير-${S.name}.html`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 
+/* ======================= الحساب والمزامنة والمحتوى ======================= */
+const SB = "https://zcnwzpevehudhnsuljdy.supabase.co", SBK = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpjbnd6cGV2ZWh1ZGhuc3VsamR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNDc4MDIsImV4cCI6MjEwNzYyMzgwMn0.WNr3b4xybHT7bb7Z0lnDHJq3QimA5-Ds9x-Pwic5840";
+let SESS = null; try { SESS = JSON.parse(localStorage.getItem("zad-sess")); } catch {}
+const setSess = (x) => { SESS = x; try { x ? localStorage.setItem("zad-sess", JSON.stringify(x)) : localStorage.removeItem("zad-sess"); } catch {} };
+async function sb(path, { method = "GET", body, tok, headers = {} } = {}) {
+  const r = await fetch(SB + path, { method, headers: { apikey: SBK, "Content-Type": "application/json", Authorization: "Bearer " + (tok || SBK), ...headers }, body: body ? JSON.stringify(body) : undefined });
+  let j = null; try { j = await r.json(); } catch {}
+  if (!r.ok) throw new Error((j && (j.msg || j.error_description || j.message)) || "خطأ " + r.status);
+  return j;
+}
+const mkSess = (j) => ({ at: j.access_token, rt: j.refresh_token, exp: Date.now() + (j.expires_in || 3600) * 1000, email: (j.user && j.user.email) || (SESS && SESS.email), uid: (j.user && j.user.id) || (SESS && SESS.uid) });
+async function tok() {
+  if (!SESS) return null;
+  if (SESS.exp - 60000 < Date.now()) { try { setSess(mkSess(await sb("/auth/v1/token?grant_type=refresh_token", { method: "POST", body: { refresh_token: SESS.rt } }))); } catch { setSess(null); return null; } }
+  return SESS.at;
+}
+let pushT = 0, syncMsg = "";
+function syncSoon() { if (!SESS) return; clearTimeout(pushT); pushT = setTimeout(pushNow, 4000); }
+async function pushNow() {
+  try { const t = await tok(); if (!t) return; await sb("/rest/v1/learn_saves?on_conflict=user_id", { method: "POST", tok: t, headers: { Prefer: "resolution=merge-duplicates" }, body: { user_id: SESS.uid, data: DB, updated_at: new Date().toISOString() } }); syncMsg = "تمّ الحفظ في الحساب ☁️"; } catch (e) { syncMsg = "تعذّرت المزامنة (ستُعاد لاحقاً)"; }
+}
+async function pullCloud() { const t = await tok(); if (!t) return null; const r = await sb("/rest/v1/learn_saves?select=data,updated_at&user_id=eq." + SESS.uid, { tok: t }); return r[0] || null; }
+function adopt(d) { DB = d; Object.keys(DB.kids).forEach((k) => { DB.kids[k] = Object.assign(DEF(), DB.kids[k]); DB.kids[k].av = Object.assign(DEF().av, DB.kids[k].av); }); if (!DB.kids[DB.cur]) DB.cur = Object.keys(DB.kids)[0]; S = DB.kids[DB.cur]; save(); }
+async function afterLogin() {
+  const c = await pullCloud(), mine = Object.values(DB.kids).some((k) => k.name);
+  if (c && c.data && c.data.kids) {
+    if (!mine || confirm("وجدنا تقدّماً محفوظاً في حسابك. موافق = استعادته (واستبدال تقدّم هذا الجهاز). إلغاء = رفع تقدّم هذا الجهاز إلى الحساب.")) { adopt(c.data); toast("☁️ تمت استعادة التقدّم"); return; }
+  }
+  await pushNow(); toast("☁️ حُفظ التقدّم في حسابك");
+}
+function accScreen(msg = "") {
+  HOLD = true;
+  app.innerHTML = `<div class="top"><button class="icon-btn" id="home">↩</button><span class="badge">☁️ الحساب والنسخ الاحتياطي</span></div>
+  <div class="stage" style="justify-content:flex-start"><div class="card parent">
+    ${SESS ? `<h2>أنت مسجّل الدخول</h2><p style="margin:0 0 8px;font-weight:700;direction:ltr;text-align:center">${SESS.email}</p>
+      <p style="font-weight:700;color:var(--ok);text-align:center">${syncMsg || "التقدّم يُحفظ تلقائياً في حسابك"}</p>
+      <div class="row"><button class="btn" id="sy" style="min-width:0">🔄 حفظ الآن</button><button class="btn ghost" id="lo" style="min-width:0">تسجيل الخروج</button></div>
+      <div class="sec2">حذف البيانات</div><button class="btn ghost" id="dd" style="min-width:0">🗑 حذف التقدّم المحفوظ في الحساب</button>`
+    : `<h2>حساب الأسرة</h2><p style="margin:0 0 10px;font-weight:700">سجّل بريدك لتحفظ تقدّم أطفالك ويعمل على كل أجهزتك ويمكن استعادته إن ضاع الجهاز.</p>
+      <input class="nm" id="em" type="email" inputmode="email" autocomplete="email" placeholder="البريد الإلكتروني" style="direction:ltr;margin-bottom:8px">
+      <input class="nm" id="pw" type="password" autocomplete="current-password" placeholder="كلمة المرور (٨ أحرف فأكثر)" style="direction:ltr">
+      <div class="row" style="margin-top:12px"><button class="btn" id="li" style="min-width:0">دخول</button><button class="btn alt" id="su" style="min-width:0">إنشاء حساب</button></div>
+      <button class="btn ghost" id="fg" style="min-width:0;margin-top:8px">نسيت كلمة المرور</button>`}
+    <p id="am" style="text-align:center;font-weight:700;color:var(--p);margin:10px 0 0">${msg}</p>
+    <div class="sec2">نسخة احتياطية بدون حساب</div>
+    <div class="row"><button class="btn alt" id="ex" style="min-width:0">⬇ حفظ نسخة</button><label class="btn ghost" style="min-width:0;cursor:pointer">⬆ استعادة من ملف<input type="file" id="im" accept=".json,application/json" hidden></label></div>
+    <div class="note">🔒 <b>حماية بيانات الأطفال:</b> نحفظ فقط الاسم الأول والتقدّم التعليمي، ولا نطلب صورة أو عنواناً أو أي بيانات أخرى. الحساب باسم ولي الأمر، والبيانات لا يراها غيره، ولا نشاركها مع أحد. يمكنك حذفها متى شئت.</div>
+  </div></div>`;
+  const busy = async (f) => { try { $("#am").textContent = "..."; await f(); } catch (e) { $("#am").textContent = String(e.message).includes("Invalid login") ? "البريد أو كلمة المرور غير صحيحة" : e.message; } };
+  $("#home").onclick = () => parent();
+  const ge = () => $("#em").value.trim(), gp = () => $("#pw").value;
+  if ($("#li")) $("#li").onclick = () => busy(async () => { setSess(mkSess(await sb("/auth/v1/token?grant_type=password", { method: "POST", body: { email: ge(), password: gp() } }))); await afterLogin(); accScreen("تم تسجيل الدخول ✅"); });
+  if ($("#su")) $("#su").onclick = () => busy(async () => {
+    if (gp().length < 8) throw new Error("كلمة المرور قصيرة (٨ أحرف على الأقل)");
+    const j = await sb("/auth/v1/signup", { method: "POST", body: { email: ge(), password: gp() } });
+    if (j.access_token) { setSess(mkSess(j)); await afterLogin(); accScreen("تم إنشاء الحساب ✅"); } else accScreen("أرسلنا رسالة تأكيد إلى بريدك. افتح الرابط ثم ارجع وسجّل الدخول.");
+  });
+  if ($("#fg")) $("#fg").onclick = () => busy(async () => { if (!ge()) throw new Error("اكتب بريدك أولاً"); await sb("/auth/v1/recover?redirect_to=" + encodeURIComponent(location.origin + location.pathname), { method: "POST", body: { email: ge() } }); $("#am").textContent = "أرسلنا رابط استعادة كلمة المرور إلى بريدك."; });
+  if ($("#lo")) $("#lo").onclick = () => { setSess(null); accScreen("تم تسجيل الخروج"); };
+  if ($("#sy")) $("#sy").onclick = () => busy(async () => { await pushNow(); accScreen(syncMsg); });
+  if ($("#dd")) $("#dd").onclick = () => busy(async () => { if (!confirm("حذف التقدّم المحفوظ في الحساب نهائياً؟ (تقدّم هذا الجهاز يبقى)")) return $("#am").textContent = ""; const t = await tok(); await sb("/rest/v1/learn_saves?user_id=eq." + SESS.uid, { method: "DELETE", tok: t }); accScreen("تم حذف البيانات من الحساب"); });
+  $("#ex").onclick = () => { const b = new Blob([JSON.stringify(DB)], { type: "application/json" }), a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "zad-learn-backup.json"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); };
+  $("#im").onchange = (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { const d = JSON.parse(r.result); if (!d.kids) throw 0; adopt(d); accScreen("تمت الاستعادة ✅"); } catch { $("#am").textContent = "الملف غير صالح"; } }; r.readAsText(f); };
+}
+function recoveryCheck() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get("type") !== "recovery" || !h.get("access_token")) return false;
+  const t = h.get("access_token"); history.replaceState(null, "", location.pathname);
+  app.innerHTML = `<div class="stage" style="gap:14px"><div style="width:110px">${OWL}</div><div class="card" style="text-align:center"><h2 style="margin:0 0 8px;color:var(--p)">كلمة مرور جديدة</h2><input class="nm" id="np" type="password" placeholder="٨ أحرف فأكثر" style="direction:ltr"><p id="rm2" style="font-weight:700;color:var(--no)"></p><button class="btn" id="npk" style="margin-top:8px">حفظ</button></div></div>`;
+  $("#npk").onclick = async () => { try { if ($("#np").value.length < 8) throw new Error("كلمة المرور قصيرة"); const u = await sb("/auth/v1/user", { method: "PUT", tok: t, body: { password: $("#np").value } }); setSess({ at: t, rt: h.get("refresh_token"), exp: Date.now() + 3000e3, email: u.email, uid: u.id }); await afterLogin(); toast("✅ تم تغيير كلمة المرور"); start(); } catch (e) { $("#rm2").textContent = e.message; } };
+  return true;
+}
+/* ---- محتوى يضيفه صاحب الموقع ---- */
+const CNT_IDS = new Set();
+function applyContent(rows) {
+  for (const r of rows || []) {
+    if (CNT_IDS.has(r.id)) continue; CNT_IDS.add(r.id); const d = r.data || {};
+    if (r.kind === "story" && d.s) STORIES.push({ t: r.title, e: r.emoji || "📖", m: d.m || "", s: d.s });
+    if (r.kind === "song" && d.l) SONGS.push({ t: r.title, e: r.emoji || "🎵", l: d.l });
+    if (r.kind === "lesson" && d.items) CATS["c_" + r.id.slice(0, 6)] = { t: r.title, e: r.emoji || "📚", items: () => d.items.map(([a, e, en]) => ({ a, v: `<span class="bg">${e}</span>`, en })) };
+  }
+}
+(async () => {
+  try { applyContent(JSON.parse(localStorage.getItem("zad-content") || "[]")); } catch {}
+  try { const r = await sb("/rest/v1/learn_content?select=id,kind,title,emoji,data&published=eq.true&order=created_at"); localStorage.setItem("zad-content", JSON.stringify(r)); applyContent(r); } catch {}
+})();
+
 /* ======================= ولي الأمر ======================= */
 function gate() {
   const a = 3 + (Math.random() * 5 | 0), b = 4 + (Math.random() * 5 | 0);
@@ -1340,6 +1427,7 @@ function parent(kid) {
     <label class="st">حدّ الاستخدام اليومي
       <select id="lm">${[[0, "بلا حدّ"], [10, "١٠ دقائق"], [15, "١٥ دقيقة"], [20, "٢٠ دقيقة"], [30, "٣٠ دقيقة"], [45, "٤٥ دقيقة"]].map(([v, t]) => `<option value="${v}" ${S.lim === v ? "selected" : ""}>${t}</option>`).join("")}</select></label>
     <div class="row" style="margin-top:14px"><button class="btn" id="sh">📲 أرسل التقرير واتساب</button><button class="btn alt" id="dl" style="min-width:0">⬇ تحميل التقرير</button></div>
+    <button class="btn ghost" id="acc" style="min-width:0;margin-top:8px">☁️ الحساب والنسخ الاحتياطي ${SESS ? "✅" : ""}</button>
     ${ids.length > 1 ? '<button class="btn ghost" id="rm" style="min-width:0;margin-top:8px">حذف ملف هذا الطفل</button>' : ""}
   </div></div>`;
   const out = () => { HOLD = false; start(); };
@@ -1348,13 +1436,13 @@ function parent(kid) {
   $("#pk-add").onclick = () => { const id = "k" + Date.now(); DB.kids[id] = DEF(); useKid(id); out(); };
   $("#lv").onchange = (e) => { S.lvl = e.target.value; if (S.lvl === "mid") S.skill = Math.max(S.skill, 2); if (S.lvl === "adv") S.skill = 3; save(); };
   $("#lm").onchange = (e) => { S.lim = +e.target.value; save(); };
-  $("#ag").onchange = (e) => { S.age = e.target.value; save(); }; $("#dl").onclick = dlReport;
+  $("#ag").onchange = (e) => { S.age = e.target.value; save(); }; $("#dl").onclick = dlReport; $("#acc").onclick = () => accScreen();
   $("#sh").onclick = () => { location.href = "https://wa.me/?text=" + encodeURIComponent(report); };
   if ($("#rm")) $("#rm").onclick = () => { if (!confirm(`حذف ملف ${S.name} نهائياً؟`)) return; delete DB.kids[DB.cur]; DB.cur = Object.keys(DB.kids).find((k) => DB.kids[k].name) || Object.keys(DB.kids)[0]; S = DB.kids[DB.cur]; save(); out(); };
 }
 
 window.__zad = { achScreen, reportHTML, storyMenu, storyPlay, songPlay, shopScreen, wcBump, moreHub, GM, learnCards, LET, DB, get S() { return S; }, lvl, addXP, checkBadges, avatarScreen, badgesScreen, parent, gate, begin, hub, start, AUD, brk, race, posGame, daily, treasure, openBox, collection, learned };
-start();
+if (!recoveryCheck()) start();
 })();
 </script>
 </body>

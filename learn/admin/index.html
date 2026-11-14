@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>لوحة إدارة تعلّم والعب</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--p:#5B34D6;--bg:#f6f3ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Cairo,sans-serif;color:#2b1d63;padding:16px}
+.w{max-width:640px;margin:0 auto}.c{background:#fff;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 2px 0 rgba(91,52,214,.12)}
+h1{margin:0 0 12px;color:var(--p);font-size:22px}h3{margin:0 0 8px}label{display:block;font-weight:700;margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px;border:2px solid #e3dcf9;border-radius:12px;font:inherit;background:#fff}textarea{min-height:140px}
+button{font:inherit;font-weight:800;border:0;border-radius:14px;padding:12px 18px;background:var(--p);color:#fff;cursor:pointer;margin-top:10px}button.g{background:#eee9fb;color:var(--p)}button.r{background:#ffe1e1;color:#b42318}
+.i{display:flex;gap:8px;align-items:center;justify-content:space-between;border-top:1px solid #eee;padding:8px 0}.i span{flex:1}.i button{margin:0;padding:6px 12px}
+small{color:#6d6684}#m{font-weight:700;color:var(--p)}
+</style></head><body><div class="w">
+<h1>🛠 لوحة إدارة «تعلّم والعب»</h1>
+<div class="c" id="lg"><h3>تسجيل دخول المالك</h3><label>البريد</label><input id="em" type="email" dir="ltr"><label>كلمة المرور</label><input id="pw" type="password" dir="ltr"><button id="go">دخول</button></div>
+<div id="ad" hidden>
+<div class="c"><h3>إضافة محتوى جديد</h3>
+<label>النوع</label><select id="k"><option value="story">قصة</option><option value="song">أنشودة</option><option value="lesson">بطاقات تعلّم (درس)</option></select>
+<label>العنوان</label><input id="t" maxlength="40"><label>إيموجي الغلاف</label><input id="e" maxlength="4" placeholder="📖">
+<div id="mw"><label>العبرة (للقصة)</label><input id="mo" maxlength="80"></div>
+<label id="ll">كل سطر مشهد: <b>إيموجي|النص</b></label><textarea id="tx" placeholder="🐰|كان يا ما كان أرنبٌ صغير."></textarea>
+<small id="hl"></small><br><button id="sv">نشر</button> <span id="m"></span></div>
+<div class="c"><h3>المحتوى المنشور</h3><div id="ls"></div></div>
+<button class="g" id="lo">تسجيل الخروج</button></div></div>
+<script>
+const SB="https://zcnwzpevehudhnsuljdy.supabase.co",KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpjbnd6cGV2ZWh1ZGhuc3VsamR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNDc4MDIsImV4cCI6MjEwNzYyMzgwMn0.WNr3b4xybHT7bb7Z0lnDHJq3QimA5-Ds9x-Pwic5840";
+const $=s=>document.querySelector(s);let T=null;
+async function sb(p,o={}){const r=await fetch(SB+p,{method:o.method||"GET",headers:{apikey:KEY,"Content-Type":"application/json",Authorization:"Bearer "+(o.tok||T||KEY),...(o.h||{})},body:o.body?JSON.stringify(o.body):undefined});let j=null;try{j=await r.json()}catch{}if(!r.ok)throw new Error((j&&(j.msg||j.error_description||j.message))||"خطأ "+r.status);return j}
+const HINT={story:"مثال: 🐰|كان يا ما كان أرنبٌ صغير. (٣–٨ مشاهد)",song:"كل سطر: إيموجي|سطر الأنشودة",lesson:"كل سطر: الكلمة بالعربي|إيموجي|الإنجليزي (مثال: تفاحة|🍎|Apple)"};
+function ui(){const k=$("#k").value;$("#mw").hidden=k!=="story";$("#hl").textContent=HINT[k];$("#ll").innerHTML=k==="lesson"?"كل سطر: <b>عربي|إيموجي|English</b>":"كل سطر: <b>إيموجي|النص</b>"}
+$("#k").onchange=ui;ui();
+async function list(){const r=await sb("/rest/v1/learn_content?select=id,kind,title,emoji,published&order=created_at.desc");$("#ls").innerHTML=r.length?r.map(x=>`<div class="i"><span>${x.emoji||""} ${x.title} <small>(${{story:"قصة",song:"أنشودة",lesson:"درس"}[x.kind]})</small></span><button class="g" data-p="${x.id}" data-v="${x.published}">${x.published?"إخفاء":"إظهار"}</button><button class="r" data-d="${x.id}">حذف</button></div>`).join(""):"<small>لا يوجد محتوى بعد.</small>";
+ $("#ls").querySelectorAll("[data-p]").forEach(b=>b.onclick=async()=>{await sb("/rest/v1/learn_content?id=eq."+b.dataset.p,{method:"PATCH",body:{published:b.dataset.v!=="true"}});list()});
+ $("#ls").querySelectorAll("[data-d]").forEach(b=>b.onclick=async()=>{if(confirm("حذف نهائي؟")){await sb("/rest/v1/learn_content?id=eq."+b.dataset.d,{method:"DELETE"});list()}})}
+$("#go").onclick=async()=>{try{const j=await sb("/auth/v1/token?grant_type=password",{method:"POST",body:{email:$("#em").value.trim(),password:$("#pw").value}});T=j.access_token;
+ const ok=await sb("/rest/v1/rpc/is_admin",{method:"POST",body:{}});if(ok!==true)throw new Error("هذا الحساب ليس مالك الموقع");$("#lg").hidden=true;$("#ad").hidden=false;list()}catch(e){T=null;alert(e.message)}};
+$("#lo").onclick=()=>{T=null;$("#ad").hidden=true;$("#lg").hidden=false;$("#pw").value=""};
+$("#sv").onclick=async()=>{try{const k=$("#k").value,t=$("#t").value.trim(),lines=$("#tx").value.split("\n").map(x=>x.trim()).filter(Boolean).map(x=>x.split("|").map(y=>y.trim()));
+ if(!t)throw new Error("اكتب العنوان");if(lines.length<(k==="lesson"?2:3))throw new Error("أضف أسطراً أكثر");if(lines.some(l=>l.length<(k==="lesson"?2:2)||l.some(v=>!v)))throw new Error("صيغة سطر غير صحيحة");
+ const data=k==="story"?{m:$("#mo").value.trim(),s:lines.map(l=>[l[0],l[1]])}:k==="song"?{l:lines.map(l=>[l[0],l[1]])}:{items:lines.map(l=>[l[0],l[1],l[2]||""])};
+ await sb("/rest/v1/learn_content",{method:"POST",h:{Prefer:"return=minimal"},body:{kind:k,title:t,emoji:$("#e").value.trim()||null,data,published:true}});
+ $("#m").textContent="تم النشر ✅ (يظهر للأطفال فوراً)";$("#t").value=$("#tx").value="";list()}catch(e){$("#m").textContent=e.message}};
+</script></body></html>
