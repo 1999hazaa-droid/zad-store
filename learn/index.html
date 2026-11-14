@@ -296,7 +296,7 @@ const NAMES = Object.fromEntries(LET.map((l) => [l.ch, "ال" + l.name.replace(/
 
 /* ======================= الحفظ ======================= */
 const KEY = "zad-learn-v3", OLDKEY = "zad-learn-v2";
-const DEF = () => ({ name: "", stars: 0, sfx: true, voice: true, prog: {}, gems: 0, box: 0, stk: [], streak: 0, day: "", bx: { d: "", n: 0 }, own: [], spent: 0, cn: "", gp: {}, age: "8", rd: 0, wc: { k: "", g: 0, l: 0, s: 0, c: false }, xp: 0, av: { b: "🦊", a: "", c: 0, set: false }, bd: [], words: [], log: {}, skill: 1, lim: 0, lvl: "beg", wk: { k: "", d: [], c: false } });
+const DEF = () => ({ name: "", stars: 0, sfx: true, voice: true, music: true, prog: {}, gems: 0, box: 0, stk: [], streak: 0, day: "", bx: { d: "", n: 0 }, own: [], spent: 0, cn: "", gp: {}, age: "8", rd: 0, wc: { k: "", g: 0, l: 0, s: 0, c: false }, xp: 0, av: { b: "🦊", a: "", c: 0, set: false }, bd: [], words: [], log: {}, skill: 1, lim: 0, lvl: "beg", wk: { k: "", d: [], c: false } });
 let DB = null;
 try { DB = JSON.parse(localStorage.getItem(KEY)); } catch {}
 if (!DB || !DB.kids) { let old = {}; try { old = JSON.parse(localStorage.getItem(OLDKEY)) || {}; } catch {} DB = { cur: "k1", kids: { k1: old } }; }
@@ -486,9 +486,21 @@ function shell(step, body, total = STEPS) {
   $("#home").onclick = () => hub();
   $("#rep").onclick = () => speak(...lastSpeech);
 }
-const toggles = () => `<button class="icon-btn" id="tsfx" aria-label="المؤثرات">${S.sfx ? "🔔" : "🔕"}</button><button class="icon-btn" id="tvo" aria-label="الصوت">${S.voice ? "🔊" : "🔇"}</button>`;
+/* ======================= موسيقى الخلفية (خفيفة جداً) ======================= */
+const BGM = new Audio("audio/bgm.mp3?v=1"); BGM.loop = true; BGM.volume = .07; BGM.preload = "none";
+let bgmOn = false;
+function bgmSync() {
+  try {
+    if (S.music !== false && !document.hidden && bgmOn) { const p = BGM.play(); if (p && p.catch) p.catch(() => {}); }
+    else BGM.pause();
+  } catch {}
+}
+["pointerdown", "touchend", "click"].forEach((ev) => document.addEventListener(ev, () => { if (!bgmOn) { bgmOn = true; bgmSync(); } }, { passive: true }));
+document.addEventListener("visibilitychange", bgmSync);
+const toggles = () => `<button class="icon-btn" id="tsfx" aria-label="المؤثرات">${S.sfx ? "🔔" : "🔕"}</button><button class="icon-btn" id="tmu" aria-label="الموسيقى">${S.music !== false ? "🎵" : "🚫"}</button><button class="icon-btn" id="tvo" aria-label="الصوت">${S.voice ? "🔊" : "🔇"}</button>`;
 function bindToggles() {
   $("#tsfx").onclick = () => { S.sfx = !S.sfx; save(); $("#tsfx").textContent = S.sfx ? "🔔" : "🔕"; sfx.tap(); };
+  $("#tmu").onclick = () => { S.music = S.music === false; save(); $("#tmu").textContent = S.music !== false ? "🎵" : "🚫"; bgmOn = true; bgmSync(); };
   $("#tvo").onclick = () => { S.voice = !S.voice; save(); $("#tvo").textContent = S.voice ? "🔊" : "🔇"; if (!S.voice) stopVoice(); };
 }
 
