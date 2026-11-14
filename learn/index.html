@@ -101,6 +101,11 @@ input.nm:focus{border-color:var(--p)}
 .gm b{font-size:38px;line-height:1.1}.gm small{font-size:12px;color:#6d6684}.gm.wide{grid-column:1/-1;flex-direction:row;justify-content:center;gap:10px}
 .gm.wide small{margin-inline-start:6px}.gm em{font-style:normal;background:var(--no);color:#fff;border-radius:99px;padding:0 9px;font-size:14px}
 .gm:active{transform:translateY(3px);box-shadow:0 2px 0 #d9d0f7}
+.scs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%}
+.sc{border:0;font:inherit;color:#fff;border-radius:22px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 5px 0 rgba(0,0,0,.18);cursor:pointer;min-height:118px;justify-content:center}
+.sc b{font-size:38px;line-height:1.1}.sc span{font-weight:800;font-size:18px}.sc small{font-size:12px;opacity:.92;text-align:center}.sc:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.sch{display:flex;align-items:center;gap:12px;width:100%;border-radius:22px;padding:14px 16px;color:#fff;box-shadow:0 5px 0 rgba(0,0,0,.18)}.sch b{font-size:46px}.sch h1{margin:0;font-size:24px}.sch small{opacity:.95;font-weight:700}
+
 .isl{width:100%}.isl .ih{font-weight:700;color:var(--p);margin:6px 2px 6px;display:flex;justify-content:space-between;align-items:center}
 .isl .ih small{color:#6d6684}.isl.lk{opacity:.55}
 .isl .map{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
@@ -296,7 +301,7 @@ const NAMES = Object.fromEntries(LET.map((l) => [l.ch, "ال" + l.name.replace(/
 
 /* ======================= الحفظ ======================= */
 const KEY = "zad-learn-v3", OLDKEY = "zad-learn-v2";
-const DEF = () => ({ name: "", stars: 0, sfx: true, voice: true, music: true, prog: {}, gems: 0, box: 0, stk: [], streak: 0, day: "", bx: { d: "", n: 0 }, own: [], spent: 0, cn: "", gp: {}, age: "8", rd: 0, wc: { k: "", g: 0, l: 0, s: 0, c: false }, xp: 0, av: { b: "🦊", a: "", c: 0, set: false }, bd: [], words: [], log: {}, skill: 1, lim: 0, lvl: "beg", wk: { k: "", d: [], c: false } });
+const DEF = () => ({ name: "", stars: 0, sfx: true, voice: true, music: true, prog: {}, gems: 0, box: 0, stk: [], streak: 0, day: "", bx: { d: "", n: 0 }, own: [], spent: 0, cn: "", gp: {}, age: "8", rd: 0, wc: { k: "", g: 0, l: 0, s: 0, c: false }, xp: 0, av: { b: "🦊", a: "", c: 0, set: false }, bd: [], words: [], log: {}, skill: 1, lim: 0, lvl: "beg", sec: "", wk: { k: "", d: [], c: false } });
 let DB = null;
 try { DB = JSON.parse(localStorage.getItem(KEY)); } catch {}
 if (!DB || !DB.kids) { let old = {}; try { old = JSON.parse(localStorage.getItem(OLDKEY)) || {}; } catch {} DB = { cur: "k1", kids: { k1: old } }; }
@@ -524,7 +529,7 @@ function start() {
       useKid(b.dataset.k);
       try { ac().resume(); } catch {}
       if (window.speechSynthesis) speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
-      sfx.ok(); hub(true);
+      sfx.ok(); hub();
     });
     $("#addk").onclick = () => { const id = "k" + Date.now(); DB.kids[id] = DEF(); useKid(id); start(); };
     $("#par").onclick = gate;
@@ -550,7 +555,7 @@ function start() {
     S.name = v; save();
     try { ac().resume(); } catch {}
     if (window.speechSynthesis) speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
-    sfx.ok(); S.av.set ? hub(true) : avatarScreen(() => hub(true));
+    sfx.ok(); S.av.set ? hub() : avatarScreen(() => hub());
   };
   if ($("#bk")) $("#bk").onclick = () => { useKid(named[0][0]); start(); };
   $("#par").onclick = gate;
@@ -559,7 +564,7 @@ function start() {
 
 /* ======================= الخريطة ======================= */
 function stars3(b) { return b >= 85 ? "★★★" : b >= 70 ? "★★" : b >= 1 ? "★" : ""; }
-function hub(first) {
+function lettersHub(first) {
   SCR++; stopVoice(); HOLD = false; if (!S.name) return start();
   const ni = nextIdx(), nl = LET[ni], due = dueList();
   app.innerHTML = `
@@ -595,7 +600,7 @@ function hub(first) {
     <button class="quick" id="par" style="margin-top:6px">👨‍👩‍👧 لولي الأمر · تقرير التقدّم</button>
   </div>`;
   bindToggles();
-  $("#back").onclick = start; $("#par").onclick = gate;
+  $("#back").onclick = () => secHome(S.sec); $("#par").onclick = gate;
   $("#nx").onclick = () => begin(ni, "lesson");
   $("#avb").onclick = () => avatarScreen(); $("#sub").onclick = () => payScreen(); $("#bdg").onclick = badgesScreen; if ($("#wkc")) $("#wkc").onclick = claimWeek;
   $("#g-daily").onclick = daily; $("#g-race").onclick = race; $("#g-tre").onclick = () => treasure(); $("#g-pos").onclick = posGame; $("#g-box").onclick = collection; $("#g-more").onclick = moreHub; $("#g-story").onclick = storyMenu; $("#g-ach").onclick = achScreen; $("#g-shop").onclick = () => shopScreen();
@@ -813,7 +818,7 @@ async function finish() {
     <button class="btn ghost" id="again">${pass ? "الخريطة" : "أعد الدرس"}</button>`);
   if ($("#pr")) $("#pr").onclick = printSheet;
   if ($("#nxt")) $("#nxt").onclick = () => begin(LT.i + 1, "lesson");
-  $("#again").onclick = () => pass ? hub() : begin(LT.i, "lesson");
+  $("#again").onclick = () => pass ? lettersHub() : begin(LT.i, "lesson");
   if (pass) { confetti(120); sfx.level(); } else sfx.ok();
   say(pass ? `مبروك يا ${nm()}! أنت الآن تعرف حرف ${LT.name}.` : `لا بأس يا ${nm()}! كل مرة تتحسّن أكثر. هيا نحاول مرة أخرى.`, pass ? "done.pass" : "done.retry");
 }
@@ -1175,7 +1180,7 @@ for (const [k, c] of Object.entries(CATS)) if (!c.en) { const f = c.items; c.ite
 function speakEN(t) { try { if (!window.speechSynthesis) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = "en-US"; u.rate = .8; u.pitch = 1.1; speechSynthesis.speak(u); } catch {} }
 function learnMenu() {
   shell(0, `<div class="card" style="text-align:center"><b style="color:var(--p)">اختر ما تريد أن تتعلّمه</b></div>
-    <div class="games">${Object.entries(CATS).map(([k, c]) => `<button class="gm" data-c="${k}"><b>${c.e}</b>${c.t}<small>${c.items().length} بطاقة</small></button>`).join("")}</div>
+    <div class="games">${Object.entries(CATS).filter(([k]) => !LKEYS || LKEYS.includes(k)).map(([k, c]) => `<button class="gm" data-c="${k}"><b>${c.e}</b>${c.t}<small>${c.items().length} بطاقة</small></button>`).join("")}</div>
     <button class="btn ghost" id="mp">الخريطة</button>`, 1);
   note("ماذا نتعلّم اليوم؟");
   app.querySelectorAll("[data-c]").forEach((b) => b.onclick = () => learnCards(b.dataset.c));
@@ -1203,7 +1208,7 @@ function qMath(rnd) {
 }
 function mathGame() { quiz("math", Array.from({ length: 8 }, () => qMath())); }
 function qMix(rnd) {
-  const keys = ["col", "shp", "ani", "fru", "thg", "nums", "eng"], k = pickN(keys, 1, rnd)[0], c = CATS[k], all = c.items(), x = pickN(all, 1, rnd)[0];
+  const keys = MIXK || ["col", "shp", "ani", "fru", "thg", "nums", "eng"], k = pickN(keys, 1, rnd)[0], c = CATS[k], all = c.items(), x = pickN(all, 1, rnd)[0];
   const others = pickN(all.filter((y) => y !== x), 3, rnd);
   if (k === "eng") return { top: `<div class="lc">${x.v}</div>`, text: "ما هذا بالإنجليزية؟", opts: pickN([x, ...others], 4, rnd).map((y) => ({ h: y.en, v: y.en, s: "font-size:22px;direction:ltr" })), ans: x.en };
   if (["ani", "fru", "thg"].includes(k) && Math.random() < .5) return { top: `<div class="word" style="min-height:0">${x.a}</div>`, text: `أين ${x.a}؟`, key: x.id, opts: pickN([x, ...others], 4, rnd).map((y) => ({ h: y.v.replace(/<[^>]+>/g, ""), v: y.a, s: "font-size:54px;padding:10px 0" })), ans: x.a };
@@ -1383,6 +1388,138 @@ function advPlay(i = 0) {
   });
 }
 const GM = { lab: readLab, adv: () => advPlay(0), acad: acadMenu,  math: mathGame, mix: mixGame, miss: missGame, wpic: wpicGame, wsim: wsimGame, mem: memGame, odd: () => oddGame(), ord: () => ordGame(), foc: () => focGame() };
+
+/* ======================= الأقسام: من سنة إلى الصف الرابع ======================= */
+const SECS = [
+  { id: "a2", grp: "age", name: "سنة إلى سنتين", em: "🍼", c: ["#F472B6", "#BE185D"], age: "4", sub: "ألوان وحيوانات وفواكه وذاكرة", games: ["cards", "mix", "mem", "odd", "ord", "story"] },
+  { id: "a3", grp: "age", name: "٣ سنوات", em: "🧸", c: ["#FB923C", "#C2410C"], age: "4", sub: "أرقام وأشكال وذاكرة وتركيز", games: ["cards", "mix", "math", "mem", "odd", "foc", "ord", "story"] },
+  { id: "a4", grp: "age", name: "٤ سنوات", em: "🎈", c: ["#14B8A6", "#0F766E"], age: "4", sub: "عالم الحروف وسباق وأرقام", games: ["letters", "race", "pos", "math", "cards", "mem", "odd", "foc", "ord", "story"] },
+  { id: "a5", grp: "age", name: "٥ سنوات", em: "✏️", c: ["#8B5CF6", "#5B21B6"], age: "6", sub: "حروف وكلمات وقراءة أولية", games: ["letters", "treasure", "race", "pos", "miss", "wpic", "math", "mem", "foc", "lab", "story"] },
+  { id: "a6", grp: "age", name: "٦ سنوات", em: "🎒", c: ["#3B82F6", "#1D4ED8"], age: "6", sub: "قراءة وكتابة وجمع وطرح", games: ["letters", "treasure", "acad", "adv", "lab", "wsim", "miss", "wpic", "math", "mix", "story"] },
+  { id: "g1", grp: "grade", name: "الصف الأول", em: "1️⃣", c: ["#8B5CF6", "#5B21B6"], age: "8", sub: "قراءة وجمع وطرح حتى ٢٠", games: ["adv", "lab", "acad", "miss", "wpic", "g_add20", "g_sub20", "g_cmp", "g_opp", "g_day", "g_dua"] },
+  { id: "g2", grp: "grade", name: "الصف الثاني", em: "2️⃣", c: ["#10B981", "#047857"], age: "8", sub: "جمع وطرح حتى ١٠٠", games: ["g_add100", "g_sub100", "g_skip", "g_even", "g_opp", "g_day", "g_dua", "g_ayah", "adv"] },
+  { id: "g3", grp: "grade", name: "الصف الثالث", em: "3️⃣", c: ["#F59E0B", "#B45309"], age: "8", sub: "جدول الضرب والقسمة والكسور", games: ["g_mul", "g_div", "g_frac", "g_place", "g_round", "g_add1000", "g_ayah", "g_dua"] },
+  { id: "g4", grp: "grade", name: "الصف الرابع", em: "4️⃣", c: ["#3B82F6", "#1D4ED8"], age: "8", sub: "ضرب وقسمة وكسور وأعداد كبيرة", games: ["g_mul12", "g_div12", "g_frac4", "g_place4", "g_round4", "g_add10000", "g_big", "g_ayah"] }
+];
+let LKEYS = null, MIXK = null;
+const GREG = {
+  letters: ["🔤", "عالم الحروف", "دروس الحروف الـ٢٨", () => lettersHub()],
+  cards: ["📚", "بطاقات التعلّم", "بالصوت والصورة", () => { LKEYS = secKeys(); learnMenu(); }],
+  mix: ["🧠", "اختبرني", "ما هذا؟", () => { MIXK = secMix(); mixGame(); }],
+  math: ["➕", "الأرقام والحساب", "عدّ وجمع وطرح", () => mathGame()],
+  mem: ["🃏", "الذاكرة", "طابق الصور", () => memGame()],
+  odd: ["🔍", "اكتشف المختلف", "أيها يختلف؟", () => GM.odd()],
+  foc: ["🎯", "التركيز", "ابحث وعُدّ", () => GM.foc()],
+  ord: ["📊", "رتّب الصور", "من الأقل للأكثر", () => GM.ord()],
+  race: ["🏁", "سباق الحروف", "اسمع واختر", () => race()],
+  pos: ["📍", "أين الحرف؟", "أول · وسط · آخر", () => posGame()],
+  treasure: ["💎", "كنز الكلمات", "ركّب واجمع", () => treasure()],
+  miss: ["🔡", "أكمل الكلمة", "الحرف الناقص", () => missGame()],
+  wpic: ["🖼️", "الكلمة والصورة", "اقرأ واختر", () => wpicGame()],
+  wsim: ["👀", "الكلمات المتشابهة", "أي كلمة تطابق الصورة؟", () => wsimGame()],
+  lab: ["📖", "مختبر القراءة", "مقاطع وكلمات", () => readLab()],
+  acad: ["🎓", "أكاديمية الحروف", "كلمات جديدة", () => acadMenu()],
+  adv: ["🦉", "مغامرة القراءة", "اقرأ مع زوزو", () => advPlay(0)],
+  story: ["🎵", "قصص وأناشيد", "اسمع وغنِّ", () => storyMenu()],
+  g_add20: ["➕", "الجمع حتى ٢٠", "اجمع بسرعة", () => gradeGame("g_add20", () => qAdd(20))],
+  g_sub20: ["➖", "الطرح حتى ٢٠", "اطرح بسرعة", () => gradeGame("g_sub20", () => qSub(20))],
+  g_add100: ["➕", "الجمع حتى ١٠٠", "أعداد أكبر", () => gradeGame("g_add100", () => qAdd(100))],
+  g_sub100: ["➖", "الطرح حتى ١٠٠", "أعداد أكبر", () => gradeGame("g_sub100", () => qSub(100))],
+  g_add1000: ["➕", "الجمع والطرح حتى ١٠٠٠", "أعداد كبيرة", () => gradeGame("g_add1000", () => Math.random() < .5 ? qAdd(1000) : qSub(1000))],
+  g_add10000: ["➕", "الجمع والطرح حتى ١٠٠٠٠", "أعداد كبيرة جداً", () => gradeGame("g_add10000", () => Math.random() < .5 ? qAdd(10000) : qSub(10000))],
+  g_cmp: ["⚖️", "الأكبر والأصغر", "قارن الأعداد", () => gradeGame("g_cmp", () => qCmp(20))],
+  g_big: ["⚖️", "الأكبر والأصغر", "أعداد حتى ١٠٠٠٠", () => gradeGame("g_big", () => qCmp(10000))],
+  g_skip: ["🦘", "العدّ بالقفز", "بـ ٢ و٥ و١٠", () => gradeGame("g_skip", qSkip)],
+  g_even: ["🎯", "زوجي أم فردي؟", "اعرف نوع العدد", () => gradeGame("g_even", qEven)],
+  g_mul: ["✖️", "جدول الضرب", "من ٢ إلى ٥", () => gradeGame("g_mul", () => qMul([2, 3, 4, 5], 10))],
+  g_mul12: ["✖️", "جدول الضرب", "من ٢ إلى ١٢", () => gradeGame("g_mul12", () => qMul([2, 3, 4, 5, 6, 7, 8, 9, 11, 12], 12))],
+  g_div: ["➗", "القسمة", "على ٢ و٣ و٤ و٥", () => gradeGame("g_div", () => qDiv([2, 3, 4, 5], 10))],
+  g_div12: ["➗", "القسمة", "على أعداد أكبر", () => gradeGame("g_div12", () => qDiv([2, 3, 4, 5, 6, 7, 8, 9], 12))],
+  g_frac: ["🍕", "الكسور", "النصف والثلث والربع", () => gradeGame("g_frac", () => qFrac([2, 3, 4]))],
+  g_frac4: ["🍕", "الكسور", "كسور أكثر", () => gradeGame("g_frac4", () => qFrac([3, 4, 5, 6, 8]))],
+  g_place: ["🔢", "قيمة الرقم", "آحاد وعشرات ومئات", () => gradeGame("g_place", () => qPlace(3))],
+  g_place4: ["🔢", "قيمة الرقم", "حتى الآلاف", () => gradeGame("g_place4", () => qPlace(4))],
+  g_round: ["📏", "التقريب", "لأقرب عشرة", () => gradeGame("g_round", () => qRound(10, 100))],
+  g_round4: ["📏", "التقريب", "لأقرب مئة", () => gradeGame("g_round4", () => qRound(100, 1000))],
+  g_opp: ["↔️", "الأضداد", "ما عكس الكلمة؟", () => gradeGame("g_opp", qOpp)],
+  g_day: ["📅", "الأيام", "قبل وبعد", () => gradeGame("g_day", qDay)],
+  g_dua: ["🤲", "الأدعية", "ماذا نقول؟", () => gradeGame("g_dua", qDua)],
+  g_ayah: ["🕌", "أكمل الآية", "من قصار السور", () => gradeGame("g_ayah", qAyah)]
+};
+const secKeys = () => ({ a2: ["col", "ani", "fru", "shp", "thg"], a3: ["nums", "col", "ani", "fru", "shp", "thg"] }[S.sec] || Object.keys(CATS));
+const secMix = () => ({ a2: ["col", "shp", "ani", "fru"], a3: ["col", "shp", "ani", "fru", "thg", "nums"] }[S.sec] || null);
+function gradeGame(kind, mk) { if (!subOk()) return payScreen(); quiz(kind, Array.from({ length: 10 }, () => mk())); }
+const rI = (a, b) => a + (Math.random() * (b - a + 1) | 0);
+const near = (v, sp, lo = 0) => { const s = new Set([v]); let g = 0; while (s.size < 4 && g++ < 80) { const x = v + rI(-sp, sp); if (x >= lo && x !== v) s.add(x); } return pickN([...s], s.size).map((x) => ({ h: AD(x), v: x, s: "font-size:30px" })); };
+const bigq = (t) => `<div class="word" style="min-height:0" dir="ltr">${t}</div>`;
+function qAdd(m) { const a = rI(1, m - 1), b = rI(1, m - a); if (m >= 1000) { const x = rI(m / 10, m * .6 | 0), y = rI(m / 10, m - x); return { top: bigq(`${AD(x)} + ${AD(y)}`), text: `كم ناتج ${AD(x)} زائد ${AD(y)}؟`, opts: near(x + y, m >= 10000 ? 1000 : 100), ans: x + y }; } return { top: bigq(`${AD(a)} + ${AD(b)}`), text: `كم ناتج ${AD(a)} زائد ${AD(b)}؟`, opts: near(a + b, m > 20 ? 10 : 3), ans: a + b }; }
+function qSub(m) { let a = rI(m >= 1000 ? m / 5 : 2, m), b = rI(1, a); if (m >= 1000) { a = rI(m / 5, m); b = rI(m / 10, a - 1); } return { top: bigq(`${AD(a)} − ${AD(b)}`), text: `كم ناتج ${AD(a)} ناقص ${AD(b)}؟`, opts: near(a - b, m >= 10000 ? 1000 : m >= 1000 ? 100 : m > 20 ? 10 : 3), ans: a - b }; }
+function qCmp(m) { const a = rI(1, m), b = (() => { let x; do { x = rI(1, m); } while (x === a); return x; })(), big = Math.random() < .5; return { top: `<div class="word" style="min-height:0">${AD(a)} ، ${AD(b)}</div>`, text: big ? "أي عدد أكبر؟" : "أي عدد أصغر؟", opts: pickN([a, b], 2).map((x) => ({ h: AD(x), v: x, s: "font-size:34px" })), ans: big ? Math.max(a, b) : Math.min(a, b) }; }
+function qSkip() { const st = pickN([2, 5, 10], 1)[0], s0 = rI(0, 3) * st, seq = [s0, s0 + st, s0 + 2 * st], ans = s0 + 3 * st; return { top: bigq(`${seq.map(AD).join(" ، ")} ، ؟`), text: `أكمل العدّ بالقفز بـ ${AD(st)}`, opts: near(ans, st * 2, 1), ans }; }
+function qEven() { const n = rI(1, 50), ev = n % 2 === 0; return { top: `<div class="word" style="min-height:0">${AD(n)}</div>`, text: `هل ${AD(n)} زوجي أم فردي؟`, opts: pickN(["زوجي", "فردي"], 2).map((x) => ({ h: x, v: x, s: "font-size:26px" })), ans: ev ? "زوجي" : "فردي" }; }
+function qMul(t, m) { const a = pickN(t, 1)[0], b = rI(1, m), v = a * b; return { top: bigq(`${AD(a)} × ${AD(b)}`), text: `كم ناتج ${AD(a)} في ${AD(b)}؟`, opts: near(v, Math.max(4, a), 1), ans: v }; }
+function qDiv(t, m) { const a = pickN(t, 1)[0], q = rI(1, m), v = a * q; return { top: bigq(`${AD(v)} ÷ ${AD(a)}`), text: `كم ناتج ${AD(v)} قسمة ${AD(a)}؟`, opts: near(q, 3, 1), ans: q }; }
+const frT = (n, d) => `<span dir="ltr">${AD(n)}/${AD(d)}</span>`;
+function qFrac(dens) { const d = pickN(dens, 1)[0], n = rI(1, d - 1), ans = `${n}/${d}`, o = new Set([ans]); let g = 0; while (o.size < 3 && g++ < 60) { const dd = Math.random() < .5 ? d : pickN(dens.concat([d + 1]), 1)[0], nn = rI(1, Math.max(1, dd - 1)); if (nn < dd) o.add(`${nn}/${dd}`); } if (o.size < 3) o.add(`1/${d + 2}`); if (o.size < 3) o.add(`3/${d + 3}`); const f = (x) => { const [p, q] = x.split("/"); return frT(+p, +q); }; return { top: `<div class="lc" style="width:130px;height:130px;margin:auto;border-radius:50%;background:conic-gradient(var(--p) 0 ${n / d * 100}%,#e8e2fb 0)"></div>`, text: "أي كسر يمثل الجزء الملوّن؟", opts: pickN([...o], 3).map((x) => ({ h: f(x), v: x, s: "font-size:30px" })), ans }; }
+function qPlace(dg) { const n = rI(10 ** (dg - 1), 10 ** dg - 1), ds = String(n).split(""), i = rI(0, dg - 1), pos = dg - 1 - i, d = +ds[i] || rI(1, 9), n2 = ds.map((c, k) => k === i ? d : c).join(""), ans = d * 10 ** pos, o = new Set([ans]); [0, 1, 2, 3].forEach((p) => { if (o.size < 3 && p !== pos && p < dg) o.add(d * 10 ** p); }); while (o.size < 3) o.add(ans * 10); return { top: bigq(AD(n2)), text: `ما قيمة الرقم ${AD(d)} في العدد ${AD(n2)}؟`, opts: pickN([...o], 3).map((x) => ({ h: AD(x), v: x, s: "font-size:30px" })), ans }; }
+function qRound(to, mx) { const n = rI(1, mx - 1), a = Math.round(n / to) * to; if (n % to === to / 2) return qRound(to, mx); const o = new Set([a, a + to, Math.max(0, a - to)]); while (o.size < 3) o.add(a + 2 * to); return { top: bigq(AD(n)), text: `قرّب ${AD(n)} لأقرب ${AD(to)}`, opts: pickN([...o], 3).map((x) => ({ h: AD(x), v: x, s: "font-size:30px" })), ans: a }; }
+const OPPS = [["كبير", "صغير"], ["طويل", "قصير"], ["حار", "بارد"], ["فوق", "تحت"], ["سريع", "بطيء"], ["ثقيل", "خفيف"], ["نظيف", "وسخ"], ["مفتوح", "مغلق"], ["نهار", "ليل"], ["سعيد", "حزين"], ["قريب", "بعيد"], ["جديد", "قديم"]];
+function qOpp() { const p = pickN(OPPS, 1)[0], f = Math.random() < .5, q = f ? p[1] : p[0], a = f ? p[0] : p[1]; return { top: bigq(q), text: `ما عكس ${q}؟`, opts: pickN([a, ...pickN(OPPS.flat().filter((x) => x !== q && x !== a), 2)], 3).map((x) => ({ h: x, v: x, s: "font-size:24px" })), ans: a }; }
+const WDAYS = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+function qDay() { const i = rI(0, 6), nx = Math.random() < .5, a = WDAYS[(i + (nx ? 1 : 6)) % 7]; return { top: bigq(WDAYS[i]), text: `ما اليوم الذي ${nx ? "بعد" : "قبل"} ${WDAYS[i]}؟`, opts: pickN([a, ...pickN(WDAYS.filter((x) => x !== a), 2)], 3).map((x) => ({ h: x, v: x, s: "font-size:22px" })), ans: a }; }
+const SURAHS = [
+  ["الفاتحة", ["بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", "الرَّحْمَٰنِ الرَّحِيمِ", "مَالِكِ يَوْمِ الدِّينِ", "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ", "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ", "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ"]],
+  ["الإخلاص", ["قُلْ هُوَ اللَّهُ أَحَدٌ", "اللَّهُ الصَّمَدُ", "لَمْ يَلِدْ وَلَمْ يُولَدْ", "وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ"]],
+  ["الفلق", ["قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ", "مِن شَرِّ مَا خَلَقَ", "وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ", "وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ", "وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ"]],
+  ["الناس", ["قُلْ أَعُوذُ بِرَبِّ النَّاسِ", "مَلِكِ النَّاسِ", "إِلَٰهِ النَّاسِ", "مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ", "الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ", "مِنَ الْجِنَّةِ وَالنَّاسِ"]],
+  ["الكوثر", ["إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ", "فَصَلِّ لِرَبِّكَ وَانْحَرْ", "إِنَّ شَانِئَكَ هُوَ الْأَبْتَرُ"]],
+  ["العصر", ["وَالْعَصْرِ", "إِنَّ الْإِنسَانَ لَفِي خُسْرٍ", "إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ وَتَوَاصَوْا بِالْحَقِّ وَتَوَاصَوْا بِالصَّبْرِ"]],
+  ["النصر", ["إِذَا جَاءَ نَصْرُ اللَّهِ وَالْفَتْحُ", "وَرَأَيْتَ النَّاسَ يَدْخُلُونَ فِي دِينِ اللَّهِ أَفْوَاجًا", "فَسَبِّحْ بِحَمْدِ رَبِّكَ وَاسْتَغْفِرْهُ إِنَّهُ كَانَ تَوَّابًا"]]
+];
+const DUAS = [
+  ["قبل الأكل", "🍽️", "بِسْمِ اللَّهِ"],
+  ["بعد الأكل", "🥛", "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مُسْلِمِينَ"],
+  ["عند النوم", "😴", "بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا"],
+  ["عند الاستيقاظ", "⏰", "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ"],
+  ["عند العطاس", "🤧", "الْحَمْدُ لِلَّهِ"],
+  ["عند دخول المسجد", "🕌", "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ"],
+  ["عند الخروج من المسجد", "🚪", "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ"],
+  ["عند ركوب السيارة", "🚗", "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنقَلِبُونَ"],
+  ["عند نزول المطر", "🌧️", "اللَّهُمَّ صَيِّبًا نَافِعًا"],
+  ["عند لبس الثوب", "👕", "الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ"],
+  ["عند الغضب", "😠", "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ"],
+  ["عند دخول المنزل", "🏠", "بِسْمِ اللَّهِ وَلَجْنَا وَبِسْمِ اللَّهِ خَرَجْنَا وَعَلَى رَبِّنَا تَوَكَّلْنَا"],
+  ["عند الخروج من المنزل", "🚶", "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ"]
+];
+const lastW = (t) => t.trim().split(/\s+/).pop();
+function qAyah() { const all = SURAHS.flatMap((s) => s[1].filter((a) => a.trim().split(/\s+/).length >= 3).map((a) => [s[0], a])), [sn, a] = pickN(all, 1)[0], w = lastW(a), wr = pickN([...new Set(all.map((x) => lastW(x[1])).filter((x) => x !== w))], 2); return { top: `<div class="word" style="min-height:0;font-size:26px">${a.trim().split(/\s+/).slice(0, -1).join(" ")} ＿＿＿</div>`, text: `أكمل الآية من سورة ${sn}`, opts: pickN([w, ...wr], 3).map((x) => ({ h: x, v: x, s: "font-size:24px" })), ans: w }; }
+function qDua() { const d = pickN(DUAS, 1)[0], wr = pickN(DUAS.filter((x) => x !== d), 2); return { top: `<div class="lc">${d[1]}</div><div class="word" style="min-height:0;font-size:24px">${d[0]}</div>`, text: `ماذا نقول ${d[0]}؟`, opts: pickN([d, ...wr], 3).map((x) => ({ h: x[2], v: x[2], s: "font-size:17px;line-height:1.8" })), ans: d[2] }; }
+function secPick() {
+  SCR++; stopVoice(); HOLD = false;
+  const card = (s) => `<button class="sc" data-s="${s.id}" style="background:linear-gradient(135deg,${s.c[0]},${s.c[1]})"><b>${s.em}</b><span>${s.name}</span><small>${s.sub}</small></button>`;
+  app.innerHTML = `<div class="top"><button class="icon-btn" id="back" aria-label="رجوع">🏠</button><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
+  <div class="stage" style="justify-content:flex-start;gap:12px"><div style="width:92px">${OWL}</div>
+    <h1 style="margin:0;color:var(--p);font-size:24px;text-align:center">مرحباً يا ${S.name}! اختر قسمك</h1>
+    <div class="sec">حسب العمر</div><div class="scs">${SECS.filter((s) => s.grp === "age").map(card).join("")}</div>
+    <div class="sec">حسب الصف</div><div class="scs">${SECS.filter((s) => s.grp === "grade").map(card).join("")}</div>
+    <button class="quick" id="par" style="margin-top:6px">👨‍👩‍👧 لولي الأمر · تقرير التقدّم</button></div>`;
+  bindToggles(); $("#back").onclick = start; $("#par").onclick = gate;
+  app.querySelectorAll(".sc").forEach((b) => b.onclick = () => { S.sec = b.dataset.s; S.age = SECS.find((x) => x.id === S.sec).age; save(); sfx.ok(); secHome(S.sec); });
+  speak(`مرحباً يا ${S.name}! اختر قسمك.`, "hello");
+}
+function secHome(id) {
+  const s = SECS.find((x) => x.id === id); if (!s) return secPick();
+  SCR++; stopVoice(); HOLD = false; LKEYS = null; MIXK = null; S.age = s.age;
+  app.innerHTML = `<div class="top"><button class="icon-btn" id="back" aria-label="الأقسام">🏠</button><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
+  <div class="stage" style="justify-content:flex-start;gap:12px">
+    <div class="sch" style="background:linear-gradient(135deg,${s.c[0]},${s.c[1]})"><b>${s.em}</b><div><h1>${s.name}</h1><small>${s.sub}</small></div></div>
+    <div class="games">${s.games.map((k) => `<button class="gm" data-g="${k}"><b>${GREG[k][0]}</b>${GREG[k][1]}<small>${GREG[k][2]}</small></button>`).join("")}</div>
+    <button class="btn ghost" id="chg" style="min-width:0">🔁 تغيير القسم</button>
+    <button class="quick" id="par" style="margin-top:2px">👨‍👩‍👧 لولي الأمر · تقرير التقدّم</button></div>`;
+  bindToggles(); $("#back").onclick = secPick; $("#chg").onclick = secPick; $("#par").onclick = gate;
+  app.querySelectorAll("[data-g]").forEach((b) => b.onclick = () => { try { ac().resume(); } catch {} const k = b.dataset.g; if (k !== "letters" && k !== "story" && !subOk()) return payScreen(); GREG[k][3](); });
+}
+const hub = (first) => (S.sec && SECS.some((x) => x.id === S.sec) ? secHome(S.sec) : secPick());
 function moreHub() {
   if (!subOk()) return payScreen();
   shell(0, `<div class="card" style="text-align:center"><b style="color:var(--p)">ألعاب وتعلّم إضافية</b></div>
@@ -1403,12 +1540,13 @@ function moreHub() {
     <button class="btn ghost" id="mp">الخريطة</button>`, 1);
   note("اختر لعبة!");
   if (S.age === "4") ["miss", "wpic", "wsim"].forEach((k) => { const b = $("#m-" + k); b.classList.add("lk"); b.querySelector("small").textContent = "🔒 للأكبر سناً"; });
-  [["learn", learnMenu], ["mix", mixGame], ["math", mathGame], ["mem", memGame], ["odd", GM.odd], ["foc", GM.foc], ["ord", GM.ord], ["miss", missGame], ["wpic", wpicGame], ["wsim", wsimGame], ["lab", readLab], ["acad", acadMenu], ["adv", () => advPlay(0)]].forEach(([k, f]) => $("#m-" + k).onclick = () => (S.age === "4" && ["miss", "wpic", "wsim"].includes(k) ? (sfx.no(), toast("هذه اللعبة للأكبر سناً")) : f()));
+  [["learn", () => { LKEYS = null; learnMenu(); }], ["mix", mixGame], ["math", mathGame], ["mem", memGame], ["odd", GM.odd], ["foc", GM.foc], ["ord", GM.ord], ["miss", missGame], ["wpic", wpicGame], ["wsim", wsimGame], ["lab", readLab], ["acad", acadMenu], ["adv", () => advPlay(0)]].forEach(([k, f]) => $("#m-" + k).onclick = () => (S.age === "4" && ["miss", "wpic", "wsim"].includes(k) ? (sfx.no(), toast("هذه اللعبة للأكبر سناً")) : f()));
   $("#mp").onclick = () => hub();
 }
 
 
 const GN = { daily: ["📅", "تحدّي اليوم"], race: ["🏁", "سباق الحروف"], treasure: ["💎", "كنز الكلمات"], pos: ["📍", "أين الحرف؟"], mem: ["🃏", "الذاكرة"], odd: ["🔍", "اكتشف المختلف"], foc: ["🎯", "التركيز"], ord: ["📊", "رتّب الصور"], miss: ["🔡", "أكمل الكلمة"], wpic: ["🖼️", "الكلمة والصورة"], wsim: ["👀", "الكلمات المتشابهة"], math: ["➕", "الأرقام والحساب"], mix: ["🧠", "اختبرني"], lab: ["📖", "مختبر القراءة"], acad: ["🎓", "أكاديمية الحروف"], adv: ["🦉", "مغامرة القراءة"] };
+Object.keys(GREG).forEach((k) => { if (k.startsWith("g_")) { GM[k] = GREG[k][3]; GN[k] = [GREG[k][0], GREG[k][1]]; } });
 const gamesList = (S0) => Object.entries(GN).filter(([k]) => S0.gp[k]).map(([k, [e, t]]) => ({ e, t, n: S0.gp[k] }));
 function achScreen() {
   const gl = gamesList(S), L = LET.filter((l) => P(l.id).runs > 0);
