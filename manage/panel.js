@@ -1,4 +1,4 @@
-/* لوحة تحكم زاد التعليمية — بسيطة: كل تعديل يُحفظ ويظهر في المتجر مباشرة */
+/* لوحة تحكم زاد التعليمية — بسيطة: كل تعديل يُحفظ ويظهر في المنصة مباشرة */
 (function () {
 "use strict";
 const URL_ = "https://zcnwzpevehudhnsuljdy.supabase.co";
@@ -40,7 +40,7 @@ async function boot() {
   const { data } = await sb.auth.getSession();
   if (!data.session) return loginView();
   const { data: row } = await sb.from("admin_users").select("id").eq("id", data.session.user.id).maybeSingle();
-  if (!row) { await sb.auth.signOut(); return loginView("هذا الحساب ليس حساب مدير المتجر"); }
+  if (!row) { await sb.auth.signOut(); return loginView("هذا الحساب ليس حساب مدير المنصة"); }
   shell();
 }
 function loginView(err = "") {
@@ -83,7 +83,7 @@ function recoveryView(h) {
 const TABS = [["home", "🏠", "الرئيسية"], ["orders", "🧾", "الطلبات"], ["products", "🛍️", "المنتجات"], ["learn", "🦉", "تعلّم والعب"], ["more", "⚙️", "المزيد"]];
 let tab = "home", pendingCount = 0;
 function shell() {
-  app.innerHTML = `<header><h1 id="ttl">لوحة زاد</h1><div class="hb"><a class="ib" href="${SITE}" target="_blank">🌐 المتجر</a></div></header><main id="main"></main>
+  app.innerHTML = `<header><h1 id="ttl">لوحة زاد</h1><div class="hb"><a class="ib" href="${SITE}" target="_blank">🌐 المنصة</a></div></header><main id="main"></main>
   <nav><div>${TABS.map(([k, e, l]) => `<button data-t="${k}"><b>${e}</b>${l}<i hidden></i></button>`).join("")}</div></nav>`;
   $$("nav button").forEach((b) => b.onclick = () => go(b.dataset.t));
   go(location.hash.slice(1) || "home");
@@ -120,7 +120,7 @@ async function home(m) {
    <button style="--c:#fff3c4;--s:#ecd57d" data-g="newp"><b>➕</b>منتج جديد</button>
    <button style="--c:#e6dcff;--s:#c1aef0" data-g="learn"><b>🔑</b>كود تعلّم والعب</button>
    <button style="--c:#d8f5e6;--s:#9fdcbc" data-g="coupons"><b>🎟️</b>كود خصم</button>
-   <button style="--c:#ffdbe9;--s:#f0a9c6" data-g="settings"><b>🏪</b>إعدادات المتجر</button></div>
+   <button style="--c:#ffdbe9;--s:#f0a9c6" data-g="settings"><b>🏪</b>إعدادات المنصة</button></div>
   <h3 style="margin:18px 2px 4px">آخر الطلبات الجديدة</h3>
   ${news.length ? news.slice(0, 5).map(orderRow).join("") : `<div class="empty">لا توجد طلبات جديدة ✨</div>`}`;
   $$("[data-g]", m).forEach((b) => b.onclick = () => b.dataset.g === "newp" ? productSheet(null) : go(b.dataset.g));
@@ -154,7 +154,7 @@ async function orderSheet(id, reload, cache) {
    <p class="mut" style="margin:8px 0 0">التوصيل: ${esc(o.delivery_name || "—")} · الدفع: ${esc(o.payment_name || "—")}${o.coupon ? ` · كود: ${esc(o.coupon)}` : ""}</p>
    <p style="margin:8px 0 0;font-size:20px"><b>الإجمالي: ${money(o.total)}</b></p>${o.notes ? `<p class="mut">ملاحظة الزبون: ${esc(o.notes)}</p>` : ""}</div>
   <label class="f"><span>ملاحظتي (لا يراها الزبون)</span><textarea id="an">${esc(o.admin_note || "")}</textarea></label>
-  ${o.phone ? `<a class="btn ok" style="display:block;text-align:center;text-decoration:none;margin-bottom:10px" href="${wa(o.phone, `السلام عليكم ${o.customer_name || ""}، بخصوص طلبك رقم ${o.order_no || ""} من متجر زاد`)}" target="_blank">💬 مراسلة الزبون على واتساب</a>` : ""}
+  ${o.phone ? `<a class="btn ok" style="display:block;text-align:center;text-decoration:none;margin-bottom:10px" href="${wa(o.phone, `السلام عليكم ${o.customer_name || ""}، بخصوص طلبك رقم ${o.order_no || ""} من منصة زاد`)}" target="_blank">💬 مراسلة الزبون على واتساب</a>` : ""}
   <button class="btn" id="st">${o.status === "new" ? "✅ تم التسليم" : "↩️ رجّعه جديد"}</button>
   <div class="row" style="margin-top:10px"><button class="btn g" id="hd">${o.hidden ? "إظهار" : "🗂️ أرشفة"}</button><button class="btn red" id="dl">🗑️ حذف</button></div>`);
   const upd = async (patch, msg) => { const { error } = await sb.from("orders").update(patch).eq("id", id); if (error) return fail(error); closeSheet(); toast(msg); reload && reload($("#main")); };
@@ -204,7 +204,7 @@ function productSheet(p, reload) {
   <label class="f"><span>التصنيف</span><select id="ct">${CATS.map((c) => `<option value="${c.id}" ${c.id === d.category_id ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></label>
   <label class="f"><span>الوصف</span><textarea id="ds">${esc(d.description || "")}</textarea></label>
   <label class="f"><span>الكمية المتوفرة</span><input type="number" id="sk" inputmode="numeric" value="${d.stock ?? ""}" placeholder="اتركها فارغة = غير محدودة"><small>الملفات الرقمية عادة بدون كمية</small></label>
-  <div class="card" style="padding:4px 14px"><label class="sw"><span>ظاهر في المتجر</span><input type="checkbox" id="vi" ${d.is_visible ? "checked" : ""}></label>
+  <div class="card" style="padding:4px 14px"><label class="sw"><span>ظاهر في المنصة</span><input type="checkbox" id="vi" ${d.is_visible ? "checked" : ""}></label>
   <label class="sw"><span>متاح للشراء</span><input type="checkbox" id="av" ${d.is_available ? "checked" : ""}></label>
   <label class="sw"><span>⭐ الأكثر طلباً</span><input type="checkbox" id="bs" ${d.is_best_seller ? "checked" : ""}></label>
   <label class="sw"><span>🆕 جديد</span><input type="checkbox" id="na" ${d.is_new_arrival ? "checked" : ""}></label></div>
@@ -235,7 +235,7 @@ function productSheet(p, reload) {
       is_visible: $("#vi", s).checked, is_available: $("#av", s).checked, is_best_seller: $("#bs", s).checked, is_new_arrival: $("#na", s).checked, file_url: d.file_url || null };
     if (isNew) { row.slug = "p-" + Math.random().toString(36).slice(2, 8); row.sort_order = -Math.floor(Date.now() / 1000); }
     const { error } = isNew ? await sb.from("products").insert(row) : await sb.from("products").update(row).eq("id", d.id);
-    if (error) return fail(error); closeSheet(); toast("تم الحفظ ✓ يظهر في المتجر الآن"); reload ? reload() : go(tab);
+    if (error) return fail(error); closeSheet(); toast("تم الحفظ ✓ يظهر في المنصة الآن"); reload ? reload() : go(tab);
   };
   const dl = $("#dl", s);
   if (dl) dl.onclick = async () => { if (!(await ask(`حذف «${d.name}» نهائياً؟`))) return; const { error } = await sb.from("products").delete().eq("id", d.id); if (error) return fail(error); toast("حُذف"); reload && reload(); };
@@ -280,7 +280,7 @@ function codeSheet(code, plan, reload, c) {
 /* ---------- المزيد ---------- */
 const SUB = {};
 function more(m) {
-  const items = [["cats", "🗂️", "التصنيفات", "#d6ecff", "#9cc9ef"], ["coupons", "🎟️", "أكواد الخصم", "#d8f5e6", "#9fdcbc"], ["customers", "👥", "الزبائن", "#ffe3d1", "#f2b895"], ["reviews", "⭐", "التقييمات", "#fff3c4", "#ecd57d"], ["settings", "🏪", "إعدادات المتجر", "#ffdbe9", "#f0a9c6"], ["account", "🔐", "حسابي", "#e6dcff", "#c1aef0"]];
+  const items = [["cats", "🗂️", "التصنيفات", "#d6ecff", "#9cc9ef"], ["coupons", "🎟️", "أكواد الخصم", "#d8f5e6", "#9fdcbc"], ["customers", "👥", "الزبائن", "#ffe3d1", "#f2b895"], ["reviews", "⭐", "التقييمات", "#fff3c4", "#ecd57d"], ["settings", "🏪", "إعدادات المنصة", "#ffdbe9", "#f0a9c6"], ["account", "🔐", "حسابي", "#e6dcff", "#c1aef0"]];
   m.innerHTML = `<div class="big">${items.map(([k, e, l, c, s]) => `<button data-g="${k}" style="--c:${c};--s:${s}"><b>${e}</b>${l}</button>`).join("")}</div>`;
   $$("[data-g]", m).forEach((b) => b.onclick = () => go(b.dataset.g));
 }
@@ -343,17 +343,17 @@ SUB.reviews = { title: "التقييمات", fn: async (m) => {
   $$("[data-d]", m).forEach((b) => b.onclick = async () => { if (!(await ask("حذف هذا التقييم؟"))) return; await sb.from("reviews").delete().eq("id", b.dataset.d); SUB.reviews.fn(m); });
 } };
 
-SUB.settings = { title: "إعدادات المتجر", fn: async (m) => {
+SUB.settings = { title: "إعدادات المنصة", fn: async (m) => {
   const { data, error } = await sb.from("store_settings").select("config").eq("id", 1).maybeSingle(); if (error) throw error; const cfg = data?.config || {};
   const T = cfg.texts || {}, bank = (cfg.order?.payments || []).find((x) => x.type === "bank") || {}, bb = bank.bank || {};
   m.innerHTML = `${back()}
-  <div class="card"><h3>🏪 المتجر</h3><label class="f"><span>اسم المتجر</span><input type="text" id="nm" value="${esc(cfg.name || "")}"></label>
+  <div class="card"><h3>🏪 المنصة</h3><label class="f"><span>اسم المنصة</span><input type="text" id="nm" value="${esc(cfg.name || "")}"></label>
   <label class="f"><span>رقم واتساب الطلبات</span><input type="tel" id="wa" dir="ltr" value="${esc(cfg.order?.whatsapp || "")}" placeholder="96877336242"><small>بالأرقام مع رمز الدولة بدون +</small></label>
   <label class="f"><span>اللون الأساسي</span><input type="color" id="pc" value="${esc(cfg.theme?.primary || "#5B34D6")}" style="height:46px;padding:4px"></label></div>
-  <div class="card"><h3>📣 شريط الإعلان (أعلى المتجر)</h3><label class="sw"><span>إظهار الشريط</span><input type="checkbox" id="as" ${T.announce_show ? "checked" : ""}></label><label class="f"><span>نص الإعلان</span><input type="text" id="at" value="${esc(T.announce_text || "")}"></label></div>
+  <div class="card"><h3>📣 شريط الإعلان (أعلى المنصة)</h3><label class="sw"><span>إظهار الشريط</span><input type="checkbox" id="as" ${T.announce_show ? "checked" : ""}></label><label class="f"><span>نص الإعلان</span><input type="text" id="at" value="${esc(T.announce_text || "")}"></label></div>
   <div class="card"><h3>🖼️ الصفحة الرئيسية</h3><label class="f"><span>العنوان الكبير</span><textarea id="ht" style="min-height:70px">${esc(T.hero_title || "")}</textarea></label>
   <label class="f"><span>النص تحت العنوان</span><textarea id="hx">${esc(T.hero_text || "")}</textarea></label><label class="f"><span>نص الزر</span><input type="text" id="hb" value="${esc(T.hero_button || "")}"></label>
-  <label class="f"><span>نبذة عن المتجر</span><textarea id="ab">${esc(T.about || "")}</textarea></label></div>
+  <label class="f"><span>نبذة عن المنصة</span><textarea id="ab">${esc(T.about || "")}</textarea></label></div>
   <div class="card"><h3>💳 الدفع (التحويل البنكي)</h3><label class="f"><span>اسم البنك</span><input type="text" id="bk" value="${esc(bb.bank || "")}"></label><label class="f"><span>اسم صاحب الحساب</span><input type="text" id="bh" value="${esc(bb.holder || "")}"></label><label class="f"><span>رقم الحساب</span><input type="text" id="bn" dir="ltr" value="${esc(bb.number || "")}"></label><label class="f"><span>الآيبان (IBAN)</span><input type="text" id="bi" dir="ltr" value="${esc(bb.iban || "")}"></label>
   <label class="f"><span>تعليمات الدفع للزبون</span><textarea id="bt">${esc(bank.note || "")}</textarea></label></div>
   <button class="btn" id="sv">💾 حفظ الإعدادات</button>`;
@@ -365,7 +365,7 @@ SUB.settings = { title: "إعدادات المتجر", fn: async (m) => {
     const pays = c.order.payments = c.order.payments || []; let b = pays.find((x) => x.type === "bank");
     if (!b) { b = { id: "bank", type: "bank", name: "تحويل بنكي", enabled: true, countries: ["OM"] }; pays.push(b); }
     b.bank = { ...(b.bank || {}), bank: $("#bk", m).value.trim(), holder: $("#bh", m).value.trim(), number: $("#bn", m).value.trim(), iban: $("#bi", m).value.trim() }; b.note = $("#bt", m).value.trim();
-    const { error } = await sb.from("store_settings").update({ config: c }).eq("id", 1); if (error) return fail(error); toast("تم الحفظ ✓ يظهر في المتجر الآن");
+    const { error } = await sb.from("store_settings").update({ config: c }).eq("id", 1); if (error) return fail(error); toast("تم الحفظ ✓ يظهر في المنصة الآن");
   };
 } };
 

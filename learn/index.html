@@ -142,7 +142,7 @@ input.nm:focus{border-color:var(--p)}
 .mem{display:grid;gap:8px;width:100%;max-width:460px;margin:0 auto}.mc{position:relative;aspect-ratio:1;border:0;border-radius:16px;background:var(--p);font-size:34px;cursor:pointer;perspective:600px;padding:0;color:#fff;box-shadow:0 3px 0 rgba(0,0,0,.15)}.mc .b{display:none;font-size:40px}.mc.open,.mc.done{background:#fff}.mc.open .f,.mc.done .f{display:none}.mc.open .b,.mc.done .b{display:inline}.mc.done{background:#c9f3d8}
 .oddg{display:grid;gap:8px;width:100%;max-width:460px;margin:0 auto}.od{aspect-ratio:1;border:0;border-radius:16px;background:#fff;font-size:44px;cursor:pointer;box-shadow:0 2px 0 rgba(91,52,214,.15);font-family:inherit;font-weight:800;color:var(--p);padding:0}.od.sm{font-size:30px}.od.ok{background:#c9f3d8}.od.no{background:#ffd5d5;animation:shake .4s}
 .ordg{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}.og{border:3px solid transparent;border-radius:16px;background:#fff;padding:8px 10px;min-width:96px;font-size:28px;line-height:1.3;cursor:pointer;position:relative;box-shadow:0 2px 0 rgba(91,52,214,.15)}.og span{display:block;max-width:150px;word-break:break-all}.og.ok{background:#c9f3d8;border-color:#43a047}.og.ok::after{content:attr(data-n);position:absolute;top:-8px;right:-8px;background:var(--p);color:#fff;width:24px;height:24px;border-radius:50%;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center}.og.no{background:#ffd5d5}
-/* ===== قصص ومتجر ===== */
+/* ===== قصص ومنصة ===== */
 .scn{font-size:110px;line-height:1.1;text-align:center;animation:flt 3s ease-in-out infinite}@keyframes flt{50%{transform:translateY(-8px)}}
 .stx{min-height:90px;display:flex;align-items:center;justify-content:center}
 .song{display:flex;flex-direction:column;gap:8px;width:100%;max-width:460px;margin:0 auto}.sl{display:flex;gap:10px;align-items:center;background:#fff;border-radius:16px;padding:10px 14px;font-size:20px;opacity:.6;transition:.2s}.sl span{font-size:30px}.sl.on{opacity:1;background:#f1ecff;transform:scale(1.03);box-shadow:0 0 0 3px var(--p)}
@@ -517,7 +517,7 @@ function start() {
   const named = Object.entries(DB.kids).filter(([, k]) => k.name);
   if (S.name && named.length) {
     app.innerHTML = `
-    <div class="top"><a class="storelink" href="../" aria-label="العودة للمتجر">🏠 المتجر</a><span class="badge">تعلّم والعب</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
+    <div class="top"><a class="storelink" href="../" aria-label="العودة للمنصة">🏠 المنصة</a><span class="badge">تعلّم والعب</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
     <div class="stage" style="gap:16px">
       <div style="width:110px">${OWL}</div>
       <h1 style="margin:0;color:var(--p);font-size:26px">مَن سيلعب اليوم؟</h1>
@@ -537,7 +537,7 @@ function start() {
     return;
   }
   app.innerHTML = `
-  <div class="top"><a class="storelink" href="../" aria-label="العودة للمتجر">🏠 المتجر</a><span class="badge">تعلّم والعب</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
+  <div class="top"><a class="storelink" href="../" aria-label="العودة للمنصة">🏠 المنصة</a><span class="badge">تعلّم والعب</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
   <div class="stage" style="gap:18px">
     <div style="width:150px">${OWL}</div>
     <div class="card" style="text-align:center">
@@ -585,7 +585,7 @@ function lettersHub(first) {
       <button class="gm" id="g-tre"><b>💎</b>كنز الكلمات<small>ركّب واجمع</small></button>
       <button class="gm" id="g-pos"><b>📍</b>أين الحرف؟<small>أول · وسط · آخر</small></button>
       <button class="gm" id="g-story"><b>📖</b>قصص وأناشيد<small>اسمع وغنِّ</small></button>
-      <button class="gm" id="g-shop"><b>🛍️</b>المتجر<small>⭐ ${bal()} نجمة</small></button>
+      <button class="gm" id="g-shop"><b>🛍️</b>المنصة<small>⭐ ${bal()} نجمة</small></button>
       <button class="gm wide" id="g-more"><b>🎮</b>ألعاب وتعلّم إضافية<small>أرقام · ألوان · ذاكرة · إنجليزي…</small></button>
       <button class="gm wide" id="g-ach"><b>📊</b>إنجازاتي<small>دروسي · ألعابي · شاراتي</small></button>
       <button class="gm wide" id="g-box"><b>🎁</b>صندوق المفاجآت ${S.box ? `<em>${S.box}</em>` : ""}<small>مجموعتي ${S.stk.length}/${STK.length}</small></button>
@@ -890,7 +890,7 @@ function avatarScreen(next) {
       <div class="sec">الشخصية</div><div class="avg">${Bs.map((o, i) => btn(o, "b", i, av.b === o.v)).join("")}</div>
       <div class="sec">الإكسسوار</div><div class="avg">${As.map((o, i) => btn(o, "a", i, av.a === o.v)).join("")}</div>
       <div class="sec">اللون</div><div class="avg">${AV_C.map((c, i) => `<button class="pk ${av.c === i ? "on" : ""}" data-t="c" data-i="${i}" style="background:${c}"></button>`).join("")}</div>
-      <div class="row" style="margin-top:12px"><button class="btn" id="avok">تمّ ✔</button><button class="btn alt" id="shp" style="min-width:0">🛍️ المتجر</button></div>
+      <div class="row" style="margin-top:12px"><button class="btn" id="avok">تمّ ✔</button><button class="btn alt" id="shp" style="min-width:0">🛍️ المنصة</button></div>
     </div>`;
     $("#cn").oninput = (e) => { S.cn = e.target.value.slice(0, 12); };
     app.querySelectorAll(".pk").forEach((b) => b.onclick = () => {
@@ -905,12 +905,12 @@ function avatarScreen(next) {
   };
   SCR++; stopVoice(); draw();
 }
-/* ---- المتجر ---- */
+/* ---- المنصة ---- */
 const SHOP = [["b", "🐲", 40], ["b", "🦖", 50], ["b", "🐙", 50], ["b", "🦉", 60], ["b", "🐨", 40], ["b", "🐷", 30], ["a", "🧣", 25], ["a", "🎧", 35], ["a", "🌟", 45], ["a", "🪄", 50], ["a", "⛑️", 30], ["a", "🎒", 40]];
 const bal = () => S.stars - S.spent;
 function shopScreen(back) {
   SCR++; stopVoice();
-  app.innerHTML = `<div class="top"><button class="icon-btn" id="home">↩</button><span class="badge">🛍️ المتجر</span><span class="stars">⭐ ${bal()}</span></div>
+  app.innerHTML = `<div class="top"><button class="icon-btn" id="home">↩</button><span class="badge">🛍️ المنصة</span><span class="stars">⭐ ${bal()}</span></div>
   <div class="stage" style="justify-content:flex-start"><div class="card" style="text-align:center;margin-bottom:10px"><b style="color:var(--p)">اشترِ ملابس وإكسسوارات لشخصيتك بنجومك!</b></div>
   <div class="bdg">${SHOP.map(([t, v, p]) => { const own = S.own.some((o) => o[1] === v); return `<button class="shi ${own ? "own" : bal() < p ? "no" : ""}" data-v="${v}" data-p="${p}" data-t="${t}"><span>${v}</span><small>${t === "b" ? "شخصية" : "إكسسوار"}</small><b>${own ? "ملكك ✅" : "⭐ " + p}</b></button>`; }).join("")}</div>
   <p style="text-align:center;font-weight:700;color:#6d6684">النجوم تأتي من الدروس والألعاب والقصص.</p></div>`;
@@ -1498,7 +1498,7 @@ function qDua() { const d = pickN(DUAS, 1)[0], wr = pickN(DUAS.filter((x) => x !
 function secPick() {
   SCR++; stopVoice(); HOLD = false;
   const card = (s) => `<button class="sc" data-s="${s.id}" style="background:linear-gradient(135deg,${s.c[0]},${s.c[1]})"><b>${s.em}</b><span>${s.name}</span><small>${s.sub}</small></button>`;
-  app.innerHTML = `<div class="top"><button class="icon-btn" id="back" aria-label="رجوع">🏠</button><a class="storelink" href="../">المتجر</a><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
+  app.innerHTML = `<div class="top"><button class="icon-btn" id="back" aria-label="رجوع">🏠</button><a class="storelink" href="../">المنصة</a><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
   <div class="stage" style="justify-content:flex-start;gap:12px"><div style="width:92px">${OWL}</div>
     <h1 style="margin:0;color:var(--p);font-size:24px;text-align:center">مرحباً يا ${S.name}! اختر قسمك</h1>
     <div class="sec">حسب العمر</div><div class="scs">${SECS.filter((s) => s.grp === "age").map(card).join("")}</div>
