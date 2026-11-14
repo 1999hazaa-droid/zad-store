@@ -113,6 +113,15 @@ input.nm:focus{border-color:var(--p)}
 .zspots{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%}.zspot{border:0;background:#fff;border-radius:24px;height:120px;box-shadow:0 6px 0 #d9d0f7;font-size:64px;cursor:pointer}
 .zstep{display:flex;gap:12px;align-items:flex-start;background:#fff;border-radius:18px;box-shadow:0 4px 0 #d9d0f7;padding:12px 14px;width:100%;line-height:1.7;font-size:15px}.zstep>b{font-size:28px;line-height:1.2;min-width:34px;text-align:center}.zstep i{display:block;font-style:normal;font-weight:800;color:var(--p)}
 .zcard{background:linear-gradient(135deg,#fff7d6,#ffe1ee);border:4px dashed #f5a623;border-radius:28px;padding:20px;text-align:center;width:100%;line-height:1.8}.zc1{font-size:64px}.zcard h2{margin:0;color:var(--p)}.zcard b{font-size:26px}
+
+.zrep{border:0;background:#fff;border-radius:50%;width:64px;height:64px;font-size:30px;box-shadow:0 4px 0 #d9d0f7;cursor:pointer}
+.zopts{display:grid;gap:12px;width:100%;grid-template-columns:repeat(3,1fr)}.zopts.n2{grid-template-columns:repeat(2,1fr)}.zopts.n4{grid-template-columns:repeat(2,1fr)}
+.zopt{border:0;background:#fff;border-radius:26px;min-height:120px;box-shadow:0 6px 0 #d9d0f7;font-size:66px;cursor:pointer;display:grid;place-items:center;line-height:1;padding:6px}
+.zopt.zok{background:#d9f7e8;box-shadow:0 6px 0 #8ee0b5;animation:pulse .5s}.zopt.zhint{animation:pulse .8s infinite;box-shadow:0 0 0 5px #ffc83d}
+.zgrp{font-size:34px;letter-spacing:2px}.zfl{display:block;width:70px;height:70px;border-radius:50% 50% 50% 8px;transform:rotate(45deg)}.zfl.s{width:34px;height:34px}
+.zblk{display:block;border-radius:10px;background:#f59e0b;box-shadow:inset 0 -6px 0 rgba(0,0,0,.15)}.zblk.lg{width:86px;height:56px}.zblk.sm{width:42px;height:28px}
+.ztower{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:70px;justify-content:flex-end}.ztower i{display:block;height:20px;border-radius:6px;background:#f59e0b}
+.zsil{font-size:100px;filter:brightness(0);opacity:.85}.zbasket{font-size:44px;text-align:center}
 #pr{display:none}
 @media print{body>*:not(#pr){display:none!important}#pr{display:block!important;direction:rtl;font-family:Cairo,sans-serif;padding:12px}#pr .pc{border:3px dashed #5B34D6;border-radius:20px;padding:16px;margin:12px 0;page-break-inside:avoid}}
 .rw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}.rb{border:0;font:inherit;font-weight:800;background:#fff;color:var(--t);border-radius:18px;padding:10px 4px;box-shadow:0 4px 0 #d9d0f7;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:13px;cursor:pointer}.rb b{font-size:28px;line-height:1.1}.rb small{font-size:11px;color:#6d6684;font-weight:700}
@@ -1436,7 +1445,7 @@ const GM = { lab: readLab, adv: () => advPlay(0), acad: acadMenu,  math: mathGam
 /* ======================= الأقسام: من سنة إلى الصف الرابع ======================= */
 const SECS = [
   { id: "a2", grp: "age", name: "سنة إلى سنتين", em: "🍼", c: ["#F472B6", "#BE185D"], age: "4", sub: "زوزو الصغير: اكتشاف ولعب مع الوالدين", games: ["cards", "mix", "mem", "odd", "ord", "story"] },
-  { id: "a3", grp: "age", name: "٣ سنوات", em: "🧸", c: ["#FB923C", "#C2410C"], age: "4", sub: "أرقام وأشكال وذاكرة وتركيز", games: ["cards", "mix", "math", "mem", "odd", "foc", "ord", "story"] },
+  { id: "a3", grp: "age", name: "٣ سنوات", em: "🧸", c: ["#FB923C", "#C2410C"], age: "4", sub: "مدينة زوزو الصغيرة: ألعاب وأنشطة مع الوالدين", games: ["cards", "mix", "math", "mem", "odd", "foc", "ord", "story"] },
   { id: "a4", grp: "age", name: "٤ سنوات", em: "🎈", c: ["#14B8A6", "#0F766E"], age: "4", sub: "عالم الحروف وسباق وأرقام", games: ["letters", "race", "pos", "math", "cards", "mem", "odd", "foc", "ord", "story"] },
   { id: "a5", grp: "age", name: "٥ سنوات", em: "✏️", c: ["#8B5CF6", "#5B21B6"], age: "6", sub: "حروف وكلمات وقراءة أولية", games: ["letters", "treasure", "race", "pos", "miss", "wpic", "math", "mem", "foc", "lab", "story"] },
   { id: "a6", grp: "age", name: "٦ سنوات", em: "🎒", c: ["#3B82F6", "#1D4ED8"], age: "6", sub: "قراءة وكتابة وجمع وطرح", games: ["letters", "treasure", "acad", "adv", "lab", "wsim", "miss", "wpic", "math", "mix", "story"] },
@@ -1698,6 +1707,7 @@ function secHome(id) {
   const s = SECS.find((x) => x.id === id); if (!s) return secPick();
   SCR++; stopVoice(); HOLD = false; LKEYS = null; MIXK = null; S.age = s.age; S.sec = id;
   if (id === "a2") return zuzuHome();
+  if (id === "a3") return cityHome();
   const i = sIdx(), all = Object.values(DEFS).filter((d) => avail(d, i)), wk = seeded(S.sec + dayKey(weekStart())), lvG = all.filter((d) => d.mk), feat = lvG[(wk() * lvG.length) | 0];
   app.innerHTML = `${topBar()}
   <div class="stage" style="justify-content:flex-start;gap:12px">
@@ -1844,8 +1854,8 @@ function zRun(k) {
     <div class="sch" style="background:linear-gradient(135deg,${z.c[0]},${z.c[1]})"><b>${z.e}</b><div><h1>${z.t}</h1><small>${z.intro}</small></div></div>
     <div class="zpar"><b>👨‍👩‍👧 للوالد</b>${z.par}</div>
     <button class="btn" id="zgo">ابدأ ▶</button></div>`;
-  zTop(zuzuHome);
-  $("#zgo").onclick = () => { sfx.ok(); k === "music" ? zMusic(k) : k === "hide" ? zHide(k, 0) : zItem(k, pickN(z.items, 3), 0); };
+  zTop(zHome);
+  $("#zgo").onclick = () => { if (ZC[k]) return cStart(k); sfx.ok(); k === "music" ? zMusic(k) : k === "hide" ? zHide(k, 0) : zItem(k, pickN(z.items, 3), 0); };
   speakGirl(`هيا يا ${zNm()}! ${z.intro}.`);
 }
 function zItem(k, list, i) {
@@ -1875,19 +1885,19 @@ function zMusic(k) {
   speakGirl("هيا نغني ونصفق مع زوزو");
 }
 function zHide(k, r) {
-  SCR++; stopVoice(); const spots = ["📦", "🧺", "🛏️"], hid = rI(0, 2); let found = false;
+  const P = ZU[k], HN = P.hn || "زوزو"; SCR++; stopVoice(); const spots = ["📦", "🧺", "🛏️"], hid = rI(0, 2); let found = false;
   app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:14px;justify-content:flex-start">
     <div class="zdots">${[0, 1, 2].map((j) => `<i class="${j <= r ? "on" : ""}"></i>`).join("")}</div>
-    <div class="zbig" id="zz">🐥</div><h2 class="zname" id="zt">زوزو يختبئ!</h2>
+    <div class="zbig" id="zz">${P.hid || "🐥"}</div><h2 class="zname" id="zt">${HN} يختبئ!</h2>
     <div class="zspots" id="zs" style="visibility:hidden">${spots.map((e, i) => `<button class="zspot" data-i="${i}"><span>${e}</span></button>`).join("")}</div>
-    <div class="zpar sm">💬 ${ZU.hide.talk}</div>
+    <div class="zpar sm">💬 ${P.talk}</div>
     <button class="btn" id="zn" style="display:none">${r < 2 ? "مرة أخرى ▶" : "انتهينا ✔"}</button></div>`;
   zTop(() => zRun(k));
-  speakGirl("زوزو يختبئ! أين زوزو؟");
-  setTimeout(() => { const z = $("#zz"); if (!z) return; z.style.visibility = "hidden"; $("#zs").style.visibility = "visible"; $("#zt").textContent = "أين زوزو؟"; }, 1600);
+  speakGirl(`${HN} يختبئ! أين ${HN}؟`);
+  setTimeout(() => { const z = $("#zz"); if (!z) return; z.style.visibility = "hidden"; $("#zs").style.visibility = "visible"; $("#zt").textContent = `أين ${HN}؟`; }, 1600);
   app.querySelectorAll(".zspot").forEach((b) => b.onclick = () => {
     if (found) return; const i = +b.dataset.i;
-    if (i === hid) { found = true; b.innerHTML = "<span>🐥</span>"; b.classList.add("zb"); $("#zt").textContent = "كوكو! ها هو!"; sfx.ok(); star(1); speakGirl("كوكو! ها هو زوزو!"); $("#zn").style.display = ""; }
+    if (i === hid) { found = true; b.innerHTML = `<span>${P.hid || "🐥"}</span>`; b.classList.add("zb"); $("#zt").textContent = "كوكو! ها هو!"; sfx.ok(); star(1); speakGirl(`كوكو! ها هو ${HN}!`); $("#zn").style.display = ""; }
     else { b.classList.add("zsh"); b.disabled = true; tone(240, .18, "sine", .1); speakGirl("ليس هنا. ابحث مرة أخرى"); }
   });
   $("#zn").onclick = () => { sfx.ok(); r < 2 ? zHide(k, r + 1) : zReal(k); };
@@ -1901,7 +1911,7 @@ function zReal(k) {
     <div class="zstep"><b>💬</b><span><i>نشاط التواصل</i>${z.talk}</span></div>
     ${zBreak()}
     <button class="btn" id="zok">✅ أنجزنا النشاط معاً</button><button class="btn ghost" id="zh" style="min-width:0">لاحقاً</button></div>`;
-  zTop(zuzuHome); $("#zh").onclick = zuzuHome;
+  zTop(zHome); $("#zh").onclick = zHome;
   $("#zok").onclick = () => zDone(k);
   speakGirl("الآن نلعب مع ماما وبابا. ضعا الجهاز جانباً.");
 }
@@ -1913,12 +1923,12 @@ function zDone(k) {
     ${zBreak() || `<div class="zbr">🌿 جميل! الآن اتركا الجهاز وانتقلا إلى لعب حقيقي. القليل من الشاشة أفضل لطفلك.</div>`}
     <button class="btn ghost" id="zpr" style="min-width:0">🖨️ اطبع البطاقة</button>
     <button class="btn" id="zhm">تم</button></div>`;
-  zTop(zuzuHome); $("#zhm").onclick = zuzuHome;
+  zTop(zHome); $("#zhm").onclick = zHome;
   $("#zpr").onclick = () => zPrint(`<div class="pc" style="text-align:center"><h1>🏅 بطاقة إنجاز · زاد التعليمية</h1><h2>${zNm()}</h2><p style="font-size:22px">شارك مع ولي أمره في: ${z.e} ${z.t}</p><p>${z.real}</p><p>${zDate(Date.now())}</p></div>`);
   speakGirl(`أحسنت يا ${zNm()}! أنجزنا نشاطاً جميلاً معاً.`);
 }
 function zWeek() {
-  const rnd = seeded("zu" + dayKey(weekStart())), dig = pickN(ZKEYS, 3, rnd), real = pickN(ZREAL, 5, rnd), wi = Math.floor(weekStart().getTime() / 6048e5), st = ZSTORY[wi % ZSTORY.length];
+  const rnd = seeded("zu" + S.sec + dayKey(weekStart())), cf = zCfg(), dig = pickN(cf.keys, 3, rnd), real = pickN(cf.real, 5, rnd), wi = Math.floor(weekStart().getTime() / 6048e5), st = cf.story[wi % cf.story.length];
   SCR++; stopVoice();
   app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:12px;justify-content:flex-start">
     <div class="sch" style="background:linear-gradient(135deg,#8B5CF6,#5B21B6)"><b>📚</b><div><h1>أنشطة هذا الأسبوع</h1><small>تتجدد كل أسبوع</small></div></div>
@@ -1929,7 +1939,7 @@ function zWeek() {
     <div class="sec">٥ أنشطة حقيقية مع طفلك</div>
     ${real.map((r, i) => `<div class="zstep"><b>${i + 1}</b><span><i>${r[0]}</i>${r[1]}</span></div>`).join("")}
     <button class="btn ghost" id="zpr" style="min-width:0">🖨️ اطبع بطاقات الأنشطة</button></div>`;
-  zTop(zuzuHome);
+  zTop(zHome);
   app.querySelectorAll("[data-z]").forEach((b) => b.onclick = () => zRun(b.dataset.z));
   $("#zs").onclick = () => zStory(st);
   $("#zpr").onclick = () => zPrint(`<h1 style="text-align:center">بطاقات أنشطة الأسبوع · زاد التعليمية</h1>${real.map((r) => `<div class="pc"><h2>${r[0]}</h2><p style="font-size:20px">${r[1]}</p></div>`).join("")}<p style="text-align:center;font-size:13px">استخدم أشياء آمنة وكبيرة الحجم، وابقَ بجانب طفلك دائماً.</p>`);
@@ -1945,23 +1955,171 @@ async function zStory(st) {
   if (tok === SCR && $("#zln")) $("#zln").textContent = "انتهت القصة 🌙 ما رأيكما أن نقلّد زوزو؟";
 }
 function zLog() {
-  const L = (S.zl || []).slice().reverse(), tried = [...new Set(L.map((x) => x.k))];
+  const L = (S.zl || []).filter((x) => ZU[x.k] && (ZU[x.k].sec || "a2") === S.sec).reverse(), tried = [...new Set(L.map((x) => x.k))];
   SCR++; stopVoice();
   app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:12px;justify-content:flex-start">
     <div class="sch" style="background:linear-gradient(135deg,#10B981,#047857)"><b>📒</b><div><h1>سجل الأسرة</h1><small>${L.length ? L.length + " نشاطاً أنجزتموه معاً" : "لم تبدؤوا بعد"}</small></div></div>
     ${tried.length ? `<div class="zpar"><b>جرّب طفلك:</b> ${tried.map((k) => ZU[k].sk).join(" · ")}<br><small>هذا سجل للأنشطة فقط، وليس قياساً لنموّ الطفل أو تشخيصاً.</small></div>` : ""}
     ${L.slice(0, 20).map((x) => `<div class="zstep"><b>${ZU[x.k].e}</b><span><i>${ZU[x.k].t}</i>${zDate(x.t)}</span></div>`).join("") || `<div class="zpar">ابدؤوا بنشاط اليوم من الصفحة الرئيسية للقسم.</div>`}</div>`;
-  zTop(zuzuHome);
+  zTop(zHome);
 }
 function zGuide() {
-  const T = [["كلّمه بجمل قصيرة وبطيئة", "«هذه كرة. كرة حمراء.» التكرار يساعده أن يلتقط الكلمات."], ["سمِّ ما يراه ويلمسه", "الكلمة المرتبطة بشيء حقيقي تُحفظ أسرع من الكلمة على الشاشة."], ["انتظر ٥ ثوانٍ", "اترك له وقتاً ليرد بصوت أو إشارة أو نظرة قبل أن تكمل."], ["لا تصحّح، بل أعد القول", "إن قال «كَبْ» فقل: «نعم، كلب! هذا كلب»."], ["شجّع الإشارة", "الإشارة بالإصبع أول طريق الكلام، فاحتفل بها."], ["استجب لأصواته", "عندما يصدر صوتاً، ردّ عليه كأنه يحادثك."], ["اقرأ له كل يوم", "كتاب مصوّر ٥ دقائق يوميّاً، بنفس الوقت إن أمكن."], ["جلسة قصيرة فقط", "١٠ دقائق من اللعب أفضل من نصف ساعة، واترك الباقي لللعب الحقيقي."]];
+  const T3 = [["اجعل الطفل يقود", "دعه يلمس ويختار، وأنت تسأل وتصف: «اخترت الدائرة، ما لونها؟»"], ["اشرح بالجمل القصيرة", "«هذه كبيرة. وهذه صغيرة.» ثم اتركه يكرّر."], ["اسأل أسئلة مفتوحة", "«ماذا ترى؟ ماذا سيحدث لو…؟» وانتظر جوابه."], ["رحّب بالمحاولة", "الخطأ ليس فشلاً: قل «حاول مرة أخرى» وابتسم."], ["اربط بالواقع", "بعد كل لعبة نفّذا النشاط الحقيقي: فاكهة حقيقية، مكعبات، مرآة."], ["قصة صوتية قصيرة", "اسمعا قصة الأسبوع معاً ثم اسأله عن الشخصية."], ["جلسة قصيرة", "١٠–١٥ دقيقة فقط، ثم لعب حقيقي بعيداً عن الشاشة."], ["لا مقارنة", "قدرات الأطفال تختلف، فاحتفل بما يجرّبه طفلك هو."]];
+  const T2 = [["كلّمه بجمل قصيرة وبطيئة", "«هذه كرة. كرة حمراء.» التكرار يساعده أن يلتقط الكلمات."], ["سمِّ ما يراه ويلمسه", "الكلمة المرتبطة بشيء حقيقي تُحفظ أسرع من الكلمة على الشاشة."], ["انتظر ٥ ثوانٍ", "اترك له وقتاً ليرد بصوت أو إشارة أو نظرة قبل أن تكمل."], ["لا تصحّح، بل أعد القول", "إن قال «كَبْ» فقل: «نعم، كلب! هذا كلب»."], ["شجّع الإشارة", "الإشارة بالإصبع أول طريق الكلام، فاحتفل بها."], ["استجب لأصواته", "عندما يصدر صوتاً، ردّ عليه كأنه يحادثك."], ["اقرأ له كل يوم", "كتاب مصوّر ٥ دقائق يوميّاً، بنفس الوقت إن أمكن."], ["جلسة قصيرة فقط", "١٠ دقائق من اللعب أفضل من نصف ساعة، واترك الباقي لللعب الحقيقي."]];
+  const T = S.sec === "a3" ? T3 : T2;
   SCR++; stopVoice();
   app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:10px;justify-content:flex-start">
     <div class="sch" style="background:linear-gradient(135deg,#0EA5E9,#0369A1)"><b>👨‍👩‍👧</b><div><h1>دليل الوالدين</h1><small>ماذا أقول؟ وكيف ألعب مع طفلي؟</small></div></div>
     ${T.map((t) => `<div class="zstep"><b>💡</b><span><i>${t[0]}</i>${t[1]}</span></div>`).join("")}
-    <div class="zpar"><b>⏱️ عن الشاشات</b>توصي منظمة الصحة العالمية بتجنّب الجلوس أمام الشاشة لعمر سنة، وألا يزيد عن ساعة يومياً لعمر سنتين، والأقل أفضل. لذلك صُمِّمت تجارب زوزو قصيرة وتنتهي بنشاط حقيقي معكما.</div>
+    <div class="zpar"><b>⏱️ عن الشاشات</b>${S.sec === "a3" ? "توصي منظمة الصحة العالمية بألا يزيد وقت الشاشة الجلوسي عن ساعة يومياً للأطفال من سنتين إلى أربع سنوات، والأقل أفضل. لذلك كل لعبة هنا قصيرة وتنتهي بنشاط حقيقي معكما." : "توصي منظمة الصحة العالمية بتجنّب الجلوس أمام الشاشة لعمر سنة، وألا يزيد عن ساعة يومياً لعمر سنتين، والأقل أفضل. لذلك صُمِّمت تجارب زوزو قصيرة وتنتهي بنشاط حقيقي معكما."}</div>
     <div class="zpar"><small>هذا المحتوى للتشجيع على اللعب والتواصل، وليس بديلاً عن الطبيب. إن كان عندك قلق على نموّ طفلك فاستشر طبيب الأطفال.</small></div></div>`;
-  zTop(zuzuHome);
+  zTop(zHome);
+}
+/* ======================= مدينة زوزو الصغيرة (٣ سنوات) ======================= */
+const ZREAL3 = [
+  ["برج المكعبات", "ابنيا برجاً بمكعبات كبيرة وآمنة: القطعة الكبيرة في الأسفل. اسأله: ماذا يحدث لو وضعنا قطعة كبيرة في الأعلى؟"],
+  ["فرز الألوان", "افرزا ألعاباً كبيرة أو قطع قماش ملوّنة في ٣ أكواب حسب اللون، وسمِّ كل لون."],
+  ["سوق في البيت", "العبا «بائع ومشترٍ» بفواكه حقيقية كبيرة أو ألعاب، وهو يضعها في سلّة ويسمّيها."],
+  ["من يقول؟", "قلّد صوت حيوان واسأله: «من يقول هذا؟» ثم بادلا الأدوار."],
+  ["ماذا نأكل؟", "في المطبخ اسأله: «أين الخبز؟ أين الحليب؟» ودعه يشير ويسمّي."],
+  ["أشكال البيت", "ابحثا عن شيء مستدير (صحن، ساعة) وشيء مربع (منديل) ولمساهما."],
+  ["مرآة المشاعر", "قلّدا أمام المرآة وجهاً سعيداً وحزيناً وغاضباً، وسمِّ كل شعور."],
+  ["قطار العلب", "ابنيا قطاراً من علب فارغة آمنة أو وسائد واحسبا العربات: واحدة، اثنتان، ثلاث."],
+  ["أصوات عالية ومنخفضة", "غنّيا بصوت عالٍ ثم منخفض، وصفّقا ١ ثم ٢ ثم ٣ مرات."],
+  ["ماذا نلبس؟", "ساعده على اختيار ملابسه وتسمية كل قطعة وأين نلبسها (الرأس، القدمان…)."],
+  ["صندوق المفاجآت", "ضع ٣ أشياء آمنة وكبيرة في كيس، ودعه يلمس ويخمّن ثم يخرجها ويسمّيها."],
+  ["غسل اليدين", "اغسلا يديكما معاً وسمِّ الخطوات: ماء، صابون، فرك، شطف، تجفيف."],
+  ["لعب التمثيل", "مثّلا أنكما في المطعم أو المستشفى بلعبه، وشجّعه على الكلام بجمل قصيرة."],
+  ["أين الكرة؟", "اخفِ كرة كبيرة تحت قطعة قماش وساعده على إيجادها، ثم بادلا الأدوار."],
+  ["قصة قبل النوم", "اقرأ قصة قصيرة واسأله سؤالاً بسيطاً: «من هذا؟ ماذا يفعل؟»"]
+];
+const ZSTORY3 = [
+  { t: "زوزو في السوق", e: "🛒", s: ["ذهب زوزو إلى السوق مع ماما.", "رأى زوزو تفاحة حمراء وموزة صفراء.", "وضع زوزو التفاحة في السلة.", "ثم وضع الموزة في السلة.", "قال زوزو شكراً يا ماما، أنا أحب السوق."] },
+  { t: "زوزو يبني بيتاً", e: "🧱", s: ["أراد زوزو أن يبني بيتاً.", "وضع القطعة الكبيرة في الأسفل.", "ثم وضع القطعة الصغيرة في الأعلى.", "وقف البيت وقفة قوية.", "صفّق زوزو وقال أنا بنيت بيتاً!"] }
+];
+const COLF = [["حمراء", "#e53935"], ["زرقاء", "#1e88e5"], ["صفراء", "#fdd835"], ["خضراء", "#43a047"], ["برتقالية", "#fb8c00"], ["وردية", "#ec407a"]];
+const FRC = [["تفاحة", "🍎", "حمراء"], ["موزة", "🍌", "صفراء"], ["برتقالة", "🍊", "برتقالية"], ["عنب", "🍇", "بنفسجية"], ["كيوي", "🥝", "خضراء"]];
+const AFOOD = [["الأرنب", "🐰", "جزرة", "🥕"], ["القطة", "🐱", "سمكة", "🐟"], ["الكلب", "🐶", "عظمة", "🦴"], ["القرد", "🐵", "موزة", "🍌"], ["البقرة", "🐄", "عشباً", "🌿"], ["النحلة", "🐝", "زهرة", "🌸"]];
+const AHAB = [["السمكة", "🐟", "البحر", "🌊"], ["الطائر", "🐦", "الشجرة", "🌳"], ["الجمل", "🐪", "الصحراء", "🏜️"], ["البطة", "🦆", "البركة", "💧"]];
+const KFOOD = [["الخبز", "🍞", 0], ["البيضة", "🥚", 0], ["الجبن", "🧀", 0], ["الماء", "💧", 1], ["الحليب", "🥛", 1], ["العصير", "🧃", 1]];
+const CLOTH = [["القميص", "👕"], ["البنطال", "👖"], ["الجورب", "🧦"], ["القبعة", "🧢"], ["الحذاء", "👟"], ["المعطف", "🧥"]];
+const CPART = [["على الرأس", "🧢"], ["في القدمين", "👟"], ["في اليدين", "🧤"], ["على الجسم", "👕"]];
+const FEEL = [["السعيد", "😊"], ["الحزين", "😢"], ["الغاضب", "😠"], ["الخائف", "😨"]];
+const SITU = [["زوزو أخذ هدية جميلة. كيف يشعر؟", "😊"], ["انكسرت لعبة زوزو. كيف يشعر؟", "😢"], ["أخذ أحدهم لعبة زوزو. كيف يشعر؟", "😠"], ["سمع زوزو صوتاً عالياً. كيف يشعر؟", "😨"], ["جاءت ماما لزوزو. كيف يشعر؟", "😊"]];
+const SQC = ["🟥", "🟦", "🟨", "🟩"];
+const GRP = (n, e) => `<span class="zgrp">${e.repeat(n)}</span>`;
+const DUAL = ["", "عربة واحدة", "عربتان", "ثلاث عربات"];
+const shf = (a) => pickN(a, a.length);
+const ZC = {
+  c_farm: { t: "مزرعة زوزو", e: "🐮", c: ["#34D399", "#047857"], intro: "نبحث عن الحيوان ونسمع صوته", par: "اجلس بجانب طفلك ودعه يختار بنفسه. إن أخطأ فلا تعدّه فشلاً؛ شجّعه على المحاولة من جديد.", talk: "اسأله: «من يقول موووو؟» وانتظر جوابه.", real: "أحضرا ٣ ألعاب حيوانات (أو صوراً) وقلّدا أصواتها، ثم اطلب منه أن يعطيك «البقرة» ثم «الخروف».", sk: "الحيوانات وأصواتها",
+    v: [() => pickN(ANI.filter((a) => ["أسد", "فيل", "قطة", "كلب", "حصان", "بقرة", "خروف", "دجاجة", "بطة", "أرنب"].includes(a[0])), 4).map((a, i, all) => { const o = pickN(ANI.filter((x) => x[0] !== a[0] && ["أسد", "فيل", "قطة", "كلب", "حصان", "بقرة", "خروف", "دجاجة", "بطة", "أرنب"].includes(x[0])), 2).concat([a]); const op = shf(o); return { say: `أين ال${a[0]}؟`, opts: op.map((x) => x[1]), ans: op.indexOf(a) }; }),
+      () => { const S0 = [["بقرة", "🐄", "موووو"], ["كلب", "🐶", "هو هو"], ["قطة", "🐱", "مياو"], ["خروف", "🐑", "ماااع"]]; return shf(S0).map((a) => { const op = shf(S0.slice(0, 4)).slice(0, 3); if (!op.includes(a)) op[0] = a; const o2 = shf(op); return { say: `من يقول ${a[2]}؟`, opts: o2.map((x) => x[1]), ans: o2.indexOf(a) }; }); }] },
+  c_shop: { t: "متجر زوزو", e: "🛒", c: ["#FB923C", "#C2410C"], intro: "نضع الفواكه في سلة التسوق", par: "اجعل طفلك يلمس الصورة بنفسه. بعد كل فاكهة تدخل السلة، اسأله عن لونها.", talk: "ما لون هذه الفاكهة؟", real: "ابحثا عن فاكهة في البيت وسمّياها وسمّيا لونها، ثم ضعاها في سلة حقيقية (بإشراف وبلا قطع صغيرة).", sk: "الفواكه والألوان",
+    deco: (i) => `<div class="zbasket">🧺 ${"🍎🍌🍊🍇".slice(0, i * 2)}</div>`,
+    v: [() => pickN(FRU.slice(0, 8), 4).map((a) => { const op = shf(pickN(FRU.slice(0, 8).filter((x) => x[0] !== a[0]), 2).concat([a])); return { say: `ضع ال${a[0]} في السلة`, opts: op.map((x) => x[1]), ans: op.indexOf(a) }; }),
+      () => pickN(FRC, 4).map((a) => { const op = shf(pickN(FRC.filter((x) => x[2] !== a[2]), 2).concat([a])); return { say: `أين الفاكهة ال${a[2]}؟`.replace("الحمراء", "الحمراء"), opts: op.map((x) => x[1]), ans: op.indexOf(a) }; })] },
+  c_garden: { t: "حديقة الألوان", e: "🌸", c: ["#F472B6", "#BE185D"], intro: "نرتّب الزهور حسب اللون والحجم", par: "اطلب منه أن يشير إلى الزهرة ثم سمِّ اللون معه. هذا اللعب يعلّمه المطابقة والمقارنة.", talk: "اسأله: «أين الزهرة الصغيرة؟ أين الكبيرة؟»", real: "افرزا ألعاباً كبيرة أو قطع قماش ملوّنة في ٣ أكواب حسب اللون، وسمِّ كل لون.", sk: "الألوان والأحجام",
+    v: [() => pickN(COLF, 4).map((a) => { const op = shf(pickN(COLF.filter((x) => x[0] !== a[0]), 2).concat([a])); return { say: `ضع الزهرة ال${a[0]}`, opts: op.map((x) => `<span class="zfl" style="background:${x[1]}"></span>`), ans: op.indexOf(a) }; }),
+      () => [0, 1, 0, 1].map((big, i) => { const sm = rI(0, 1), a = shf(["lg", "sm"]); return { say: big ? "أين الزهرة الكبيرة؟" : "أين الزهرة الصغيرة؟", opts: a.map((s) => `<span class="${s === "lg" ? "zfl" : "zfl s"}" style="background:${COLF[i][1]}"></span>`), ans: a.indexOf(big ? "lg" : "sm") }; })] },
+  c_animals: { t: "مستشفى الحيوانات", e: "🏥", c: ["#38BDF8", "#0369A1"], intro: "نساعد الحيوانات", par: "اربط الإجابة بحياة الحيوان الحقيقية بجملة قصيرة، مثل: «الأرنب يحب الجزر».", talk: "اسأله: «ماذا يأكل الأرنب؟»", real: "اسأله ماذا يأكل كل حيوان من ألعابه أو من كتابه، وقلّدا طريقة أكله.", sk: "طعام الحيوان وبيئته",
+    v: [() => pickN(AFOOD, 4).map((a) => { const op = shf(pickN(AFOOD.filter((x) => x[0] !== a[0]), 2).concat([a])); return { say: `ماذا تأكل ${a[0] === "الأرنب" || a[0] === "الكلب" || a[0] === "القرد" ? "" : ""}${a[0]}؟`.replace("تأكل الأرنب", "يأكل الأرنب").replace("تأكل الكلب", "يأكل الكلب").replace("تأكل القرد", "يأكل القرد"), opts: op.map((x) => x[3]), ans: op.indexOf(a), deco: `<div class="zbig" style="font-size:90px">${a[1]}</div>` }; }),
+      () => shf(AHAB).map((a) => { const op = shf(pickN(AHAB.filter((x) => x[0] !== a[0]), 2).concat([a])); return { say: `أين تعيش ${a[0]}؟`, opts: op.map((x) => x[3]), ans: op.indexOf(a), deco: `<div class="zbig" style="font-size:90px">${a[1]}</div>` }; })] },
+  c_station: { t: "محطة القطارات", e: "🚂", c: ["#F59E0B", "#B45309"], intro: "نضع الأشكال ونعدّ العربات", par: "عدّ معه بصوت مسموع بإصبعك: واحدة، اثنتان، ثلاث. لا تتوقع منه قراءة الأرقام.", talk: "عدّا العربات معاً: «واحدة… اثنتان… ثلاث!»", real: "ابنيا قطاراً من علب فارغة آمنة أو وسائد، واحسبا العربات معاً: واحدة، اثنتان، ثلاث.", sk: "الأشكال والعدّ حتى ٣",
+    deco: () => `<div class="zbig" style="font-size:70px">🚂</div>`,
+    v: [() => pickN(SHPS.slice(0, 5), 4).map((a) => { const op = shf(pickN(SHPS.slice(0, 5).filter((x) => x[0] !== a[0]), 2).concat([a])); return { say: `ضع ال${a[0]} في مكانه`, opts: op.map((x) => svgS(x[0], "#5B34D6", 80)), ans: op.indexOf(a) }; }),
+      () => shf([1, 2, 3, 1]).map((n) => { const op = shf([1, 2, 3]); return { say: `أين ${DUAL[n]}؟`, opts: op.map((m) => GRP(m, "🚃")), ans: op.indexOf(n) }; })] },
+  c_shapes: { t: "مدينة الأشكال", e: "🔷", c: ["#8B5CF6", "#5B21B6"], intro: "نجد الأشكال ونطابق الظلال", par: "ساعده بأن تلمس الشكل بإصبعه معه وتسمّيه. في الظلال اسأله: «ما هذا؟» قبل أن يختار.", talk: "اسأله: «ما هذا الشكل؟ أين نراه في البيت؟»", real: "ابحثا في البيت عن شيء مستدير (صحن، ساعة) وشيء مربع (منديل) ولمساهما وسمّياهما.", sk: "الأشكال والظلال",
+    v: [() => pickN(SHPS.slice(0, 5), 4).map((a) => { const op = shf(pickN(SHPS.slice(0, 5).filter((x) => x[0] !== a[0]), 2).concat([a])); return { say: `أين ال${a[0]}؟`, opts: op.map((x) => svgS(x[0], "#8B5CF6", 80)), ans: op.indexOf(a) }; }),
+      () => { const P = [["🐱", "قطة"], ["🚗", "سيارة"], ["🏠", "بيت"], ["🌳", "شجرة"], ["⚽", "كرة"], ["🐘", "فيل"]]; return pickN(P, 4).map((a) => { const op = shf(pickN(P.filter((x) => x[0] !== a[0]), 2).concat([a])); return { say: "أيّ صورة تناسب الظل؟", opts: op.map((x) => x[0]), ans: op.indexOf(a), deco: `<div class="zsil">${a[0]}</div>` }; }); }] },
+  c_kitchen: { t: "مطبخ زوزو", e: "🍳", c: ["#FB7185", "#BE123C"], intro: "نتعرّف على الطعام والشراب", par: "سمِّ الطعام ثم اسأله: هل نأكله أم نشربه؟ يمكنك إحضار الأشياء الحقيقية لتأكيد المعنى.", talk: "اسأله: «ماذا نأكل؟ وماذا نشرب؟»", real: "ساعده على تسمية ٣ أطعمة أو مشروبات في المطبخ، وعلى وضع ملعقة وكوب على المائدة.", sk: "الطعام والتصنيف",
+    v: [() => pickN(KFOOD, 4).map((a) => { const op = shf(pickN(KFOOD.filter((x) => x[0] !== a[0]), 2).concat([a])); return { say: `أين ${a[0]}؟`, opts: op.map((x) => x[1]), ans: op.indexOf(a) }; }),
+      () => [1, 0, 1, 0].map((d) => { const a = pickN(KFOOD.filter((x) => x[2] === d), 1)[0], o = pickN(KFOOD.filter((x) => x[2] !== d), 2).concat([a]), op = shf(o); return { say: d ? "ماذا نشرب؟" : "ماذا نأكل؟", opts: op.map((x) => x[1]), ans: op.indexOf(a) }; })] },
+  c_feel: { t: "حديقة المشاعر", e: "😊", c: ["#FBBF24", "#B45309"], intro: "نتعرّف على مشاعر زوزو", par: "بعد كل إجابة سمِّ الشعور وقلّد الوجه. علّمه أن كل المشاعر مقبولة.", talk: "اسأله: «كيف تشعر الآن؟» وقل: «أنا سعيد/حزين».", real: "اقرآ قصة وتوقفا عند وجه الشخصية: «كيف يشعر؟» ثم قلّدا الوجه معاً.", sk: "تسمية المشاعر",
+    v: [() => shf(FEEL).map((a) => { const op = shf(pickN(FEEL.filter((x) => x[0] !== a[0]), 2).concat([a])); return { say: `أين الوجه ال${a[0].slice(2)}؟`.replace("الوجه ال", "الوجه ").replace("الوجه ", "الوجه ال"), opts: op.map((x) => x[1]), ans: op.indexOf(a) }; }),
+      () => pickN(SITU, 4).map((a) => { const op = shf(pickN(FEEL.filter((x) => x[1] !== a[1]), 2).map((x) => x[1]).concat([a[1]])); return { say: a[0], opts: op, ans: op.indexOf(a[1]) }; })] },
+  c_music: { t: "عالم الموسيقى", e: "🎵", c: ["#A78BFA", "#6D28D9"], intro: "نسمع الأصوات بانتباه", par: "تأكد من تشغيل الصوت. اطلب منه أن ينصت أولاً ثم يختار، وكرّر الصوت إن احتاج.", talk: "اسأله: «هل الصوت عالٍ أم منخفض؟» وقلّداه بصوتك.", real: "صفّقا ١ ثم ٢ ثم ٣ مرات، ثم غنّيا بصوت عالٍ ومنخفض.", sk: "التمييز السمعي",
+    v: [() => shf([0, 1, 0, 1]).map((hi) => { const op = shf(["🐦", "🐘"]); return { say: "اسمع الصوت. هل هو رفيع أم غليظ؟", opts: op, ans: op.indexOf(hi ? "🐦" : "🐘"), pre: () => { const o = S.sfx; S.sfx = true; tone(hi ? 988 : 165, .7, "triangle", .25); S.sfx = o; return wait(900); } }; }),
+      () => shf([1, 2, 3, 2]).map((n) => { const op = shf([1, 2, 3]); return { say: "اسمع كم مرة صفّقنا. ثم اختر.", opts: op.map((m) => GRP(m, "👏")), ans: op.indexOf(n), pre: async () => { const o = S.sfx; S.sfx = true; for (let j = 0; j < n; j++) { noise(.08, .25, 2500, 900); await wait(450); } S.sfx = o; } }; })] },
+  c_work: { t: "ورشة البناء", e: "🧱", c: ["#F97316", "#9A3412"], intro: "نبني ونكمل الأنماط", par: "بعد البناء اسأله: «لماذا وضعنا الكبيرة في الأسفل؟» ليكتشف فكرة الاتزان.", talk: "اسأله: «ماذا يحدث إذا وضعنا قطعة كبيرة في الأسفل؟»", real: "ابنيا برجاً بمكعبات كبيرة وآمنة: القطعة الكبيرة في الأسفل. ماذا يحدث لو وضعنا قطعة كبيرة في الأعلى؟", sk: "الأحجام والأنماط والبناء",
+    deco: (i) => `<div class="ztower">${Array.from({ length: i }, (_, j) => `<i style="width:${90 - j * 14}px"></i>`).reverse().join("")}</div>`,
+    v: [() => [1, 1, 0, 1].map((big) => { const a = shf(["lg", "sm"]); return { say: big ? "أين القطعة الكبيرة لنضعها في الأسفل؟" : "أين القطعة الصغيرة لنضعها في الأعلى؟", opts: a.map((s) => `<span class="zblk ${s}"></span>`), ans: a.indexOf(big ? "lg" : "sm") }; }),
+      () => [0, 1, 2, 3].map((i) => { const A = SQC[i % 4], B = SQC[(i + 1) % 4], op = shf([A, B]); return { say: "أيّ لون يأتي بعد ذلك؟", opts: op, ans: op.indexOf(A), deco: `<div class="zbig" style="font-size:60px">${A}${B}${A}❓</div>` }; })] },
+  c_clothes: { t: "لعبة الملابس", e: "👕", c: ["#2DD4BF", "#0F766E"], intro: "نتعرّف على الملابس", par: "اسأله عن ملابسه الحقيقية أثناء اللعب: «أين قبعتك؟»", talk: "اسأله: «ماذا تلبس اليوم؟»", real: "ساعده على اختيار ملابسه وتسمية كل قطعة وأين نلبسها (الرأس، القدمان…).", sk: "الملابس وأجزاء الجسم",
+    v: [() => pickN(CLOTH, 4).map((a) => { const op = shf(pickN(CLOTH.filter((x) => x[0] !== a[0]), 2).concat([a])); return { say: `أين ${a[0]}؟`, opts: op.map((x) => x[1]), ans: op.indexOf(a) }; }),
+      () => shf(CPART).map((a) => { const op = shf(pickN(CPART.filter((x) => x[0] !== a[0]), 2).concat([a])); return { say: `ماذا نلبس ${a[0]}؟`, opts: op.map((x) => x[1]), ans: op.indexOf(a) }; })] },
+  c_water: { t: "رحلة الماء", e: "💧", c: ["#38BDF8", "#0369A1"], intro: "نتعرّف على الماء وفوائده", par: "اربط كل إجابة بروتينه: الشرب والغسل وسقي النبات، وتحدّثا عنها.", talk: "اسأله: «ماذا نفعل بالماء؟»", real: "اغسلا يديكما معاً وسمِّ الخطوات: ماء، صابون، فرك، شطف، تجفيف.", sk: "مفاهيم الماء البسيطة",
+    v: [() => [["أين الماء؟", "💧", "🍞"], ["ماذا نشرب؟", "🥤", "🧱"], ["أين تسبح السمكة؟", "🌊", "🌳"], ["ماذا يحتاج النبات ليكبر؟", "💧", "🧱"]].map((a) => { const op = shf([a[1], a[2]]); return { say: a[0], opts: op, ans: op.indexOf(a[1]) }; })] },
+  c_box: { t: "صندوق المفاجآت", e: "🎁", c: ["#F43F5E", "#9F1239"], intro: "نفتح الصندوق ونكتشف", par: "قبل أن يفتح الصندوق اسأله: «ماذا تتوقع؟» وبعد الظهور سمِّ الشيء معه.", talk: "اسأله: «ماذا في الصندوق؟ ماذا تتوقع؟»", real: "ضع ٣ أشياء آمنة وكبيرة في كيس، ودعه يلمس ويخمّن ثم يخرجها ويسمّيها.", sk: "الفضول والتوقع" },
+  c_hare: { t: "أين اختبأ الأرنب؟", e: "🐰", c: ["#86EFAC", "#15803D"], intro: "نبحث عن الأرنب", par: "شجّع طفلك على لمس مكان الاختباء، وشاركه فرحة ظهور الأرنب.", talk: "قل: «أين الأرنب؟» ثم افتح معه: «كوكو! ها هو!»", real: "اخفِ لعبة كبيرة وساعده على إيجادها، ثم بادلا الأدوار.", sk: "الانتباه والبحث", hid: "🐰", hn: "الأرنب" }
+};
+const CKEYS = ["c_farm", "c_shop", "c_garden", "c_animals", "c_station", "c_shapes", "c_kitchen", "c_feel", "c_music", "c_work"], CXKEYS = ["c_clothes", "c_water", "c_box", "c_hare"];
+for (const [k, v] of Object.entries(ZC)) { v.sec = "a3"; ZU[k] = v; }
+const zHome = () => (S.sec === "a3" ? cityHome() : zuzuHome());
+const zCfg = () => (S.sec === "a3" ? { keys: CKEYS, real: ZREAL3, story: ZSTORY3, all: CKEYS.concat(CXKEYS) } : { keys: ZKEYS, real: ZREAL, story: ZSTORY, all: ZKEYS });
+function cityHome() {
+  SCR++; stopVoice(); HOLD = false;
+  if (!ZT || Date.now() - ZTL > 30 * 60e3) ZT = Date.now(); ZTL = Date.now();
+  const dk = CKEYS[Math.floor(new Date().setHours(0, 0, 0, 0) / 864e5) % CKEYS.length], dz = ZU[dk], done = (S.zl || []).some((x) => x.d === dayKey() && x.k === dk), n = (S.zl || []).filter((x) => ZU[x.k] && ZU[x.k].sec === "a3").length;
+  const pl = (k) => `<button class="gm" data-z="${k}"><b>${ZU[k].e}</b>${ZU[k].t}<small>${(S.zl || []).some((x) => x.k === k) ? "زرتَه ✅" : "مكان جديد"}</small></button>`;
+  app.innerHTML = `${topBar()}
+  <div class="stage" style="justify-content:flex-start;gap:12px">
+    <div class="sch" style="background:linear-gradient(135deg,#F97316,#DB2777)"><b>🏙️</b><div><h1>مدينة زوزو الصغيرة</h1><small>١٠ أماكن للاكتشاف واللعب · ٣ سنوات</small></div></div>
+    ${zBreak()}
+    <button class="feat" id="zd"><span class="nw">${done ? "زرتماه اليوم ✅" : "زوزو يلعب معي · اليوم"}</span><b>${dz.e}</b><span>${dz.t}<small>لعبة رقمية قصيرة + نشاط حقيقي مع ولي الأمر + بطاقة إنجاز</small></span></button>
+    <div class="sec">أماكن المدينة</div>
+    <div class="games">${CKEYS.map(pl).join("")}</div>
+    <div class="sec">ألعاب إضافية</div>
+    <div class="games">${CXKEYS.map(pl).join("")}</div>
+    <div class="rw"><button class="rb" id="zw"><b>📚</b>أنشطة الأسبوع<small>تتجدد كل أسبوع</small></button><button class="rb" id="zl"><b>📒</b>سجل الأسرة<small>${n ? n + " نشاط" : "ابدأوا اليوم"}</small></button><button class="rb" id="zg"><b>👨‍👩‍👧</b>دليل الوالدين<small>اللعب المشترك</small></button></div>
+    <button class="btn ghost" id="chg" style="min-width:0">🔁 تغيير القسم</button>
+    <button class="quick" id="par" style="margin-top:2px">👨‍👩‍👧 لولي الأمر · تقرير التقدّم</button></div>`;
+  bindToggles(); $("#back").onclick = secPick; $("#chg").onclick = secPick; $("#par").onclick = gate;
+  $("#zd").onclick = () => zRun(dk); $("#zw").onclick = zWeek; $("#zl").onclick = zLog; $("#zg").onclick = zGuide;
+  app.querySelectorAll("[data-z]").forEach((b) => b.onclick = () => zRun(b.dataset.z));
+}
+const CPR = ["أحسنت", "رائع", "ممتاز", "برافو", "جميل جداً"];
+function cStart(k) {
+  const P = ZC[k]; sfx.ok();
+  if (k === "c_box") return cBox(k, 0);
+  if (k === "c_hare") return zHide(k, 0);
+  const vi = ((S.zv = S.zv || {})[k] = ((S.zv[k] ?? -1) + 1) % P.v.length); save();
+  cRound(k, P.v[vi](), 0, 0);
+}
+async function cRound(k, rounds, i, miss) {
+  const P = ZC[k], r = rounds[i]; SCR++; stopVoice(); const tok = SCR; let wrong = 0, locked = false;
+  app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:12px;justify-content:flex-start">
+    <div class="zdots">${rounds.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("")}</div>
+    ${r.deco || (P.deco ? P.deco(i) : "")}
+    <button class="zrep" id="zr" aria-label="أعد">🔊</button>
+    <div class="zopts n${r.opts.length}">${r.opts.map((o, j) => `<button class="zopt" data-i="${j}">${o}</button>`).join("")}</div>
+    <div class="zpar sm">💬 ${P.talk}</div></div>`;
+  zTop(() => zRun(k));
+  const ask = async () => { await speakGirl(r.say); if (tok === SCR && r.pre) await r.pre(); };
+  $("#zr").onclick = ask; setTimeout(ask, 300);
+  app.querySelectorAll(".zopt").forEach((b) => b.onclick = async () => {
+    if (locked) return; const j = +b.dataset.i;
+    if (j === r.ans) {
+      locked = true; b.classList.add("zok"); sfx.ok(); star(1);
+      await speakGirl(CPR[rI(0, CPR.length - 1)]); await wait(300);
+      if (tok !== SCR) return; i < rounds.length - 1 ? cRound(k, rounds, i + 1, miss + wrong) : zReal(k);
+    } else {
+      wrong++; b.classList.add("zsh"); b.disabled = true; tone(240, .18, "sine", .1);
+      if (wrong >= 2) { const c = app.querySelectorAll(".zopt")[r.ans]; c && c.classList.add("zhint"); }
+      speakGirl("حاول مرة أخرى");
+    }
+  });
+}
+function cBox(k, n) {
+  SCR++; stopVoice(); const tok = SCR, pool = [...ANI.slice(0, 8), ...FRU.slice(0, 6), ...THG.slice(0, 6)], it = pool[rI(0, pool.length - 1)];
+  app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:14px;justify-content:flex-start">
+    <div class="zdots">${[0, 1, 2].map((j) => `<i class="${j <= n ? "on" : ""}"></i>`).join("")}</div>
+    <button class="zpic" id="zbx"><div class="zbig" id="zbi">🎁</div></button><h2 class="zname" id="zbt">ماذا في الصندوق؟</h2>
+    <div class="zpar sm">💬 ${ZC.c_box.talk}</div>
+    <button class="btn" id="zn" style="display:none">${n < 2 ? "صندوق آخر ▶" : "انتهينا ✔"}</button></div>`;
+  zTop(() => zRun(k)); speakGirl("ماذا في الصندوق؟ المسه لنفتحه");
+  let open = false;
+  $("#zbx").onclick = async () => { if (open) return; open = true; $("#zbi").textContent = it[1]; $("#zbt").textContent = it[0]; $("#zbi").classList.add("zb"); sfx.win(); star(1); await speakGirl(`إنه ${it[0] === "أسد" ? "أسد" : it[0]}!`); if ($("#zn")) $("#zn").style.display = ""; };
+  $("#zn").onclick = () => { sfx.ok(); n < 2 ? cBox(k, n + 1) : zReal(k); };
 }
 const hub = (first) => (S.sec && SECS.some((x) => x.id === S.sec) ? secHome(S.sec) : secPick());
 function moreHub() {
