@@ -20,6 +20,10 @@ small{color:#6d6684}#m{font-weight:700;color:var(--p)}
 <div id="mw"><label>العبرة (للقصة)</label><input id="mo" maxlength="80"></div>
 <label id="ll">كل سطر مشهد: <b>إيموجي|النص</b></label><textarea id="tx" placeholder="🐰|كان يا ما كان أرنبٌ صغير."></textarea>
 <small id="hl"></small><br><button id="sv">نشر</button> <span id="m"></span></div>
+<div class="c"><h3>🔑 أكواد الاشتراك</h3>
+<label>الباقة</label><select id="pl"><option value="30|شهر">شهر (١.٥ ر.ع)</option><option value="90|٣ أشهر">٣ أشهر (٣.٥ ر.ع)</option><option value="365|سنة">سنة (١٠ ر.ع)</option></select>
+<label>العدد</label><input id="nn" type="number" value="1" min="1" max="50"><button id="gc">توليد</button> <span id="gm"></span>
+<div id="cl" style="margin-top:10px"></div></div>
 <div class="c"><h3>المحتوى المنشور</h3><div id="ls"></div></div>
 <button class="g" id="lo">تسجيل الخروج</button></div></div>
 <script>
@@ -33,7 +37,10 @@ async function list(){const r=await sb("/rest/v1/learn_content?select=id,kind,ti
  $("#ls").querySelectorAll("[data-p]").forEach(b=>b.onclick=async()=>{await sb("/rest/v1/learn_content?id=eq."+b.dataset.p,{method:"PATCH",body:{published:b.dataset.v!=="true"}});list()});
  $("#ls").querySelectorAll("[data-d]").forEach(b=>b.onclick=async()=>{if(confirm("حذف نهائي؟")){await sb("/rest/v1/learn_content?id=eq."+b.dataset.d,{method:"DELETE"});list()}})}
 $("#go").onclick=async()=>{try{const j=await sb("/auth/v1/token?grant_type=password",{method:"POST",body:{email:$("#em").value.trim(),password:$("#pw").value}});T=j.access_token;
- const ok=await sb("/rest/v1/rpc/is_admin",{method:"POST",body:{}});if(ok!==true)throw new Error("هذا الحساب ليس مالك الموقع");$("#lg").hidden=true;$("#ad").hidden=false;list()}catch(e){T=null;alert(e.message)}};
+ const ok=await sb("/rest/v1/rpc/is_admin",{method:"POST",body:{}});if(ok!==true)throw new Error("هذا الحساب ليس مالك الموقع");$("#lg").hidden=true;$("#ad").hidden=false;list();codes()}catch(e){T=null;alert(e.message)}};
+async function codes(){const r=await sb("/rest/v1/learn_codes?select=code,plan,redeemed_at,expires_at&order=created_at.desc&limit=40");$("#cl").innerHTML=r.map(x=>`<div class="i"><span dir="ltr" style="text-align:right"><b>${x.code}</b></span><small>${x.plan} · ${x.redeemed_at?"مفعّل حتى "+x.expires_at.slice(0,10):"غير مستخدم"}</small><button class="g" data-c="${x.code}">نسخ</button></div>`).join("")||"<small>لا أكواد.</small>";
+ $("#cl").querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(b.dataset.c);b.textContent="تم"})}
+$("#gc").onclick=async()=>{try{const [d,pn]=$("#pl").value.split("|");const r=await sb("/rest/v1/rpc/learn_gen_codes",{method:"POST",body:{p_plan:pn,p_days:+d,p_n:+$("#nn").value}});$("#gm").textContent="تم توليد "+r.length;codes()}catch(e){$("#gm").textContent=e.message}};
 $("#lo").onclick=()=>{T=null;$("#ad").hidden=true;$("#lg").hidden=false;$("#pw").value=""};
 $("#sv").onclick=async()=>{try{const k=$("#k").value,t=$("#t").value.trim(),lines=$("#tx").value.split("\n").map(x=>x.trim()).filter(Boolean).map(x=>x.split("|").map(y=>y.trim()));
  if(!t)throw new Error("اكتب العنوان");if(lines.length<(k==="lesson"?2:3))throw new Error("أضف أسطراً أكثر");if(lines.some(l=>l.length<(k==="lesson"?2:2)||l.some(v=>!v)))throw new Error("صيغة سطر غير صحيحة");

@@ -142,6 +142,7 @@ input.nm:focus{border-color:var(--p)}
 .song{display:flex;flex-direction:column;gap:8px;width:100%;max-width:460px;margin:0 auto}.sl{display:flex;gap:10px;align-items:center;background:#fff;border-radius:16px;padding:10px 14px;font-size:20px;opacity:.6;transition:.2s}.sl span{font-size:30px}.sl.on{opacity:1;background:#f1ecff;transform:scale(1.03);box-shadow:0 0 0 3px var(--p)}
 .shi{border:3px solid transparent;background:#fff;border-radius:16px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font:inherit;cursor:pointer;box-shadow:0 2px 0 rgba(91,52,214,.15)}.shi span{font-size:40px}.shi small{color:#6d6684;font-weight:700}.shi b{color:var(--p)}.shi.no{opacity:.55}.shi.own{background:#e6f7ec}
 .gm.lk{opacity:.5}
+.plan{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:460px;background:#fff;border:3px solid #e3dcf9;border-radius:18px;padding:14px 18px;font:inherit;font-size:20px;font-weight:800;color:var(--p);cursor:pointer;position:relative;box-shadow:0 2px 0 rgba(91,52,214,.15)}.plan em{position:absolute;top:-10px;left:14px;background:#fdd835;color:#2b1d63;font-style:normal;font-size:12px;padding:2px 10px;border-radius:12px}
 /* ===== متجاوب: هاتف / تابلت / كمبيوتر ===== */
 @media (min-width:640px){
   :root{--tw:min(380px,46vh)}
@@ -519,7 +520,7 @@ function hub(first) {
       return `<div class="wk"><div class="wh">🎁 مكافأة الأسبوع<small>${w.c ? "استلمتها ✅" : ok ? "جاهزة!" : `${w.d.length} من ${WK_GOAL} أيام`}</small></div><div class="wd">${ds.map((x, i) => `<span class="${w.d.includes(dayKey(new Date(ws.getTime() + i * 864e5))) ? "on" : ""}">${x}</span>`).join("")}</div>${ok && !w.c ? '<button class="btn alt" id="wkc" style="min-width:0;padding:10px 20px;font-size:18px">🎁 استلم مكافأتك</button>' : ""}</div>`; })()}
     ${(() => { const w = wcNow(); return `<div class="wk"><div class="wh">🏆 تحديات الأسبوع<small>${w.c ? "أنهيتها ✅" : "الجائزة: صندوق + ٢٠ ⭐"}</small></div>${WC.map(([k, t, n]) => `<div class="kv" style="font-size:15px"><span>${t}</span><span>${Math.min(w[k], n)}/${n}</span></div><div class="bar"><i style="width:${Math.min(100, Math.round(w[k] / n * 100))}%"></i></div>`).join("")}</div>`; })()}
     <div class="sec">عالم الألعاب</div>
-    <div class="stats"><span>🔥 ${streakNow()}</span><span>💎 ${S.gems}</span><span>🎒 ${S.stk.length}/${STK.length}</span><button class="chip" id="bdg">🏅 ${S.bd.length}</button></div>
+    <div class="stats"><span>🔥 ${streakNow()}</span><span>💎 ${S.gems}</span><span>🎒 ${S.stk.length}/${STK.length}</span><button class="chip" id="bdg">🏅 ${S.bd.length}</button><button class="chip" id="sub" style="background:${subOk() ? "#c9f3d8" : "#ffe9a8"}">${subOk() ? "✅ مشترك" : "⭐ اشترك"}</button></div>
     <div class="games">
       <button class="gm" id="g-daily"><b>📅</b>تحدّي اليوم<small>${S.day === dayKey() ? "أنجزته ✅" : "جديد كل يوم"}</small></button>
       <button class="gm" id="g-race"><b>🏁</b>سباق الحروف<small>اسمع واختر</small></button>
@@ -544,7 +545,7 @@ function hub(first) {
   bindToggles();
   $("#back").onclick = start; $("#par").onclick = gate;
   $("#nx").onclick = () => begin(ni, "lesson");
-  $("#avb").onclick = () => avatarScreen(); $("#bdg").onclick = badgesScreen; if ($("#wkc")) $("#wkc").onclick = claimWeek;
+  $("#avb").onclick = () => avatarScreen(); $("#sub").onclick = () => payScreen(); $("#bdg").onclick = badgesScreen; if ($("#wkc")) $("#wkc").onclick = claimWeek;
   $("#g-daily").onclick = daily; $("#g-race").onclick = race; $("#g-tre").onclick = () => treasure(); $("#g-pos").onclick = posGame; $("#g-box").onclick = collection; $("#g-more").onclick = moreHub; $("#g-story").onclick = storyMenu; $("#g-ach").onclick = achScreen; $("#g-shop").onclick = () => shopScreen();
   if ($("#qk")) $("#qk").onclick = () => begin(due[0].i, "review");
   app.querySelectorAll(".cell").forEach((c) => c.onclick = () => {
@@ -555,6 +556,7 @@ function hub(first) {
   if (first) { speak(`مرحباً يا ${S.name}! اختر حرفاً وهيا نتعلّم.`, "hello"); }
 }
 function begin(i, mode) {
+  if (!subOk() && i >= FREE_L) return payScreen();
   LT = LET[i]; MODE = mode; R = newRun(); preload(LT.id);
   try { ac().resume(); } catch {}
   sfx.pop();
@@ -914,6 +916,7 @@ function storyMenu() {
   $("#mp").onclick = () => hub();
 }
 function storyPlay(si, i) {
+  if (!subOk() && si > 0) return payScreen();
   const st = STORIES[si], sc = st.s[i], ch = sc[2] && typeof sc[2] === "object" ? sc[2] : null, nxt = typeof sc[2] === "number" ? sc[2] : sc[2] === null ? null : i + 1;
   const last = !ch && (nxt === null || nxt >= st.s.length);
   shell(i, `<div class="scn">${sc[0]}</div><div class="card stx" style="text-align:center;font-size:22px;font-weight:800">${sc[1]}</div>
@@ -925,6 +928,7 @@ function storyPlay(si, i) {
   };
 }
 async function songPlay(si) {
+  if (!subOk()) return payScreen();
   const so = SONGS[si];
   shell(0, `<div class="card" style="text-align:center"><h2 style="margin:0;color:var(--p)">${so.e} ${so.t}</h2></div>
     <div class="song">${so.l.map(([e, t], k) => `<div class="sl" id="sl${k}"><span>${e}</span><b>${t}</b></div>`).join("")}</div>
@@ -1019,8 +1023,8 @@ async function quiz(kind, qs, i = 0, hit = 0) {
   });
   say(`${i + 1}/${qs.length}  ${q.text}`, q.key);
 }
-function race() { if (pool().length < GAMES_NEED) return lockedGame(); const qs = Array.from({ length: 10 }, (_, k) => (k % 2 ? qPic() : qSound())); quiz("race", qs); }
-function posGame() { if (pool().length < GAMES_NEED) return lockedGame(); quiz("pos", Array.from({ length: 8 }, () => qPos())); }
+function race() { if (!subOk()) return payScreen(); if (pool().length < GAMES_NEED) return lockedGame(); const qs = Array.from({ length: 10 }, (_, k) => (k % 2 ? qPic() : qSound())); quiz("race", qs); }
+function posGame() { if (!subOk()) return payScreen(); if (pool().length < GAMES_NEED) return lockedGame(); quiz("pos", Array.from({ length: 8 }, () => qPos())); }
 function daily() {
   if (pool().length < GAMES_NEED) return lockedGame();
   const t = dayKey();
@@ -1032,6 +1036,7 @@ function daily() {
   quiz("daily", mk.map((f) => f(rnd)));
 }
 async function treasure(i = 0, hit = 0, miss = 0) {
+  if (!subOk()) return payScreen();
   if (pool().length < GAMES_NEED) return lockedGame();
   const N = 5; if (i >= N) return endGame("treasure", Math.max(0, N - miss), N);
   const W0 = pickN(wordPool(), 1)[0], L = W0.l;
@@ -1239,6 +1244,7 @@ function focGame(i = 0, hit = 0) {
 }
 const GM = { math: mathGame, mix: mixGame, miss: missGame, wpic: wpicGame, wsim: wsimGame, mem: memGame, odd: () => oddGame(), ord: () => ordGame(), foc: () => focGame() };
 function moreHub() {
+  if (!subOk()) return payScreen();
   shell(0, `<div class="card" style="text-align:center"><b style="color:var(--p)">ألعاب وتعلّم إضافية</b></div>
     <div class="games">
     <button class="gm wide" id="m-learn"><b>📚</b>تعلّم: أرقام · ألوان · أشكال · حيوانات · إنجليزي<small>بطاقات بالصوت</small></button>
@@ -1371,6 +1377,35 @@ function applyContent(rows) {
   try { const r = await sb("/rest/v1/learn_content?select=id,kind,title,emoji,data&published=eq.true&order=created_at"); localStorage.setItem("zad-content", JSON.stringify(r)); applyContent(r); } catch {}
 })();
 
+/* ======================= الاشتراك ======================= */
+const FREE_L = 3, WA = "96877336242";
+const PLANS = [["شهر", "1.5", "شهري", 30], ["٣ أشهر", "3.5", "٣ أشهر", 90], ["سنة", "10", "سنوي", 365]];
+let DEV = ""; try { DEV = localStorage.getItem("zad-dev") || ""; if (!DEV) { DEV = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()); localStorage.setItem("zad-dev", DEV); } } catch { DEV = "tmp" + Date.now(); }
+let SUB = 0; try { SUB = +localStorage.getItem("zad-sub") || 0; } catch {}
+const subOk = () => SUB > Date.now();
+const setSub = (t) => { SUB = t; try { localStorage.setItem("zad-sub", String(t)); } catch {} };
+const rpc = (fn, body) => sb("/rest/v1/rpc/" + fn, { method: "POST", body });
+(async () => { try { const t = await rpc("learn_check", { p_device: DEV }); setSub(t ? Date.parse(t) : 0); } catch {} })();
+function payScreen(msg = "") {
+  SCR++; stopVoice(); HOLD = true;
+  const left = subOk() ? Math.ceil((SUB - Date.now()) / 864e5) : 0;
+  app.innerHTML = `<div class="top"><button class="icon-btn" id="home">↩</button><span class="badge">⭐ الاشتراك</span></div>
+  <div class="stage" style="justify-content:flex-start;gap:12px">
+    <div style="width:100px">${OWL}</div>
+    <div class="card" style="text-align:center"><h2 style="margin:0 0 4px;color:var(--p)">${subOk() ? "اشتراكك فعّال ✅" : "افتح كل عالم الحروف!"}</h2>
+    <p style="margin:0;font-weight:700">${subOk() ? `متبقّي ${left} يوم` : `جرّبت أول ${FREE_L} حروف مجاناً. الاشتراك يفتح الحروف الـ٢٨ وكل الألعاب والقصص والأناشيد وتقرير الأهل.`}</p></div>
+    ${PLANS.map(([t, p, , d]) => `<button class="plan" data-d="${d}"><b>${t}</b><span>${p} ر.ع</span>${d === 365 ? "<em>الأوفر</em>" : ""}</button>`).join("")}
+    <div class="card" style="width:100%"><b style="color:var(--p)">عندك كود تفعيل؟</b><input class="nm" id="cd" placeholder="ZD-XXXX-XXXX" style="direction:ltr;text-transform:uppercase;margin-top:6px"><button class="btn alt" id="cok" style="margin-top:10px">تفعيل</button><p id="cm" style="font-weight:700;color:var(--no);margin:8px 0 0;text-align:center">${msg}</p></div>
+    <small style="text-align:center;font-weight:700;color:#6d6684">اختر الباقة وأرسل طلبك واتساب، وبعد الدفع نرسل لك الكود.</small></div>`;
+  $("#home").onclick = () => { HOLD = false; hub(); };
+  app.querySelectorAll(".plan").forEach((b) => b.onclick = () => { const pl = PLANS.find((x) => x[3] === +b.dataset.d); location.href = `https://wa.me/${WA}?text=` + encodeURIComponent(`أريد اشتراك «تعلّم والعب» – باقة ${pl[0]} (${pl[1]} ر.ع)${S.name ? "\nاسم الطفل: " + S.name : ""}`); });
+  $("#cok").onclick = async () => {
+    const c = $("#cd").value.trim(); if (!c) return; $("#cm").style.color = "var(--p)"; $("#cm").textContent = "...";
+    try { const t = await rpc("learn_redeem", { p_code: c, p_device: DEV }); setSub(Date.parse(t)); sfx.win(); confetti(120); toast("🎉 تم التفعيل! أهلاً بك"); HOLD = false; hub(); }
+    catch (e) { $("#cm").style.color = "var(--no)"; $("#cm").textContent = /used_code/.test(e.message) ? "هذا الكود مستخدم على جهاز آخر" : /invalid_code/.test(e.message) ? "الكود غير صحيح" : "تعذّر الاتصال، حاول لاحقاً"; }
+  };
+}
+
 /* ======================= ولي الأمر ======================= */
 function gate() {
   const a = 3 + (Math.random() * 5 | 0), b = 4 + (Math.random() * 5 | 0);
@@ -1427,6 +1462,7 @@ function parent(kid) {
     <label class="st">حدّ الاستخدام اليومي
       <select id="lm">${[[0, "بلا حدّ"], [10, "١٠ دقائق"], [15, "١٥ دقيقة"], [20, "٢٠ دقيقة"], [30, "٣٠ دقيقة"], [45, "٤٥ دقيقة"]].map(([v, t]) => `<option value="${v}" ${S.lim === v ? "selected" : ""}>${t}</option>`).join("")}</select></label>
     <div class="row" style="margin-top:14px"><button class="btn" id="sh">📲 أرسل التقرير واتساب</button><button class="btn alt" id="dl" style="min-width:0">⬇ تحميل التقرير</button></div>
+    <button class="btn ${subOk() ? "ghost" : "alt"}" id="subb" style="min-width:0;margin-top:8px">${subOk() ? "✅ اشتراكك فعّال" : "⭐ الاشتراك والتفعيل"}</button>
     <button class="btn ghost" id="acc" style="min-width:0;margin-top:8px">☁️ الحساب والنسخ الاحتياطي ${SESS ? "✅" : ""}</button>
     ${ids.length > 1 ? '<button class="btn ghost" id="rm" style="min-width:0;margin-top:8px">حذف ملف هذا الطفل</button>' : ""}
   </div></div>`;
@@ -1436,12 +1472,12 @@ function parent(kid) {
   $("#pk-add").onclick = () => { const id = "k" + Date.now(); DB.kids[id] = DEF(); useKid(id); out(); };
   $("#lv").onchange = (e) => { S.lvl = e.target.value; if (S.lvl === "mid") S.skill = Math.max(S.skill, 2); if (S.lvl === "adv") S.skill = 3; save(); };
   $("#lm").onchange = (e) => { S.lim = +e.target.value; save(); };
-  $("#ag").onchange = (e) => { S.age = e.target.value; save(); }; $("#dl").onclick = dlReport; $("#acc").onclick = () => accScreen();
+  $("#ag").onchange = (e) => { S.age = e.target.value; save(); }; $("#dl").onclick = dlReport; $("#acc").onclick = () => accScreen(); $("#subb").onclick = () => payScreen();
   $("#sh").onclick = () => { location.href = "https://wa.me/?text=" + encodeURIComponent(report); };
   if ($("#rm")) $("#rm").onclick = () => { if (!confirm(`حذف ملف ${S.name} نهائياً؟`)) return; delete DB.kids[DB.cur]; DB.cur = Object.keys(DB.kids).find((k) => DB.kids[k].name) || Object.keys(DB.kids)[0]; S = DB.kids[DB.cur]; save(); out(); };
 }
 
-window.__zad = { achScreen, reportHTML, storyMenu, storyPlay, songPlay, shopScreen, wcBump, moreHub, GM, learnCards, LET, DB, get S() { return S; }, lvl, addXP, checkBadges, avatarScreen, badgesScreen, parent, gate, begin, hub, start, AUD, brk, race, posGame, daily, treasure, openBox, collection, learned };
+window.__zad = { payScreen, setSub, achScreen, reportHTML, storyMenu, storyPlay, songPlay, shopScreen, wcBump, moreHub, GM, learnCards, LET, DB, get S() { return S; }, lvl, addXP, checkBadges, avatarScreen, badgesScreen, parent, gate, begin, hub, start, AUD, brk, race, posGame, daily, treasure, openBox, collection, learned };
 if (!recoveryCheck()) start();
 })();
 </script>
