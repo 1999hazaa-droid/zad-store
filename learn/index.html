@@ -102,6 +102,9 @@ input.nm:focus{border-color:var(--p)}
 .gm.wide small{margin-inline-start:6px}.gm em{font-style:normal;background:var(--no);color:#fff;border-radius:99px;padding:0 9px;font-size:14px}
 .gm:active{transform:translateY(3px);box-shadow:0 2px 0 #d9d0f7}
 .storelink{display:inline-flex;align-items:center;gap:4px;background:#fff;color:var(--p);font-weight:800;font-size:15px;text-decoration:none;border-radius:99px;padding:8px 14px;box-shadow:0 3px 0 #d9d0f7;white-space:nowrap}
+.rw{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}.rb{border:0;font:inherit;font-weight:800;background:#fff;color:var(--t);border-radius:18px;padding:10px 4px;box-shadow:0 4px 0 #d9d0f7;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:13px;cursor:pointer}.rb b{font-size:28px;line-height:1.1}.rb small{font-size:11px;color:#6d6684;font-weight:700}
+.feat{position:relative;width:100%;border:0;font:inherit;font-weight:800;display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#ffe9a8,#ffd3e2);color:var(--t);border-radius:20px;padding:14px 16px;box-shadow:0 4px 0 #e9c97a;cursor:pointer;text-align:start}.feat b{font-size:40px}.feat small{display:block;font-size:12px;color:#6d6684}.feat .nw{position:absolute;top:-9px;inset-inline-end:14px;background:var(--no);color:#fff;font-size:12px;border-radius:99px;padding:2px 10px}
+.lvs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}.lvb{border:0;font:inherit;font-weight:800;background:#fff;color:var(--t);border-radius:22px;padding:14px 6px;box-shadow:0 5px 0 #d9d0f7;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}.lvb b{font-size:44px;line-height:1;color:var(--p)}.lvb i{font-style:normal;font-size:24px}.lvb.lk{opacity:.55}
 .scs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%}
 .sc{border:0;font:inherit;color:#fff;border-radius:22px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 5px 0 rgba(0,0,0,.18);cursor:pointer;min-height:118px;justify-content:center}
 .sc b{font-size:38px;line-height:1.1}.sc span{font-weight:800;font-size:18px}.sc small{font-size:12px;opacity:.92;text-align:center}.sc:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
@@ -302,7 +305,7 @@ const NAMES = Object.fromEntries(LET.map((l) => [l.ch, "ال" + l.name.replace(/
 
 /* ======================= الحفظ ======================= */
 const KEY = "zad-learn-v3", OLDKEY = "zad-learn-v2";
-const DEF = () => ({ name: "", stars: 0, sfx: true, voice: true, music: true, prog: {}, gems: 0, box: 0, stk: [], streak: 0, day: "", bx: { d: "", n: 0 }, own: [], spent: 0, cn: "", gp: {}, age: "8", rd: 0, wc: { k: "", g: 0, l: 0, s: 0, c: false }, xp: 0, av: { b: "🦊", a: "", c: 0, set: false }, bd: [], words: [], log: {}, skill: 1, lim: 0, lvl: "beg", sec: "", wk: { k: "", d: [], c: false } });
+const DEF = () => ({ name: "", stars: 0, sfx: true, voice: true, music: true, prog: {}, gems: 0, box: 0, stk: [], streak: 0, day: "", bx: { d: "", n: 0 }, own: [], spent: 0, cn: "", gp: {}, age: "8", rd: 0, wc: { k: "", g: 0, l: 0, s: 0, c: false }, xp: 0, av: { b: "🦊", a: "", c: 0, set: false }, bd: [], words: [], log: {}, skill: 1, lim: 0, lvl: "beg", sec: "", lp: {}, wk: { k: "", d: [], c: false } });
 let DB = null;
 try { DB = JSON.parse(localStorage.getItem(KEY)); } catch {}
 if (!DB || !DB.kids) { let old = {}; try { old = JSON.parse(localStorage.getItem(OLDKEY)) || {}; } catch {} DB = { cur: "k1", kids: { k1: old } }; }
@@ -1060,7 +1063,7 @@ async function quiz(kind, qs, i = 0, hit = 0) {
   if (i >= qs.length) return endGame(kind, hit, qs.length);
   const q = qs[i]; let tried = false; window.__cur = q;
   shell(i, `${q.top || ""}<div class="opts" style="grid-template-columns:repeat(${q.opts.length === 4 ? 2 : 3},1fr)">${q.opts.map((o, k) => `<button class="opt" data-k="${k}" style="${o.s || ""}">${o.h}</button>`).join("")}</div>`, qs.length);
-  const pl = $("#pl"); if (pl) pl.onclick = () => speak(q.text, q.key);
+  const pl = $("#pl"); if (pl) pl.onclick = () => (q.en ? speakEN(q.en) : speak(q.text, q.key));
   app.querySelectorAll(".opt").forEach((b) => b.onclick = async () => {
     const o = q.opts[+b.dataset.k];
     if (o.v === q.ans) {
@@ -1069,7 +1072,7 @@ async function quiz(kind, qs, i = 0, hit = 0) {
       await wait(750); quiz(kind, qs, i + 1, hit);
     } else { tried = true; b.classList.add("no"); sfx.no(); note("حاول مرة أخرى."); setTimeout(() => b.classList.remove("no"), 500); }
   });
-  say(`${i + 1}/${qs.length}  ${q.text}`, q.key);
+  if (q.en) { note(`${i + 1}/${qs.length}  ${q.text}`); setTimeout(() => speakEN(q.en), 350); } else say(`${i + 1}/${qs.length}  ${q.text}`, q.key);
 }
 function race() { if (!subOk()) return payScreen(); if (pool().length < GAMES_NEED) return lockedGame(); const qs = Array.from({ length: 10 }, (_, k) => (k % 2 ? qPic() : qSound())); quiz("race", qs); }
 function posGame() { if (!subOk()) return payScreen(); if (pool().length < GAMES_NEED) return lockedGame(); quiz("pos", Array.from({ length: 8 }, () => qPos())); }
@@ -1111,7 +1114,9 @@ function grantBox() {
 }
 function endGame(kind, hit, total) {
   const pct = hit / total, ok = pct >= .7; let box = false, extra = "", lvmsg = "";
-  addXP(kind === "daily" ? 30 : 20); markActive(); wcBump("g"); S.gp[kind] = (S.gp[kind] || 0) + 1;
+  const lkv = String(kind).split("@"), isLv = lkv.length === 2; let nextB = "";
+  if (isLv) { S.lp = S.lp || {}; const kk = S.sec + "." + lkv[0], arr = (S.lp[kk] = S.lp[kk] || [0, 0, 0]), li = +lkv[1] - 1; arr[li] = Math.max(arr[li], Math.round(pct * 100)); if (ok && li < 2) nextB = '<button class="btn alt" id="nl">المستوى التالي ▶</button>'; }
+  addXP(kind === "daily" ? 30 : 20); markActive(); wcBump("g"); S.gp[lkv[0]] = (S.gp[lkv[0]] || 0) + 1;
   if (pct >= .9 && S.skill < 3) { S.skill++; lvmsg = "⬆️ ارتفع مستوى التحدّي!"; } else if (pct < .5 && S.skill > 1) { S.skill--; lvmsg = "نخفّف التحدّي قليلاً 🌱"; }
   if (kind === "daily") {
     S.streak = S.day === yesterdayKey() ? S.streak + 1 : 1; S.day = dayKey(); S.box++; box = true; S.gems += 2;
@@ -1124,12 +1129,14 @@ function endGame(kind, hit, total) {
     ${box ? '<p style="margin:8px 0 0;font-weight:700;color:var(--ok)">🎁 ربحت صندوق مفاجآت!</p>' : ""}
     <p style="margin:8px 0 0;font-weight:700;color:#6d6684">مستوى التحدّي: ${["", "سهل", "متوسط", "صعب"][skillNow()]} ${lvmsg}</p></div>
     ${S.box > 0 ? `<button class="btn alt" id="ob">🎁 افتح الصندوق (${S.box})</button>` : ""}
+    ${nextB}
     ${kind !== "daily" ? '<button class="btn" id="ag">العب مرة أخرى</button>' : ""}
-    <button class="btn ghost" id="mp">الخريطة</button>`, total);
+    <button class="btn ghost" id="mp">${isLv ? "المراحل" : "رجوع"}</button>`, total);
   note(ok ? "أحسنت! أنت بطل." : "كل مرة تتحسّن أكثر!"); sfx.level(); if (ok) confetti(90);
   if ($("#ob")) $("#ob").onclick = openBox;
-  if ($("#ag")) $("#ag").onclick = () => ({ race, treasure: () => treasure(), pos: posGame, ...GM }[kind] || hub)();
-  $("#mp").onclick = () => hub();
+  if ($("#nl")) $("#nl").onclick = () => playLv(lkv[0], +lkv[1] + 1);
+  if ($("#ag")) $("#ag").onclick = () => (isLv ? playLv(lkv[0], +lkv[1]) : kind === "journey" ? journey() : ({ race, treasure: () => treasure(), pos: posGame, ...GM }[kind] || hub)());
+  $("#mp").onclick = () => (isLv ? lvScreen(lkv[0]) : hub());
 }
 async function openBox() {
   if (S.box < 1) return hub();
@@ -1402,54 +1409,8 @@ const SECS = [
   { id: "g3", grp: "grade", name: "الصف الثالث", em: "3️⃣", c: ["#F59E0B", "#B45309"], age: "8", sub: "جدول الضرب والقسمة والكسور", games: ["g_mul", "g_div", "g_frac", "g_place", "g_round", "g_add1000", "g_ayah", "g_dua"] },
   { id: "g4", grp: "grade", name: "الصف الرابع", em: "4️⃣", c: ["#3B82F6", "#1D4ED8"], age: "8", sub: "ضرب وقسمة وكسور وأعداد كبيرة", games: ["g_mul12", "g_div12", "g_frac4", "g_place4", "g_round4", "g_add10000", "g_big", "g_ayah"] }
 ];
-let LKEYS = null, MIXK = null;
-const GREG = {
-  letters: ["🔤", "عالم الحروف", "دروس الحروف الـ٢٨", () => lettersHub()],
-  cards: ["📚", "بطاقات التعلّم", "بالصوت والصورة", () => { LKEYS = secKeys(); learnMenu(); }],
-  mix: ["🧠", "اختبرني", "ما هذا؟", () => { MIXK = secMix(); mixGame(); }],
-  math: ["➕", "الأرقام والحساب", "عدّ وجمع وطرح", () => mathGame()],
-  mem: ["🃏", "الذاكرة", "طابق الصور", () => memGame()],
-  odd: ["🔍", "اكتشف المختلف", "أيها يختلف؟", () => GM.odd()],
-  foc: ["🎯", "التركيز", "ابحث وعُدّ", () => GM.foc()],
-  ord: ["📊", "رتّب الصور", "من الأقل للأكثر", () => GM.ord()],
-  race: ["🏁", "سباق الحروف", "اسمع واختر", () => race()],
-  pos: ["📍", "أين الحرف؟", "أول · وسط · آخر", () => posGame()],
-  treasure: ["💎", "كنز الكلمات", "ركّب واجمع", () => treasure()],
-  miss: ["🔡", "أكمل الكلمة", "الحرف الناقص", () => missGame()],
-  wpic: ["🖼️", "الكلمة والصورة", "اقرأ واختر", () => wpicGame()],
-  wsim: ["👀", "الكلمات المتشابهة", "أي كلمة تطابق الصورة؟", () => wsimGame()],
-  lab: ["📖", "مختبر القراءة", "مقاطع وكلمات", () => readLab()],
-  acad: ["🎓", "أكاديمية الحروف", "كلمات جديدة", () => acadMenu()],
-  adv: ["🦉", "مغامرة القراءة", "اقرأ مع زوزو", () => advPlay(0)],
-  story: ["🎵", "قصص وأناشيد", "اسمع وغنِّ", () => storyMenu()],
-  g_add20: ["➕", "الجمع حتى ٢٠", "اجمع بسرعة", () => gradeGame("g_add20", () => qAdd(20))],
-  g_sub20: ["➖", "الطرح حتى ٢٠", "اطرح بسرعة", () => gradeGame("g_sub20", () => qSub(20))],
-  g_add100: ["➕", "الجمع حتى ١٠٠", "أعداد أكبر", () => gradeGame("g_add100", () => qAdd(100))],
-  g_sub100: ["➖", "الطرح حتى ١٠٠", "أعداد أكبر", () => gradeGame("g_sub100", () => qSub(100))],
-  g_add1000: ["➕", "الجمع والطرح حتى ١٠٠٠", "أعداد كبيرة", () => gradeGame("g_add1000", () => Math.random() < .5 ? qAdd(1000) : qSub(1000))],
-  g_add10000: ["➕", "الجمع والطرح حتى ١٠٠٠٠", "أعداد كبيرة جداً", () => gradeGame("g_add10000", () => Math.random() < .5 ? qAdd(10000) : qSub(10000))],
-  g_cmp: ["⚖️", "الأكبر والأصغر", "قارن الأعداد", () => gradeGame("g_cmp", () => qCmp(20))],
-  g_big: ["⚖️", "الأكبر والأصغر", "أعداد حتى ١٠٠٠٠", () => gradeGame("g_big", () => qCmp(10000))],
-  g_skip: ["🦘", "العدّ بالقفز", "بـ ٢ و٥ و١٠", () => gradeGame("g_skip", qSkip)],
-  g_even: ["🎯", "زوجي أم فردي؟", "اعرف نوع العدد", () => gradeGame("g_even", qEven)],
-  g_mul: ["✖️", "جدول الضرب", "من ٢ إلى ٥", () => gradeGame("g_mul", () => qMul([2, 3, 4, 5], 10))],
-  g_mul12: ["✖️", "جدول الضرب", "من ٢ إلى ١٢", () => gradeGame("g_mul12", () => qMul([2, 3, 4, 5, 6, 7, 8, 9, 11, 12], 12))],
-  g_div: ["➗", "القسمة", "على ٢ و٣ و٤ و٥", () => gradeGame("g_div", () => qDiv([2, 3, 4, 5], 10))],
-  g_div12: ["➗", "القسمة", "على أعداد أكبر", () => gradeGame("g_div12", () => qDiv([2, 3, 4, 5, 6, 7, 8, 9], 12))],
-  g_frac: ["🍕", "الكسور", "النصف والثلث والربع", () => gradeGame("g_frac", () => qFrac([2, 3, 4]))],
-  g_frac4: ["🍕", "الكسور", "كسور أكثر", () => gradeGame("g_frac4", () => qFrac([3, 4, 5, 6, 8]))],
-  g_place: ["🔢", "قيمة الرقم", "آحاد وعشرات ومئات", () => gradeGame("g_place", () => qPlace(3))],
-  g_place4: ["🔢", "قيمة الرقم", "حتى الآلاف", () => gradeGame("g_place4", () => qPlace(4))],
-  g_round: ["📏", "التقريب", "لأقرب عشرة", () => gradeGame("g_round", () => qRound(10, 100))],
-  g_round4: ["📏", "التقريب", "لأقرب مئة", () => gradeGame("g_round4", () => qRound(100, 1000))],
-  g_opp: ["↔️", "الأضداد", "ما عكس الكلمة؟", () => gradeGame("g_opp", qOpp)],
-  g_day: ["📅", "الأيام", "قبل وبعد", () => gradeGame("g_day", qDay)],
-  g_dua: ["🤲", "الأدعية", "ماذا نقول؟", () => gradeGame("g_dua", qDua)],
-  g_ayah: ["🕌", "أكمل الآية", "من قصار السور", () => gradeGame("g_ayah", qAyah)]
-};
 const secKeys = () => ({ a2: ["col", "ani", "fru", "shp", "thg"], a3: ["nums", "col", "ani", "fru", "shp", "thg"] }[S.sec] || Object.keys(CATS));
 const secMix = () => ({ a2: ["col", "shp", "ani", "fru"], a3: ["col", "shp", "ani", "fru", "thg", "nums"] }[S.sec] || null);
-function gradeGame(kind, mk) { if (!subOk()) return payScreen(); quiz(kind, Array.from({ length: 10 }, () => mk())); }
 const rI = (a, b) => a + (Math.random() * (b - a + 1) | 0);
 const near = (v, sp, lo = 0) => { const s = new Set([v]); let g = 0; while (s.size < 4 && g++ < 80) { const x = v + rI(-sp, sp); if (x >= lo && x !== v) s.add(x); } return pickN([...s], s.size).map((x) => ({ h: AD(x), v: x, s: "font-size:30px" })); };
 const bigq = (t) => `<div class="word" style="min-height:0" dir="ltr">${t}</div>`;
@@ -1462,7 +1423,7 @@ function qMul(t, m) { const a = pickN(t, 1)[0], b = rI(1, m), v = a * b; return 
 function qDiv(t, m) { const a = pickN(t, 1)[0], q = rI(1, m), v = a * q; return { top: bigq(`${AD(v)} ÷ ${AD(a)}`), text: `كم ناتج ${AD(v)} قسمة ${AD(a)}؟`, opts: near(q, 3, 1), ans: q }; }
 const frT = (n, d) => `<span dir="ltr">${AD(n)}/${AD(d)}</span>`;
 function qFrac(dens) { const d = pickN(dens, 1)[0], n = rI(1, d - 1), ans = `${n}/${d}`, o = new Set([ans]); let g = 0; while (o.size < 3 && g++ < 60) { const dd = Math.random() < .5 ? d : pickN(dens.concat([d + 1]), 1)[0], nn = rI(1, Math.max(1, dd - 1)); if (nn < dd) o.add(`${nn}/${dd}`); } if (o.size < 3) o.add(`1/${d + 2}`); if (o.size < 3) o.add(`3/${d + 3}`); const f = (x) => { const [p, q] = x.split("/"); return frT(+p, +q); }; return { top: `<div class="lc" style="width:130px;height:130px;margin:auto;border-radius:50%;background:conic-gradient(var(--p) 0 ${n / d * 100}%,#e8e2fb 0)"></div>`, text: "أي كسر يمثل الجزء الملوّن؟", opts: pickN([...o], 3).map((x) => ({ h: f(x), v: x, s: "font-size:30px" })), ans }; }
-function qPlace(dg) { const n = rI(10 ** (dg - 1), 10 ** dg - 1), ds = String(n).split(""), i = rI(0, dg - 1), pos = dg - 1 - i, d = +ds[i] || rI(1, 9), n2 = ds.map((c, k) => k === i ? d : c).join(""), ans = d * 10 ** pos, o = new Set([ans]); [0, 1, 2, 3].forEach((p) => { if (o.size < 3 && p !== pos && p < dg) o.add(d * 10 ** p); }); while (o.size < 3) o.add(ans * 10); return { top: bigq(AD(n2)), text: `ما قيمة الرقم ${AD(d)} في العدد ${AD(n2)}؟`, opts: pickN([...o], 3).map((x) => ({ h: AD(x), v: x, s: "font-size:30px" })), ans }; }
+function qPlace(dg) { const n = rI(10 ** (dg - 1), 10 ** dg - 1), ds = String(n).split(""), i = rI(0, dg - 1), pos = dg - 1 - i, d = +ds[i] || rI(1, 9), n2 = ds.map((c, k) => k === i ? d : c).join(""), ans = d * 10 ** pos, o = new Set([ans]); [0, 1, 2, 3].forEach((p) => { if (o.size < 3 && p !== pos && p < dg) o.add(d * 10 ** p); }); let mm = 10; while (o.size < 3) { o.add(ans * mm); mm *= 10; } return { top: bigq(AD(n2)), text: `ما قيمة الرقم ${AD(d)} في العدد ${AD(n2)}؟`, opts: pickN([...o], 3).map((x) => ({ h: AD(x), v: x, s: "font-size:30px" })), ans }; }
 function qRound(to, mx) { const n = rI(1, mx - 1), a = Math.round(n / to) * to; if (n % to === to / 2) return qRound(to, mx); const o = new Set([a, a + to, Math.max(0, a - to)]); while (o.size < 3) o.add(a + 2 * to); return { top: bigq(AD(n)), text: `قرّب ${AD(n)} لأقرب ${AD(to)}`, opts: pickN([...o], 3).map((x) => ({ h: AD(x), v: x, s: "font-size:30px" })), ans: a }; }
 const OPPS = [["كبير", "صغير"], ["طويل", "قصير"], ["حار", "بارد"], ["فوق", "تحت"], ["سريع", "بطيء"], ["ثقيل", "خفيف"], ["نظيف", "وسخ"], ["مفتوح", "مغلق"], ["نهار", "ليل"], ["سعيد", "حزين"], ["قريب", "بعيد"], ["جديد", "قديم"]];
 function qOpp() { const p = pickN(OPPS, 1)[0], f = Math.random() < .5, q = f ? p[1] : p[0], a = f ? p[0] : p[1]; return { top: bigq(q), text: `ما عكس ${q}؟`, opts: pickN([a, ...pickN(OPPS.flat().filter((x) => x !== q && x !== a), 2)], 3).map((x) => ({ h: x, v: x, s: "font-size:24px" })), ans: a }; }
@@ -1508,17 +1469,272 @@ function secPick() {
   app.querySelectorAll(".sc").forEach((b) => b.onclick = () => { S.sec = b.dataset.s; S.age = SECS.find((x) => x.id === S.sec).age; save(); sfx.ok(); secHome(S.sec); });
   speak(`مرحباً يا ${S.name}! اختر قسمك.`, "hello");
 }
+/* ======================= محتوى الأقسام: مستويات ومراحل وتحديات ======================= */
+let LKEYS = null, MIXK = null;
+const SORD = ["a2", "a3", "a4", "a5", "a6", "g1", "g2", "g3", "g4"];
+const sIdx = () => Math.max(0, SORD.indexOf(S.sec));
+const CATS2 = [["edu", "📚", "تعليمية", "ألعاب مستواك"], ["math", "➕", "رياضيات", "أرقام وحساب"], ["ar", "🔤", "لغة عربية", "حروف وكلمات"], ["en", "🌍", "English", "كلمات إنجليزية"], ["sci", "🔬", "علوم واكتشاف", "اعرف العالم"], ["mind", "🧠", "ذكاء وتفكير", "فكّر وركّز"], ["adv", "🗺️", "مغامرات", "رحلات وقصص"]];
+const DEFS = {}; window.__DEFS = DEFS;
+const D = (key, cat, e, t, s, from, to, mk, n) => { DEFS[key] = { key, cat, e, t, s, from, to, mk, n }; };
+const L = (key, cat, e, t, s, from, to, run) => { DEFS[key] = { key, cat, e, t, s, from, to, run }; };
+const byLv = (arr, lv) => arr[Math.min(arr.length - 1, lv - 1)];
+const pick1 = (a) => a[Math.random() * a.length | 0];
+const OBJ = ["🍎", "⭐", "🐟", "🎈", "🍌", "🦋", "🚗", "🌸", "🐥", "⚽"];
+const WRAPS = (t) => `<div class="word" style="min-height:0">${t}</div>`;
+const PS = "font-size:52px;padding:10px 0";
+/* --- رياضيات --- */
+function qCount(c) {
+  const mx = [[2, 3, 4], [3, 5, 6], [4, 6, 8], [6, 8, 10]][c.i][c.lv - 1], n = rI(1, mx), e = pick1(OBJ);
+  return { top: `<div class="pic" style="font-size:46px;line-height:1.3">${e.repeat(n)}</div>`, text: "كم عددها؟", key: "q.cnt", opts: nOpts(n, 1, Math.max(mx + 2, 5), 4), ans: n };
+}
+function qShape(c) {
+  const pool = SHPS.slice(0, [4, 6, 8][c.lv - 1] || 8), x = pick1(pool), cols = ["#5B34D6", "#e53935", "#43a047", "#fb8c00", "#1e88e5"];
+  return { top: "", text: `أين ${x[0]}؟`, opts: pickN([x, ...pickN(pool.filter((y) => y !== x), 2)], 3).map((y) => ({ h: svgS(y[0], pick1(cols), 74), v: y[0], s: "padding:8px 0" })), ans: x[0] };
+}
+function qCmpS(c) {
+  if (c.i >= 5) { const m = [[20, 50, 100], [100, 500, 1000], [1000, 5000, 10000], [10000, 50000, 100000]][c.i - 5][c.lv - 1]; return qCmp(m); }
+  const mx = [[3, 4, 5], [4, 6, 8], [5, 8, 10], [8, 10, 12], [10, 15, 20]][c.i][c.lv - 1], a = rI(1, mx);
+  let b; do { b = rI(1, mx); } while (b === a);
+  const e = pick1(OBJ), more = Math.random() < .7;
+  if (c.i >= 3 && c.lv === 3) return { top: `<div class="word" style="min-height:0">${AD(a)} ، ${AD(b)}</div>`, text: more ? "أي عدد أكبر؟" : "أي عدد أصغر؟", opts: pickN([a, b], 2).map((x) => ({ h: AD(x), v: x, s: "font-size:34px" })), ans: more ? Math.max(a, b) : Math.min(a, b) };
+  return { top: "", text: more ? "أيهما أكثر؟" : "أيهما أقل؟", opts: [a, b].map((x) => ({ h: e.repeat(x), v: x, s: "font-size:26px;line-height:1.3;padding:10px 4px" })), ans: more ? Math.max(a, b) : Math.min(a, b) };
+}
+const ADDM = [0, 0, [4, 6, 8], [6, 10, 15], [10, 20, 30], [10, 20, 50], [50, 100, 100], [100, 500, 1000], [1000, 5000, 10000]];
+function qAddS(c, add) {
+  const m = ADDM[c.i][c.lv - 1];
+  if (c.i >= 5) return add ? qAdd(m) : qSub(m);
+  const a = add ? rI(1, m - 1) : rI(2, m), b = add ? rI(1, m - a) : rI(1, a - 1), v = add ? a + b : a - b, e = pick1(OBJ);
+  const top = c.i === 2 ? `<div class="pic" style="font-size:38px;line-height:1.3">${e.repeat(a)} ${add ? "+" : "−"} ${e.repeat(b)}</div>` : bigq(`${AD(a)} ${add ? "+" : "−"} ${AD(b)}`);
+  return { top, text: `كم ناتج ${AD(a)} ${add ? "زائد" : "ناقص"} ${AD(b)}؟`, opts: near(v, 3, 0), ans: v };
+}
+function qMulS(c) {
+  const T = { 6: [[2, 10], [2, 5, 10], [2, 3, 4, 5, 10]], 7: [[2, 3, 4, 5], [2, 3, 4, 5, 6, 10], [2, 3, 4, 5, 6, 7, 8, 9]], 8: [[2, 3, 4, 5, 6, 7], [2, 3, 4, 5, 6, 7, 8, 9], [2, 3, 4, 5, 6, 7, 8, 9, 11, 12]] }[c.i][c.lv - 1];
+  return qMul(T, c.i === 8 ? 12 : 10);
+}
+function qDivS(c) { const T = c.i === 7 ? [[2, 3, 4, 5], [2, 3, 4, 5, 6], [2, 3, 4, 5, 6, 7, 8, 9]][c.lv - 1] : [[2, 3, 4, 5, 6], [2, 3, 4, 5, 6, 7, 8, 9], [2, 3, 4, 5, 6, 7, 8, 9, 11, 12]][c.lv - 1]; return qDiv(T, c.i === 7 ? 10 : 12); }
+const qFracS = (c) => qFrac(c.i === 6 ? [2, 4] : c.i === 7 ? [2, 3, 4] : [3, 4, 5, 6, 8]);
+const qPlaceS = (c) => qPlace(Math.min(4, c.i - 4 + (c.lv === 3 ? 1 : 0)));
+const qRoundS = (c) => c.i === 7 ? qRound(c.lv === 1 ? 10 : 100, c.lv === 1 ? 100 : 1000) : qRound(c.lv === 3 ? 1000 : 100, c.lv === 3 ? 10000 : 1000);
+const qSkipS = (c) => c.i >= 6 ? qSkip() : { ...qSkip(), };
+function qClock(c) {
+  const h = rI(1, 12), m = c.lv === 1 ? 0 : c.lv === 2 ? pick1([0, 30]) : pick1([0, 15, 30, 45]);
+  const hands = (hh, mm) => { const ha = ((hh % 12) + mm / 60) * 30, ma = mm * 6, f = (r, a) => [50 + r * Math.sin(a * Math.PI / 180), 50 - r * Math.cos(a * Math.PI / 180)]; const [hx, hy] = f(22, ha), [mx, my] = f(33, ma); let t = ""; for (let k = 1; k <= 12; k++) { const a = (k * 30 - 90) * Math.PI / 180; t += `<text x="${(50 + 38 * Math.cos(a)).toFixed(1)}" y="${(50 + 38 * Math.sin(a) + 4).toFixed(1)}" font-size="11" text-anchor="middle" fill="#333">${k}</text>`; } return `<svg viewBox="0 0 100 100" width="150" height="150"><circle cx="50" cy="50" r="47" fill="#fff" stroke="#5B34D6" stroke-width="4"/>${t}<line x1="50" y1="50" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="#222" stroke-width="5" stroke-linecap="round"/><line x1="50" y1="50" x2="${mx.toFixed(1)}" y2="${my.toFixed(1)}" stroke="#e53935" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="50" r="3" fill="#222"/></svg>`; };
+  const tx = (hh, mm) => `${hh}:${String(mm).padStart(2, "0")}`, ans = tx(h, m), o = new Set([ans]);
+  let g = 0; while (o.size < 3 && g++ < 40) o.add(tx(((h + rI(-2, 2) + 11) % 12) + 1, c.lv === 1 ? 0 : pick1(c.lv === 2 ? [0, 30] : [0, 15, 30, 45])));
+  return { top: `<div style="display:grid;place-items:center">${hands(h, m)}</div>`, text: "ما الوقت الذي تُشير إليه الساعة؟", opts: pickN([...o], o.size).map((x) => ({ h: `<span dir="ltr">${AD(x)}</span>`, v: x, s: "font-size:30px" })), ans };
+}
+const WOBJ = [["كرات", "كرة"], ["تفاحات", "تفاحة"], ["أقلام", "قلم"], ["كتب", "كتاب"], ["بالونات", "بالونة"], ["حلوى", "حلوى"]];
+function qWordP(c) {
+  const m = ADDM[Math.max(4, c.i)][c.lv - 1], o = pick1(WOBJ)[0], R = (a, b) => rI(a, b);
+  const t = c.i >= 7 && Math.random() < .5 ? "m" : Math.random() < .5 ? "a" : "s";
+  if (t === "m") { const a = R(2, c.i === 8 ? 12 : 9), b = R(2, 9); return { top: "", text: `في كل صندوق ${AD(a)} ${o}. كم ${o} في ${AD(b)} صناديق؟`, opts: near(a * b, Math.max(3, a), 1), ans: a * b }; }
+  if (t === "a") { const a = R(1, m - 1), b = R(1, m - a); return { top: "", text: `في السلة ${AD(a)} ${o}، وأضفنا ${AD(b)}. كم أصبح العدد؟`, opts: near(a + b, m > 20 ? 10 : 3), ans: a + b }; }
+  const a = R(3, m), b = R(1, a - 1); return { top: "", text: `كان عند سالم ${AD(a)} ${o}، وأعطى صديقه ${AD(b)}. كم بقي معه؟`, opts: near(a - b, m > 20 ? 10 : 3), ans: a - b };
+}
+/* --- عربي --- */
+const PLU = [["كتاب", "كتب"], ["قلم", "أقلام"], ["ولد", "أولاد"], ["بنت", "بنات"], ["شجرة", "أشجار"], ["باب", "أبواب"], ["طالب", "طلاب"], ["معلمة", "معلمات"], ["نهر", "أنهار"], ["بيت", "بيوت"], ["مدرسة", "مدارس"], ["رجل", "رجال"], ["طفل", "أطفال"], ["كلب", "كلاب"], ["سمكة", "أسماك"], ["طائر", "طيور"]];
+const qPlu = () => { const p = pick1(PLU), w = pickN(PLU.filter((x) => x !== p), 2).map((x) => x[1]); return { top: bigq(p[0]), text: `ما جمع كلمة ${p[0]}؟`, opts: pickN([p[1], ...w], 3).map((x) => ({ h: x, v: x, s: "font-size:26px" })), ans: p[1] }; };
+const GEN = [["طالب", "طالبة"], ["معلم", "معلمة"], ["ولد", "بنت"], ["أسد", "لبؤة"], ["ديك", "دجاجة"], ["أخ", "أخت"], ["رجل", "امرأة"], ["عم", "عمة"], ["ملك", "ملكة"], ["صديق", "صديقة"]];
+const qGen = () => { const p = pick1(GEN), f = Math.random() < .5, q = f ? p[0] : p[1], a = f ? p[1] : p[0], w = pickN(GEN.flat().filter((x) => x !== q && x !== a), 2); return { top: bigq(q), text: `ما ${f ? "مؤنث" : "مذكر"} كلمة ${q}؟`, opts: pickN([a, ...w], 3).map((x) => ({ h: x, v: x, s: "font-size:26px" })), ans: a }; };
+const qOppS = (c) => { const q = qOpp(); return c.lv === 1 ? q : q; };
+function qWhereAr(c) {
+  const src = [ANI, FRU, THG], pool = src[Math.min(2, c.lv - 1 + (c.i > 0 ? 1 : 0))].slice(0, 10), x = pick1(pool);
+  return { top: "", text: `أين ${x[0]}؟`, key: x[0], opts: pickN([x, ...pickN(pool.filter((y) => y !== x), 2)], 3).map((y) => ({ h: y[1], v: y[0], s: PS })), ans: x[0] };
+}
+/* --- إنجليزي --- */
+const swc = (c) => `<span style="display:inline-block;width:54px;height:54px;border-radius:50%;background:${c};box-shadow:inset -5px -6px 0 rgba(0,0,0,.14)"></span>`;
+const EPOOLS = () => { const A = ANI.slice(0, 8).map(([a, e, en]) => ({ h: e, en, a })), F = FRU.slice(0, 6).map(([a, e, en]) => ({ h: e, en, a })), T = THG.map(([a, e, en]) => ({ h: e, en, a })), C = COLS.slice(0, 8).map(([a, c, en]) => ({ h: swc(c), en, a })), N = NUMN.slice(1).map((a, i) => ({ h: AD(i + 1), en: NUME[i + 1], a })); const U = (l) => l.filter((x, k) => l.findIndex((y) => y.en === x.en) === k); return [U([...A, ...F]), U([...A, ...F, ...T, ...C]), U([...A, ...F, ...T, ...C, ...N])]; };
+function qEnHear(c) {
+  const P = EPOOLS()[Math.min(2, c.lv - 1 + (c.i >= 3 ? 1 : 0))], x = pick1(P), n = c.i <= 1 ? 3 : 4;
+  return { top: '<button class="play" id="pl" aria-label="استمع">🔊</button>', text: "اسمع الكلمة ثم اختر الصورة", en: x.en, opts: pickN([x, ...pickN(P.filter((y) => y !== x), n - 1)], n).map((y) => ({ h: y.h, v: y.en, s: PS })), ans: x.en };
+}
+function qEnWord(c) {
+  const P = EPOOLS()[Math.min(2, c.lv - 1 + (c.i >= 5 ? 1 : 0))], x = pick1(P);
+  return { top: `<div class="lc">${x.h}</div>`, text: "ما اسمها بالإنجليزية؟", en: x.en, opts: pickN([x, ...pickN(P.filter((y) => y !== x), 2)], 3).map((y) => ({ h: y.en, v: y.en, s: "font-size:21px;direction:ltr" })), ans: x.en };
+}
+function qEnFirst(c) {
+  const P = EPOOLS()[Math.min(1, c.lv - 1)].filter((y) => /^[A-Za-z]/.test(y.en)), x = pick1(P), L1 = x.en[0].toUpperCase(), w = pickN("ABCDEFGHIJKLMNOPRSTWY".split("").filter((l) => l !== L1), 2);
+  return { top: `<div class="lc">${x.h}</div>`, text: "بأي حرف تبدأ هذه الكلمة؟", en: x.en, opts: pickN([L1, ...w], 3).map((l) => ({ h: l, v: l, s: "font-size:44px;direction:ltr" })), ans: L1 };
+}
+const EBODY = [["Eye", "👁️"], ["Ear", "👂"], ["Nose", "👃"], ["Mouth", "👄"], ["Hand", "✋"], ["Foot", "🦶"], ["Hair", "💇"], ["Tooth", "🦷"]];
+const EFAM = [["Father", "👨"], ["Mother", "👩"], ["Brother", "👦"], ["Sister", "👧"], ["Grandfather", "👴"], ["Grandmother", "👵"], ["Baby", "👶"]];
+const ESCH = [["Book", "📖"], ["Pencil", "✏️"], ["Bag", "🎒"], ["School", "🏫"], ["Teacher", "🧑‍🏫"], ["Ruler", "📏"], ["Scissors", "✂️"], ["Clock", "⏰"]];
+function qEnGroup(c) {
+  const P = [EBODY, [...EBODY, ...EFAM], [...EBODY, ...EFAM, ...ESCH]][c.lv - 1].map(([en, h]) => ({ en, h })), x = pick1(P);
+  return { top: '<button class="play" id="pl" aria-label="استمع">🔊</button>', text: "اسمع الكلمة ثم اختر الصورة", en: x.en, opts: pickN([x, ...pickN(P.filter((y) => y !== x), 3)], 4).map((y) => ({ h: y.h, v: y.en, s: PS })), ans: x.en };
+}
+const EOPP = [["big", "small"], ["hot", "cold"], ["up", "down"], ["open", "close"], ["happy", "sad"], ["fast", "slow"], ["day", "night"], ["old", "new"], ["tall", "short"], ["clean", "dirty"], ["hard", "soft"], ["full", "empty"]];
+function qEnOpp(c) {
+  const p = pick1(EOPP), f = Math.random() < .5, q = f ? p[1] : p[0], a = f ? p[0] : p[1], w = pickN(EOPP.flat().filter((x) => x !== q && x !== a), 2);
+  return { top: `<div class="word" style="min-height:0;direction:ltr">${q}</div>`, text: "ما عكس هذه الكلمة بالإنجليزية؟", en: q, opts: pickN([a, ...w], 3).map((x) => ({ h: x, v: x, s: "font-size:24px;direction:ltr" })), ans: a };
+}
+const EDAY = [["Sunday", "الأحد"], ["Monday", "الاثنين"], ["Tuesday", "الثلاثاء"], ["Wednesday", "الأربعاء"], ["Thursday", "الخميس"], ["Friday", "الجمعة"], ["Saturday", "السبت"]];
+const EMON = [["January", "يناير"], ["February", "فبراير"], ["March", "مارس"], ["April", "أبريل"], ["May", "مايو"], ["June", "يونيو"], ["July", "يوليو"], ["August", "أغسطس"], ["September", "سبتمبر"], ["October", "أكتوبر"], ["November", "نوفمبر"], ["December", "ديسمبر"]];
+function qEnDay(c) {
+  const P = c.lv === 3 ? EMON : EDAY, x = pick1(P);
+  return { top: `<div class="word" style="min-height:0;direction:ltr">${x[0]}</div>`, text: c.lv === 3 ? "ما معنى هذا الشهر؟" : "ما معنى هذا اليوم؟", en: x[0], opts: pickN([x, ...pickN(P.filter((y) => y !== x), 2)], 3).map((y) => ({ h: y[1], v: y[1], s: "font-size:22px" })), ans: x[1] };
+}
+/* --- علوم --- */
+const HAB = { water: ["🐟", "🐋", "🐬", "🐙", "🦈", "🦀"], land: ["🐘", "🦁", "🐴", "🐄", "🐪", "🐑", "🐻"], air: ["🦅", "🦉", "🐦", "🦋", "🐝"] };
+function qHabitat(c) {
+  const ks = c.lv === 1 ? ["water", "land"] : ["water", "land", "air"], k = pick1(ks), others = ks.filter((x) => x !== k), n = c.lv === 3 ? 4 : 3, ans = pick1(HAB[k]);
+  const w = pickN(others.flatMap((o) => HAB[o]), n - 1);
+  return { top: "", text: { water: "أي حيوان يعيش في الماء؟", land: "أي حيوان يعيش على اليابسة؟", air: "أي حيوان يطير في الجو؟" }[k], opts: pickN([ans, ...w], n).map((x) => ({ h: x, v: x, s: PS })), ans };
+}
+const FEED = [["الأرنب", "🐰", "🥕", "يأكل"], ["القطة", "🐱", "🐟", "تأكل"], ["الكلب", "🐶", "🦴", "يأكل"], ["القرد", "🐵", "🍌", "يأكل"], ["البقرة", "🐄", "🌿", "تأكل"], ["العصفور", "🐦", "🌾", "يأكل"], ["الدب", "🐻", "🍯", "يأكل"], ["الفأر", "🐭", "🧀", "يأكل"]];
+function qFeedS(c) { const x = pick1(FEED), n = c.lv === 3 ? 4 : 3, w = pickN(FEED.filter((y) => y !== x), n - 1); return { top: `<div class="lc">${x[1]}</div>`, text: `ماذا ${x[3]} ${x[0]}؟`, opts: pickN([x, ...w], n).map((y) => ({ h: y[2], v: y[2], s: PS })), ans: x[2] }; }
+const SENSE = [["👁️", "نرى"], ["👂", "نسمع"], ["👃", "نشمّ"], ["👅", "نتذوّق"], ["✋", "نلمس"]];
+function qSenseS(c) { const x = pick1(SENSE.slice(0, c.lv === 1 ? 3 : 5)); return { top: "", text: `بماذا ${x[1]}؟`, opts: pickN([x, ...pickN(SENSE.filter((y) => y !== x), 2)], 3).map((y) => ({ h: y[0], v: y[0], s: PS })), ans: x[0] }; }
+const SCI1 = [["ماذا نستعمل لنسمع؟", "الأذن", "العين", "الأنف"], ["ماذا نستعمل لنرى؟", "العين", "الأذن", "اليد"], ["بماذا نشمّ الروائح؟", "الأنف", "القدم", "الأذن"], ["أي شيء يعطينا الضوء في النهار؟", "الشمس", "القمر", "الحجر"], ["ما الذي ينزل من السحاب؟", "المطر", "الحجر", "الورق"], ["أي حيوان يعطينا الحليب؟", "البقرة", "الأسد", "السمكة"], ["أي حيوان يعطينا البيض؟", "الدجاجة", "الفيل", "الحصان"], ["ماذا يحتاج النبات ليعيش؟", "الماء", "الحلوى", "الألعاب"], ["أين تعيش السمكة؟", "في الماء", "في الشجرة", "في الصحراء"], ["ما لون الثلج؟", "أبيض", "أخضر", "أحمر"], ["أي شيء يطير في السماء؟", "الطائرة", "السيارة", "السفينة"], ["ما الذي يضيء السماء في الليل؟", "القمر", "الشمس", "الغيمة"]];
+const SCI2 = [["كم عدد فصول السنة؟", "٤", "٣", "٥"], ["على أي كوكب نعيش؟", "الأرض", "المريخ", "الزهرة"], ["ما أقرب نجم إلى الأرض؟", "الشمس", "القمر", "الزهرة"], ["أي حيوان يأكل اللحم؟", "الأسد", "الأرنب", "الجمل"], ["ماذا يحدث للماء عند تجمّده؟", "يصبح ثلجاً", "يصبح بخاراً", "يختفي"], ["ماذا يحدث للثلج عند تسخينه؟", "يذوب", "يتجمّد أكثر", "يصبح حجراً"], ["أي عضو يضخّ الدم في الجسم؟", "القلب", "المعدة", "الرئة"], ["بأي عضو نتنفس؟", "الرئتين", "الكلية", "العين"], ["أي جزء في النبات يمتص الماء من التربة؟", "الجذر", "الزهرة", "الورقة"], ["أي غاز نحتاجه للتنفس؟", "الأكسجين", "الدخان", "الغبار"], ["أي حيوان من الثدييات؟", "الدلفين", "القرش", "التمساح"], ["من أين تأخذ الأرض الضوء والحرارة؟", "من الشمس", "من القمر", "من الرياح"]];
+const SCI3 = [["ما الكوكب الأقرب إلى الشمس؟", "عطارد", "الزهرة", "المريخ"], ["ما الكوكب المعروف بالكوكب الأحمر؟", "المريخ", "المشتري", "زحل"], ["ما أكبر كوكب في المجموعة الشمسية؟", "المشتري", "الأرض", "عطارد"], ["كم عدد كواكب المجموعة الشمسية؟", "٨", "٧", "٩"], ["ما الغاز الذي تأخذه النباتات من الهواء؟", "ثاني أكسيد الكربون", "الهيليوم", "الهيدروجين"], ["ماذا نسمّي تحوّل الماء إلى بخار؟", "التبخّر", "التجمّد", "الذوبان"], ["ما الذي يجذب الحديد؟", "المغناطيس", "الخشب", "البلاستيك"], ["أي عضو في الجسم يتحكم في التفكير؟", "الدماغ", "المعدة", "القلب"], ["حول ماذا يدور القمر؟", "الأرض", "الشمس", "المريخ"], ["ما حالات المادة الثلاث؟", "صلبة وسائلة وغازية", "حارة وباردة ودافئة", "ثقيلة وخفيفة وكبيرة"], ["ما أكبر محيط في العالم؟", "المحيط الهادئ", "المحيط الهندي", "المحيط المتجمد"], ["ماذا يسمّى الحيوان الذي يأكل النباتات فقط؟", "عاشب", "لاحم", "قارت"]];
+function qFact(c) {
+  const T = c.i <= 4 ? (c.lv === 3 ? SCI2 : SCI1) : c.i <= 6 ? byLv([SCI1, SCI2, SCI2], c.lv) : byLv([SCI2, SCI3, SCI3], c.lv), x = pick1(T);
+  return { top: "", text: x[0], opts: pickN([x[1], x[2], x[3]], 3).map((o) => ({ h: o, v: o, s: "font-size:21px;line-height:1.7;padding:12px 6px" })), ans: x[1] };
+}
+const OMAN = [["ما عاصمة سلطنة عُمان؟", "مسقط", "صلالة", "نزوى"], ["متى اليوم الوطني لسلطنة عُمان؟", "١٨ نوفمبر", "٢٣ يوليو", "١ يناير"], ["ما الحيوان الوطني لسلطنة عُمان؟", "المها العربي", "الجمل", "الحصان"], ["ما ألوان علم سلطنة عُمان؟", "الأحمر والأبيض والأخضر", "الأزرق والأبيض", "الأصفر والأسود"], ["من أي محافظة يأتي اللبان العُماني المشهور؟", "ظفار", "مسندم", "البريمي"], ["ما اسم غطاء الرأس العُماني المطرّز؟", "الكُمّة", "القبعة", "العقال"], ["في أي قارة تقع سلطنة عُمان؟", "آسيا", "أفريقيا", "أوروبا"], ["على أي بحر تطل مسقط؟", "خليج عُمان", "البحر الأحمر", "البحر المتوسط"]];
+const qOman = () => { const x = pick1(OMAN); return { top: '<div class="sticker" style="font-size:64px">🇴🇲</div>', text: x[0], opts: pickN([x[1], x[2], x[3]], 3).map((o) => ({ h: o, v: o, s: "font-size:21px;line-height:1.7;padding:12px 6px" })), ans: x[1] }; };
+/* --- ذكاء --- */
+function qPat(c) {
+  const E = ["🔴", "🔵", "🟢", "🟡", "⭐", "❤️", "🍎", "🍌", "🐱", "🐶"];
+  if (c.i >= 5 && Math.random() < .5) { const st = pick1([2, 3, 5, 10, 4]), s0 = rI(1, 5), seq = [0, 1, 2, 3].map((k) => s0 + k * st), ans = s0 + 4 * st; return { top: bigq(`${seq.map(AD).join(" ، ")} ، ؟`), text: "ما العدد التالي؟", opts: near(ans, st * 2, 1), ans }; }
+  const [a, b, d] = pickN(E, 3), seq = c.lv === 1 ? [a, b, a, b, a] : c.lv === 2 ? [a, a, b, a, a] : [a, b, d, a, b], ans = c.lv === 1 ? b : c.lv === 2 ? b : d;
+  return { top: `<div class="pic" style="font-size:38px;line-height:1.4">${seq.join(" ")} ❓</div>`, text: "ماذا يأتي بعد ذلك؟", opts: pickN([a, b, d], 3).map((x) => ({ h: x, v: x, s: PS })), ans };
+}
+/* --- تسجيل الألعاب --- */
+D("m_count", "math", "🔢", "عدّ معي", "كم عددها؟", 0, 3, qCount);
+D("m_shape", "math", "🔷", "الأشكال", "أين الشكل؟", 0, 3, qShape);
+D("m_cmp", "math", "⚖️", "المقارنة", "الأكثر والأكبر", 0, 8, qCmpS);
+D("m_add", "math", "➕", "الجمع", "اجمع بسرعة", 2, 8, (c) => qAddS(c, true));
+D("m_sub", "math", "➖", "الطرح", "اطرح بسرعة", 3, 8, (c) => qAddS(c, false));
+D("m_skip", "math", "🦘", "العدّ بالقفز", "أكمل العدّ", 4, 6, qSkipS);
+D("m_even", "math", "🎯", "زوجي أم فردي؟", "اعرف نوع العدد", 5, 6, qEven);
+D("m_clock", "math", "🕒", "ما الساعة؟", "اقرأ الساعة", 5, 7, qClock);
+D("m_mul", "math", "✖️", "جدول الضرب", "اضرب بسرعة", 6, 8, qMulS);
+D("m_div", "math", "➗", "القسمة", "اقسم بسرعة", 7, 8, qDivS);
+D("m_frac", "math", "🍕", "الكسور", "اقرأ الكسر", 6, 8, qFracS);
+D("m_place", "math", "🔢", "قيمة الرقم", "آحاد وعشرات", 6, 8, qPlaceS);
+D("m_round", "math", "📏", "التقريب", "قرّب العدد", 7, 8, qRoundS);
+D("m_word", "math", "📝", "مسائل كلامية", "فكّر وحُل", 4, 8, qWordP);
+D("a_where", "ar", "🔍", "أين الشيء؟", "اسمع واختر الصورة", 0, 2, qWhereAr);
+D("a_opp", "ar", "↔️", "الأضداد", "ما عكس الكلمة؟", 4, 8, qOppS);
+D("a_day", "ar", "📅", "أيام الأسبوع", "قبل وبعد", 5, 8, () => qDay());
+D("a_plu", "ar", "📚", "الجمع", "ما جمع الكلمة؟", 5, 8, qPlu);
+D("a_gen", "ar", "👫", "المذكر والمؤنث", "اختر الصحيح", 6, 8, qGen);
+D("e_hear", "en", "🔊", "اسمع واختر", "كلمات إنجليزية بالصوت", 0, 8, qEnHear);
+D("e_word", "en", "🔤", "ما اسمها؟", "اختر الكلمة الإنجليزية", 2, 8, qEnWord);
+D("e_first", "en", "🅰️", "الحرف الأول", "بأي حرف تبدأ؟", 3, 8, qEnFirst);
+D("e_group", "en", "👁️", "جسمي وعائلتي ومدرستي", "كلمات أكثر", 3, 8, qEnGroup);
+D("e_opp", "en", "↔️", "الأضداد", "Big · Small", 5, 8, qEnOpp);
+D("e_day", "en", "📅", "الأيام والأشهر", "Monday · January", 5, 8, qEnDay);
+D("s_hab", "sci", "🐠", "أين يعيش؟", "الماء واليابسة والجو", 0, 3, qHabitat);
+D("s_feed", "sci", "🥕", "ماذا يأكل؟", "طعام الحيوانات", 0, 3, qFeedS);
+D("s_sense", "sci", "👂", "حواسّي", "أرى وأسمع وأشمّ", 1, 4, qSenseS);
+D("s_fact", "sci", "🔬", "اكتشف العلوم", "أسئلة وحقائق", 3, 8, qFact);
+D("t_pat", "mind", "🧩", "ماذا يأتي بعد؟", "أنماط وتسلسل", 0, 8, qPat);
+D("o_oman", "adv", "🇴🇲", "اكتشف عُمان", "حقائق عن بلدي", 3, 8, qOman);
+L("letters", "ar", "🔤", "عالم الحروف", "دروس الحروف الـ٢٨", 2, 5, () => lettersHub());
+L("race", "ar", "🏁", "سباق الحروف", "اسمع واختر", 2, 5, () => race());
+L("pos", "ar", "📍", "أين الحرف؟", "أول · وسط · آخر", 3, 5, () => posGame());
+L("miss", "ar", "🔡", "أكمل الكلمة", "الحرف الناقص", 3, 5, () => missGame());
+L("wpic", "ar", "🖼️", "الكلمة والصورة", "اقرأ واختر", 3, 6, () => wpicGame());
+L("wsim", "ar", "👀", "الكلمات المتشابهة", "أي كلمة تطابق الصورة؟", 4, 6, () => wsimGame());
+L("lab", "ar", "📖", "مختبر القراءة", "مقاطع وكلمات", 3, 6, () => readLab());
+L("acad", "ar", "🎓", "أكاديمية الحروف", "كلمات جديدة", 4, 6, () => acadMenu());
+L("cards", "edu", "📚", "بطاقات التعلّم", "بالصوت والصورة", 0, 4, () => { LKEYS = secKeys(); learnMenu(); });
+L("mix", "edu", "🧠", "اختبرني", "ما هذا؟", 0, 4, () => { MIXK = secMix(); mixGame(); });
+L("dua", "edu", "🤲", "الأدعية", "ماذا نقول؟", 4, 8, () => gradeGame("dua", qDua));
+L("ayah", "edu", "🕌", "أكمل الآية", "من قصار السور", 5, 8, () => gradeGame("ayah", qAyah));
+L("mem", "mind", "🃏", "الذاكرة", "طابق الصور", 0, 8, () => memGame());
+L("odd", "mind", "🔍", "اكتشف المختلف", "أيها يختلف؟", 0, 8, () => GM.odd());
+L("foc", "mind", "🎯", "التركيز", "ابحث وعُدّ", 1, 8, () => GM.foc());
+L("ord", "mind", "📊", "رتّب الصور", "من الأقل للأكثر", 1, 8, () => GM.ord());
+L("treasure", "adv", "💎", "كنز الكلمات", "ركّب واجمع", 3, 5, () => treasure());
+L("adv", "adv", "🦉", "مغامرة القراءة", "اقرأ مع زوزو", 4, 8, () => advPlay(0));
+L("story", "adv", "🎵", "قصص وأناشيد", "اسمع وغنِّ", 0, 8, () => storyMenu());
+function gradeGame(kind, mk) { if (!subOk()) return payScreen(); quiz(kind, Array.from({ length: 8 }, () => mk())); }
+const avail = (d, i = sIdx()) => i >= d.from && i <= d.to;
+const lvStars = (key) => { const a = (S.lp || {})[S.sec + "." + key] || [0, 0, 0]; return a; };
+const medal = (p) => (p >= 85 ? "🥇" : p >= 70 ? "🥈" : p >= 1 ? "🥉" : "⚪");
+const gameBtn = (d) => `<button class="gm" data-g="${d.key}"><b>${d.e}</b>${d.t}<small>${d.mk ? lvStars(d.key).map(medal).join("") : d.s}</small></button>`;
+function topBar(back) { return `<div class="top"><button class="icon-btn" id="back" aria-label="رجوع">${back || "🏠"}</button><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>`; }
 function secHome(id) {
   const s = SECS.find((x) => x.id === id); if (!s) return secPick();
-  SCR++; stopVoice(); HOLD = false; LKEYS = null; MIXK = null; S.age = s.age;
-  app.innerHTML = `<div class="top"><button class="icon-btn" id="back" aria-label="الأقسام">🏠</button><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
+  SCR++; stopVoice(); HOLD = false; LKEYS = null; MIXK = null; S.age = s.age; S.sec = id;
+  const i = sIdx(), all = Object.values(DEFS).filter((d) => avail(d, i)), wk = seeded(S.sec + dayKey(weekStart())), lvG = all.filter((d) => d.mk), feat = lvG[(wk() * lvG.length) | 0];
+  app.innerHTML = `${topBar()}
   <div class="stage" style="justify-content:flex-start;gap:12px">
     <div class="sch" style="background:linear-gradient(135deg,${s.c[0]},${s.c[1]})"><b>${s.em}</b><div><h1>${s.name}</h1><small>${s.sub}</small></div></div>
-    <div class="games">${s.games.map((k) => `<button class="gm" data-g="${k}"><b>${GREG[k][0]}</b>${GREG[k][1]}<small>${GREG[k][2]}</small></button>`).join("")}</div>
+    <div class="rw"><button class="rb" id="sd"><b>📅</b>تحدّي اليوم<small>${S.day === dayKey() ? "أنجزته ✅" : "جديد كل يوم"}</small></button><button class="rb" id="sj"><b>🗺️</b>رحلة المعرفة<small>مغامرة بكل المواد</small></button><button class="rb" id="sb"><b>🎁</b>جوائزي<small>${S.box ? S.box + " صندوق" : "نجوم وصناديق"}</small></button></div>
+    ${feat ? `<button class="feat" id="sf"><span class="nw">جديد هذا الأسبوع</span><b>${feat.e}</b><span>${feat.t}<small>${feat.s}</small></span></button>` : ""}
+    <div class="sec">ماذا تريد أن تلعب؟</div>
+    <div class="games">${CATS2.map(([k, e, t, sm]) => { const n = all.filter((d) => d.cat === k).length; return n ? `<button class="gm" data-c="${k}"><b>${e}</b>${t}<small>${n === 1 ? "لعبة واحدة" : n === 2 ? "لعبتان" : n + (n > 10 ? " لعبة" : " ألعاب")}</small></button>` : ""; }).join("")}</div>
     <button class="btn ghost" id="chg" style="min-width:0">🔁 تغيير القسم</button>
     <button class="quick" id="par" style="margin-top:2px">👨‍👩‍👧 لولي الأمر · تقرير التقدّم</button></div>`;
   bindToggles(); $("#back").onclick = secPick; $("#chg").onclick = secPick; $("#par").onclick = gate;
-  app.querySelectorAll("[data-g]").forEach((b) => b.onclick = () => { try { ac().resume(); } catch {} const k = b.dataset.g; if (k !== "letters" && k !== "story" && !subOk()) return payScreen(); GREG[k][3](); });
+  $("#sd").onclick = secDaily; $("#sj").onclick = journey; $("#sb").onclick = rewardsScreen; if ($("#sf")) $("#sf").onclick = () => runGame(feat.key);
+  app.querySelectorAll("[data-c]").forEach((b) => b.onclick = () => catScreen(b.dataset.c));
+}
+function catScreen(cat) {
+  const s = SECS.find((x) => x.id === S.sec), c = CATS2.find((x) => x[0] === cat), list = Object.values(DEFS).filter((d) => d.cat === cat && avail(d));
+  SCR++; stopVoice(); HOLD = false;
+  app.innerHTML = `${topBar("◀")}<div class="stage" style="justify-content:flex-start;gap:12px">
+    <div class="sch" style="background:linear-gradient(135deg,${s.c[0]},${s.c[1]})"><b>${c[1]}</b><div><h1>${c[2]}</h1><small>${s.name}</small></div></div>
+    <div class="games">${list.map(gameBtn).join("")}</div></div>`;
+  bindToggles(); $("#back").onclick = () => secHome(S.sec);
+  app.querySelectorAll("[data-g]").forEach((b) => b.onclick = () => runGame(b.dataset.g));
+}
+function runGame(key) {
+  try { ac().resume(); } catch {}
+  const d = DEFS[key]; if (!d) return;
+  if (key !== "letters" && key !== "story" && !subOk()) return payScreen();
+  if (d.mk) lvScreen(key); else d.run();
+}
+function lvScreen(key) {
+  const d = DEFS[key], st = lvStars(key), s = SECS.find((x) => x.id === S.sec);
+  SCR++; stopVoice(); HOLD = false;
+  const lock = (l) => l > 1 && st[l - 2] < 50;
+  app.innerHTML = `${topBar("◀")}<div class="stage" style="justify-content:flex-start;gap:12px">
+    <div class="sch" style="background:linear-gradient(135deg,${s.c[0]},${s.c[1]})"><b>${d.e}</b><div><h1>${d.t}</h1><small>${d.s}</small></div></div>
+    <div class="sec">اختر المرحلة</div>
+    <div class="lvs">${[1, 2, 3].map((l) => `<button class="lvb ${lock(l) ? "lk" : ""}" data-l="${l}"><b>${lock(l) ? "🔒" : l}</b><span>${["سهل", "متوسط", "تحدّي"][l - 1]}</span><i>${medal(st[l - 1])}</i></button>`).join("")}</div>
+    <p style="text-align:center;font-weight:700;color:#6d6684;margin:0">أنهِ المرحلة بنصف الإجابات صحيحة لتفتح التي بعدها</p></div>`;
+  bindToggles(); $("#back").onclick = () => catScreen(d.cat);
+  app.querySelectorAll(".lvb").forEach((b) => b.onclick = () => { const l = +b.dataset.l; if (lock(l)) { sfx.no(); b.classList.add("shake"); setTimeout(() => b.classList.remove("shake"), 400); return; } playLv(key, l); });
+}
+function playLv(key, lv) {
+  const d = DEFS[key], c = { i: sIdx(), lv }, n = sIdx() <= 4 ? 8 : 10;
+  quiz(`${key}@${lv}`, Array.from({ length: n }, () => d.mk(c)));
+}
+function mixedQs(n, lv) {
+  const i = sIdx(), pool = Object.values(DEFS).filter((d) => d.mk && avail(d, i) && ["math", "ar", "en", "sci", "mind"].includes(d.cat));
+  return Array.from({ length: n }, () => pick1(pool).mk({ i, lv }));
+}
+const withSeed = (str, fn) => { const old = Math.random; Math.random = seeded(str); try { return fn(); } finally { Math.random = old; } };
+function secDaily() {
+  if (!subOk()) return payScreen();
+  const t = dayKey();
+  if (S.day === t) {
+    shell(1, `<div class="sticker">✅</div><div class="card" style="text-align:center"><h2 style="margin:0 0 6px;color:var(--p)">أنجزت تحدي اليوم!</h2><p style="margin:0;font-weight:700">🔥 ${streakNow()} أيام متتالية · عُد غداً لتحدٍّ جديد</p></div><button class="btn" id="bk">رجوع ◀</button>`, 1);
+    note("عُد غداً يا بطل!"); $("#bk").onclick = () => hub(); return;
+  }
+  quiz("daily", withSeed(S.sec + t, () => mixedQs(8, 2)));
+}
+function journey() {
+  if (!subOk()) return payScreen();
+  quiz("journey", mixedQs(10, Math.min(3, 1 + (sIdx() > 3 ? 1 : 0) + (S.skill > 2 ? 1 : 0))));
+}
+function rewardsScreen() {
+  shell(0, `<div class="card" style="text-align:center"><b style="color:var(--p)">جوائزي ومكافآتي</b></div>
+    <div class="games">
+      <button class="gm" id="r-box"><b>🎁</b>صندوق المفاجآت ${S.box ? `<em>${S.box}</em>` : ""}<small>مجموعتي ${S.stk.length}/${STK.length}</small></button>
+      <button class="gm" id="r-shop"><b>🛍️</b>جوائز النجوم<small>⭐ ${bal()} نجمة</small></button>
+      <button class="gm" id="r-bdg"><b>🏅</b>شاراتي<small>${S.bd.length} شارة</small></button>
+      <button class="gm" id="r-ach"><b>📊</b>إنجازاتي<small>ألعابي ودروسي</small></button>
+      <button class="gm wide" id="r-av"><b>🦊</b>شخصيتي<small>غيّر شكلك</small></button></div>
+    <button class="btn ghost" id="mp">رجوع</button>`, 1);
+  note("هنا جوائزك يا بطل!");
+  $("#r-box").onclick = collection; $("#r-shop").onclick = () => shopScreen(rewardsScreen); $("#r-bdg").onclick = badgesScreen; $("#r-ach").onclick = achScreen; $("#r-av").onclick = () => avatarScreen(); $("#mp").onclick = () => hub();
 }
 const hub = (first) => (S.sec && SECS.some((x) => x.id === S.sec) ? secHome(S.sec) : secPick());
 function moreHub() {
@@ -1547,7 +1763,7 @@ function moreHub() {
 
 
 const GN = { daily: ["📅", "تحدّي اليوم"], race: ["🏁", "سباق الحروف"], treasure: ["💎", "كنز الكلمات"], pos: ["📍", "أين الحرف؟"], mem: ["🃏", "الذاكرة"], odd: ["🔍", "اكتشف المختلف"], foc: ["🎯", "التركيز"], ord: ["📊", "رتّب الصور"], miss: ["🔡", "أكمل الكلمة"], wpic: ["🖼️", "الكلمة والصورة"], wsim: ["👀", "الكلمات المتشابهة"], math: ["➕", "الأرقام والحساب"], mix: ["🧠", "اختبرني"], lab: ["📖", "مختبر القراءة"], acad: ["🎓", "أكاديمية الحروف"], adv: ["🦉", "مغامرة القراءة"] };
-Object.keys(GREG).forEach((k) => { if (k.startsWith("g_")) { GM[k] = GREG[k][3]; GN[k] = [GREG[k][0], GREG[k][1]]; } });
+Object.entries(DEFS).forEach(([k, d]) => { GN[k] = [d.e, d.t]; });
 const gamesList = (S0) => Object.entries(GN).filter(([k]) => S0.gp[k]).map(([k, [e, t]]) => ({ e, t, n: S0.gp[k] }));
 function achScreen() {
   const gl = gamesList(S), L = LET.filter((l) => P(l.id).runs > 0);
