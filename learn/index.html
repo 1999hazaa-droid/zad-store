@@ -141,6 +141,7 @@ input.nm:focus{border-color:var(--p)}
 .stx{min-height:90px;display:flex;align-items:center;justify-content:center}
 .song{display:flex;flex-direction:column;gap:8px;width:100%;max-width:460px;margin:0 auto}.sl{display:flex;gap:10px;align-items:center;background:#fff;border-radius:16px;padding:10px 14px;font-size:20px;opacity:.6;transition:.2s}.sl span{font-size:30px}.sl.on{opacity:1;background:#f1ecff;transform:scale(1.03);box-shadow:0 0 0 3px var(--p)}
 .shi{border:3px solid transparent;background:#fff;border-radius:16px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font:inherit;cursor:pointer;box-shadow:0 2px 0 rgba(91,52,214,.15)}.shi span{font-size:40px}.shi small{color:#6d6684;font-weight:700}.shi b{color:var(--p)}.shi.no{opacity:.55}.shi.own{background:#e6f7ec}
+.gm.lk{opacity:.5}
 /* ===== متجاوب: هاتف / تابلت / كمبيوتر ===== */
 @media (min-width:640px){
   :root{--tw:min(380px,46vh)}
@@ -257,7 +258,7 @@ const NAMES = Object.fromEntries(LET.map((l) => [l.ch, "ال" + l.name.replace(/
 
 /* ======================= الحفظ ======================= */
 const KEY = "zad-learn-v3", OLDKEY = "zad-learn-v2";
-const DEF = () => ({ name: "", stars: 0, sfx: true, voice: true, prog: {}, gems: 0, box: 0, stk: [], streak: 0, day: "", bx: { d: "", n: 0 }, own: [], spent: 0, rd: 0, wc: { k: "", g: 0, l: 0, s: 0, c: false }, xp: 0, av: { b: "🦊", a: "", c: 0, set: false }, bd: [], words: [], log: {}, skill: 1, lim: 0, lvl: "beg", wk: { k: "", d: [], c: false } });
+const DEF = () => ({ name: "", stars: 0, sfx: true, voice: true, prog: {}, gems: 0, box: 0, stk: [], streak: 0, day: "", bx: { d: "", n: 0 }, own: [], spent: 0, cn: "", gp: {}, age: "8", rd: 0, wc: { k: "", g: 0, l: 0, s: 0, c: false }, xp: 0, av: { b: "🦊", a: "", c: 0, set: false }, bd: [], words: [], log: {}, skill: 1, lim: 0, lvl: "beg", wk: { k: "", d: [], c: false } });
 let DB = null;
 try { DB = JSON.parse(localStorage.getItem(KEY)); } catch {}
 if (!DB || !DB.kids) { let old = {}; try { old = JSON.parse(localStorage.getItem(OLDKEY)) || {}; } catch {} DB = { cur: "k1", kids: { k1: old } }; }
@@ -510,7 +511,7 @@ function hub(first) {
   const ni = nextIdx(), nl = LET[ni], due = dueList();
   app.innerHTML = `
   <div class="top"><button class="icon-btn" id="back" aria-label="رجوع">🏠</button><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
-  <div class="hubhead"><button class="avb" id="avb" aria-label="شخصيتي">${avatar(S.av, 68)}</button><div style="flex:1"><h1>مرحباً يا ${S.name}!</h1><p>أتقنت ${doneCount()} من ٢٨ حرفاً</p><div class="xp"><i style="width:${Math.round((S.xp % 120) / 120 * 100)}%"></i></div><small class="xl">مستوى ${lvl()} · ${lvName()}</small></div></div>
+  <div class="hubhead"><button class="avb" id="avb" aria-label="شخصيتي">${avatar(S.av, 68)}</button><div style="flex:1"><h1>مرحباً يا ${S.name}!</h1>${S.cn ? `<small class="xl">مع صديقك ${S.cn}</small>` : ""}<p>أتقنت ${doneCount()} من ٢٨ حرفاً</p><div class="xp"><i style="width:${Math.round((S.xp % 120) / 120 * 100)}%"></i></div><small class="xl">مستوى ${lvl()} · ${lvName()}</small></div></div>
   <div class="stage" style="justify-content:flex-start;gap:12px">
     <button class="next" id="nx"><span class="L">${nl.ch}</span><span><b>${P(nl.id).best >= 60 ? "أعد الدرس" : "الدرس التالي"}: حرف ${nl.name}</b><small>نحو ١٠ دقائق · ألعاب وكتابة وكلمات</small></span></button>
     ${due.length ? `<button class="quick" id="qk">⚡ تدريب سريع على ${due.slice(0, 3).map((l) => l.ch).join(" ")}</button>` : ""}
@@ -527,6 +528,7 @@ function hub(first) {
       <button class="gm" id="g-story"><b>📖</b>قصص وأناشيد<small>اسمع وغنِّ</small></button>
       <button class="gm" id="g-shop"><b>🛍️</b>المتجر<small>⭐ ${bal()} نجمة</small></button>
       <button class="gm wide" id="g-more"><b>🎮</b>ألعاب وتعلّم إضافية<small>أرقام · ألوان · ذاكرة · إنجليزي…</small></button>
+      <button class="gm wide" id="g-ach"><b>📊</b>إنجازاتي<small>دروسي · ألعابي · شاراتي</small></button>
       <button class="gm wide" id="g-box"><b>🎁</b>صندوق المفاجآت ${S.box ? `<em>${S.box}</em>` : ""}<small>مجموعتي ${S.stk.length}/${STK.length}</small></button>
     </div>
     <div class="sec">🏝️ جزيرة الحروف</div>
@@ -543,7 +545,7 @@ function hub(first) {
   $("#back").onclick = start; $("#par").onclick = gate;
   $("#nx").onclick = () => begin(ni, "lesson");
   $("#avb").onclick = () => avatarScreen(); $("#bdg").onclick = badgesScreen; if ($("#wkc")) $("#wkc").onclick = claimWeek;
-  $("#g-daily").onclick = daily; $("#g-race").onclick = race; $("#g-tre").onclick = () => treasure(); $("#g-pos").onclick = posGame; $("#g-box").onclick = collection; $("#g-more").onclick = moreHub; $("#g-story").onclick = storyMenu; $("#g-shop").onclick = () => shopScreen();
+  $("#g-daily").onclick = daily; $("#g-race").onclick = race; $("#g-tre").onclick = () => treasure(); $("#g-pos").onclick = posGame; $("#g-box").onclick = collection; $("#g-more").onclick = moreHub; $("#g-story").onclick = storyMenu; $("#g-ach").onclick = achScreen; $("#g-shop").onclick = () => shopScreen();
   if ($("#qk")) $("#qk").onclick = () => begin(due[0].i, "review");
   app.querySelectorAll(".cell").forEach((c) => c.onclick = () => {
     const k = +c.dataset.i;
@@ -834,12 +836,13 @@ function avatarScreen(next) {
     const btn = (o, t, i, on) => `<button class="pk ${on ? "on" : ""} ${lvl() < o.l ? "lk" : ""}" data-t="${t}" data-i="${i}">${lvl() < o.l ? "🔒<small>م" + o.l + "</small>" : o.v || "✖"}</button>`;
     app.innerHTML = `<div class="top"><span class="badge">شخصيتي</span><span class="stars">مستوى ${lvl()}</span></div>
     <div class="stage" style="justify-content:flex-start">
-      <div style="margin:10px 0 18px">${avatar(av, 120)}</div>
+      <div style="margin:10px 0 8px">${avatar(av, 120)}</div><input class="nm" id="cn" maxlength="12" placeholder="اسم شخصيتك" value="${(S.cn || "").replace(/"/g, "")}" style="max-width:240px;font-size:20px;margin-bottom:10px">
       <div class="sec">الشخصية</div><div class="avg">${Bs.map((o, i) => btn(o, "b", i, av.b === o.v)).join("")}</div>
       <div class="sec">الإكسسوار</div><div class="avg">${As.map((o, i) => btn(o, "a", i, av.a === o.v)).join("")}</div>
       <div class="sec">اللون</div><div class="avg">${AV_C.map((c, i) => `<button class="pk ${av.c === i ? "on" : ""}" data-t="c" data-i="${i}" style="background:${c}"></button>`).join("")}</div>
       <div class="row" style="margin-top:12px"><button class="btn" id="avok">تمّ ✔</button><button class="btn alt" id="shp" style="min-width:0">🛍️ المتجر</button></div>
     </div>`;
+    $("#cn").oninput = (e) => { S.cn = e.target.value.slice(0, 12); };
     app.querySelectorAll(".pk").forEach((b) => b.onclick = () => {
       const i = +b.dataset.i, t = b.dataset.t;
       if (t === "b") { if (lvl() < Bs[i].l) return sfx.no(); av.b = Bs[i].v; }
@@ -847,8 +850,8 @@ function avatarScreen(next) {
       if (t === "c") av.c = i;
       sfx.pop(); draw();
     });
-    $("#avok").onclick = () => { S.av = { ...av, set: true }; save(); sfx.ok(); next ? next() : hub(); };
-    $("#shp").onclick = () => { S.av = { ...av, set: true }; save(); shopScreen(() => avatarScreen(next)); };
+    $("#avok").onclick = () => { S.cn = $("#cn").value.trim().slice(0, 12); S.av = { ...av, set: true }; save(); sfx.ok(); next ? next() : hub(); };
+    $("#shp").onclick = () => { S.cn = $("#cn").value.trim().slice(0, 12); S.av = { ...av, set: true }; save(); shopScreen(() => avatarScreen(next)); };
   };
   SCR++; stopVoice(); draw();
 }
@@ -967,7 +970,7 @@ const norm = (c) => (c === "أ" || c === "إ" || c === "آ" ? "ا" : c);
 const letOf = (c) => LET.find((l) => l.ch === norm(c));
 const learned = () => LET.filter((l) => P(l.id).best >= 60);
 const pool = () => (S.lvl === "beg" ? learned() : LET.slice());
-const skillNow = () => Math.max(S.skill, S.lvl === "adv" ? 3 : S.lvl === "mid" ? 2 : 1);
+const skillNow = () => Math.min(S.age === "4" ? 1 : S.age === "6" ? 2 : 3, Math.max(S.skill, S.lvl === "adv" ? 3 : S.lvl === "mid" ? 2 : 1));
 const wordPool = () => pool().flatMap((l) => l.w.map((w, k) => ({ ...w, own: l, key: l.id + "." + "w" + (k + 1) })));
 const GAMES_NEED = 2;
 const note = (t) => { const el = $("#say"); if (el) el.textContent = t; };
@@ -1055,7 +1058,7 @@ function grantBox() {
 }
 function endGame(kind, hit, total) {
   const pct = hit / total, ok = pct >= .7; let box = false, extra = "", lvmsg = "";
-  addXP(kind === "daily" ? 30 : 20); markActive(); wcBump("g");
+  addXP(kind === "daily" ? 30 : 20); markActive(); wcBump("g"); S.gp[kind] = (S.gp[kind] || 0) + 1;
   if (pct >= .9 && S.skill < 3) { S.skill++; lvmsg = "⬆️ ارتفع مستوى التحدّي!"; } else if (pct < .5 && S.skill > 1) { S.skill--; lvmsg = "نخفّف التحدّي قليلاً 🌱"; }
   if (kind === "daily") {
     S.streak = S.day === yesterdayKey() ? S.streak + 1 : 1; S.day = dayKey(); S.box++; box = true; S.gems += 2;
@@ -1250,8 +1253,35 @@ function moreHub() {
     <button class="gm wide" id="m-wsim"><b>👀</b>الكلمات المتشابهة<small>أيّ كلمة تطابق الصورة؟</small></button></div>
     <button class="btn ghost" id="mp">الخريطة</button>`, 1);
   note("اختر لعبة!");
-  [["learn", learnMenu], ["mix", mixGame], ["math", mathGame], ["mem", memGame], ["odd", GM.odd], ["foc", GM.foc], ["ord", GM.ord], ["miss", missGame], ["wpic", wpicGame], ["wsim", wsimGame]].forEach(([k, f]) => $("#m-" + k).onclick = () => f());
+  if (S.age === "4") ["miss", "wpic", "wsim"].forEach((k) => { const b = $("#m-" + k); b.classList.add("lk"); b.querySelector("small").textContent = "🔒 للأكبر سناً"; });
+  [["learn", learnMenu], ["mix", mixGame], ["math", mathGame], ["mem", memGame], ["odd", GM.odd], ["foc", GM.foc], ["ord", GM.ord], ["miss", missGame], ["wpic", wpicGame], ["wsim", wsimGame]].forEach(([k, f]) => $("#m-" + k).onclick = () => (S.age === "4" && ["miss", "wpic", "wsim"].includes(k) ? (sfx.no(), toast("هذه اللعبة للأكبر سناً")) : f()));
   $("#mp").onclick = () => hub();
+}
+
+
+const GN = { daily: ["📅", "تحدّي اليوم"], race: ["🏁", "سباق الحروف"], treasure: ["💎", "كنز الكلمات"], pos: ["📍", "أين الحرف؟"], mem: ["🃏", "الذاكرة"], odd: ["🔍", "اكتشف المختلف"], foc: ["🎯", "التركيز"], ord: ["📊", "رتّب الصور"], miss: ["🔡", "أكمل الكلمة"], wpic: ["🖼️", "الكلمة والصورة"], wsim: ["👀", "الكلمات المتشابهة"], math: ["➕", "الأرقام والحساب"], mix: ["🧠", "اختبرني"] };
+const gamesList = (S0) => Object.entries(GN).filter(([k]) => S0.gp[k]).map(([k, [e, t]]) => ({ e, t, n: S0.gp[k] }));
+function achScreen() {
+  const gl = gamesList(S), L = LET.filter((l) => P(l.id).runs > 0);
+  shell(7, `<div style="text-align:center">${avatar(S.av, 90)}<h2 style="margin:6px 0 0;color:var(--p)">${S.cn || S.name}</h2><small class="xl">مستوى ${lvl()} · ${lvName()} · ${S.xp} نقطة خبرة</small></div>
+    <div class="card" style="width:100%"><b style="color:var(--p)">📚 الدروس التي تعلّمتها (${L.length})</b><div class="lgrid" style="margin-top:8px">${LET.map((l) => `<span class="${P(l.id).best >= 85 ? "g" : P(l.id).runs ? "y" : ""}">${l.ch}</span>`).join("")}</div></div>
+    <div class="card" style="width:100%"><b style="color:var(--p)">🎮 الألعاب التي أكملتها</b>${gl.length ? gl.map((g) => `<div class="kv"><span>${g.e} ${g.t}</span><span>${AD(g.n)} مرة</span></div>`).join("") : '<p style="margin:6px 0 0">لم تكمل ألعاباً بعد. جرّب لعبة اليوم!</p>'}</div>
+    <div class="card" style="width:100%"><div class="kv"><span>📖 قصص وأناشيد</span><span>${AD(S.rd || 0)}</span></div><div class="kv"><span>🏅 الشارات</span><span>${AD(S.bd.length)} من ${AD(BADGES.length)}</span></div><div class="kv"><span>🎒 الملصقات</span><span>${AD(S.stk.length)} من ${AD(STK.length)}</span></div></div>
+    <div class="row"><button class="btn alt" id="bd2" style="min-width:0">🏅 كل الشارات</button><button class="btn ghost" id="mp" style="min-width:0">الخريطة</button></div>`, 7);
+  note("هذه إنجازاتك يا بطل!"); $("#bd2").onclick = badgesScreen; $("#mp").onclick = () => hub();
+}
+function reportHTML() {
+  const L = LET.filter((l) => P(l.id).runs > 0), wmin = Object.values(S.log).reduce((a, d) => a + d.sec, 0) / 60 | 0;
+  return `<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>تقرير ${S.name}</title><body style="font-family:Tahoma,Arial;max-width:640px;margin:20px auto;padding:0 16px;line-height:1.9">
+<h1 style="color:#5B34D6">تقرير التقدّم – زاد التعليمية</h1><p><b>الطفل:</b> ${S.name} · <b>المستوى:</b> ${lvName()} (${lvl()}) · <b>التاريخ:</b> ${new Date().toLocaleDateString("ar")}</p>
+<h3>الحروف (${doneCount()} من ٢٨ متقنة)</h3><p>${L.map((l) => `${l.ch}: ${P(l.id).best}%`).join(" · ") || "—"}</p>
+<h3>كلمات يقرؤها</h3><p>${S.words.join("، ") || "—"}</p>
+<h3>الألعاب المكتملة</h3><p>${gamesList(S).map((g) => `${g.t} (${g.n})`).join("، ") || "—"}</p>
+<h3>الاستخدام</h3><p>نجوم: ${S.stars} · شارات: ${S.bd.length} · قصص وأناشيد: ${S.rd || 0} · إجمالي الوقت: ${wmin} دقيقة · أيام النشاط هذا الأسبوع: ${wkNow().d.length}</p></body></html>`;
+}
+function dlReport() {
+  const b = new Blob([reportHTML()], { type: "text/html;charset=utf-8" }), a = document.createElement("a");
+  a.href = URL.createObjectURL(b); a.download = `تقرير-${S.name}.html`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 
 /* ======================= ولي الأمر ======================= */
@@ -1300,12 +1330,16 @@ function parent(kid) {
     <div class="wb">${wmin.map((m, i) => `<div><i style="height:${Math.max(4, Math.round(m / wmax * 60))}px" class="${days[i] === dayKey() ? "t" : ""}"></i><small>${dn[i]}</small><small>${m}د</small></div>`).join("")}</div>
     <div class="kv"><span>اليوم</span><span>${today} دقيقة</span></div><div class="kv"><span>المجموع</span><span>${mins} دقيقة</span></div>
     <div class="note">💡 <b>أنشطة مقترحة</b><br>${sug.map((x) => "• " + x).join("<br>")}</div>
+    <div class="sec2">الألعاب التي أكملها (${gamesList(S).length})</div>
+    <div class="wds">${gamesList(S).length ? gamesList(S).map((g) => `<span>${g.e} ${g.t} · ${AD(g.n)}</span>`).join("") : "<small>لم يكمل ألعاباً بعد.</small>"}</div>
     <div class="sec2">الإعدادات</div>
+    <label class="st">عمر الطفل (يتحكّم بالمحتوى المناسب)
+      <select id="ag"><option value="4" ${S.age === "4" ? "selected" : ""}>٣–٤ سنوات — ألعاب بصرية وسهلة، بلا ألعاب قراءة</option><option value="6" ${S.age === "6" ? "selected" : ""}>٥–٦ سنوات — تحدّيات سهلة ومتوسطة</option><option value="8" ${S.age === "8" ? "selected" : ""}>٧ سنوات فأكثر — كل المحتوى</option></select></label>
     <label class="st">المستوى التعليمي
       <select id="lv"><option value="beg" ${S.lvl === "beg" ? "selected" : ""}>مبتدئ — بالترتيب، الحرف يفتح بعد إتقان السابق</option><option value="mid" ${S.lvl === "mid" ? "selected" : ""}>متوسط — كل الحروف مفتوحة وتحديات متوسطة</option><option value="adv" ${S.lvl === "adv" ? "selected" : ""}>متقدّم — كل الحروف وتحديات أصعب</option></select></label>
     <label class="st">حدّ الاستخدام اليومي
       <select id="lm">${[[0, "بلا حدّ"], [10, "١٠ دقائق"], [15, "١٥ دقيقة"], [20, "٢٠ دقيقة"], [30, "٣٠ دقيقة"], [45, "٤٥ دقيقة"]].map(([v, t]) => `<option value="${v}" ${S.lim === v ? "selected" : ""}>${t}</option>`).join("")}</select></label>
-    <div class="row" style="margin-top:14px"><button class="btn" id="sh">📲 أرسل التقرير واتساب</button></div>
+    <div class="row" style="margin-top:14px"><button class="btn" id="sh">📲 أرسل التقرير واتساب</button><button class="btn alt" id="dl" style="min-width:0">⬇ تحميل التقرير</button></div>
     ${ids.length > 1 ? '<button class="btn ghost" id="rm" style="min-width:0;margin-top:8px">حذف ملف هذا الطفل</button>' : ""}
   </div></div>`;
   const out = () => { HOLD = false; start(); };
@@ -1314,11 +1348,12 @@ function parent(kid) {
   $("#pk-add").onclick = () => { const id = "k" + Date.now(); DB.kids[id] = DEF(); useKid(id); out(); };
   $("#lv").onchange = (e) => { S.lvl = e.target.value; if (S.lvl === "mid") S.skill = Math.max(S.skill, 2); if (S.lvl === "adv") S.skill = 3; save(); };
   $("#lm").onchange = (e) => { S.lim = +e.target.value; save(); };
+  $("#ag").onchange = (e) => { S.age = e.target.value; save(); }; $("#dl").onclick = dlReport;
   $("#sh").onclick = () => { location.href = "https://wa.me/?text=" + encodeURIComponent(report); };
   if ($("#rm")) $("#rm").onclick = () => { if (!confirm(`حذف ملف ${S.name} نهائياً؟`)) return; delete DB.kids[DB.cur]; DB.cur = Object.keys(DB.kids).find((k) => DB.kids[k].name) || Object.keys(DB.kids)[0]; S = DB.kids[DB.cur]; save(); out(); };
 }
 
-window.__zad = { storyMenu, storyPlay, songPlay, shopScreen, wcBump, moreHub, GM, learnCards, LET, DB, get S() { return S; }, lvl, addXP, checkBadges, avatarScreen, badgesScreen, parent, gate, begin, hub, start, AUD, brk, race, posGame, daily, treasure, openBox, collection, learned };
+window.__zad = { achScreen, reportHTML, storyMenu, storyPlay, songPlay, shopScreen, wcBump, moreHub, GM, learnCards, LET, DB, get S() { return S; }, lvl, addXP, checkBadges, avatarScreen, badgesScreen, parent, gate, begin, hub, start, AUD, brk, race, posGame, daily, treasure, openBox, collection, learned };
 start();
 })();
 </script>
