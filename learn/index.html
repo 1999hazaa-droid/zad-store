@@ -362,7 +362,7 @@ const unlockAudio = () => {
   try { AUD.src = SIL; const p = AUD.play(); p && p.catch(() => { unlockedA = false; }); } catch { unlockedA = false; }
 };
 ["pointerdown", "touchstart", "click"].forEach((e) => document.addEventListener(e, unlockAudio, { passive: true, capture: true }));
-fetch("audio/manifest.json?v=4").then((r) => r.ok ? r.json() : {}).then((m) => { MAN = m || {}; }).catch(() => {});
+fetch("audio/manifest.json?v=5").then((r) => r.ok ? r.json() : {}).then((m) => { MAN = m || {}; }).catch(() => {});
 let VOICE = null;
 function pickVoice() {
   const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
@@ -377,7 +377,7 @@ function preload(id) {
 }
 async function loadBuf(file) {
   if (BUF[file]) return BUF[file];
-  const c = ac(), ab = await (await fetch("audio/" + file + "?v=2")).arrayBuffer();
+  const c = ac(), ab = await (await fetch("audio/" + file + "?v=3")).arrayBuffer();
   return (BUF[file] = await new Promise((ok, no) => { const r = c.decodeAudioData(ab, ok, no); if (r && r.then) r.then(ok, no); }));
 }
 let curSrc = null;
@@ -406,7 +406,7 @@ function speak(text, key) {
       // عنصر الصوت العادي: يعمل على الآيفون حتى مع زر الصامت، بخلاف WebAudio
       const viaEl = (onBad) => {
         const a = AUD; curAudio = a; a.onended = end; a.onerror = onBad; a.onloadedmetadata = () => { a.playbackRate = a.duration > 3.5 ? 1.15 : 1; };
-        a.src = "audio/" + MAN[key] + "?v=2"; const pr = a.play(); if (pr && pr.catch) pr.catch(onBad);
+        a.src = "audio/" + MAN[key] + "?v=3"; const pr = a.play(); if (pr && pr.catch) pr.catch(onBad);
       };
       if (IOS) viaEl(() => playClip(MAN[key], end, fallback));
       else playClip(MAN[key], end, () => viaEl(fallback));
