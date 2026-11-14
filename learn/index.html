@@ -1609,7 +1609,11 @@ function parent(kid) {
 }
 
 window.__zad = { payScreen, setSub, achScreen, reportHTML, storyMenu, storyPlay, songPlay, shopScreen, wcBump, moreHub, GM, learnCards, LET, DB, get S() { return S; }, lvl, addXP, checkBadges, avatarScreen, badgesScreen, parent, gate, begin, hub, start, AUD, brk, race, posGame, daily, treasure, openBox, collection, learned };
-if (!recoveryCheck()) start();
+const hc = new URLSearchParams(location.hash.slice(1)).get("code");
+if (hc && !recoveryCheck()) {
+  history.replaceState(null, "", location.pathname);
+  rpc("learn_redeem", { p_code: hc, p_device: DEV }).then((t) => { setSub(Date.parse(t)); start(); toast("🎉 تم تفعيل اشتراكك"); }).catch(() => start());
+} else if (!recoveryCheck()) start();
 })();
 </script>
 </body>
