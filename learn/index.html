@@ -125,7 +125,7 @@ input.nm:focus{border-color:var(--p)}
 
 .zlb{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:52px;line-height:1}.zlb small{font-size:15px;font-weight:800;color:var(--t)}
 .zdg{font-size:64px;color:var(--p)}.zlt{font-size:76px;color:var(--p);font-weight:900}.zlt.big{font-size:110px}.zgrp.s{font-size:26px}
-.zdeco{display:flex;gap:8px;justify-content:center;align-items:center;font-size:44px;flex-wrap:wrap;line-height:1.2}
+.zw{font-size:34px;font-weight:900;color:#1B1430}.ztext{background:#fff;border-radius:16px;padding:12px 14px;font-size:20px;line-height:1.7;font-weight:700;color:#1B1430;box-shadow:0 3px 0 #d9d0f7;text-align:center;width:100%}.zbarv{display:block;height:22px;border-radius:12px;background:#5B34D6;max-width:100%}.zlvs{width:100%;text-align:center;display:grid;gap:6px}.zlvs div{display:flex;gap:8px;justify-content:center}.zlv{width:46px;height:46px;border-radius:14px;border:2px solid #d9d0f7;background:#fff;font:inherit;font-size:20px;font-weight:900;color:#5B34D6}.zlv.on{background:#5B34D6;color:#fff}.zlv:disabled{opacity:.45}.zdeco{display:flex;gap:8px;justify-content:center;align-items:center;font-size:44px;flex-wrap:wrap;line-height:1.2}
 .zslot{display:grid;place-items:center;width:62px;height:62px;border-radius:16px;background:#fff;border:3px dashed #c9bdf5;font-size:36px;color:#c9bdf5}
 .zmem{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%}.zmc{border:0;border-radius:18px;height:84px;background:linear-gradient(135deg,#8b5cf6,#5b34d6);box-shadow:0 5px 0 #3b1fa3;cursor:pointer;font-size:0;color:transparent}.zmc span{font-size:0}.zmc.on{background:#fff;box-shadow:0 5px 0 #d9d0f7}.zmc.on span{font-size:44px}
 .zmaze{direction:ltr;display:grid;gap:4px;width:min(88vw,320px);background:#e8e1ff;padding:6px;border-radius:18px}.zmaze i{aspect-ratio:1;border-radius:10px;background:#fff;display:grid;place-items:center;font-size:34px;font-style:normal}.zmaze i.w{background:#5b34d6}
@@ -1461,7 +1461,7 @@ const SECS = [
   { id: "a3", grp: "age", name: "٣ سنوات", em: "🧸", c: ["#FB923C", "#C2410C"], age: "4", sub: "مدينة زوزو الصغيرة: ألعاب وأنشطة مع الوالدين", games: ["cards", "mix", "math", "mem", "odd", "foc", "ord", "story"] },
   { id: "a4", grp: "age", name: "٤ سنوات", em: "🎈", c: ["#14B8A6", "#0F766E"], age: "4", sub: "مغامرات زوزو: ٥ عوالم ومغامرة كل أسبوع", games: ["letters", "race", "pos", "math", "cards", "mem", "odd", "foc", "ord", "story"] },
   { id: "a5", grp: "age", name: "٥ سنوات", em: "✏️", c: ["#8B5CF6", "#5B21B6"], age: "6", sub: "مستكشفو زوزو: ٦ مناطق ومغامرة كل أسبوع", games: ["letters", "treasure", "race", "pos", "miss", "wpic", "math", "mem", "foc", "lab", "story"] },
-  { id: "a6", grp: "age", name: "٦ سنوات", em: "🎒", c: ["#3B82F6", "#1D4ED8"], age: "6", sub: "قراءة وكتابة وجمع وطرح", games: ["letters", "treasure", "acad", "adv", "lab", "wsim", "miss", "wpic", "math", "mix", "story"] },
+  { id: "a6", grp: "age", name: "٦ سنوات", em: "🎒", c: ["#5B34D6", "#3B82F6"], age: "6", sub: "أبطال زوزو: ٦ مناطق و٤ مغامرات أسبوعية", games: ["letters", "treasure", "acad", "adv", "lab", "wsim", "miss", "wpic", "math", "mix", "story"] },
   { id: "g1", grp: "grade", name: "الصف الأول", em: "1️⃣", c: ["#8B5CF6", "#5B21B6"], age: "8", sub: "قراءة وجمع وطرح حتى ٢٠", games: ["adv", "lab", "acad", "miss", "wpic", "g_add20", "g_sub20", "g_cmp", "g_opp", "g_day", "g_dua"] },
   { id: "g2", grp: "grade", name: "الصف الثاني", em: "2️⃣", c: ["#10B981", "#047857"], age: "8", sub: "جمع وطرح حتى ١٠٠", games: ["g_add100", "g_sub100", "g_skip", "g_even", "g_opp", "g_day", "g_dua", "g_ayah", "adv"] },
   { id: "g3", grp: "grade", name: "الصف الثالث", em: "3️⃣", c: ["#F59E0B", "#B45309"], age: "8", sub: "جدول الضرب والقسمة والكسور", games: ["g_mul", "g_div", "g_frac", "g_place", "g_round", "g_add1000", "g_ayah", "g_dua"] },
@@ -1723,6 +1723,7 @@ function secHome(id) {
   if (id === "a3") return cityHome();
   if (id === "a4") return advHome();
   if (id === "a5") return exploreHome();
+  if (id === "a6") return heroHome();
   const i = sIdx(), all = Object.values(DEFS).filter((d) => avail(d, i)), wk = seeded(S.sec + dayKey(weekStart())), lvG = all.filter((d) => d.mk), feat = lvG[(wk() * lvG.length) | 0];
   app.innerHTML = `${topBar()}
   <div class="stage" style="justify-content:flex-start;gap:12px">
@@ -1868,8 +1869,10 @@ function zRun(k) {
   app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:14px;justify-content:flex-start">
     <div class="sch" style="background:linear-gradient(135deg,${z.c[0]},${z.c[1]})"><b>${z.e}</b><div><h1>${z.t}</h1><small>${z.intro}</small></div></div>
     <div class="zpar"><b>👨‍👩‍👧 للوالد</b>${z.par}</div>
+    ${S.sec === "a6" && ZC[k] && !z.ch && z.v ? (() => { const ul = e6lv(k), sel = Math.min(ZLSEL || ul, ul); return `<div class="zlvs"><b>المستوى ${AD(sel)} · ${LV6[sel]}</b><div>${[1, 2, 3, 4, 5].map((i) => `<button class="zlv ${i === sel ? "on" : ""}" data-l="${i}" ${i > ul ? "disabled" : ""}>${i > ul ? "🔒" : AD(i)}</button>`).join("")}</div><small>يمكنك إعادة المستويات السابقة متى شئت</small></div>`; })() : ""}
     <button class="btn" id="zgo">ابدأ ▶</button></div>`;
   zTop(zHome);
+  app.querySelectorAll(".zlv").forEach((b) => b.onclick = () => { ZLSEL = +b.dataset.l; zRun(k); });
   $("#zgo").onclick = () => { if (ZC[k]) return cStart(k); sfx.ok(); k === "music" ? zMusic(k) : k === "hide" ? zHide(k, 0) : zItem(k, pickN(z.items, 3), 0); };
   speakGirl(`هيا يا ${zNm()}! ${z.intro}.`);
 }
@@ -1931,7 +1934,7 @@ function zReal(k) {
   speakGirl("الآن نلعب مع ماما وبابا. ضعا الجهاز جانباً.");
 }
 function zDone(k) {
-  const z = ZU[k]; S.zl = S.zl || []; S.zl.push({ d: dayKey(), t: Date.now(), k }); if (S.zl.length > 300) S.zl = S.zl.slice(-300);
+  const z = ZU[k]; S.zl = S.zl || []; S.zl.push({ d: dayKey(), t: Date.now(), k, m: ZMISS[k] || 0 }); ZMISS[k] = 0; if (S.zl.length > 300) S.zl = S.zl.slice(-300);
   star(2); save(); SCR++; stopVoice(); sfx.win(); confetti(60);
   app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:14px;justify-content:flex-start">
     <div class="zcard"><div class="zc1">🏅</div><h2>بطاقة إنجاز</h2><b>${zNm()}</b><p>شارك مع ولي أمره في<br><strong>${z.e} ${z.t}</strong></p>${z.badge ? `<p style="font-size:20px">🎖️ شارة «${z.badge}»</p>` : ""}<small>${zDate(Date.now())}</small></div>
@@ -1947,7 +1950,7 @@ function zWeek() {
   SCR++; stopVoice();
   app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:12px;justify-content:flex-start">
     <div class="sch" style="background:linear-gradient(135deg,#8B5CF6,#5B21B6)"><b>📚</b><div><h1>أنشطة هذا الأسبوع</h1><small>تتجدد كل أسبوع</small></div></div>
-    ${S.sec === "a4" || S.sec === "a5" ? `<div class="sec">مغامرة الأسبوع</div><button class="feat" id="zwa"><b>${ZU[zAdvKey()].e}</b><span>${ZU[zAdvKey()].t}<small>شارة «${ZU[zAdvKey()].badge}»</small></span></button>` : ""}
+    ${S.sec === "a4" || S.sec === "a5" || S.sec === "a6" ? `<div class="sec">مغامرة الأسبوع</div><button class="feat" id="zwa"><b>${ZU[zAdvKey()].e}</b><span>${ZU[zAdvKey()].t}<small>شارة «${ZU[zAdvKey()].badge}»</small></span></button>` : ""}
     <div class="sec">٣ أنشطة تفاعلية قصيرة</div>
     <div class="games">${dig.map((k) => `<button class="gm" data-z="${k}"><b>${ZU[k].e}</b>${ZU[k].t}<small>رقمي قصير</small></button>`).join("")}</div>
     <div class="sec">قصة الأسبوع الصوتية</div>
@@ -1966,7 +1969,7 @@ async function zStory(st) {
   app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:14px;justify-content:flex-start">
     <div class="zbig">${st.e}</div><h2 class="zname">${st.t}</h2><div class="zpar" id="zln">🎧 زوزو يروي القصة…</div>
     <button class="btn ghost" id="zrp" style="min-width:0">🔁 أعد القصة</button></div>`;
-  zTop(zWeek); $("#zrp").onclick = () => zStory(st);
+  zTop(ZSB || zWeek); $("#zrp").onclick = () => zStory(st);
   for (const line of st.s) { if (tok !== SCR) return; const el = $("#zln"); if (el) el.textContent = line; await speakGirl(line); await wait(500); }
   if (tok === SCR && $("#zln")) $("#zln").textContent = "انتهت القصة 🌙 ما رأيكما أن نقلّد زوزو؟";
 }
@@ -1984,12 +1987,13 @@ function zGuide() {
   const T2 = [["كلّمه بجمل قصيرة وبطيئة", "«هذه كرة. كرة حمراء.» التكرار يساعده أن يلتقط الكلمات."], ["سمِّ ما يراه ويلمسه", "الكلمة المرتبطة بشيء حقيقي تُحفظ أسرع من الكلمة على الشاشة."], ["انتظر ٥ ثوانٍ", "اترك له وقتاً ليرد بصوت أو إشارة أو نظرة قبل أن تكمل."], ["لا تصحّح، بل أعد القول", "إن قال «كَبْ» فقل: «نعم، كلب! هذا كلب»."], ["شجّع الإشارة", "الإشارة بالإصبع أول طريق الكلام، فاحتفل بها."], ["استجب لأصواته", "عندما يصدر صوتاً، ردّ عليه كأنه يحادثك."], ["اقرأ له كل يوم", "كتاب مصوّر ٥ دقائق يوميّاً، بنفس الوقت إن أمكن."], ["جلسة قصيرة فقط", "١٠ دقائق من اللعب أفضل من نصف ساعة، واترك الباقي لللعب الحقيقي."]];
   const T4 = [["اجعل الحوار جزءاً من اللعب", "بعد كل لعبة اسأله: «لماذا اخترت هذا؟» واستمع لتفسيره."], ["اللعب أهم من النتيجة", "احتفل بالمحاولة والتجربة، لا بالإجابة الصحيحة فقط."], ["وسّع كلامه", "إن قال «كلب» فقل: «نعم، كلب كبير يجري في الحديقة»."], ["لا تصنّفه", "لا تقل «ولد جيد/سيّئ»، بل صف الموقف والشعور: «صديقك حزين لأنه لم يلعب»."], ["اربط بالحياة", "كل لعبة لها نشاط واقعي: ساندويتش، بذرة، مكعبات، مرآة."], ["قصة قبل النوم", "اسمعا قصة الأسبوع ثم اسأله: «ماذا تتوقع أن يحدث؟»"], ["جلسة قصيرة", "١٠–١٥ دقيقة فقط، ثم لعب حقيقي بعيداً عن الشاشة."], ["دع الخيال يعمل", "العبا أدواراً (طبيب، طباخ، معلم) بألعابه وبلا شاشة."]];
   const T5 = [["اللعب الموجّه", "اجلس بجانبه واطرح أسئلة قصيرة: «لماذا؟ ماذا تتوقع؟» بدل إعطاء الإجابة."], ["تدرّج المستويات", "تفتح المستويات تدريجياً حسب إنجاز الطفل، دون أي مؤقت أو ضغط."], ["اترك له وقتاً", "لا تستعجله؛ التفكير والتجريب أهم من السرعة."], ["كلمات قليلة", "اقرأ له التعليمات إن احتاج، فالقراءة ليست شرطاً للعب."], ["اربط بالواقع", "بعد اللعبة نفّذا النشاط المنزلي: عدّ، تصنيف، بناء."], ["شجّع الشرح", "اسأله: «كيف عرفت؟» ليعبّر عن تفكيره."], ["لا مقارنة", "قدرات الأطفال تختلف، فاحتفل بتقدّم طفلك هو."], ["جلسة قصيرة", "١٥–٢٠ دقيقة، ثم لعب حقيقي."]];
-  const T = S.sec === "a5" ? T5 : S.sec === "a4" ? T4 : S.sec === "a3" ? T3 : T2;
+  const T6 = [["اللعب الموجّه", "اجلس بجانبه واسأله «لماذا؟» و«كيف عرفت؟» بدل إعطائه الإجابة."], ["المستويات", "تفتح المستويات الخمسة تدريجياً، ويمكنه إعادة أي مستوى سابق للتدرّب بلا أي ضغط."], ["الخطأ جزء من التعلّم", "لا عقاب ولا مؤقت. إن أخطأ فقل «حاول مرة أخرى» وشجّعه على التفكير."], ["من اللعبة إلى الواقع", "بعد اللعبة نفّذا النشاط المنزلي: متجر، تجربة، بناء، قصة."], ["القراءة والكتابة", "اقرأ معه وشجّعه على القراءة بصوته ثم الكتابة بخطه، فالمنصة تكمّل ولا تحل محل الورقة والقلم."], ["كافئ الجهد", "الشارات تأتي من التقدّم والتعلّم لا من السرعة، فاحتفلا بكل محاولة."]];
+  const T = S.sec === "a6" ? T6 : S.sec === "a5" ? T5 : S.sec === "a4" ? T4 : S.sec === "a3" ? T3 : T2;
   SCR++; stopVoice();
   app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:10px;justify-content:flex-start">
     <div class="sch" style="background:linear-gradient(135deg,#0EA5E9,#0369A1)"><b>👨‍👩‍👧</b><div><h1>دليل الوالدين</h1><small>ماذا أقول؟ وكيف ألعب مع طفلي؟</small></div></div>
     ${T.map((t) => `<div class="zstep"><b>💡</b><span><i>${t[0]}</i>${t[1]}</span></div>`).join("")}
-    <div class="zpar"><b>⏱️ عن الشاشات</b>${S.sec === "a5" ? "توصي منظمة الصحة العالمية بألا يزيد وقت الشاشة الجلوسي عن ساعة يومياً للأطفال دون الخامسة، والأقل أفضل. لذلك ننصح بجلسات قصيرة، وكل لعبة هنا تنتهي بنشاط حقيقي معكما." : S.sec === "a3" || S.sec === "a4" ? "توصي منظمة الصحة العالمية بألا يزيد وقت الشاشة الجلوسي عن ساعة يومياً للأطفال من سنتين إلى أربع سنوات، والأقل أفضل. لذلك كل لعبة هنا قصيرة وتنتهي بنشاط حقيقي معكما." : "توصي منظمة الصحة العالمية بتجنّب الجلوس أمام الشاشة لعمر سنة، وألا يزيد عن ساعة يومياً لعمر سنتين، والأقل أفضل. لذلك صُمِّمت تجارب زوزو قصيرة وتنتهي بنشاط حقيقي معكما."}</div>
+    <div class="zpar"><b>⏱️ عن الشاشات</b>${S.sec === "a6" ? "ننصح بجلسات قصيرة وبحدود يضعها ولي الأمر، وبأن يتبع اللعب الرقمي نشاط حقيقي، فكل لعبة هنا تنتهي بنشاط تفعلونه معاً." : S.sec === "a5" ? "توصي منظمة الصحة العالمية بألا يزيد وقت الشاشة الجلوسي عن ساعة يومياً للأطفال دون الخامسة، والأقل أفضل. لذلك ننصح بجلسات قصيرة، وكل لعبة هنا تنتهي بنشاط حقيقي معكما." : S.sec === "a3" || S.sec === "a4" ? "توصي منظمة الصحة العالمية بألا يزيد وقت الشاشة الجلوسي عن ساعة يومياً للأطفال من سنتين إلى أربع سنوات، والأقل أفضل. لذلك كل لعبة هنا قصيرة وتنتهي بنشاط حقيقي معكما." : "توصي منظمة الصحة العالمية بتجنّب الجلوس أمام الشاشة لعمر سنة، وألا يزيد عن ساعة يومياً لعمر سنتين، والأقل أفضل. لذلك صُمِّمت تجارب زوزو قصيرة وتنتهي بنشاط حقيقي معكما."}</div>
     <div class="zpar"><small>هذا المحتوى للتشجيع على اللعب والتواصل، وليس بديلاً عن الطبيب. إن كان عندك قلق على نموّ طفلك فاستشر طبيب الأطفال.</small></div></div>`;
   zTop(zHome);
 }
@@ -2072,8 +2076,8 @@ const ZC = {
 };
 const CKEYS = ["c_farm", "c_shop", "c_garden", "c_animals", "c_station", "c_shapes", "c_kitchen", "c_feel", "c_music", "c_work"], CXKEYS = ["c_clothes", "c_water", "c_box", "c_hare"];
 for (const [k, v] of Object.entries(ZC)) { v.sec = "a3"; ZU[k] = v; }
-const zHome = () => (S.sec === "a3" ? cityHome() : S.sec === "a4" ? advHome() : S.sec === "a5" ? exploreHome() : zuzuHome());
-const zCfg = () => (S.sec === "a5" ? { keys: EKEYS, real: ZREAL5, story: ZSTORY5, all: EKEYS } : S.sec === "a4" ? { keys: AKEYS, real: ZREAL4, story: ZSTORY4, all: AKEYS } : S.sec === "a3" ? { keys: CKEYS, real: ZREAL3, story: ZSTORY3, all: CKEYS.concat(CXKEYS) } : { keys: ZKEYS, real: ZREAL, story: ZSTORY, all: ZKEYS });
+const zHome = () => (S.sec === "a3" ? cityHome() : S.sec === "a4" ? advHome() : S.sec === "a5" ? exploreHome() : S.sec === "a6" ? heroHome() : zuzuHome());
+const zCfg = () => (S.sec === "a6" ? { keys: F6KEYS, real: ZREAL6, story: ZSTORY6, all: F6KEYS } : S.sec === "a5" ? { keys: EKEYS, real: ZREAL5, story: ZSTORY5, all: EKEYS } : S.sec === "a4" ? { keys: AKEYS, real: ZREAL4, story: ZSTORY4, all: AKEYS } : S.sec === "a3" ? { keys: CKEYS, real: ZREAL3, story: ZSTORY3, all: CKEYS.concat(CXKEYS) } : { keys: ZKEYS, real: ZREAL, story: ZSTORY, all: ZKEYS });
 function cityHome() {
   SCR++; stopVoice(); HOLD = false;
   if (!ZT || Date.now() - ZTL > 30 * 60e3) ZT = Date.now(); ZTL = Date.now();
@@ -2098,12 +2102,13 @@ function cityHome() {
 const CPR = ["أحسنت", "رائع", "ممتاز", "برافو", "جميل جداً"];
 function cStart(k) {
   const P = ZC[k]; sfx.ok();
+  if (S.sec === "a6") ZLV = P.ch ? 3 : (ZLSEL || e6lv(k)); ZLSEL = null;
   if (k === "c_box") return cBox(k, 0);
   if (k === "c_hare") return zHide(k, 0);
   if (P.ch) return cAdv(k);
   if (P.sp === "mem") return cMem(k);
   if (P.sp === "maze") return cMaze(k, 0);
-  if (S.sec === "a5" && P.v) { const lv = e5lv(k); let arr = P.v[(lv - 1) % P.v.length](); if (lv >= 5 && P.v.length > 1 && !arr[0].free) arr = arr.concat(P.v[lv % P.v.length]()); const out = arr[0].free ? arr.slice() : arr.slice(0, lv <= 2 ? 3 : lv <= 4 ? 4 : 5); out.fin = arr.fin; return cRound(k, out, 0, 0); }
+  if ((S.sec === "a5" || S.sec === "a6") && P.v) { const lv = S.sec === "a6" ? ZLV : e5lv(k); let arr = P.v[(lv - 1) % P.v.length](); if (lv >= 5 && P.v.length > 1 && !arr[0].free) arr = arr.concat(P.v[lv % P.v.length]()); const out = arr[0].free ? arr.slice() : arr.slice(0, lv <= 2 ? 3 : lv <= 4 ? 4 : 5); out.fin = arr.fin; return cRound(k, out, 0, 0); }
   const vi = ((S.zv = S.zv || {})[k] = ((S.zv[k] ?? -1) + 1) % P.v.length); save();
   cRound(k, P.v[vi](), 0, 0);
 }
@@ -2131,7 +2136,7 @@ async function cRound(k, rounds, i, miss) {
       await speakGirl(CPR[rI(0, CPR.length - 1)]); await wait(300);
       if (tok !== SCR) return; i < rounds.length - 1 ? cRound(k, rounds, i + 1, miss + wrong) : zReal(k);
     } else {
-      wrong++; b.classList.add("zsh"); b.disabled = true; tone(240, .18, "sine", .1);
+      wrong++; if (S.sec === "a6") ZMISS[k] = (ZMISS[k] || 0) + 1; b.classList.add("zsh"); b.disabled = true; tone(240, .18, "sine", .1);
       if (wrong >= 2) { const c = app.querySelectorAll(".zopt")[r.ans]; c && c.classList.add("zhint"); }
       speakGirl("حاول مرة أخرى");
     }
@@ -2239,10 +2244,10 @@ function advHome() {
   app.querySelectorAll("[data-r]").forEach((b) => b.onclick = () => advRegion(b.dataset.r));
 }
 function advRegion(r) {
-  SCR++; stopVoice(); const R = r === "adv" ? ["adv", "كل المغامرات", "🎖️", "#14B8A6"] : S.sec === "a5" ? REG5.find((x) => x[0] === r) : REGN[r], ks = r === "adv" ? ADVK : Object.keys(ZU).filter((k) => ZU[k].sec === S.sec && ZU[k].reg === r);
+  SCR++; stopVoice(); const R = r === "adv" ? ["adv", "كل المغامرات", "🎖️", "#14B8A6"] : S.sec === "a6" ? REG6.find((x) => x[0] === r) : S.sec === "a5" ? REG5.find((x) => x[0] === r) : REGN[r], ks = r === "adv" ? (S.sec === "a6" ? H6K : ADVK) : Object.keys(ZU).filter((k) => ZU[k].sec === S.sec && ZU[k].reg === r);
   app.innerHTML = `${topBar("◀")}<div class="stage" style="justify-content:flex-start;gap:12px">
     <div class="sch" style="background:linear-gradient(135deg,${R[3]},#5B34D6)"><b>${R[2]}</b><div><h1>${R[1]}</h1><small>اختر لعبتك</small></div></div>
-    <div class="games">${ks.map((k) => `<button class="gm" data-z="${k}"><b>${ZU[k].e}</b>${ZU[k].t}<small>${S.sec === "a5" ? "المستوى " + AD(e5lv(k)) : (S.zl || []).some((x) => x.k === k) ? (ZU[k].badge ? "🎖️ " + ZU[k].badge : "أنجزتها ✅") : "مغامرة جديدة"}</small></button>`).join("")}</div></div>`;
+    <div class="games">${ks.map((k) => `<button class="gm" data-z="${k}"><b>${ZU[k].e}</b>${ZU[k].t}<small>${S.sec === "a6" ? (ZU[k].ch ? ((S.zl || []).some((x) => x.k === k) ? "🎖️ " + ZU[k].badge : "مغامرة جديدة") : "المستوى " + AD(e6lv(k))) : S.sec === "a5" ? "المستوى " + AD(e5lv(k)) : (S.zl || []).some((x) => x.k === k) ? (ZU[k].badge ? "🎖️ " + ZU[k].badge : "أنجزتها ✅") : "مغامرة جديدة"}</small></button>`).join("")}</div></div>`;
   zTop(zHome); app.querySelectorAll("[data-z]").forEach((b) => b.onclick = () => zRun(b.dataset.z));
 }
 async function cSeq(k, rounds, i) {
@@ -2389,7 +2394,7 @@ const EADV = {
 const E5K = Object.keys(EADV);
 for (const [k, a] of Object.entries(EADV)) { const o = { sec: "a5", t: a.t, e: a.e, c: ["#8B5CF6", "#3B82F6"], intro: a.intro, par: "هذه مغامرة من ٧ مراحل مترابطة تجمع الرياضيات واللغة والتفكير والعلوم والخيال واتخاذ القرار. شجّع طفلك ولا تستعجله.", talk: a.talk, real: a.real, sk: a.sk, badge: a.badge, ch: a.ch, v: [] }; ZC[k] = o; ZU[k] = o; }
 const adv5Key = () => E5K[Math.floor(weekStart().getTime() / 6048e5) % E5K.length];
-const zAdvKey = () => (S.sec === "a5" ? adv5Key() : advWeekKey());
+const zAdvKey = () => (S.sec === "a6" ? adv6Key() : S.sec === "a5" ? adv5Key() : advWeekKey());
 const ZREAL5 = [["عدّ ٥ ألعاب", "عدّا ٥ ألعاب في البيت ثم أضيفا لعبتين وعدّا من جديد."], ["أشياء دائرية", "ابحثا عن ٣ أشياء دائرية في البيت (صحن، ساعة، كرة)."], ["ترتيب بالحجم", "رتّبا مجموعة أشياء من الأكبر إلى الأصغر."], ["أول حرف", "اختر ٣ أشياء واسأله عن أول حرف في اسم كل منها."], ["نهاية جديدة", "اقرأ قصة وارسما نهاية جديدة لها معاً."], ["برج المكعبات", "ابنيا برجاً بمكعبات كبيرة وآمنة، وتحدّثا عن الاتزان."], ["تصنيف بالألوان", "صنّفا الألعاب حسب اللون في أكواب أو سلال."], ["متجر البيت", "العبا بائعاً ومشترياً بنقود لعبة وأسعار بسيطة."], ["كلمات مقفاة", "اخترعا كلمات تتشابه في الصوت (قطة وبطة)."], ["تجربة الطفو", "جرّبا في وعاء ماء: ما الذي يطفو وما الذي يغرق؟ (بإشراف)."], ["قصة من ٣ جمل", "اخترعا قصة من ٣ جمل: شخصية ومكان وحدث."], ["زراعة بذرة", "ازرعا بذرة وراقباها كل يوم."], ["رحلة خريطة", "ارسما خريطة بسيطة للبيت وابحثا عن كنز مخبّأ."], ["إيقاع بالتصفيق", "ابتكرا إيقاعاً بالتصفيق وكرّراه بالتناوب."], ["مسرح بالدمى", "مثّلا مشهداً بدمى أو ألعاب بأصوات مختلفة."]];
 const ZSTORY5 = [{ t: "زوزو والخريطة", e: "🗺️", s: ["وجد زوزو خريطة قديمة في الحديقة.", "تبع زوزو الطريق بين الأشجار.", "عبر جسراً صغيراً فوق النهر.", "وجد صندوقاً مليئاً بالبذور الملوّنة.", "زرع زوزو البذور وصارت الحديقة أجمل."] }, { t: "زوزو والعلماء", e: "🔬", s: ["قرر زوزو أن يكون عالماً صغيراً.", "وضع قطعة ثلج في الشمس.", "لاحظ زوزو أن الثلج صار ماء.", "ثم وضع ورقة وحجراً في الماء.", "عرف زوزو أن الورقة تطفو والحجر يغرق."] }];
 const E5BADGES = [["math", "مستكشف الأرقام", "🔢"], ["lang", "بطل الكلمات", "📝"], ["lab", "العالم الصغير", "🔬"], ["think", "عبقري الألغاز", "🧩"], ["story", "صانع القصص", "✍️"], ["skill", "مهندس زوزو", "👷"], ["adv", "بطل المغامرات", "🎖️"]];
@@ -2441,6 +2446,202 @@ function ePrizes() {
     <div class="sec">زينة عالم زوزو</div><div class="zstk">${ZDECOR.map((c, i) => `<i class="${i < nd ? "on" : ""}">${i < nd ? c : "🔒"}</i>`).join("")}</div></div>`;
   zTop(exploreHome);
 }
+/* ======================= أبطال زوزو (٦ سنوات) ======================= */
+let ZLV = 1, ZLSEL = null, ZSB = null; const ZMISS = {};
+const NW = ["صفر", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر", "عشرون"];
+const MX = () => [10, 12, 15, 18, 20][ZLV - 1] || 20;
+const dgo = (arr, n) => { const s = new Set([n]); let g = 0; while (s.size < 3 && g++ < 60) { const x = n + rI(-3, 3); if (x >= 0 && x !== n) s.add(x); } return shf([...s]); };
+const numOpts = (n) => { const o = dgo(null, n); return { opts: o.map(dg), ans: o.indexOf(n) }; };
+const zw = (t) => `<span class="zw">${t}</span>`;
+const priceW = (n) => ["", "ريال واحد", "ريالان", "ثلاثة ريالات", "أربعة ريالات", "خمسة ريالات"][n];
+const clk = (h, m) => `<svg viewBox="0 0 100 100" width="130" height="130"><circle cx="50" cy="50" r="46" fill="#fff" stroke="#5B34D6" stroke-width="5"/>${Array.from({ length: 12 }, (_, i) => `<line x1="50" y1="8" x2="50" y2="14" stroke="#5B34D6" stroke-width="3" transform="rotate(${i * 30} 50 50)"/>`).join("")}<line x1="50" y1="50" x2="50" y2="12" stroke="#1B1430" stroke-width="3" stroke-linecap="round" transform="rotate(${m * 6} 50 50)"/><line x1="50" y1="50" x2="50" y2="28" stroke="#E11D48" stroke-width="6" stroke-linecap="round" transform="rotate(${(h % 12 + m / 60) * 30} 50 50)"/><circle cx="50" cy="50" r="4" fill="#1B1430"/></svg>`;
+const STX = [
+  { s: ["في الصباح ذهبت سلمى إلى الحديقة.", "رأت زهرة حمراء كبيرة.", "ثم سقتها بالماء."], q: [["إلى أين ذهبت سلمى؟", "الحديقة", ["المدرسة", "السوق"]], ["ما لون الزهرة؟", "حمراء", ["زرقاء", "صفراء"]], ["بماذا سقت الزهرة؟", "بالماء", ["بالعصير", "بالحليب"]]] },
+  { s: ["عند سالم قطة صغيرة اسمها لولو.", "تحب لولو أن تشرب الحليب.", "وتنام قرب النافذة."], q: [["ما اسم القطة؟", "لولو", ["ميمي", "بسبس"]], ["ماذا تحب القطة أن تشرب؟", "الحليب", ["العصير", "الشاي"]], ["أين تنام القطة؟", "قرب النافذة", ["على السرير", "تحت الطاولة"]]] },
+  { s: ["أحب عمر كرة القدم.", "يلعب مع أصدقائه كل يوم جمعة.", "وبعد اللعب يشرب الماء."], q: [["ماذا أحب عمر؟", "كرة القدم", ["السباحة", "الرسم"]], ["متى يلعب عمر؟", "يوم الجمعة", ["يوم السبت", "يوم الأحد"]], ["ماذا يفعل عمر بعد اللعب؟", "يشرب الماء", ["ينام", "يرسم"]]] },
+  { s: ["في الغابة يعيش أسد كبير.", "يخرج الأسد في الصباح ليبحث عن الطعام.", "ثم يعود إلى بيته في الظهر."], q: [["أين يعيش الأسد؟", "الغابة", ["البحر", "المدينة"]], ["متى يخرج الأسد؟", "في الصباح", ["في الليل", "في المساء"]], ["إلى أين يعود الأسد؟", "إلى بيته", ["إلى البحر", "إلى المدرسة"]]] }
+];
+const storyRounds = (n) => pickN(STX, 2).flatMap((st) => pickN(st.q, 2).map((q) => { const op = shf([q[1], ...q[2]].map((x) => lab("📌", x))); return { intro: st.s, say: q[0], opts: op, ans: op.findIndex((o) => o.includes(q[1])), deco: `<div class="ztext">${st.s.join(" ")}</div>` }; })).slice(0, n);
+const SENT = [["الولد", "يقرأ", "كتاباً"], ["القطة", "تشرب", "الحليب"], ["الشمس", "مشرقة", "اليوم"], ["أحب", "اللعب", "مع", "أصدقائي"], ["ذهبت", "إلى", "المدرسة", "صباحاً"], ["الطائر", "يطير", "في", "السماء"]];
+const MATHREG = ["#F97316"];
+const ZF = {
+  f_nums: mkA("math", "مملكة الأعداد", "👑", "#F97316", "نقرأ الأعداد ونرتّبها", "اسأله: «ما العدد الأكبر؟ ما الذي قبله؟»", "اكتبا أعداداً على أوراق ورتّباها من الأصغر إلى الأكبر.", "قراءة الأعداد وترتيبها",
+    [() => Array.from({ length: 4 }, () => { const n = rI(5, Math.min(20, MX() + 5)), o = dgo(null, n); return { say: `أين العدد ${n <= 20 ? NW[n] : AD(n)}؟`, opts: o.map(dg), ans: o.indexOf(n) }; }), () => Array.from({ length: 4 }, () => { const A = pickN(Array.from({ length: MX() + 8 }, (_, i) => i + 1), 3).sort((a, b) => a - b); return { say: "رتّب الأعداد من الأصغر إلى الأكبر", seq: A.map((x) => AD(x)) }; })]),
+  f_ops: mkA("math", "سباق العمليات", "🏁", "#F97316", "نحل الجمع والطرح", "اسأله: «كيف حسبتها؟» وشجّعه على العدّ بأصابعه.", "اكتبا عمليات جمع وطرح بسيطة على ورقة وحلّاها معاً.", "الجمع والطرح",
+    [() => Array.from({ length: 4 }, (_, i) => { const a = rI(1, Math.floor(MX() / 2)), b = rI(1, Math.floor(MX() / 2)), r = numOpts(a + b); return Object.assign({ say: `كم يساوي ${NW[a]} زائد ${NW[b]}؟`, deco: `<div class="zdeco"><b style="font-size:60px">${AD(a)} + ${AD(b)}</b></div>` }, r); }), () => Array.from({ length: 4 }, () => { const a = rI(4, MX()), b = rI(1, a - 1), r = numOpts(a - b); return Object.assign({ say: `كم يساوي ${NW[a]} ناقص ${NW[b]}؟`, deco: `<div class="zdeco"><b style="font-size:60px">${AD(a)} − ${AD(b)}</b></div>` }, r); })]),
+  f_shop: mkA("math", "متجر زوزو الكبير", "🏬", "#F97316", "نشتري ونحسب الأسعار", "اسأله: «كم نحتاج لنشتري الاثنين؟»", "العبا متجراً في البيت بأسعار على الأشياء ونقود لعبة.", "الأسعار والنقود",
+    [() => Array.from({ length: 4 }, () => { const I = pickN([["الكتاب", "📖"], ["القلم", "✏️"], ["الكرة", "⚽"], ["الحقيبة", "🎒"]], 2), a = rI(1, 4), b = rI(1, 4), r = numOpts(a + b); return Object.assign({ say: `ثمن ${I[0][0]} ${priceW(a)} وثمن ${I[1][0]} ${priceW(b)}. كم ندفع للاثنين؟`, deco: `<div class="zdeco"><span>${I[0][1]}</span><span>${I[1][1]}</span></div>` }, r); }), () => Array.from({ length: 4 }, () => { const a = rI(3, 5), b = rI(1, a - 1), r = numOpts(a - b); return Object.assign({ say: `معك ${priceW(a)} واشتريت بـ${priceW(b)}. كم بقي معك؟`, deco: `<div class="zdeco"><b style="font-size:50px">💰</b></div>` }, r); })]),
+  f_train: mkA("math", "قطار الحساب", "🚂", "#F97316", "نكمل العملية", "اسأله: «ما العدد الناقص؟ كيف عرفت؟»", "اكتبا عملية وأخفيا عدداً منها، واطلب منه إيجاده.", "إكمال العمليات",
+    [() => Array.from({ length: 4 }, () => { const t = rI(5, MX()), a = rI(1, t - 1), r = numOpts(t - a); return Object.assign({ say: "ما العدد الناقص؟", deco: `<div class="zdeco"><b style="font-size:54px">${AD(a)} + ❓ = ${AD(t)}</b></div>` }, r); }), () => Array.from({ length: 4 }, () => { const a = rI(5, MX()), b = rI(1, a - 1), r = numOpts(a - b); return Object.assign({ say: "ما العدد الناقص؟", deco: `<div class="zdeco"><b style="font-size:54px">${AD(a)} − ❓ = ${AD(b)}</b></div>` }, numOpts(b)); })]),
+  f_treasure: mkA("math", "كنز الأعداد", "💎", "#F97316", "نحل التحديات لنجمع أجزاء الكنز", "اسأله: «ما القاعدة في العدّ؟»", "عدّا بالقفز: ٢، ٤، ٦… أو ٥، ١٠، ١٥… بالقفز أو بالتصفيق.", "العدّ بالقفز وتكملة العشرة",
+    [() => Array.from({ length: 4 }, () => { const st = pickN([2, 5, 10], 1)[0], s0 = st * rI(0, 2), seq = [s0 + st, s0 + 2 * st, s0 + 3 * st], n = s0 + 4 * st; return Object.assign({ say: "أكمل العدّ", deco: `<div class="zdeco">${seq.map((x) => dg(x)).join("")}<b>❓</b></div>` }, numOpts(n)); }), () => Array.from({ length: 4 }, () => { const a = rI(1, 9); return Object.assign({ say: `كم يكمل ${NW[a]} إلى العشرة؟`, deco: `<div class="zdeco"><b style="font-size:54px">${AD(a)} + ❓ = ١٠</b></div>` }, numOpts(10 - a)); })]),
+  f_pat: mkA("math", "مختبر الأنماط", "🔁", "#F97316", "نكتشف الأنماط العددية والبصرية", "اسأله: «ما القاعدة؟»", "ابتكرا نمطاً من الأعداد وتبادلا إكماله.", "الأنماط", [() => Array.from({ length: 4 }, () => { const d = pickN([1, 2, 3, 5], 1)[0], s0 = rI(1, 5), seq = [s0, s0 + d, s0 + 2 * d, s0 + 3 * d]; return Object.assign({ say: "ما العدد الذي يأتي بعد ذلك؟", deco: `<div class="zdeco">${seq.map((x) => dg(x)).join("")}<b>❓</b></div>` }, numOpts(s0 + 4 * d)); }), ...ZE.e_pat.v]),
+  f_shapes: mkA("math", "مدينة الأشكال", "🔷", "#F97316", "نعرف الأشكال وخصائصها", "اسأله: «كم ضلعاً له؟ كم زاوية؟»", "ابحثا عن أشكال في البيت وعدّا أضلاعها.", "الأشكال الهندسية", [...ZE.e_shapes.v, () => [["كم ضلعاً للمثلث؟", 3], ["كم ضلعاً للمربع؟", 4], ["كم ضلعاً للمستطيل؟", 4], ["كم ضلعاً للمعيّن؟", 4]].map(([say, n]) => Object.assign({ say }, numOpts(n)))]),
+  f_measure: mkA("math", "مغامرة القياس", "📏", "#F97316", "نقارن الأطوال والأوزان", "اسأله: «كيف عرفت أنه أطول؟»", "قارنا أطوال ألعابه بالمسطرة أو بالشبر.", "القياس والمقارنة",
+    [() => Array.from({ length: 4 }, (_, i) => { const a = rI(40, 120), b = a + rI(30, 80), g = shf([a, b]), lg = i % 2 === 0; return { say: lg ? "أين الشريط الأطول؟" : "أين الشريط الأقصر؟", opts: g.map((w) => `<span class="zbarv" style="width:${w}px"></span>`), ans: g.indexOf(lg ? b : a) }; }), () => qa([["أيّهما أثقل؟", "🐘", ["🐭"]], ["أيّهما أخف؟", "🪶", ["🪨"]], ["أيّهما أثقل؟", "🚗", ["🎈"]], ["أيّهما أطول؟", "🦒", ["🐈"]]].map((x) => [x[0], x[1], x[2].concat(["🍃"])]), 4)]),
+  f_clock: mkA("math", "ساعة زوزو", "🕒", "#F97316", "نتعرّف على الوقت والساعة", "اسأله: «ماذا نفعل عند هذه الساعة؟»", "انظرا إلى ساعة الجدار معاً واقرآ الوقت كل ساعة.", "الوقت والساعة",
+    [() => Array.from({ length: 4 }, () => { const h = rI(1, 12), tm = (x, mm) => `<b class="zdg" style="font-size:44px">${AD(x)}:${mm ? "٣٠" : "٠٠"}</b>`, o = shf([[h, 0], [(h % 12) + 1, 0], [h, 1]]); return { say: `كم الساعة الآن؟`, opts: o.map(([x, mm]) => tm(x, mm)), ans: o.findIndex((p) => p[0] === h && p[1] === 0), deco: clk(h, 0) }; }), () => Array.from({ length: 4 }, () => { const h = rI(1, 12), tm = (x, mm) => `<b class="zdg" style="font-size:44px">${AD(x)}:${mm ? "٣٠" : "٠٠"}</b>`, o = shf([[h, 1], [h, 0], [(h % 12) + 1, 1]]); return { say: "كم الساعة الآن؟", opts: o.map(([x, mm]) => tm(x, mm)), ans: o.findIndex((p) => p[0] === h && p[1] === 1), deco: clk(h, 30) }; })]),
+  f_problems: mkA("math", "تحدّي المسائل", "🧮", "#F97316", "نحل مسائل من الحياة", "اسأله: «ماذا عرفنا؟ ماذا نريد؟»", "اخترعا مسألة من يومكما وحلاّها معاً.", "المسائل اللفظية",
+    [() => Array.from({ length: 4 }, () => { const a = rI(3, 9), b = rI(1, a - 1), who = pickN([["سالم", "تفاحات"], ["ليلى", "بالونات"], ["أحمد", "كرات"]], 1)[0]; return Object.assign({ say: `عند ${who[0]} ${NW[a]} ${who[1]} وأعطى ${NW[b]}. كم بقي؟` }, numOpts(a - b)); }), () => Array.from({ length: 4 }, () => { const a = rI(2, 8), b = rI(1, 8), who = pickN([["سالم", "تفاحات"], ["ليلى", "بالونات"], ["أحمد", "كرات"]], 1)[0]; return Object.assign({ say: `عند ${who[0]} ${NW[a]} ${who[1]} وأخذ ${NW[b]} أخرى. كم صار عنده؟` }, numOpts(a + b)); })]),
+  f_letters: mkA("lang", "أبطال الحروف", "🅰️", "#EC4899", "نراجع الحروف وأصواتها", "قل الحرف وكلمة تبدأ به.", "ابحثا عن شيء لكل حرف من حروف اسمه.", "الحروف وأصواتها", ZE.e_letters.v),
+  f_wordfac: mkA("lang", "مصنع الكلمات", "🏭", "#EC4899", "نركّب كلمات من الحروف", "اطلب منه أن يقرأ الكلمة بعد تركيبها.", "كوّنا كلمات من حروف مصنوعة من الورق.", "تكوين الكلمات", ZE.e_wordfac.v),
+  f_read: mkA("lang", "مغامرة القراءة", "📖", "#EC4899", "نقرأ كلمات وجمل قصيرة", "اطلب منه أن يقرأ الكلمة أو الجملة بصوته.", "اقرأ معه يومياً بطاقات كلمات وجملاً قصيرة.", "قراءة الكلمات والجمل",
+    [ZE.e_gardenw.v[0], () => [["القطة تشرب الحليب", "🐱🥛"], ["الولد يلعب بالكرة", "👦⚽"], ["الطائر يطير في السماء", "🐦☁️"], ["أحب أكل التفاح", "😋🍎"]].map((p, _, all) => { const op = shf(pickN(all.filter((x) => x[0] !== p[0]), 2).concat([p])); return { say: "أيّ صورة تناسب الجملة؟", opts: op.map((x) => x[1]), ans: op.indexOf(p), deco: `<div class="ztext">${p[0]}</div>` }; })]),
+  f_catch: mkA("lang", "صائد الكلمات", "🎣", "#EC4899", "نجد الكلمة المناسبة للصورة", "اطلب منه أن يشير إلى الكلمة ويقرأها.", "ألصقا بطاقات كلمات على أشياء في البيت.", "ربط الكلمة بالصورة",
+    [() => pickN(W3.concat(W4), 4).map((w) => { const op = shf(pickN(W3.concat(W4).filter((x) => x[0] !== w[0]), 2).concat([w])); return { say: "أيّ كلمة تناسب الصورة؟", opts: op.map((x) => zw(x[0])), ans: op.indexOf(w), deco: `<div class="zbig" style="font-size:80px">${w[2]}</div>` }; })]),
+  f_sentence: mkA("lang", "قطار الجمل", "🚃", "#EC4899", "نرتّب الكلمات لنكوّن جملة", "اقرأ الجملة بعد ترتيبها وانظر هل هي صحيحة.", "قصّا كلمات جملة وأعيدا ترتيبها.", "تركيب الجمل", [() => pickN(SENT, 4).map((s) => ({ say: "رتّب الكلمات لتكوين جملة", seq: s.map(zw) }))]),
+  f_dict: mkA("lang", "إملاء زوزو", "✏️", "#EC4899", "نكتب الكلمة التي نسمعها", "انطق الكلمة ببطء ودعه يحدد حروفها.", "أمل عليه كلمة قصيرة واتركه يكتبها بالإصبع على الطاولة.", "الإملاء", [() => pickN(W3, 4).map((w) => ({ say: `اكتب كلمة ${w[0]}`, seq: w[1] })), () => pickN(W3.concat(W4), 4).map((w) => ({ say: `اكتب كلمة ${w[0]}`, seq: w[1] }))]),
+  f_riddlew: mkA("lang", "لغز الكلمة", "🕵️", "#EC4899", "نكتشف الكلمة من التلميحات", "اسأله: «ما التلميح الذي ساعدك؟»", "اكتبا لغزاً من تلميحين عن كلمة وتبادلا حلّه.", "التلميحات والكلمات",
+    [() => [["أطير في السماء ولي جناحان", "طائر", ["سمكة", "كلب"]], ["أسبح في الماء ولي زعانف", "سمكة", ["طائر", "جمل"]], ["أعطي الحليب وأقول موووو", "بقرة", ["قطة", "حصان"]], ["أضيء في الليل في السماء", "قمر", ["شمس", "كلب"]]].map(([say, c, w]) => { const op = shf([c, ...w].map(zw)); return { say: say + ". من أنا؟", opts: op, ans: op.findIndex((o) => o.includes(c)) }; })]),
+  f_library: mkA("lang", "مكتبة القصص", "📚", "#EC4899", "نقرأ قصصاً قصيرة ونجيب", "اطلب منه أن يعيد القصة بكلماته.", "اقرأ معه قصة قصيرة يومياً.", "قراءة وفهم", [() => storyRounds(4)]),
+  f_compre: mkA("lang", "مغامرة الفهم", "🧐", "#EC4899", "نجيب عن أسئلة النص", "اسأله: «أين وجدت الإجابة؟»", "اقرأ فقرة قصيرة واسأله ٣ أسئلة.", "فهم المقروء", [() => storyRounds(4), () => storyRounds(4)]),
+  f_writer: mkA("lang", "كاتب المستقبل", "🖋️", "#EC4899", "نكمل القصة بجملنا", "اقرأ القصة التي صنعها واسأله عن بقية الأحداث.", "اطلب منه أن يكتب أو يرسم جملة عن يومه.", "التعبير الكتابي",
+    [() => { const r = [FREE("اختر بطل القصة", [["سالم", "👦"], ["ليلى", "👧"], ["الأرنب", "🐰"]]), FREE("ماذا يريد البطل؟", [["أن يجد كنزاً", "💎"], ["أن يزور صديقاً", "🏡"], ["أن يصل إلى القمر", "🌙"]]), FREE("كيف تنتهي القصة؟", [["فرح كثيراً", "😊"], ["تعلّم شيئاً جديداً", "💡"], ["عاد إلى بيته سالماً", "🏠"]])]; r.fin = (p) => `كان ${p[0]} يريد ${p[1]} وفي النهاية ${p[2]}`; return r; }]),
+  f_lab: mkA("sci", "مختبر العلماء", "🧪", "#3B82F6", "نجري تجارب مبسطة", "اسأله قبل كل تجربة: «ماذا تتوقع؟»", "جرّبا تجربة الطفو في وعاء ماء بإشراف.", "التجارب والملاحظة", [...ZE.e_lab.v, ...ZE.e_what.v]),
+  f_body: mkA("sci", "رحلة جسم الإنسان", "🫀", "#3B82F6", "نتعرّف على أعضاء الجسم ووظائفها", "اسأله: «ماذا يفعل القلب؟»", "ضع يدك على قلبه وتحسّسا النبض بعد القفز.", "جسم الإنسان",
+    [() => qa([["ما وظيفة القلب؟", lab("🫀", "يضخ الدم"), [lab("🍽️", "يهضم الطعام"), lab("👂", "يسمع")]], ["بماذا نتنفس؟", lab("🫁", "بالرئتين"), [lab("🦶", "بالقدمين"), lab("👂", "بالأذنين")]], ["أين يُهضم الطعام؟", lab("🍽️", "في المعدة"), [lab("🫁", "في الرئتين"), lab("🧠", "في الدماغ")]], ["بماذا نفكر؟", lab("🧠", "بالدماغ"), [lab("🦷", "بالأسنان"), lab("🦶", "بالقدمين")]], ["ماذا تحمل العظام؟", lab("🦴", "الجسم"), [lab("🍎", "الطعام"), lab("💧", "الماء")]]], 4)]),
+  f_nature: mkA("sci", "مستكشف الطبيعة", "🌿", "#3B82F6", "نكتشف النباتات والحيوانات والبيئات", "اسأله: «أين يعيش؟ ماذا يأكل؟»", "اخرجا في نزهة وسمّيا ما ترونه من نباتات وحيوانات.", "الطبيعة والحيوانات", [...ZE.e_animals.v, ...ZE.e_nature.v, ...ZE.e_env.v]),
+  f_space: mkA("sci", "عالم الفضاء", "🪐", "#3B82F6", "نعرف الشمس والقمر والكواكب", "اسأله: «ماذا نرى في السماء ليلاً؟ نهاراً؟»", "انظرا إلى القمر ليلاً وارسما شكله.", "الفضاء",
+    [() => qa([["ما النجم الذي يعطينا الضوء والدفء؟", lab("☀️", "الشمس"), [lab("🌙", "القمر"), lab("⭐", "نجمة بعيدة")]], ["ما الذي يدور حول الأرض؟", lab("🌙", "القمر"), [lab("☀️", "الشمس"), lab("🚀", "الصاروخ")]], ["على أيّ كوكب نعيش؟", lab("🌍", "الأرض"), [lab("🪐", "زحل"), lab("🔴", "المريخ")]], ["أيّ كوكب له حلقات؟", lab("🪐", "زحل"), [lab("🌍", "الأرض"), lab("🔴", "المريخ")]], ["متى نرى القمر والنجوم؟", lab("🌙", "في الليل"), [lab("☀️", "في النهار")]]].map((x) => (x[2].length < 2 ? [x[0], x[1], x[2].concat([lab("☁️", "لا نراهما")])] : x)), 4)]),
+  f_weather: mkA("sci", "مختبر الطقس", "⛅", "#3B82F6", "نكتشف حالات الطقس والفصول", "اسأله: «كيف الجو اليوم؟»", "سجّلا الطقس كل يوم برسم صغير.", "الطقس والفصول", [...ZA.a_weather.v, () => qa([["في أيّ فصل تتساقط أوراق الأشجار؟", lab("🍂", "الخريف"), [lab("❄️", "الشتاء"), lab("🌸", "الربيع")]], ["أيّ الفصول أكثر برودة؟", lab("❄️", "الشتاء"), [lab("☀️", "الصيف"), lab("🌸", "الربيع")]], ["أيّ الفصول تتفتح فيه الأزهار؟", lab("🌸", "الربيع"), [lab("❄️", "الشتاء"), lab("🍂", "الخريف")]]], 3)]),
+  f_water: mkA("sci", "رحلة الماء", "💧", "#3B82F6", "نعرف الماء واستخداماته ودورته", "اسأله: «من أين يأتي المطر؟»", "ارسما دورة الماء: بحر، سحابة، مطر.", "الماء ودورته", ZE.e_water.v),
+  f_eco: mkA("sci", "صديق البيئة", "♻️", "#3B82F6", "نحافظ على البيئة ونفرز النفايات", "اسأله: «أين نضع هذا؟ لماذا؟»", "اصنعا ٣ علب للفرز: ورق، بلاستيك، بقايا طعام.", "المحافظة على البيئة",
+    [() => qa([["أين نضع الزجاجة البلاستيكية؟", lab("♻️", "إعادة التدوير"), [lab("🌱", "السماد"), lab("🚰", "الصنبور")]], ["أين نضع الورق القديم؟", lab("♻️", "إعادة التدوير"), [lab("🌱", "السماد"), lab("🔥", "النار")]], ["أين نضع قشر الموز؟", lab("🌱", "السماد"), [lab("♻️", "إعادة التدوير"), lab("🔥", "النار")]], ["كيف نوفّر الماء؟", lab("🚰", "نغلق الصنبور"), [lab("💦", "نتركه مفتوحاً"), lab("🛁", "نملأ الحوض كثيراً")]]], 4)]),
+  f_how: mkA("sci", "كيف يعمل؟", "⚙️", "#3B82F6", "نكتشف كيف تعمل الأشياء اليومية", "اسأله: «كيف تظن أنها تعمل؟»", "ابحثا عن شيء في البيت وتحدّثا عن وظيفته.", "كيف تعمل الأشياء", [() => qa([["ماذا يفعل المفتاح؟", lab("🔑", "يفتح الباب"), [lab("🍽️", "يطبخ الطعام"), lab("🎵", "يغني")]], ["ماذا تفعل الساعة؟", lab("⏰", "تُظهر الوقت"), [lab("🌧️", "تُنزل المطر"), lab("🍎", "تُنبت الفاكهة")]], ["ماذا يفعل المصباح؟", lab("💡", "يضيء"), [lab("🧊", "يجمّد"), lab("🌬️", "ينفخ")]], ["لماذا نستخدم المظلة؟", lab("☂️", "لنحتمي من المطر"), [lab("🍕", "لنأكل"), lab("🎮", "لنلعب")]]], 4)]),
+  f_exp: mkA("sci", "تجارب زوزو", "🔬", "#3B82F6", "نختار عناصر التجربة", "اسأله: «ماذا نحتاج؟ ماذا لاحظت؟»", "ازرعا بذرة في كوب وسجّلا نموها بالرسم.", "التجربة والنتائج",
+    [() => qa([["لنذيب السكر نحتاج", lab("💧", "الماء"), [lab("🪨", "حجراً"), lab("🧱", "طوبة")]], ["لتنمو البذرة نحتاج", lab("💧", "ماءً وضوءاً"), [lab("🧊", "ثلجاً فقط"), lab("🪨", "حجراً")]], ["لنرى هل يطفو الشيء نحتاج", lab("🥣", "وعاء ماء"), [lab("🔥", "ناراً"), lab("🧲", "مغناطيساً")]], ["لنعرف ما يجذبه المغناطيس نحتاج", lab("🧲", "مغناطيساً"), [lab("🥣", "وعاء ماء"), lab("🕯️", "شمعة")]]], 4)]),
+  f_encyc: mkA("sci", "موسوعة الاكتشاف", "📘", "#3B82F6", "معلومات قصيرة وممتعة", "اسأله: «ما أغرب معلومة عرفتها؟»", "ابحثا عن معلومة جديدة في كتاب وشاركاها.", "المعلومات العلمية", [() => qa([["ما أطول حيوان على الأرض؟", lab("🦒", "الزرافة"), [lab("🐘", "الفيل"), lab("🐪", "الجمل")]], ["أيّ حيوان يعيش في البحر ويتنفس الهواء؟", lab("🐋", "الحوت"), [lab("🐟", "السمكة"), lab("🐙", "الأخطبوط")]], ["ما أكبر حيوان بري؟", lab("🐘", "الفيل"), [lab("🦒", "الزرافة"), lab("🐴", "الحصان")]], ["كم رجلاً للعنكبوت؟", lab("🕷️", "ثماني أرجل"), [lab("🕸️", "ست أرجل"), lab("🐞", "أربع أرجل")]]], 4)]),
+  f_maze: mkA("think", "متاهات الأبطال", "🌀", "#8B5CF6", "نصل إلى الهدف", "اسأله: «أيّ طريق أفضل؟»", "ارسما متاهة وتبادلا حلّها.", "إيجاد الطريق", null, "maze"),
+  f_detect: mkA("think", "المحقق زوزو", "🕵️", "#8B5CF6", "نحل الألغاز بالأدلة", "اسأله: «ما الدليل الذي ساعدك؟»", "اختر شيئاً في الغرفة وأعطه ٣ أدلة ليخمّنه.", "الاستنتاج بالأدلة", [...ZE.e_box.v, () => qa([["من أخذ الحليب؟", "🐱", ["🐶", "🐘"], { intro: ["الدليل الأول آثار أقدام صغيرة", "الدليل الثاني ذيل طويل وصوته مياو"] }], ["من أكل الجزرة؟", "🐰", ["🐱", "🐘"], { intro: ["الدليل الأول أذنان طويلتان", "الدليل الثاني يقفز بسرعة"] }], ["من زار الحديقة؟", "🐝", ["🐘", "🐪"], { intro: ["الدليل الأول صوت طنين", "الدليل الثاني يحب الزهور والعسل"] }]], 3)]),
+  f_mem: mkA("think", "ذاكرة العباقرة", "🃏", "#8B5CF6", "نتذكّر الصور والأعداد", "اسأله: «أين رأينا هذه الصورة؟»", "ضعا ٥ أشياء، غطّها، وأخرج واحداً، ودعه يخمّن.", "الذاكرة", null, "mem"),
+  f_pattern: mkA("think", "أكمل النمط", "🔁", "#8B5CF6", "نكتشف القاعدة ونكمل", "اسأله: «ما القاعدة؟»", "ابتكرا نمطاً ببعض الألعاب.", "الأنماط", [...ZE.e_pat.v, ...ZA.a_pat.v]),
+  f_diff: mkA("think", "تحدّي الاختلاف", "🔍", "#8B5CF6", "نكتشف الاختلافات", "اسأله: «ما الفرق؟»", "ابحثا عن ٣ اختلافات بين شيئين متشابهين.", "ملاحظة التفاصيل", ZE.e_diff.v),
+  f_order: mkA("think", "ترتيب الأحداث", "🔢", "#8B5CF6", "نرتّب الأحداث منطقياً", "اسأله: «ماذا حدث أولاً؟»", "رتّبا بطاقات صور لقصة قصيرة.", "ترتيب الأحداث", ZE.e_order.v),
+  f_blocks: mkA("think", "مكعبات البناء", "🧱", "#8B5CF6", "نبني حسب النموذج", "اسأله: «كم مكعباً نحتاج؟»", "ابنيا برجاً من ٦ مكعبات وعدّاها.", "البناء والعدّ",
+    [() => Array.from({ length: 4 }, () => { const n = rI(2, 8); return Object.assign({ say: "كم مكعباً في البرج؟", deco: `<div class="zgrp" style="font-size:34px;line-height:1.1">${Array.from({ length: n }, () => "🟫").join(" ")}</div>` }, numOpts(n)); })]),
+  f_puzzle: mkA("think", "لغز القطع", "🧩", "#8B5CF6", "نركّب الصور والأشكال", "اسأله: «أيّ قطعة تناسب؟»", "قصّا صورة إلى قطع وركّباها.", "التركيب", ZE.e_part.v),
+  f_plan: mkA("think", "خطط طريقك", "🗺️", "#8B5CF6", "نختار المسار المناسب", "اسأله: «ما خطتك؟»", "خطّطا معاً لنزهة: ماذا نأخذ؟ وبماذا نبدأ؟", "التخطيط", [() => pickN([["رتّب خطة الذهاب إلى المدرسة", ["🎒", "🚌", "🏫"]], ["رتّب خطة نزهة", ["🧺", "🚗", "🌳"]], ["رتّب خطة زراعة نبتة", ["🌰", "💧", "🌱"]], ["رتّب خطة صنع كوب شاي", ["💧", "🫖", "🍵"]]], 4).map((a) => ({ say: a[0], seq: a[1] }))]),
+  f_rules: mkA("think", "تحدّي القواعد", "📜", "#8B5CF6", "نطبّق القاعدة وهي تتغيّر", "اسأله: «ما القاعدة الآن؟»", "العبا لعبة قواعد: «اقفز عند سماع كلمة القطة».", "المرونة وتطبيق القواعد",
+    [() => { const C = [["الأحمر", "🟥"], ["الأزرق", "🟦"], ["الأخضر", "🟩"]], rs = []; for (let i = 0; i < 2; i++) { const t = C[rI(0, 2)], op = shf(C.map((c) => c[1])); rs.push({ say: `اختر ${t[0]}`, opts: op, ans: op.indexOf(t[1]) }); } for (let i = 0; i < 2; i++) { const sh = pickN(SHPS.slice(0, 4), 3), t = sh[0], op = shf(sh); rs.push({ say: `القاعدة تغيّرت. اختر ال${t[0]}`, opts: op.map((x) => svgS(x[0], "#8B5CF6", 70)), ans: op.indexOf(t) }); } return rs; }]),
+  f_maker: mkA("story", "صانع القصص", "✍️", "#14B8A6", "نصنع قصة من شخصيات وأماكن وأحداث", "اسأله: «ماذا يحدث بعد ذلك؟»", "اخترعا قصة من ٣ جمل ثم ارسماها.", "الخيال والتعبير", ZE.e_maker.v),
+  f_heroes: mkA("story", "مغامرات الأبطال", "🦸", "#14B8A6", "نساعد الشخصيات", "اسأله: «كيف نساعدها؟»", "اسأله كيف يساعد صديقاً في موقف حقيقي.", "التعاون وحل المشكلات", ZE.e_chars.v),
+  f_end: mkA("story", "اختر النهاية", "🔮", "#14B8A6", "نختار نهاية مناسبة", "اسأله: «لماذا هذه النهاية؟»", "توقفا في منتصف قصة وتخيّلا النهاية.", "التنبؤ", ZE.e_next.v),
+  f_theater: mkA("story", "مسرح زوزو", "🎭", "#14B8A6", "نصنع مشاهد بالشخصيات والأصوات", "اطلب منه أن يقلّد الصوت.", "مثّلا مشهداً بدمى.", "التعبير والتمثيل", ZE.e_theater.v),
+  f_writer2: mkA("story", "كاتب المغامرات", "📝", "#14B8A6", "نكمل قصة قصيرة", "اقرأ له القصة الناتجة وأضيفا جملة.", "اكتبا معاً نهاية قصة.", "الكتابة الإبداعية",
+    [() => { const r = [FREE("أين تبدأ المغامرة؟", [["في الغابة", "🌳"], ["في البحر", "🌊"], ["في الفضاء", "🚀"]]), FREE("من ترافق البطل؟", [["صديق", "🤝"], ["حيوان صغير", "🐾"], ["روبوت", "🤖"]]), FREE("ماذا يجدون؟", [["كنزاً", "💎"], ["خريطة", "🗺️"], ["مفتاحاً سحرياً", "🔑"]])]; r.fin = (p) => `بدأت المغامرة ${p[0]} مع ${p[1]} ووجدوا ${p[2]}`; return r; }]),
+  f_city: mkA("story", "مدينة الخيال", "🌈", "#14B8A6", "نبني عالمنا الخاص", "اسأله: «ماذا في مدينتك؟»", "ارسما مدينة خيالية وسمّيا أماكنها.", "الخيال", ZE.e_imag.v),
+  f_decide: mkA("story", "قصص القرار", "🧭", "#14B8A6", "قراراتنا تغيّر القصة", "اسأله: «ماذا لو اخترت غير ذلك؟»", "اقرآ قصة وتوقفا عند القرار.", "القرار والنتيجة", ZE.e_decide.v),
+  f_libadv: mkA("story", "مكتبة المغامرات", "📕", "#14B8A6", "قصص تفاعلية جديدة", "اسأله: «ماذا اخترت؟ وماذا حدث؟»", "اقرآ قصة تفاعلية معاً.", "القصص التفاعلية",
+    [() => [Object.assign(FREE("زوزو وجد باباً سحرياً. ماذا يفعل؟", [["يفتحه", "🚪"], ["ينادي صديقاً", "📣"]]), { out: ["رأى زوزو حديقة مليئة بالزهور", "جاء الصديق وفتحا الباب معاً"] }), Object.assign(FREE("في الحديقة طريقان. أيّهما يختار؟", [["الطريق الطويل", "🛤️"], ["الطريق القصير", "➡️"]]), { out: ["رأى زوزو فراشات كثيرة", "وصل زوزو بسرعة إلى النهر"] }), Object.assign(FREE("وجد زوزو نهراً. ماذا يفعل؟", [["يبني جسراً", "🌉"], ["يبحث عن قارب", "⛵"]]), { out: ["بنى زوزو جسراً وعبر سالماً", "وجد زوزو قارباً وعبر النهر"] })]]),
+  f_eng: mkA("skill", "مهندس زوزو", "👷", "#F59E0B", "نبني الجسور والمنازل والمدن", "اسأله: «لماذا نضع الكبيرة في الأسفل؟»", "ابنيا برجاً أو جسراً بمكعبات آمنة.", "البناء والهندسة", ZE.e_eng.v),
+  f_jobs: mkA("skill", "مدينة المهن", "👩‍⚕️", "#F59E0B", "نكتشف المهن وأدواتها وأدوارها", "اسأله: «ماذا تريد أن تصبح؟»", "العبا دور مهنة بأدوات لعبة.", "المهن", ZE.e_jobs.v),
+  f_friends: mkA("skill", "أصدقاء زوزو", "🤝", "#F59E0B", "نتعاون ونساعد", "اسأله: «كيف نساعد صديقنا؟»", "ابنيا شيئاً معاً بالتعاون.", "التعاون", ZE.e_friends.v),
+  f_feel: mkA("skill", "عالم المشاعر", "😊", "#F59E0B", "نفهم المشاعر والمواقف الاجتماعية", "اسأله: «متى تشعر هكذا؟»", "تحدّثا عن مشاعر اليوم.", "المشاعر", ZE.e_feel.v),
+  f_cook: mkA("skill", "مطبخ زوزو", "🍳", "#F59E0B", "نرتّب المكونات ونعدّ الوصفات", "اسأله: «ماذا نفعل أولاً؟»", "حضّرا وجبة بسيطة بإشراف.", "ترتيب الخطوات", ZE.e_cook.v),
+  f_org: mkA("skill", "منظّم الأبطال", "🗓️", "#F59E0B", "نرتّب المهام حسب الأولوية", "اسأله: «ماذا نفعل أولاً ولماذا؟»", "اصنعا جدولاً صغيراً لمهام الصباح.", "التنظيم والأولويات", [() => pickN([["رتّب مهام الصباح", ["🛏️", "🪥", "🎒"]], ["رتّب ما نفعله قبل النوم", ["🍽️", "🪥", "🛌"]], ["رتّب ما نفعله قبل اللعب", ["📚", "🧹", "⚽"]], ["رتّب الخروج من البيت", ["👟", "🎒", "🚪"]]], 4).map((a) => ({ say: a[0], seq: a[1] }))]),
+  f_orch: mkA("skill", "أوركسترا زوزو", "🥁", "#F59E0B", "نكتشف الإيقاعات والأصوات", "اطلب منه أن يصفّق بإيقاع.", "ابتكرا إيقاعاً بالتصفيق.", "الإيقاع والصوت", ZE.e_orch.v),
+  f_world: mkA("skill", "رحلة حول العالم", "🌍", "#F59E0B", "نكتشف الأماكن والطبيعة", "اسأله: «أين تحب أن تسافر؟»", "شاهدا صوراً لأماكن مختلفة.", "الأماكن والطبيعة", ZE.e_world.v),
+  f_life: mkA("skill", "مواقف الحياة", "🚦", "#F59E0B", "نختار التصرف المناسب", "اسأله: «لماذا هذا التصرف مناسب؟»", "تحدّثا عن موقف من يومه وماذا يمكن أن يفعل.", "التصرف في المواقف",
+    [() => qa([["نريد عبور الشارع. ماذا نفعل؟", lab("🧑‍🤝‍🧑", "نمسك يد الكبير وننظر"), [lab("🏃", "نركض"), lab("🙈", "نغمض أعيننا")]], ["ضاع منك أهلك في السوق. ماذا تفعل؟", lab("🙋", "أطلب مساعدة العامل"), [lab("🚶", "أمشي بعيداً"), lab("😭", "أبكي فقط")]], ["أنت جائع قبل الغداء. ماذا تفعل؟", lab("🗣️", "أطلب بهدوء"), [lab("😠", "أصرخ"), lab("🙈", "أختبئ")]], ["أخطأت وكسرت كوباً. ماذا تفعل؟", lab("🗣️", "أخبر أمي"), [lab("🙈", "أخبّئه"), lab("🏃", "أهرب")]]], 4)]),
+  f_art: mkA("skill", "أكاديمية الإبداع", "🎨", "#F59E0B", "نرسم ونصمّم", "اطلب منه أن يصف ما رسمه.", "ارسما معاً رسمة بالألوان وسمّيا ألوانها.", "الإبداع الفني",
+    [() => { const r = [FREE("اختر الشكل", [["دائرة", "⚪"], ["مربعاً", "⬜"], ["مثلثاً", "🔺"]]), FREE("اختر اللون", [["حمراء", "🔴"], ["زرقاء", "🔵"], ["صفراء", "🟡"]]), FREE("اختر الزينة", [["نجوماً", "⭐"], ["زهوراً", "🌸"], ["قلوباً", "💛"]])]; r.fin = (p) => `رسمت ${p[0]} ${p[1]} وزيّنتها بـ${p[2]}`; return r; }])
+};
+const F6KEYS = Object.keys(ZF); window.__ZF = ZF;
+for (const [k, v] of Object.entries(ZF)) { v.sec = "a6"; ZC[k] = v; ZU[k] = v; }
+
+const REG6 = [["math", "عالم الرياضيات", "🧮", "#F97316"], ["lang", "عالم اللغة والقراءة", "📚", "#EC4899"], ["sci", "مختبر العلوم", "🔬", "#3B82F6"], ["think", "مدينة التفكير", "🧠", "#8B5CF6"], ["story", "مملكة القصص", "🏰", "#14B8A6"], ["skill", "أكاديمية المهارات", "🛠️", "#F59E0B"]];
+const LV6 = ["", "مراجعة المفاهيم الأساسية", "تطبيق المهارات", "تحديات متعددة الخطوات", "حل المشكلات", "تحديات متقدمة"];
+const ZREAL6 = [["متجر البيت", "العبا بائعاً ومشترياً بنقود لعبة وأسعار على الأشياء، وحسبا المجموع والباقي."], ["مسألة من يومنا", "اخترعا مسألة جمع أو طرح من أشياء حقيقية في البيت وحلّاها معاً."], ["قراءة بطاقات", "اكتبا ٥ كلمات على بطاقات واقرآها، ثم كوّنا منها جملة."], ["إملاء ممتع", "أمل عليه ٣ كلمات قصيرة واتركه يكتبها، ثم صحّحاها معاً بهدوء."], ["ساعة الجدار", "اقرآ ساعة الجدار معاً في ٣ أوقات من اليوم."], ["تجربة الطفو", "جرّبا في وعاء ماء ما يطفو وما يغرق، وسجّلا النتائج برسم (بإشراف)."], ["زراعة بذرة", "ازرعا بذرة في كوب وسجّلا نموها كل يومين بالرسم."], ["قصة من ٤ جمل", "اخترعا قصة من ٤ جمل ثم ارسماها أو مثّلاها."], ["هندسة المكعبات", "ابنيا جسراً أو برجاً بمكعبات آمنة، وتحدّثا عن سبب ثباته."], ["خريطة البيت", "ارسما خريطة بسيطة للبيت وضعا عليها علامة على كنز صغير."], ["فرز النفايات", "جهّزا ٣ علب للفرز (ورق وبلاستيك وبقايا طعام) وصنّفا معاً."], ["وصفة بسيطة", "حضّرا وجبة بسيطة بإشراف وقرآ خطواتها بالترتيب."], ["إيقاع وتصفيق", "ابتكرا إيقاعاً بالتصفيق وتبادلا تقليده."], ["لعبة القواعد", "العبا لعبة قواعد، مثلاً اقفز عند سماع كلمة معيّنة، ثم غيّرا القاعدة."], ["مشاعر اليوم", "تحدّثا عن شعور مرّ به اليوم وماذا فعل حياله."], ["قياس بالشبر", "قيسا أطوال أشياء بالشبر ثم بالمسطرة وقارنا."]];
+const ZSTORY6 = [
+  { t: "زوزو يبني مدينة", e: "🏙️", s: ["وجد زوزو أرضاً واسعة فارغة.", "قال زوزو سأبني هنا مدينة جميلة.", "رسم خطة وعدّ البيوت التي يحتاجها.", "بنى المدرسة والحديقة والمستشفى.", "ثم رتّب الطرق حتى يصل الجميع بسهولة.", "فرح الأهالي وشكروا زوزو."] },
+  { t: "سرّ المختبر", e: "🔬", s: ["دخل زوزو مختبر العلماء الصغار.", "وجد ثلاثة أكواب فيها ماء وسكر وملح.", "سأل زوزو نفسه ماذا سيحدث إذا خلطتها.", "جرّب وراقب بعناية وسجّل ما رآه.", "عرف أن السكر والملح يذوبان في الماء.", "ابتسم زوزو لأنه صار عالماً حقيقياً."] },
+  { t: "رحلة إلى الفضاء", e: "🚀", s: ["جهّز زوزو صاروخه الصغير.", "عدّ زوزو من عشرة إلى واحد.", "انطلق الصاروخ بين النجوم.", "رأى زوزو القمر قريباً ورأى الأرض زرقاء.", "هبط زوزو ببطء وهو سعيد.", "وعد زوزو أنه سيتعلّم أكثر عن الفضاء."] },
+  { t: "لغز الكنز", e: "🗺️", s: ["وجد زوزو ورقة فيها لغز.", "قال اللغز أنا في الحديقة وأنا طويل وأعطي الظل.", "فكّر زوزو وعرف أنها الشجرة.", "ذهب إلى الشجرة ووجد صندوقاً صغيراً.", "فيه كتاب جميل وخريطة جديدة.", "قرر زوزو أن يقرأ الكتاب مع أصدقائه."] },
+  { t: "زوزو والصديق الحزين", e: "🤝", s: ["رأى زوزو صديقه جالساً وحده.", "كان الصديق حزيناً لأن لعبته انكسرت.", "جلس زوزو بجانبه واستمع إليه.", "ثم أخذا اللعبة وحاولا إصلاحها معاً.", "عادت الابتسامة إلى وجه الصديق.", "عرف زوزو أن المساعدة تجعل الجميع سعداء."] },
+  { t: "حديقة العلوم", e: "🌱", s: ["زرع زوزو بذرة صغيرة في كوب.", "كان يسقيها كل يوم قليلاً من الماء.", "وضعها في مكان فيه ضوء.", "بعد أيام ظهرت ورقة خضراء صغيرة.", "رسم زوزو النبتة وكتب ما لاحظه.", "عرف أن النبتة تحتاج ماء وضوءاً وصبراً."] }
+];
+const dailyOf = () => [["f_problems", "حل ٣ مسائل رياضية"], ["f_read", "قراءة كلمات محددة"], ["f_detect", "حل لغز منطقي"], ["f_order", "ترتيب أحداث قصة"], ["f_pattern", "اكتشاف نمط"], ["f_exp", "تجربة علمية افتراضية"], ["f_heroes", "مهمة داخل عالم زوزو"]][new Date().getDay()];
+const H6ADV = {
+  adv6_city: { t: "بناء مدينة زوزو", e: "🏙️", badge: "مهندس المدينة", intro: "زوزو يريد بناء مدينة جميلة وأنت مهندسه", real: "ابنيا مدينة صغيرة من علب فارغة آمنة ومكعبات، وسمّيا أماكنها.", talk: "اسأله: «ماذا بنينا أولاً؟ ولماذا؟»", sk: "مغامرة من ٨ مراحل",
+    ch: [{ s: "اكتشاف المدينة ومشكلتها. وصل زوزو إلى أرض فارغة", r: { say: "ما مشكلة هذه الأرض؟", opts: [lab("🏜️", "لا توجد بيوت"), lab("🌊", "فيها بحر"), lab("🔥", "فيها نار")], ans: 0 } }, { s: "نخطط أماكن المباني", g: "f_plan", n: 1 }, { s: "نحسب عدد المنازل المطلوبة", g: "f_problems", n: 2 }, { s: "نختار الأشكال الهندسية المناسبة", g: "f_shapes", n: 1 }, { s: "نحل لغزاً لنفتح منطقة جديدة", g: "f_pattern", n: 1 }, { s: "نبني المدرسة والحديقة والمستشفى", r: Object.assign(FREE("ماذا نبني أولاً؟", [["المدرسة", "🏫"], ["الحديقة", "🌳"], ["المستشفى", "🏥"]]), { out: ["بنى زوزو مدرسة كبيرة للأطفال", "بنى زوزو حديقة جميلة للعب", "بنى زوزو مستشفى لرعاية الناس"] }) }, { s: "ننظم الطرق والمرافق", g: "f_org", n: 1 }, { s: "نكمل المدينة ونحصل على المكافأة", r: Object.assign(FREE("ماذا نسمّي مدينتنا؟", [["مدينة النجوم", "⭐"], ["مدينة الورود", "🌸"], ["مدينة الأصدقاء", "🤝"]]), { out: ["أحسنت اسم جميل لمدينة النجوم", "أحسنت اسم جميل لمدينة الورود", "أحسنت اسم جميل لمدينة الأصدقاء"] }) }] },
+  adv6_space: { t: "محطة الفضاء", e: "🛸", badge: "بطل العلوم", intro: "زوزو يحتاج مساعدتك في محطة الفضاء", real: "انظرا إلى القمر ليلاً وارسما شكله، ثم تحدّثا عن الشمس والأرض.", talk: "اسأله: «ماذا رأى زوزو في رحلته؟»", sk: "مغامرة من ٨ مراحل",
+    ch: [{ s: "وصل زوزو إلى محطة الفضاء. ماذا يوجد حولنا؟", g: "f_space", n: 1 }, { s: "نحسب وقود الصاروخ", g: "f_ops", n: 2 }, { s: "نقرأ الساعة قبل الإقلاع", g: "f_clock", n: 1 }, { s: "نكمل نمط أضواء المحطة", g: "f_pat", n: 1 }, { s: "نحل لغز الصندوق الغامض", g: "f_riddlew", n: 1 }, { s: "نرتّب مهام رواد الفضاء", g: "f_org", n: 1 }, { s: "نعرف أجزاء جسم الإنسان", g: "f_body", n: 1 }, { s: "نهبط ونحصل على المكافأة", r: Object.assign(FREE("ماذا نفعل بعد الهبوط؟", [["نكتب ما رأيناه", "📝"], ["نرسم الفضاء", "🎨"]]), { out: ["كتب زوزو أجمل ما رأى", "رسم زوزو النجوم والكواكب"] }) }] },
+  adv6_lab: { t: "مختبر زوزو السري", e: "⚗️", badge: "العالم الصغير", intro: "العالم الصغير زوزو يحتاج مساعدك في التجارب", real: "جرّبا تجربة بسيطة بإشراف مثل الطفو أو الذوبان وسجّلا ما لاحظتما.", talk: "اسأله: «ماذا توقعت؟ وماذا حدث فعلاً؟»", sk: "مغامرة من ٨ مراحل",
+    ch: [{ s: "ندخل المختبر ونعرف الأدوات", g: "f_lab", n: 1 }, { s: "نختار عناصر التجربة", g: "f_exp", n: 1 }, { s: "نتعرّف على الماء ودورته", g: "f_water", n: 1 }, { s: "نحسب نتائج التجربة", g: "f_problems", n: 1 }, { s: "نقرأ تقرير التجربة", g: "f_compre", n: 1 }, { s: "نحافظ على البيئة بعد التجربة", g: "f_eco", n: 1 }, { s: "نكتشف كيف تعمل الأشياء", g: "f_how", n: 1 }, { s: "نكتب خلاصة التجربة ونحصل على المكافأة", r: Object.assign(FREE("ماذا اكتشفنا؟", [["أن الماء مهم", "💧"], ["أن التجربة ممتعة", "🔬"]]), { out: ["نعم الماء مهم لكل الكائنات", "نعم التجربة تعلّمنا الكثير"] }) }] },
+  adv6_island: { t: "جزيرة الكنز", e: "🏝️", badge: "المحقق الذكي", intro: "المحقق زوزو يبحث عن كنز في الجزيرة", real: "اخفيا كنزاً صغيراً في البيت واكتبا له ٣ أدلة ليجده.", talk: "اسأله: «أيّ دليل ساعدك أكثر؟»", sk: "مغامرة من ٨ مراحل",
+    ch: [{ s: "وجد زوزو خريطة الكنز", g: "f_plan", n: 1 }, { s: "نقرأ الدليل الأول", g: "f_read", n: 1 }, { s: "نحل لغز الكلمة", g: "f_riddlew", n: 1 }, { s: "نعدّ مفاتيح الكنز", g: "f_treasure", n: 2 }, { s: "نبني الجسر بالمكعبات", g: "f_blocks", n: 1 }, { s: "نكتشف الاختلاف الذي يدلنا", g: "f_diff", n: 1 }, { s: "نرتّب أحداث الرحلة", g: "f_order", n: 1 }, { s: "نفتح الصندوق ونحصل على المكافأة", r: Object.assign(FREE("ماذا نجد في الصندوق؟", [["كتاباً", "📖"], ["خريطة جديدة", "🗺️"], ["نجمة ذهبية", "🌟"]]), { out: ["وجد زوزو كتاباً جميلاً", "وجد زوزو خريطة لجزيرة جديدة", "وجد زوزو نجمة ذهبية لامعة"] }) }] }
+};
+const H6K = Object.keys(H6ADV);
+for (const [k, a] of Object.entries(H6ADV)) { const o = { sec: "a6", t: a.t, e: a.e, c: ["#5B34D6", "#3B82F6"], intro: a.intro, par: "هذه مغامرة من ٨ مراحل مترابطة تجمع الرياضيات واللغة والتفكير والعلوم والخيال. شجّع طفلك ولا تستعجله، وله أن يعيدها متى شاء.", talk: a.talk, real: a.real, sk: a.sk, badge: a.badge, ch: a.ch, v: [] }; ZC[k] = o; ZU[k] = o; }
+const adv6Key = () => H6K[Math.floor(weekStart().getTime() / 6048e5) % H6K.length];
+const F6BADGES = [["math", "بطل الرياضيات", "🧮"], ["lang", "قارئ زوزو", "📖"], ["sci", "العالم الصغير", "🔬"], ["think", "المحقق الذكي", "🕵️"], ["story", "صانع القصص", "✍️"], ["adv6_city", "مهندس المدينة", "🏙️"], ["sci8", "بطل العلوم", "🧪"], ["all", "مستكشف العالم", "🌍"]];
+const ZACC6 = ["🎩", "👑", "🕶️", "🎀", "🧣", "🎒", "⭐", "🏅"];
+const ZAREA6 = [["جزيرة الكنز", "🏝️", 8], ["بركان العلماء", "🌋", 18], ["محطة النجوم", "🛸", 30]];
+const f6log = () => (S.zl || []).filter((x) => ZU[x.k] && ZU[x.k].sec === "a6");
+const f6done = () => [...new Set(f6log().map((x) => x.k))];
+const e6lv = (k) => Math.min(5, 1 + (S.zl || []).filter((x) => x.k === k).length);
+const f6badges = () => { const d = f6done(), c = (r) => d.filter((k) => ZU[k].reg === r).length; return F6BADGES.map(([r, n, e]) => ({ n, e, ok: r.startsWith("adv6_") ? d.includes(r) : r === "sci8" ? c("sci") >= 8 : r === "all" ? d.length >= 20 : c(r) >= 3, need: r.startsWith("adv6_") ? "أنجز مغامرة بناء المدينة" : r === "sci8" ? "٨ ألعاب من مختبر العلوم" : r === "all" ? "٢٠ لعبة مختلفة" : "٣ ألعاب من المنطقة" })); };
+function heroHome() {
+  SCR++; stopVoice(); HOLD = false; ZLSEL = null; ZSB = null;
+  if (!ZT || Date.now() - ZTL > 30 * 60e3) ZT = Date.now(); ZTL = Date.now();
+  const d = f6done(), wk = adv6Key(), w = ZU[wk], wdone = f6log().some((x) => x.k === wk && x.t >= weekStart().getTime()), dl = dailyOf(), ddone = f6log().some((x) => x.k === dl[0] && x.d === dayKey());
+  app.innerHTML = `${topBar()}
+  <div class="stage" style="justify-content:flex-start;gap:12px">
+    <div class="sch" style="background:linear-gradient(135deg,#5B34D6,#3B82F6)"><button class="zchar" id="zzc" aria-label="زوزو">${S.zch || "🐥"}${S.zac || ""}</button><div><h1>أبطال زوزو</h1><small id="zsay">اضغط على زوزو ليتكلّم · ${F6KEYS.length} لعبة في ٦ مناطق · ٦ سنوات</small></div></div>
+    ${zBreak()}
+    <button class="feat" id="zdc"><span class="nw">${ddone ? "أنجزته اليوم ✅" : "تحدّي اليوم"}</span><b>${ZU[dl[0]].e}</b><span>${dl[1]}<small>مهمة قصيرة · نقاط إنجاز</small></span></button>
+    <button class="feat" id="zwa"><span class="nw">${wdone ? "أنجزتها هذا الأسبوع 🎖️" : "مغامرة الأسبوع"}</span><b>${w.e}</b><span>${w.t}<small>٨ مراحل تجمع الرياضيات واللغة والتفكير والعلوم · شارة «${w.badge}»</small></span></button>
+    <div class="sec">خريطة عالم الأبطال</div>
+    <div class="games">${REG6.map((r) => { const ks = F6KEYS.filter((k) => ZU[k].reg === r[0]), dn = ks.filter((k) => d.includes(k)).length; return `<button class="gm" data-r="${r[0]}" style="background:${r[3]}22"><b>${r[2]}</b>${r[1]}<small>${dn}/${ks.length} ألعاب</small></button>`; }).join("")}<button class="gm" data-r="adv"><b>🎖️</b>كل المغامرات<small>${H6K.filter((k) => d.includes(k)).length}/${H6K.length} مغامرات</small></button></div>
+    <div class="rw"><button class="rb" id="ept"><b>📊</b>متابعة التقدّم<small>ما جرّبه طفلك</small></button><button class="rb" id="epz"><b>🏆</b>الجوائز<small>${f6badges().filter((x) => x.ok).length}/${F6BADGES.length} شارات</small></button><button class="rb" id="elb"><b>📚</b>مكتبة القصص<small>${ZSTORY6.length} قصص</small></button></div>
+    <div class="rw" style="grid-template-columns:repeat(3,1fr)"><button class="rb" id="zw"><b>🏠</b>الأنشطة المنزلية<small>قابلة للطباعة</small></button><button class="rb" id="zg"><b>👨‍👩‍👧</b>دليل ولي الأمر<small>اللعب الموجّه</small></button><button class="rb" id="zl"><b>📒</b>سجل الأسرة<small>${f6log().length ? f6log().length + " نشاط" : "ابدأوا اليوم"}</small></button></div>
+    <button class="btn ghost" id="chg" style="min-width:0">🔁 تغيير القسم</button>
+    <button class="quick" id="par" style="margin-top:2px">👨‍👩‍👧 لولي الأمر · تقرير التقدّم</button></div>`;
+  bindToggles(); $("#back").onclick = secPick; $("#chg").onclick = secPick; $("#par").onclick = gate;
+  $("#zwa").onclick = () => zRun(wk); $("#zdc").onclick = () => zRun(dl[0]); $("#zw").onclick = zWeek; $("#zl").onclick = zLog; $("#zg").onclick = zGuide; $("#ept").onclick = heroPanel; $("#epz").onclick = heroPrizes; $("#elb").onclick = heroLib;
+  $("#zzc").onclick = () => { const L = ["أنا زوزو! هيا نكن أبطالاً معاً", "ماذا نتعلّم اليوم؟", "أنت تفكّر بطريقة رائعة", "أحب أن ألعب وأتعلّم معك"], t = L[rI(0, 3)]; $("#zsay").textContent = t; $("#zzc").classList.remove("zb"); void $("#zzc").offsetWidth; $("#zzc").classList.add("zb"); speakGirl(t); };
+  app.querySelectorAll("[data-r]").forEach((b) => b.onclick = () => advRegion(b.dataset.r));
+}
+function heroPanel() {
+  SCR++; stopVoice(); const L = f6log(), d = f6done(), sk = [...new Set(d.map((k) => ZU[k].sk))], tot = F6KEYS.length, last = {}; L.forEach((x) => { last[x.k] = x; });
+  const rev = Object.keys(last).filter((k) => (last[k].m || 0) >= 3 && !ZU[k].ch), sug = ZREAL6[(L.length + rI(0, 15)) % ZREAL6.length];
+  app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:10px;justify-content:flex-start">
+    <div class="sch" style="background:linear-gradient(135deg,#0EA5E9,#0369A1)"><b>📊</b><div><h1>متابعة التقدّم</h1><small>${zNm()} · داخل المنصة فقط</small></div></div>
+    <div class="zpar"><b>ملخّص مبسّط</b>${d.length ? `لعب ${zNm()} ${d.length} لعبة من ${tot}، وأنجز ${L.length} نشاطاً مع ولي أمره، وحصل على ${f6badges().filter((x) => x.ok).length} شارات.` : "لم يبدأ بعد. ابدأوا بتحدّي اليوم أو بمغامرة الأسبوع."}</div>
+    ${REG6.map((r) => { const ks = F6KEYS.filter((k) => ZU[k].reg === r[0]), n = ks.filter((k) => d.includes(k)).length; return `<div class="zstep"><b>${r[2]}</b><span><i>${r[1]}</i><span class="zbar"><i style="width:${Math.round(n / ks.length * 100)}%"></i></span>${n} من ${ks.length} ألعاب</span></div>`; }).join("")}
+    ${d.length ? `<div class="zpar"><b>الألعاب التي لعبها</b>${d.map((k) => ZU[k].e + " " + ZU[k].t).join(" · ")}</div>` : ""}
+    ${sk.length ? `<div class="zpar"><b>المهارات التي مارسها</b>${sk.join(" · ")}</div>` : ""}
+    ${f6badges().some((x) => x.ok) ? `<div class="zpar"><b>الإنجازات</b>${f6badges().filter((x) => x.ok).map((x) => x.e + " " + x.n).join(" · ")}</div>` : ""}
+    ${rev.length ? `<div class="zpar"><b>ألعاب يُفضَّل أن يعيدها للتدرّب</b>${rev.map((k) => ZU[k].e + " " + ZU[k].t).join(" · ")}<br><small>هذه ألعاب كثرت فيها المحاولات الخاطئة. أعيدوها معاً بلطف، فالتكرار جزء من التعلّم.</small></div>` : ""}
+    <div class="zpar"><b>🏠 اقتراح نشاط منزلي</b>${sug[0]}: ${sug[1]}</div>
+    <div class="zpar"><small>هذه معلومات عن نشاط الطفل داخل المنصة فقط، وليست تشخيصاً تعليمياً أو نفسياً.</small></div></div>`;
+  zTop(heroHome);
+}
+function heroPrizes() {
+  SCR++; stopVoice(); const d = f6done(), n = f6log().length, B = f6badges(), nc = Math.min(ZCHARS.length, 1 + Math.floor(n / 4)), na = Math.min(ZACC6.length, Math.floor(n / 3)), cur = S.zch || "🐥";
+  app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:10px;justify-content:flex-start">
+    <div class="sch" style="background:linear-gradient(135deg,#F59E0B,#B45309)"><b>🏆</b><div><h1>جوائزي</h1><small>تأتي من الإنجاز والتعلّم لا من السرعة</small></div></div>
+    <div class="zpar" style="text-align:center"><b style="font-size:48px">${cur}${S.zac || ""}</b>زوزو الذي اخترته</div>
+    <div class="sec">الشارات والأوسمة</div><div class="zbadges">${B.map((b) => `<div class="zbd ${b.ok ? "on" : ""}"><b>${b.ok ? b.e : "🔒"}</b><small>${b.ok ? b.n : b.need}</small></div>`).join("")}</div>
+    <div class="sec">شخصيات زوزو الجديدة</div><div class="zstk">${ZCHARS.map((c, i) => `<i class="${i < nc ? "on" : ""}" ${i < nc ? `data-ch="${c}"` : ""}>${i < nc ? c : "🔒"}</i>`).join("")}</div>
+    <div class="sec">ملابس وإكسسوارات</div><div class="zstk">${ZACC6.map((c, i) => `<i class="${i < na ? "on" : ""}" ${i < na ? `data-ac="${c}"` : ""}>${i < na ? c : "🔒"}</i>`).join("")}${na ? `<i class="on" data-ac="">✖️</i>` : ""}</div>
+    <div class="sec">مقتنيات المغامرات</div><div class="zstk">${H6K.map((k) => `<i class="${d.includes(k) ? "on" : ""}">${d.includes(k) ? ZU[k].e : "🔒"}</i>`).join("")}</div>
+    <div class="sec">ملصقاتي (${d.filter((k) => F6KEYS.includes(k)).length}/${F6KEYS.length})</div><div class="zstk">${F6KEYS.map((k) => `<i class="${d.includes(k) ? "on" : ""}">${d.includes(k) ? ZU[k].e : "⬜"}</i>`).join("")}</div>
+    <div class="sec">مناطق إضافية</div><div class="zstk">${ZAREA6.map((a) => `<i class="${d.length >= a[2] ? "on" : ""}" title="${a[0]}">${d.length >= a[2] ? a[1] : "🔒"}</i>`).join("")}</div>
+    <div class="zpar"><small>المناطق الإضافية تُفتح بعدد الألعاب المختلفة التي ألعبها (٨ ثم ١٨ ثم ٣٠).</small></div></div>`;
+  zTop(heroHome);
+  app.querySelectorAll("[data-ch]").forEach((b) => b.onclick = () => { S.zch = b.dataset.ch; save(); sfx.ok(); heroPrizes(); });
+  app.querySelectorAll("[data-ac]").forEach((b) => b.onclick = () => { S.zac = b.dataset.ac; save(); sfx.ok(); heroPrizes(); });
+}
+function heroLib() {
+  SCR++; stopVoice(); ZSB = heroLib;
+  app.innerHTML = `${topBar("◀")}<div class="stage" style="gap:10px;justify-content:flex-start">
+    <div class="sch" style="background:linear-gradient(135deg,#14B8A6,#0F766E)"><b>📚</b><div><h1>مكتبة القصص</h1><small>يرويها زوزو · ثم أسئلة تفاعلية</small></div></div>
+    <div class="games">${ZSTORY6.map((s, i) => `<button class="gm" data-s="${i}"><b>${s.e}</b>${s.t}<small>قصة بصوت زوزو</small></button>`).join("")}</div>
+    <button class="btn" id="lq">❓ أسئلة القصص</button></div>`;
+  zTop(heroHome); app.querySelectorAll("[data-s]").forEach((b) => b.onclick = () => zStory(ZSTORY6[+b.dataset.s])); $("#lq").onclick = () => zRun("f_library");
+}
+
 const hub = (first) => (S.sec && SECS.some((x) => x.id === S.sec) ? secHome(S.sec) : secPick());
 function moreHub() {
   if (!subOk()) return payScreen();
