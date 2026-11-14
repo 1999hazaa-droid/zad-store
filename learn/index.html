@@ -614,7 +614,7 @@ function lettersHub(first) {
     if (!unlocked(k)) { sfx.no(); c.classList.add("shake"); setTimeout(() => c.classList.remove("shake"), 400); return; }
     begin(k, P(LET[k].id).best >= 60 ? "review" : "lesson");
   });
-  if (first) { speak(`مرحباً يا ${S.name}! اختر حرفاً وهيا نتعلّم.`, "hello"); }
+  if (first) { speak(`مرحباً يا ${S.name}! اختر حرفاً وهيا نتعلّم.`); }
 }
 function begin(i, mode) {
   if (!subOk() && i >= FREE_L) return payScreen();
@@ -1467,7 +1467,7 @@ function secPick() {
     <button class="quick" id="par" style="margin-top:6px">👨‍👩‍👧 لولي الأمر · تقرير التقدّم</button></div>`;
   bindToggles(); $("#back").onclick = start; $("#par").onclick = gate;
   app.querySelectorAll(".sc").forEach((b) => b.onclick = () => { S.sec = b.dataset.s; S.age = SECS.find((x) => x.id === S.sec).age; save(); sfx.ok(); secHome(S.sec); });
-  speak(`مرحباً يا ${S.name}! اختر قسمك.`, "hello");
+  speak(`مرحباً يا ${S.name}! اختر قسمك.`);
 }
 /* ======================= محتوى الأقسام: مستويات ومراحل وتحديات ======================= */
 let LKEYS = null, MIXK = null;
