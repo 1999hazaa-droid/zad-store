@@ -1284,7 +1284,33 @@ function qLab(rnd) {
   return { top: '<button class="play" id="pl" aria-label="استمع">🔊</button>', text: "أيّ مقطع سمعت؟", key: `y.${k}${v}`, opts: pickN([ans, ...others], 3, rnd).map((t) => ({ h: t, v: t, s: "font-size:46px;padding:12px 0" })), ans };
 }
 function labQuiz() { quiz("lab", Array.from({ length: 8 }, () => qLab())); }
-const GM = { lab: readLab,  math: mathGame, mix: mixGame, miss: missGame, wpic: wpicGame, wsim: wsimGame, mem: memGame, odd: () => oddGame(), ord: () => ordGame(), foc: () => focGame() };
+/* ---- أكاديمية الحروف ---- */
+const ACW = {"alif": [["أَنَانَاس", "🍍"], ["أُذُن", "👂"], ["أُخْطُبُوط", "🐙"]], "ba": [["بَقَرَة", "🐄"], ["بَيْت", "🏠"], ["بَالُون", "🎈"]], "ta": [["تِلْفَاز", "📺"], ["تِمْسَاح", "🐊"], ["تُوت", "🍓"]], "tha": [["ثَوْب", "👕"], ["ثُعْبَان", "🐍"], ["ثَوْر", "🐂"]], "jim": [["جَبَل", "⛰️"], ["جَرَس", "🔔"], ["جَزِيرَة", "🏝️"]], "ha": [["حِذَاء", "👟"], ["حَلِيب", "🥛"], ["حَقِيبَة", "🎒"]], "kha": [["خُبْز", "🍞"], ["خِيَار", "🥒"], ["خَاتَم", "💍"]], "dal": [["دَلْو", "🪣"], ["دَرَّاجَة", "🚲"], ["دَائِرَة", "⭕"]], "dhal": [["ذِئْب", "🐺"], ["ذَهَب", "🥇"], ["ذِرَاع", "💪"]], "ra": [["رَمْل", "🏖️"], ["رَسْم", "🎨"], ["رَادْيُو", "📻"]], "zay": [["زَيْتُون", "🫒"], ["زُجَاجَة", "🍾"], ["زِرّ", "🔘"]], "sin": [["سَاعَة", "⏰"], ["سُلَحْفَاة", "🐢"], ["سَرِير", "🛌"]], "shin": [["شَاي", "🍵"], ["شَاحِنَة", "🚚"], ["شَوْكَة", "🍴"]], "sad": [["صَابُون", "🧼"], ["صُورَة", "🖼️"], ["صُنْدُوق", "📦"]], "dad": [["ضَبَاب", "🌫️"], ["ضِرْس", "🦷"], ["ضَحْكَة", "😄"]], "ta2": [["طَائِرَة", "✈️"], ["طِفْل", "👶"], ["طَمَاطِم", "🍅"]], "dha": [["ظَبْي", "🦌"], ["ظِلّ", "👤"], ["ظَهْر", "🧍"]], "ayn": [["عُصْفُور", "🐦"], ["عَسَل", "🍯"], ["عَلَم", "🚩"]], "ghayn": [["غَوَّاصَة", "🤿"], ["غَابَة", "🌲"], ["غَسَّالَة", "🧺"]], "fa": [["فَأْر", "🐭"], ["فُطْر", "🍄"], ["فُسْتَان", "👗"]], "qaf": [["قَلْب", "❤️"], ["قِطَار", "🚂"], ["قَلَم", "✏️"]], "kaf": [["كَلْب", "🐕"], ["كُرْسِيّ", "🪑"], ["كَعْكَة", "🎂"]], "lam": [["لَيْل", "🌃"], ["لِسَان", "👅"], ["لَحْم", "🥩"]], "mim": [["مَاء", "💧"], ["مِظَلَّة", "☂️"], ["مَطَر", "🌧️"]], "nun": [["نَمِر", "🐅"], ["نَظَّارَة", "👓"], ["نَافِذَة", "🪟"]], "ha2": [["هَرَم", "🔺"], ["هِلَال", "🌙"], ["هُدْهُد", "🐦"]], "waw": [["وِسَادَة", "🛏️"], ["وِعَاء", "🥣"], ["وَجْه", "🙂"]], "ya": [["يَخْت", "🛥️"], ["يَاسَمِين", "🌼"], ["يَقْطِين", "🎃"]]};
+function acadMenu() {
+  shell(0, `<div class="card" style="text-align:center"><b style="color:var(--p)">🎓 أكاديمية الحروف</b><div style="font-weight:700;margin-top:4px">اختر حرفاً: ٣ كلمات جديدة بالصور والصوت</div></div>
+    <div class="games" style="grid-template-columns:repeat(4,1fr)">${LET.map((l, i) => `<button class="gm ac" data-i="${i}"><b style="font-size:34px">${l.ch}</b></button>`).join("")}</div>
+    <button class="btn" id="aq">🏆 تحدّي الأكاديمية</button><button class="btn ghost" id="mp">رجوع</button>`, 1);
+  note("اختر حرفاً لتتعلّم كلماته الجديدة!");
+  app.querySelectorAll(".ac").forEach((b) => b.onclick = () => acadLetter(+b.dataset.i));
+  $("#aq").onclick = () => quiz("acad", Array.from({ length: 8 }, () => qAcad())); $("#mp").onclick = () => moreHub();
+}
+function acadLetter(i) {
+  const l = LET[i], ws = ACW[l.id];
+  shell(i, `<div class="lc" style="font-size:64px;min-height:0;padding:0">${l.ch}</div>
+    <div class="games" style="grid-template-columns:1fr">${ws.map(([t, e], k) => `<button class="gm aw" data-k="${k}" style="display:flex;flex-direction:row;align-items:center;gap:12px;justify-content:center;padding:8px;min-height:0"><b style="font-size:42px">${e}</b><span style="font-size:30px;font-weight:800">${t}</span><span>🔊</span></button>`).join("")}</div>
+    <button class="btn" id="aq">اختبرني ✔</button>
+    <div class="row" style="gap:10px"><button class="btn ghost" id="pv" ${i ? "" : "disabled"} style="min-width:0">▶ السابق</button><button class="btn ghost" id="mp" style="min-width:0">القائمة</button><button class="btn ghost" id="nx" ${i < LET.length - 1 ? "" : "disabled"} style="min-width:0">التالي ◀</button></div>`, LET.length);
+  note(`كلمات جديدة تبدأ بحرف ${l.name}`);
+  app.querySelectorAll(".aw").forEach((b) => b.onclick = () => speak(ws[+b.dataset.k][0], `a.${l.id}.${b.dataset.k}`));
+  $("#aq").onclick = () => quiz("acad", ws.map((_, k) => qAcad(Math.random, i, k)));
+  $("#pv").onclick = () => acadLetter(i - 1); $("#nx").onclick = () => acadLetter(i + 1); $("#mp").onclick = acadMenu;
+}
+function qAcad(rnd = Math.random, li, wk) {
+  const i = li ?? (rnd() * LET.length | 0), l = LET[i], k = wk ?? (rnd() * 3 | 0), [t, e] = ACW[l.id][k];
+  const others = pickN(LET.filter((x) => x !== l), 2, rnd).map((x) => x.ch);
+  return { top: `<div class="lc">${e}</div><button class="play" id="pl" aria-label="استمع">🔊</button>`, text: t, key: `a.${l.id}.${k}`, opts: pickN([l.ch, ...others], 3, rnd).map((c) => ({ h: c, v: c, s: "font-size:46px;padding:12px 0" })), ans: l.ch };
+}
+const GM = { lab: readLab, acad: acadMenu,  math: mathGame, mix: mixGame, miss: missGame, wpic: wpicGame, wsim: wsimGame, mem: memGame, odd: () => oddGame(), ord: () => ordGame(), foc: () => focGame() };
 function moreHub() {
   if (!subOk()) return payScreen();
   shell(0, `<div class="card" style="text-align:center"><b style="color:var(--p)">ألعاب وتعلّم إضافية</b></div>
@@ -1298,17 +1324,18 @@ function moreHub() {
     <button class="gm" id="m-ord"><b>📊</b>رتّب الصور<small>من الأقل للأكثر</small></button>
     <button class="gm" id="m-miss"><b>🔡</b>أكمل الكلمة<small>الحرف الناقص</small></button>
     <button class="gm" id="m-wpic"><b>🖼️</b>الكلمة والصورة<small>اقرأ واختر</small></button>
+    <button class="gm wide" id="m-acad"><b>🎓</b>أكاديمية الحروف<small>٨٤ كلمة جديدة بالصور والصوت</small></button>
     <button class="gm wide" id="m-lab"><b>📖</b>مختبر القراءة<small>مقاطع وكلمات بصوت غيداء</small></button>
     <button class="gm wide" id="m-wsim"><b>👀</b>الكلمات المتشابهة<small>أيّ كلمة تطابق الصورة؟</small></button></div>
     <button class="btn ghost" id="mp">الخريطة</button>`, 1);
   note("اختر لعبة!");
   if (S.age === "4") ["miss", "wpic", "wsim"].forEach((k) => { const b = $("#m-" + k); b.classList.add("lk"); b.querySelector("small").textContent = "🔒 للأكبر سناً"; });
-  [["learn", learnMenu], ["mix", mixGame], ["math", mathGame], ["mem", memGame], ["odd", GM.odd], ["foc", GM.foc], ["ord", GM.ord], ["miss", missGame], ["wpic", wpicGame], ["wsim", wsimGame], ["lab", readLab]].forEach(([k, f]) => $("#m-" + k).onclick = () => (S.age === "4" && ["miss", "wpic", "wsim"].includes(k) ? (sfx.no(), toast("هذه اللعبة للأكبر سناً")) : f()));
+  [["learn", learnMenu], ["mix", mixGame], ["math", mathGame], ["mem", memGame], ["odd", GM.odd], ["foc", GM.foc], ["ord", GM.ord], ["miss", missGame], ["wpic", wpicGame], ["wsim", wsimGame], ["lab", readLab], ["acad", acadMenu]].forEach(([k, f]) => $("#m-" + k).onclick = () => (S.age === "4" && ["miss", "wpic", "wsim"].includes(k) ? (sfx.no(), toast("هذه اللعبة للأكبر سناً")) : f()));
   $("#mp").onclick = () => hub();
 }
 
 
-const GN = { daily: ["📅", "تحدّي اليوم"], race: ["🏁", "سباق الحروف"], treasure: ["💎", "كنز الكلمات"], pos: ["📍", "أين الحرف؟"], mem: ["🃏", "الذاكرة"], odd: ["🔍", "اكتشف المختلف"], foc: ["🎯", "التركيز"], ord: ["📊", "رتّب الصور"], miss: ["🔡", "أكمل الكلمة"], wpic: ["🖼️", "الكلمة والصورة"], wsim: ["👀", "الكلمات المتشابهة"], math: ["➕", "الأرقام والحساب"], mix: ["🧠", "اختبرني"], lab: ["📖", "مختبر القراءة"] };
+const GN = { daily: ["📅", "تحدّي اليوم"], race: ["🏁", "سباق الحروف"], treasure: ["💎", "كنز الكلمات"], pos: ["📍", "أين الحرف؟"], mem: ["🃏", "الذاكرة"], odd: ["🔍", "اكتشف المختلف"], foc: ["🎯", "التركيز"], ord: ["📊", "رتّب الصور"], miss: ["🔡", "أكمل الكلمة"], wpic: ["🖼️", "الكلمة والصورة"], wsim: ["👀", "الكلمات المتشابهة"], math: ["➕", "الأرقام والحساب"], mix: ["🧠", "اختبرني"], lab: ["📖", "مختبر القراءة"], acad: ["🎓", "أكاديمية الحروف"] };
 const gamesList = (S0) => Object.entries(GN).filter(([k]) => S0.gp[k]).map(([k, [e, t]]) => ({ e, t, n: S0.gp[k] }));
 function achScreen() {
   const gl = gamesList(S), L = LET.filter((l) => P(l.id).runs > 0);
