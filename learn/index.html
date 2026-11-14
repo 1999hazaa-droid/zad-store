@@ -1244,7 +1244,7 @@ function focGame(i = 0, hit = 0) {
   });
 }
 /* ---- مختبر القراءة ---- */
-const LABL = [["b","ب"],["t","ت"],["m","م"],["n","ن"],["s","س"],["l","ل"],["r","ر"],["d","د"],["k","ك"],["h","ه"]];
+const LABL = [["b","ب"],["t","ت"],["th","ث"],["j","ج"],["hh","ح"],["kh","خ"],["d","د"],["dh","ذ"],["r","ر"],["z","ز"],["s","س"],["sh","ش"],["ss","ص"],["dd","ض"],["tt","ط"],["zz","ظ"],["ae","ع"],["gh","غ"],["f","ف"],["q","ق"],["k","ك"],["l","ل"],["m","م"],["n","ن"],["h","ه"],["y","ي"]];
 const LABV = [["a","َ","فتحة"],["u","ُ","ضمة"],["i","ِ","كسرة"]];
 const LABW = [["بابا","👨",[["بَا","y.baa"],["بَا","y.baa"]]],["ماما","👩",[["مَا","y.maa"],["مَا","y.maa"]]],["سمك","🐟",[["سَ","y.sa"],["مَكْ","y.mak"]]],["قمر","🌙",[["قَ","y.qa"],["مَرْ","y.mar"]]],["وردة","🌹",[["وَرْ","y.war"],["دَةْ","y.dah"]]],["كتاب","📖",[["كِ","y.ki"],["تَابْ","y.taab"]]],["قلم","✏️",[["قَ","y.qa"],["لَمْ","y.lam"]]],["مدرسة","🏫",[["مَدْ","y.mad"],["رَ","y.ra"],["سَةْ","y.sah"]]]];
 const LABK = ["w.baba","w.mama","w.samak","w.qamar","w.warda","w.kitab","w.qalam","w.madrasa"];
@@ -1259,7 +1259,7 @@ function readLab() {
 }
 function labSyl(li) {
   const [k, c] = LABL[li];
-  shell(0, `<div class="row" style="flex-wrap:wrap;gap:6px;justify-content:center">${LABL.map(([, x], j) => `<button class="btn ${j === li ? "" : "ghost"} lt" data-j="${j}" style="min-width:0;padding:8px 14px;font-size:22px">${x}</button>`).join("")}</div>
+  shell(0, `<div class="row" style="flex-wrap:wrap;gap:6px;justify-content:center">${LABL.map(([, x], j) => `<button class="btn ${j === li ? "" : "ghost"} lt" data-j="${j}" style="min-width:0;padding:6px 11px;font-size:20px">${x}</button>`).join("")}</div>
     <div class="games">${LABV.map(([v, m, n]) => `<button class="gm sy" data-y="y.${k}${v}" data-t="${c + m}"><b style="font-size:54px">${c + m}</b><small>${n}</small></button>`).join("")}</div>
     <button class="btn ghost" id="mp">رجوع</button>`, 1);
   note("اضغط كل مقطع واستمع!");
