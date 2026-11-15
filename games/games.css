@@ -13,3 +13,7 @@
 .lvcard:active{transform:translateY(3px);box-shadow:0 2px #d7c8ff}.lvcard.lock{opacity:.55;cursor:default;box-shadow:none;background:#F1ECFF}
 .lve{font-size:34px}.lvt{flex:1}.lvt b{display:block;font-size:19px}.lvt small{color:#6B5F8E;font-weight:600}.lvs{color:#F0B429;font-size:17px;letter-spacing:1px;direction:ltr}
 .lvpick .prompt{font-size:16px;font-weight:600;margin:4px 0 10px;color:#6B5F8E}
+
+.revcard{display:flex;align-items:center;gap:12px;width:100%;margin:12px 0;border:0;border-radius:22px;padding:14px 16px;background:linear-gradient(135deg,#FFF4CC,#FFE7A3);box-shadow:0 5px #F0D56B;font-family:Cairo,system-ui,sans-serif;cursor:pointer;text-align:start;color:#5A3D00}
+.revcard:active{transform:translateY(3px);box-shadow:0 2px #F0D56B}.rvi{font-size:32px}.rvt{flex:1}.rvt b{display:block;font-size:19px}.rvt small{font-weight:600;opacity:.8}.rvgo{background:#fff;border-radius:99px;padding:6px 14px;font-weight:800;font-size:14px}
+.rvtag{text-align:center;font-weight:700;font-size:14px;color:#8A5A00;background:#FFF4CC;border-radius:99px;padding:4px 12px;margin:0 auto 8px;width:fit-content}
