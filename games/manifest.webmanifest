@@ -1,0 +1,16 @@
+{
+  "name": "ألعاب زاد التعليمية — زاد بلا إنترنت",
+  "short_name": "ألعاب زاد",
+  "description": "ألعاب تعليمية مجانية للأطفال تعمل بلا إنترنت. مع زاد، التعلّم يرافقك أينما ذهبت.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F5F1FF",
+  "theme_color": "#5B3FD1",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
