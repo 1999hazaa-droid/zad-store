@@ -279,3 +279,13 @@ body[data-zk] .zsg{background:#fff}
 .zqmode{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:10px 0 8px;background:#F0EAFE;border-radius:12px;padding:3px}
 .zqmode button{min-height:38px;border:0;border-radius:10px;background:none;color:#5526B8;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
 .zqmode button.on{background:#5526B8;color:#fff;box-shadow:0 2px 6px #5526b844}
+/* زر الرجوع الموحّد + تأكيد الخروج */
+.top .pill.btn#back,.top #zhome,.bar #back{min-height:44px;color:#5526B8;font-weight:800;background:#fff;border:1px solid #E6DFFA}
+.top #back .ics,.top #zhome .ics,.bar #back .ics{color:#5526B8}
+.top #back:hover,.top #zhome:hover{background:#F0EAFE}
+.zcf{position:fixed;inset:0;z-index:99;display:grid;place-items:center;padding:20px;background:#1a0b4c99}
+.zcf-b{width:min(100%,340px);background:#fff;border-radius:20px;padding:18px;display:grid;gap:10px;text-align:center;box-shadow:0 20px 50px #0006}
+.zcf-b p{margin:0 0 4px;font-size:17px;font-weight:800;color:#29204B;line-height:1.6}
+.zcf-b button{min-height:48px;border-radius:14px;border:0;font:inherit;font-size:16px;font-weight:800;cursor:pointer}
+.zcf-k{background:linear-gradient(180deg,#FFD34D,#F5A623);color:#3A2400;box-shadow:0 4px 0 #B87A10}
+.zcf-x{background:#F0EAFE;color:#5526B8}

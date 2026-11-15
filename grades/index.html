@@ -47,4 +47,5 @@ function route(){var m=location.hash.slice(1),p=m.split("=");window.scrollTo(0,0
 window.addEventListener("hashchange",route);
 fetch("../games/catalog.json").then(function(r){return r.json()}).then(function(d){G=d;route()}).catch(function(){$("app").innerHTML='<div class="zempty"><p>تعذّر التحميل. أعد المحاولة.</p></div>'});
 })();
-</script><script src="../js/zad-ill.js?v=1" defer></script></body></html>
+</script><script src="../js/zad-ill.js?v=1" defer></script><script src="../js/zad-back.js?v=8e44711078" defer></script>
+</body></html>

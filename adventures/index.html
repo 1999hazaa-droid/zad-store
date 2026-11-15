@@ -14,4 +14,5 @@
 var esc=function(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
 fetch("../games/adventures.json").then(function(r){return r.json()}).then(function(A){
 document.getElementById("list").innerHTML=A.map(function(a){return '<article class="zcard zav"><div class="zi" style="background:linear-gradient(135deg,'+a.c[0]+','+a.c[1]+')">'+a.em+'</div><div><h3>'+esc(a.n)+'</h3><p>'+esc(a.intro)+'</p><div class="zg2"><span class="zchip">🎯 '+esc(a.goal)+'</span><span class="zchip">'+a.st.length+' مراحل</span></div>'+a.st.map(function(s,i){return '<div class="zstep"><i>'+(i+1)+'</i>'+esc(s[0])+'</div>'}).join("")+'<a class="zbtn zb2" style="margin-top:10px;width:100%" href="../games/#a='+a.id+'">▶ ابدأ المغامرة</a></div></article>'}).join("")}).catch(function(){document.getElementById("list").innerHTML='<p>تعذّر التحميل.</p>'});
-</script><script src="../js/zad-ill.js?v=1" defer></script></body></html>
+</script><script src="../js/zad-ill.js?v=1" defer></script><script src="../js/zad-back.js?v=8e44711078" defer></script>
+</body></html>

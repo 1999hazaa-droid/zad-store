@@ -25,4 +25,5 @@ fetch("../games/catalog.json").then(function(r){return r.json()}).then(function(
  $("subj").innerHTML=subs.map(function(s){return '<a class="zcard zgr" href="../grades/#subj='+encodeURIComponent(s)+'"><b>'+(SI[s]||"📘")+'</b>'+esc(s)+'</a>'}).join("")
 }).catch(function(){$("sug").innerHTML='<p>تعذّر التحميل.</p>'});
 })();
-</script><script src="../js/zad-ill.js?v=1" defer></script></body></html>
+</script><script src="../js/zad-ill.js?v=1" defer></script><script src="/zad-store/js/zad-back.js?v=8e44711078" defer></script>
+</body></html>
