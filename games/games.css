@@ -63,3 +63,11 @@
 .advcard .as{background:rgba(255,255,255,.25);border-radius:99px;padding:4px 12px;font-weight:800;font-size:13px;white-space:nowrap}
 .advst{text-align:center;padding:18px 6px;display:grid;gap:8px;justify-items:center}
 .advst .advem{font-size:64px}.advst h2{margin:0}.advst p{font-size:17px;line-height:1.8;margin:0;max-width:340px}.advst small{font-weight:800;color:#5B34D6}
+
+.zseq{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px;margin:14px 0;direction:ltr}
+.zdot{display:inline-block;width:40px;height:40px;border-radius:50%;margin:3px;box-shadow:inset 0 -4px rgba(0,0,0,.15),0 2px 4px rgba(0,0,0,.12)}
+.opt .zdot{width:52px;height:52px;margin:0}
+.zq{display:inline-grid;place-items:center;width:40px;height:40px;border:3px dashed #5B34D6;border-radius:50%;font-style:normal;font-weight:800;color:#5B34D6;margin:3px}
+.zeq{font-size:30px;direction:ltr;text-align:center}
+.zev{line-height:1.9}.zev b{color:#5B34D6}
+.zfoc.hide span{display:inline-grid;place-items:center;font-weight:800;color:#5B34D6;background:#EEE9FF;border-radius:16px;min-width:54px}
