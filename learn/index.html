@@ -871,7 +871,7 @@ function score(r) {
   const arr = [fAcc, sAcc, bAcc, tAcc].filter((v) => v !== null);
   return { fAcc, sAcc, bAcc, tAcc, all: Math.round(arr.reduce((a, b) => a + b, 0) / arr.length * 100), mins: Math.max(1, Math.round((Date.now() - r.start) / 60000)) };
 }
-const ZCH = { m: ["boy", "محمد"], f: ["girl1", "فاطمة"], a: ["girl2", "عائشة"] };
+const ZCH = { m: ["poses/boy-welcome", "محمد"], f: ["poses/girl1-welcome", "فاطمة"], a: ["poses/girl2-welcome", "عائشة"], mj: ["poses/boy-joy", "محمد"], fj: ["poses/girl1-joy", "فاطمة"], fs: ["poses/girl1-soft", "فاطمة"] };
 const zci = (k, h = 320) => `<img class="zch" src="../games/chars/${ZCH[k][0]}-${h}.png" alt="${ZCH[k][1]}" draggable="false" decoding="async">`;
 const zcL = (k) => `<div class="zcL">${zci(k).replace('class="zch"', 'class="zch" style="height:100%"')}</div>`;
 const zfr = () => `<div class="zfr">${["m", "f", "a"].map((k) => `<div>${zci(k, 160)}${ZCH[k][1]}</div>`).join("")}</div>`;
@@ -883,7 +883,7 @@ async function finish() {
   addXP(was ? 10 : 40); markActive(); wcBump("l"); save(); checkBadges();
   const pass = p.best >= 60, nextL = LET[LT.i + 1];
   const body = pass ? `
-    ${zcL(LT.i % 2 ? "a" : "m")}
+    ${zcL(LT.i % 2 ? "fj" : "mj")}
     <div class="sticker">${LT.w[0].e}</div>
     <div class="card" style="text-align:center">
       <span class="badge">${was ? "تدريب ناجح" : `ملصق جديد: ${LT.w[0].t}`}</span>
@@ -891,7 +891,7 @@ async function finish() {
       <p style="margin:0;font-weight:700">نتيجتك ${sc.all}% ${stars3(p.best)} · ⭐ ${S.stars}</p>
       ${!was && nextL ? `<p style="margin:8px 0 0;font-weight:700;color:var(--ok)">🔓 فتحت حرف ${nextL.name} ${nextL.ch}</p>` : ""}
     </div>` : `
-    ${zcL("f")}
+    ${zcL("fs")}
     <div class="sticker">💪</div>
     <div class="card" style="text-align:center">
       <h2 style="margin:0 0 4px;color:var(--p)">قرّبت جداً!</h2>
