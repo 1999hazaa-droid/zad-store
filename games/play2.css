@@ -247,3 +247,7 @@ body[data-zk] .zsg{background:#fff}
 .wi.zil img{width:46px;height:46px;object-fit:contain}
 .hubgrid .achcard .wi.zil{width:54px;height:54px}.hubgrid .achcard .wi.zil img{width:42px;height:42px}
 .cta2 i.zil{display:grid;place-items:center;font-size:0;width:44px;height:44px;flex:none}.cta2 i.zil img{width:40px;height:40px}
+/* رسومات زاد بدل الإيموجي في الواجهة */
+.zem{display:inline-block;width:1.25em;height:1.25em;vertical-align:-.28em;object-fit:contain;flex:none}
+.lve .zem{width:2em;height:2em}.hs .zem{width:1.3em;height:1.3em}.zic .zem{width:1.5em;height:1.5em;vertical-align:middle}.zpb .zem{width:1.6em;height:1.6em}
+.hintbtn .zem{width:1.4em;height:1.4em;vertical-align:middle}.zrp .zem{width:1.3em;height:1.3em;vertical-align:middle}
