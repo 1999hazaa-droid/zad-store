@@ -69,6 +69,11 @@ body{font-family:Cairo,system-ui,sans-serif;color:var(--t);background:var(--bg);
 input.nm{width:100%;font:inherit;font-size:22px;font-weight:700;text-align:center;border:3px solid #d9d0f7;border-radius:18px;padding:12px;outline:none}
 input.nm:focus{border-color:var(--p)}
 /* الخريطة */
+.zch{display:block;height:auto;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.zcL{display:block;margin:4px auto -4px;height:150px;width:auto;animation:zcb 1.8s ease-in-out infinite}
+.zfr{display:flex;justify-content:center;align-items:flex-end;gap:14px;margin:6px 0 10px}.zfr div{text-align:center;font-weight:800;font-size:12px;color:#6d6684}.zfr img{height:92px;width:auto;margin:0 auto 2px}
+@keyframes zcb{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@media(prefers-reduced-motion:reduce){.zcL{animation:none}}
 .hubhead{display:flex;align-items:center;gap:10px;margin:8px 0}
 .hubhead .owl{width:64px}
 .hubhead h1{margin:0;font-size:21px;color:var(--p);line-height:1.3}.hubhead p{margin:0;font-weight:700;color:#6d6684;font-size:14px}
@@ -643,6 +648,7 @@ function lettersHub(first) {
   app.innerHTML = `
   <div class="top"><button class="icon-btn" id="back" aria-label="رجوع">🏠</button><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
   <div class="hubhead"><button class="avb" id="avb" aria-label="شخصيتي">${avatar(S.av, 68)}</button><div style="flex:1"><h1>مرحباً يا ${S.name}!</h1>${S.cn ? `<small class="xl">مع صديقك ${S.cn}</small>` : ""}<p>أتقنت ${doneCount()} من ٢٨ حرفاً</p><div class="xp"><i style="width:${Math.round((S.xp % 120) / 120 * 100)}%"></i></div><small class="xl">مستوى ${lvl()} · ${lvName()}</small></div></div>
+  ${zfr()}
   <div class="stage" style="justify-content:flex-start;gap:12px">
     <button class="next" id="nx"><span class="L">${nl.ch}</span><span><b>${P(nl.id).best >= 60 ? "أعد الدرس" : "الدرس التالي"}: حرف ${nl.name}</b><small>نحو ١٠ دقائق · ألعاب وكتابة وكلمات</small></span></button>
     ${due.length ? `<button class="quick" id="qk">⚡ تدريب سريع على ${due.slice(0, 3).map((l) => l.ch).join(" ")}</button>` : ""}
@@ -865,6 +871,10 @@ function score(r) {
   const arr = [fAcc, sAcc, bAcc, tAcc].filter((v) => v !== null);
   return { fAcc, sAcc, bAcc, tAcc, all: Math.round(arr.reduce((a, b) => a + b, 0) / arr.length * 100), mins: Math.max(1, Math.round((Date.now() - r.start) / 60000)) };
 }
+const ZCH = { m: ["boy", "محمد"], f: ["girl1", "فاطمة"], a: ["girl2", "عائشة"] };
+const zci = (k, h = 320) => `<img class="zch" src="../games/chars/${ZCH[k][0]}-${h}.png" alt="${ZCH[k][1]}" draggable="false" decoding="async">`;
+const zcL = (k) => `<div class="zcL">${zci(k).replace('class="zch"', 'class="zch" style="height:100%"')}</div>`;
+const zfr = () => `<div class="zfr">${["m", "f", "a"].map((k) => `<div>${zci(k, 160)}${ZCH[k][1]}</div>`).join("")}</div>`;
 async function finish() {
   const sc = score(R), p = P(LT.id), was = p.best >= 60;
   const keep = MODE === "review" && p.last ? { ...p.last } : {};
@@ -873,6 +883,7 @@ async function finish() {
   addXP(was ? 10 : 40); markActive(); wcBump("l"); save(); checkBadges();
   const pass = p.best >= 60, nextL = LET[LT.i + 1];
   const body = pass ? `
+    ${zcL(LT.i % 2 ? "a" : "m")}
     <div class="sticker">${LT.w[0].e}</div>
     <div class="card" style="text-align:center">
       <span class="badge">${was ? "تدريب ناجح" : `ملصق جديد: ${LT.w[0].t}`}</span>
@@ -880,6 +891,7 @@ async function finish() {
       <p style="margin:0;font-weight:700">نتيجتك ${sc.all}% ${stars3(p.best)} · ⭐ ${S.stars}</p>
       ${!was && nextL ? `<p style="margin:8px 0 0;font-weight:700;color:var(--ok)">🔓 فتحت حرف ${nextL.name} ${nextL.ch}</p>` : ""}
     </div>` : `
+    ${zcL("f")}
     <div class="sticker">💪</div>
     <div class="card" style="text-align:center">
       <h2 style="margin:0 0 4px;color:var(--p)">قرّبت جداً!</h2>
@@ -1531,6 +1543,7 @@ function secPick() {
   app.innerHTML = `<div class="top"><button class="icon-btn" id="back" aria-label="رجوع">🏠</button><a class="storelink" href="../">المنصة</a><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
   <div class="stage" style="justify-content:flex-start;gap:12px"><div style="width:92px">${OWL}</div>
     <h1 style="margin:0;color:var(--p);font-size:24px;text-align:center">مرحباً يا ${S.name}! اختر قسمك</h1>
+    ${zfr()}
     <div class="sec">حسب العمر</div><div class="scs">${SECS.filter((s) => s.grp === "age").map(card).join("")}</div>
     <div class="sec">حسب الصف</div><div class="scs">${SECS.filter((s) => s.grp === "grade").map(card).join("")}</div>
     <button class="quick" id="par" style="margin-top:6px">👨‍👩‍👧 لولي الأمر · تقرير التقدّم</button></div>`;

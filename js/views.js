@@ -245,7 +245,7 @@
             ${a.homeFaq(e)}`},a.bundleCat=e=>(e.categories||[]).find(s=>/حزم|bundle/i.test(s.name||"")||/bundle/i.test(s.slug||"")),a.heroHome=function(e){const s=e.cfg;if(!s.theme.hero_show)return`<h1 class="sr-only">${t(c.storeName(s))}</h1>`;const i=a.homeList(e,"").length;return`<section class="hx" aria-label="${t(c.storeName(s))}">
             <div class="wrap"><div class="hx-in">
                 <span class="fl f1" aria-hidden="true">✏️</span><span class="fl f2" aria-hidden="true">⭐</span><span class="fl f3" aria-hidden="true">🎨</span><span class="fl f4" aria-hidden="true">🔤</span><span class="fl f5" aria-hidden="true">🌈</span>
-                <span class="hx-owl" aria-hidden="true">🦉</span>
+                <span class="hx-owl hx-chars" aria-hidden="true"><img src="/zad-store/games/chars/girl1-160.png" alt="" loading="lazy" decoding="async"><img src="/zad-store/games/chars/boy-160.png" alt="" loading="lazy" decoding="async"><img src="/zad-store/games/chars/girl2-160.png" alt="" loading="lazy" decoding="async"></span>
                 <div class="hx-txt">
                     <h1>${a.heroTitle(e)}</h1>
                     <ul class="hx-pills"><li>📄 ${i} ${t(n("ملف"))}</li><li>⚡ ${t(n("تصلك فوراً"))}</li></ul>
