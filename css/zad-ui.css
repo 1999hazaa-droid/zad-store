@@ -66,3 +66,7 @@ a{color:inherit;text-decoration:none}img{max-width:100%}
 .zrowc{display:flex;align-items:center;gap:12px;padding:12px;font-weight:700}.zrowc .zi{width:60px;height:60px;border-radius:16px;display:grid;place-items:center;font-size:32px;flex:none}.zrowc small{display:block;color:var(--z-ink2);font-weight:400;font-size:13px}.zrowc .go{margin-inline-start:auto;color:var(--z-pri);font-size:22px}
 .zpaid{margin-top:var(--z-sp-5)}
 @media(max-width:560px){.zph .zw{grid-template-columns:1fr}.zph img{display:none}}
+
+/* تبسيط بطاقات الألعاب: لون واحد */
+.zg .zim{background:var(--z-tint)!important;height:96px}
+.zg .zbd{gap:6px}.zg .zgo{min-height:44px}
