@@ -27,6 +27,7 @@ for f in sorted(os.listdir(os.path.join(G, "chars", "poses"))):
 add("characters.html", "core")
 add("catalog.json", "core")
 add("play2.css", "core")
+add("adventures.json", "core")
 out = {"version": h.hexdigest()[:10], "total": sum(f["s"] for f in files), "files": files}
 json.dump(out, open(os.path.join(G, "offline.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 print(out["version"], len(files), out["total"])
