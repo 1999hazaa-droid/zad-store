@@ -92,3 +92,10 @@
 .wnav .btn-big{font-size:14px;padding:12px 8px}
 .zsec{margin:14px 0 8px}h2.zsec{font-size:17px}
 .zdone{background:#D8F8E4;color:#0b5a2d;border-radius:16px;padding:10px 14px;font-weight:800;text-align:center}
+
+.hubgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0 4px}
+.hubgrid .achcard{margin:0;flex-direction:column;justify-content:center;text-align:center;padding:12px 8px;gap:2px;min-height:92px}
+.hubgrid .achcard small,.hubgrid .rvgo{display:none}
+.hubgrid .achcard .wi{font-size:30px}.hubgrid .achcard b{font-size:14px;line-height:1.4}
+.hubgrid .wt{display:block}
+@media(min-width:760px){.hubgrid{grid-template-columns:repeat(3,1fr)}}
