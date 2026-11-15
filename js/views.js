@@ -270,16 +270,9 @@ return`<section class="zm-hero" aria-labelledby="zm-h1"><div class="wrap zm-hg">
 <span class="zm-fi" aria-hidden="true">${I("blocks",64)}<img src="${A("games/chars/poses/boy-joy-160.png")}" alt="" width="116" height="160" loading="lazy" decoding="async"></span></div>
 ${K("owl","تعلّم والعب مع زوزو","حروف وكلمات وأنشطة متدرّجة","سنة – الصف الرابع","learn/","#E3F6EE","#0B6B4A")}
 ${K("notebook","الملفات التعليمية","أوراق عمل جاهزة للطباعة","سنة – الصف الرابع","library/","#FFEEDD","#A34E00")}
-${K("globe","عالم زاد التفاعلي","استكشف وتعلّم وتفاعل","٣–٦ سنوات","games/#m-wd","#E2F3FC","#0B5F8C")}
-${K("puzzle","ألعاب التفكير والذكاء","ذاكرة وتركيز ومنطق","٤–٦ سنوات · الصفوف ١–٤","games/#m-th","#EFEAFF","#4A22C4")}
-${K("target","التحديات التعليمية","تحديات من السهل إلى المتقدّم","الصفوف ١–٤","games/#m-wk","#FDE7F0","#9A1C63")}
-${K("rocket","مغامرات زاد","مغامرات كرتونية بقصص ومكافآت","٣–٦ سنوات","games/#m-adv","#FFF4D1","#7A5200")}
-${K("palette","أنشطة زاد الواقعية","أنشطة منزلية وحركية ممتعة","سنة – ٦ سنوات","games/#m-real","#E3F6EE","#0B6B4A")}
-${K("trophy","إنجازاتي في زاد","نجومي وشاراتي وتقدّمي","كل الأعمار","games/#m-ach","#FFEEDD","#A34E00")}
-${K("map","خريطة مهاراتي","ما أتقنته وما أحتاج تدريبه","٤–٦ سنوات · الصفوف ١–٤","games/#m-sk","#E2F3FC","#0B5F8C")}
-${K("chart","متابعة تعلّم طفلي","تابع تقدّم طفلك خطوة بخطوة","لأولياء الأمور","games/#m-par","#EFEAFF","#4A22C4")}
+${K("sparkle","المزيد","عالم زاد، المغامرات، الإنجازات، متابعة الطفل وأكثر","كل الفئات","games/#more","#EFEAFF","#4A22C4")}
 </div>
-<nav class="zm-browse" aria-label="${X("تصفّح أيضًا")}"><span>${X("تصفّح أيضًا:")}</span><a href="${A("grades/#subjects")}">${I("globe",24)}${X("جميع المواد الدراسية")}</a><a href="${A("grades/#ages")}">${I("ruler",24)}${X("جميع الصفوف والأعمار")}</a><a href="${A("search/")}">${I("books",24)}${X("المكتبة التعليمية")}</a></nav>
+<nav class="zm-browse" aria-label="${X("تصفّح أيضًا")}"><span>${X("تصفّح أيضًا:")}</span><a href="${A("grades/#subjects")}">${I("globe",24)}${X("جميع المواد الدراسية")}</a><a href="${A("grades/#ages")}">${I("ruler",24)}${X("جميع الصفوف والأعمار")}</a></nav>
 </div></section>
 <section class="zm-band" aria-labelledby="zm-w"><div class="wrap">
 <div class="zm-head"><h2 id="zm-w">${X("لماذا")} <em>${X("زاد")}</em>${X("؟")}</h2></div>
