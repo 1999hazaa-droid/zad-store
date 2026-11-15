@@ -417,3 +417,21 @@ body:has(.zm-hero) main#view{margin-top:0!important;padding:0!important;border-r
  .zm-feat{grid-column:1/-1;padding:14px 22px}.zm-feat b{font-size:19px}.zm-feat small{font-size:13px}.zm-fi img:last-child{height:108px}
  .zm-card{padding:10px 12px 9px}.zm-card b{font-size:15px}.zm-card small{font-size:12.5px}
 }
+/* القائمة الجانبية: خفيفة ومضغوطة */
+.sheet-menu .sheet-panel{width:min(85vw,340px);background:#fff;padding:0 14px calc(18px + env(safe-area-inset-bottom))}
+.sheet-menu .menu-head{position:sticky;top:0;z-index:3;margin:0 -14px 2px;padding:calc(10px + env(safe-area-inset-top)) 14px 8px;background:#fff;border-bottom:1px solid #ECE6FA;min-height:0}
+.sheet-menu .menu-logo img{height:30px;width:auto;border-radius:8px}
+.sheet-menu .menu-head .close{width:34px;height:34px;border-radius:10px;background:#F0EAFE;color:#5526B8;font-size:20px;line-height:1;display:grid;place-items:center;border:0}
+.sheet-menu .menu-label{margin:12px 4px 2px;font-size:11.5px;font-weight:800;color:#68617D;letter-spacing:0}
+.sheet-menu .mgroup{background:none;border-radius:0;padding:0;margin:0}
+.sheet-menu .mrow{min-height:46px;padding:4px 8px;gap:10px;font-size:14.5px;font-weight:700;color:#29204B;border-radius:10px;transition:background .12s}
+.sheet-menu .mrow+.mrow{border-top:1px solid #F2EEFB}
+.sheet-menu .mrow:hover,.sheet-menu .mrow:active{background:#F0EAFE;color:#5526B8}
+.sheet-menu .mi{width:28px;height:28px;border-radius:0;background:none;color:#5526B8}
+.sheet-menu .mi svg{width:21px;height:21px}
+.sheet-menu .mil{width:26px;height:26px;object-fit:contain;display:block}
+.sheet-menu .mchev{display:grid;place-items:center;color:#9a93b4}.sheet-menu .mchev svg{width:14px;height:14px}
+.sheet-menu .ml small{font-size:11.5px;color:#68617D}
+.sheet-menu .mfollow{gap:6px;margin-top:4px}
+.sheet-menu .mf{padding:8px 4px 6px;gap:3px;border-radius:12px;font-size:12px;background:#F7F4FF;border-color:#ECE6FA}
+.sheet-menu .mf svg{width:20px;height:20px}
