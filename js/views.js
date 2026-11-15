@@ -253,7 +253,7 @@ return`<section class="zm-hero" aria-labelledby="zm-h1"><div class="wrap zm-hg">
 <h1 id="zm-h1">${X("مرحبًا بك في عالم")} <em>${X("زاد!")}</em></h1>
 <p class="zm-lead">${X("تعلّم، العب، واكتشف عالم المعرفة")}</p>
 <p class="zm-sub">${X("ألعاب تعليمية مجانية، وأنشطة ممتعة، وملفات جاهزة للطباعة… كلها في مكان واحد.")}</p>
-<div class="zm-cta"><a class="zm-btn" href="${A("my/")}">${X("ابدأ التعلم")}</a><a class="zm-btn2" href="${A("games/#start")}">${X("الألعاب المجانية")}</a></div></div>
+<div class="zm-cta"><a class="zm-btn2" href="${A("games/#start")}">${X("الألعاب المجانية")}</a></div></div>
 <div class="zm-hv" aria-hidden="true"><span class="zm-circ"></span>
 <img class="zm-kid k1" src="${A("games/chars/poses/boy-welcome-320.png")}" alt="" width="168" height="320" decoding="async" fetchpriority="high">
 <img class="zm-kid k2" src="${A("games/chars/poses/girl1-welcome-320.png")}" alt="" width="161" height="320" decoding="async" fetchpriority="high">
