@@ -51,3 +51,11 @@ body.v2 .ach-c,body.v2 .gcard,body.v2 .catcard,body.v2 .advcard{border-radius:24
 body.v2 .ach-c{box-shadow:0 2px 0 #E8E2FA,0 10px 26px #5b34d61a;border:1px solid #E8E2FA}
 body.v2 input,body.v2 select{font-family:Cairo,system-ui,sans-serif;min-height:52px;border-radius:16px}
 body.v2 .ach-hero{border-radius:28px}
+/* أزرار الصوت والرجوع للمنصة */
+.zic{position:relative;display:inline-block;font-size:20px;line-height:1}
+.zic.off{opacity:.55}
+.zic.off:after{content:"";position:absolute;left:-3px;right:-3px;top:50%;height:3px;border-radius:2px;background:#EF4444;transform:rotate(-38deg)}
+.top,.bar{flex-wrap:nowrap}
+.top .zdock,.bar .zdock{display:flex;gap:8px}
+#vmute,#mute{min-width:46px;min-height:44px;justify-content:center}
+#zhome{min-height:44px}
