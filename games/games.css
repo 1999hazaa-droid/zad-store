@@ -56,3 +56,10 @@
 .skb u{display:block;height:100%;background:#5B34D6;border-radius:9px;text-decoration:none}
 .skc.ok .skb u{background:#22B45E}.skc .ach-sug{margin-top:10px}
 .lvrec{font-style:normal;font-size:11px;font-weight:800;background:#FFF4CC;color:#8a5a00;border-radius:99px;padding:1px 8px;margin-inline-start:6px}
+
+.advlist{display:grid;gap:10px;margin-top:12px}
+.advcard{display:flex;align-items:center;gap:12px;border:0;border-radius:22px;padding:14px 16px;background:linear-gradient(135deg,var(--c1),var(--c2));color:#fff;font-family:Cairo,system-ui,sans-serif;cursor:pointer;text-align:start;box-shadow:0 5px rgba(0,0,0,.18)}
+.advcard .ae{font-size:34px}.advcard .at{flex:1;display:grid}.advcard .at b{font-size:17px}.advcard .at small{opacity:.92;font-size:12.5px}
+.advcard .as{background:rgba(255,255,255,.25);border-radius:99px;padding:4px 12px;font-weight:800;font-size:13px;white-space:nowrap}
+.advst{text-align:center;padding:18px 6px;display:grid;gap:8px;justify-items:center}
+.advst .advem{font-size:64px}.advst h2{margin:0}.advst p{font-size:17px;line-height:1.8;margin:0;max-width:340px}.advst small{font-weight:800;color:#5B34D6}
