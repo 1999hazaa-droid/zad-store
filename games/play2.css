@@ -251,3 +251,28 @@ body[data-zk] .zsg{background:#fff}
 .zem{display:inline-block;width:1.25em;height:1.25em;vertical-align:-.28em;object-fit:contain;flex:none}
 .lve .zem{width:2em;height:2em}.hs .zem{width:1.3em;height:1.3em}.zic .zem{width:1.5em;height:1.5em;vertical-align:middle}.zpb .zem{width:1.6em;height:1.6em}
 .hintbtn .zem{width:1.4em;height:1.4em;vertical-align:middle}.zrp .zem{width:1.3em;height:1.3em;vertical-align:middle}
+/* بداية الألعاب: صفحة واحدة مضغوطة */
+.zst{width:100%;max-width:440px;margin:0 auto;gap:8px;padding-bottom:18px}
+.zqh{text-align:center;padding:0}
+.zqh h1{color:#fff;margin:2px 0 0;font-size:clamp(22px,6vw,28px);line-height:1.3}
+.zqh p{margin:0;color:#E9E1FF;font-size:14px}
+.zqc{padding:12px 14px 14px;border-radius:20px;display:grid;gap:0;animation:none}
+.zqs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 6px}
+.zqs .zks{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px;min-height:84px;padding:6px 10px;border-radius:16px;border:2px solid #E6DFFA;background:#F6F3FF;box-shadow:none;font-size:16px}
+.zqs .zks img{width:58px;height:auto;max-height:76px}
+.zqs .zks b{font-size:16px}
+.zqs .zks.on,.zqs .zks.b.on,.zqs .zks.g.on{border-color:#5526B8;background:#EFE9FF;box-shadow:0 0 0 3px #5526B826;transform:none}
+.zql{margin:8px 2px 4px;font-size:13px;font-weight:800;color:#29204B}
+.zql small{font-weight:600;color:#68617D}
+.zqin{min-height:44px;font-size:16px;border-width:2px;border-radius:12px;padding:0 12px}
+.zqc .zkchips{margin-top:6px}
+.zqb{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.zqb.g{grid-template-columns:repeat(4,minmax(0,1fr))}
+.zqb .zkb{min-height:42px;border-radius:12px;border-width:2px;font-size:15px;padding:0 2px;box-shadow:none}
+.zqb .zkb.on{background:#5526B8;color:#fff;border-color:#5526B8}
+.zqsum{margin:8px 0 0;text-align:center;font-size:12.5px;color:#68617D;background:#F6F3FF;border-radius:10px;padding:6px 8px}
+.zqw{margin:6px 0 0;font-size:12px;line-height:1.6;color:#8A5A00;background:#FFF4D6;border-radius:10px;padding:6px 8px}
+.zqgo{width:100%;min-height:54px;border-radius:16px;font-size:19px;display:flex;align-items:center;justify-content:center;gap:8px}
+.zqgo:active{transform:translateY(3px)}
+.zqgo .zem{width:28px;height:28px;margin:0}
+@media(max-width:340px){.zqb{grid-template-columns:repeat(3,minmax(0,1fr))}.zqs .zks img{width:46px}}
