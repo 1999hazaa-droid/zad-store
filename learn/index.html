@@ -3611,7 +3611,7 @@ function parent(kid) {
     <div class="wds">${gamesList(S).length ? gamesList(S).map((g) => `<span>${g.e} ${g.t} · ${AD(g.n)}</span>`).join("") : "<small>لم يكمل ألعاباً بعد.</small>"}</div>
     <div class="sec2">الإعدادات</div>
     <label class="st">عمر الطفل (يتحكّم بالمحتوى المناسب)
-      <select id="ag"><option value="4" ${S.age === "4" ? "selected" : ""}>٣–٤ سنوات — ألعاب بصرية وسهلة، بلا ألعاب قراءة</option><option value="6" ${S.age === "6" ? "selected" : ""}>٥–٦ سنوات — تحدّيات سهلة ومتوسطة</option><option value="8" ${S.age === "8" ? "selected" : ""}>٧ سنوات فأكثر — كل المحتوى</option></select></label>
+      <select id="ag"><option value="4" ${S.age === "4" ? "selected" : ""}>٣–٤ سنوات — ألعاب بصرية وسهلة، بلا ألعاب قراءة</option><option value="6" ${S.age === "6" ? "selected" : ""}>٥–٦ سنوات — تحدّيات سهلة ومتوسطة</option><option value="8" ${S.age === "8" ? "selected" : ""}>الصف الأول إلى الرابع — كل المحتوى</option></select></label>
     <label class="st">المستوى التعليمي
       <select id="lv"><option value="beg" ${S.lvl === "beg" ? "selected" : ""}>مبتدئ — بالترتيب، الحرف يفتح بعد إتقان السابق</option><option value="mid" ${S.lvl === "mid" ? "selected" : ""}>متوسط — كل الحروف مفتوحة وتحديات متوسطة</option><option value="adv" ${S.lvl === "adv" ? "selected" : ""}>متقدّم — كل الحروف وتحديات أصعب</option></select></label>
     <label class="st">حدّ الاستخدام اليومي

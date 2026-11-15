@@ -13,7 +13,7 @@ var G=[],f={s:"",a:"",l:0,q:""},$=function(i){return document.getElementById(i)}
 var norm=function(t){return String(t).replace(/[ً-ْـ]/g,"").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").toLowerCase()};
 var esc=function(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
 var LV=["","مبتدئ","متوسط","متقدّم"];
-var AGES=[["","الكل"],["٢–٤","٢–٤ سنوات"],["٤–٦","٤–٦ سنوات"],["٥–٧","٥–٧ سنوات"],["الأول","الصف الأول"],["الثاني","الصف الثاني"],["الثالث","الصف الثالث"],["الرابع","الصف الرابع"]];
+var AGES=[["","الكل"],["١–٤","١–٤ سنوات"],["٤–٦","٤–٦ سنوات"],["٥–٦","٥–٦ سنوات"],["الأول","الصف الأول"],["الثاني","الصف الثاني"],["الثالث","الصف الثالث"],["الرابع","الصف الرابع"]];
 var FEAT="letters memory add animal clock1 build".split(" "),SUG0="letters count memory animal shape".split(" ");
 function card(g){return '<a class="zcard zg" href="../games/#g='+g.id+'"><div class="zim">'+g.ic+'</div><div class="zbd"><b>'+esc(g.t)+'</b><small>'+esc(g.s)+'</small><span class="zbtn zb2 zgo">العب الآن</span></div></a>'}
 function sec(t,sub,list,tag){return list.length?'<section class="zsec" style="padding:var(--z-sp-4) 0 0"><div class="zhead"><div><h2>'+t+'</h2>'+(sub?'<p class="zsub" style="margin:0">'+sub+'</p>':'')+'</div></div><div class="zgm">'+list.map(function(g){return card(g,tag)}).join("")+'</div></section>':''}

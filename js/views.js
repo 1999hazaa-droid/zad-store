@@ -259,15 +259,15 @@ ${C(["#28A9E8","#fff"],"books","المكتبة التعليمية","ابحث ف�
 ${C(["#E94D9B","#fff"],"palette","الأنشطة التفاعلية","مغامرات وأنشطة ممتعة","ابدأ","adventures/")}
 ${C(["#F5A623","#fff"],"bag","عالم زاد للأطفال","ألعاب وقصص صغيرة للتعلم","ادخل العالم","games/#m-wd")}
 ${C(["#1E86CF","#fff"],"globe","جميع المواد الدراسية","عربي، رياضيات، علوم وغيرها","المواد","grades/#subjects")}
-${C(["#4A22C4","#fff"],"ruler","جميع الصفوف والأعمار","من سنتين إلى الصف الرابع","الصفوف","grades/#ages")}
+${C(["#4A22C4","#fff"],"ruler","جميع الصفوف والأعمار","من سنة إلى الصف الرابع","الصفوف","grades/#ages")}
 </div></section>
 <section class="wrap zh-feat" aria-labelledby="zf-t"><h2 id="zf-t">${T(N("لماذا زاد؟"))}</h2><div class="zh-fg">
 <div><i aria-hidden="true">${I("blocks")}</i><b>${T(N("ألعاب مجانية"))}</b><small>${T(N("تعلّم باللعب بدون حساب"))}</small></div>
 <div><i aria-hidden="true">${I("tablet")}</i><b>${T(N("بدون إنترنت"))}</b><small>${T(N("العب في أي مكان"))}</small></div>
 <div><i aria-hidden="true">${I("notebook")}</i><b>${T(N("ملفات للطباعة"))}</b><small>${T(N("PDF جاهزة لكل صف"))}</small></div>
-<div><i aria-hidden="true">${I("cap")}</i><b>${T(N("لكل عمر وصف"))}</b><small>${T(N("من سنتين إلى الصف الرابع"))}</small></div>
+<div><i aria-hidden="true">${I("cap")}</i><b>${T(N("لكل عمر وصف"))}</b><small>${T(N("من سنة إلى الصف الرابع"))}</small></div>
 </div></section>`},
-a.GRADES=[["الأول",/الأول/],["الثاني",/الثاني/],["الثالث",/الثالث/],["الرابع",/الرابع/],["الخامس",/الخامس/],["السادس",/السادس/]],
+a.GRADES=[["الأول",/الأول/],["الثاني",/الثاني/],["الثالث",/الثالث/],["الرابع",/الرابع/]],
 a.gradeOf=function(p){for(const g of a.GRADES)if(g[1].test(p.name||""))return g[0];return""},
 a.libHome=function(e,{sort:s="default",cat:i="",shown:r=0}={}){const T=t,N=n,all=a.printables(e).filter(p=>p.is_available!==!1),gs=a.GRADES.map(g=>[g[0],all.filter(p=>a.gradeOf(p)===g[0]).length]).filter(g=>g[1]),gsel=window.ATHR_GRADE||"";return`<section class="wrap zh-lib" aria-labelledby="zl-t">
 <div class="zh-lh"><h1 id="zl-t">${T(N("الملفات التعليمية"))}</h1><p>${T(N("ملفات PDF، أوراق عمل، أنشطة تعليمية، ومواد جاهزة للطباعة"))}</p></div>
@@ -326,7 +326,7 @@ a.heroHome=function(e){const s=e.cfg;if(!s.theme.hero_show)return`<h1 class="sr-
             </div>
         </section>`},a.crumbs=function(e){return`<nav class="crumbs wrap" aria-label="${t(n("مسار التصفح"))}">
             ${e.map((s,i)=>s.href&&i<e.length-1?`<a href="${s.href}">${t(s.name)}</a>`:`<span aria-current="page">${t(s.name)}</span>`).join('<span class="sep" aria-hidden="true">›</span>')}
-        </nav>`},a.subjectGroups=function(e,s,i){if(!/الصفوف-1-إلى-[46]/.test(s.slug||""))return"";const r={1:/تتبّع وكتابة الحروف العربية|English Letters Tracing/,2:/جدول الضرب/,3:/قراءة وفهم|الكسور/,4:/$^/,5:/$^/,6:/$^/},o=["الصف الأول","الصف الثاني","الصف الثالث","الصف الرابع","الصف الخامس","الصف السادس"],l=g=>{const u=o.findIndex(m=>g.name.includes(m));if(u>=0)return u+1;for(const m of[1,2,3,4,5,6])if(r[m].test(g.name))return m;return 0},d=[1,2,3,4,5,6].map(g=>i.filter(u=>l(u)===g)),f=i.filter(g=>!l(g)),p=`<div class="cat-chips grade-jump">${o.map((g,u)=>d[u].length?`<a class="chip" href="#grade-${u+1}">${t(n(g))} <small>${d[u].length}</small></a>`:"").join("")}</div>`,$=d.map((g,u)=>g.length?`<h2 class="sub-h" id="grade-${u+1}">${t(n(o[u]))} <small class="muted">(${g.length})</small></h2>${a.grid(e,g,{eagerCount:u===d.findIndex(m=>m.length)?4:0})}`:"").join("");return p+$+(f.length?a.grid(e,f,{eagerCount:0}):"")},a.category=function(e,s,{sort:i="default",shown:r=0}={}){const o=a.sortList(a.listings(e,e.products.filter(d=>d.category_id===s.id)),i),l=w(s,"description");return`${a.crumbs([{name:n("الرئيسية"),href:c.url.home()},{name:a.cname(s)}])}
+        </nav>`},a.subjectGroups=function(e,s,i){if(!/الصفوف-1-إلى-[46]/.test(s.slug||""))return"";const r={1:/تتبّع وكتابة الحروف العربية|English Letters Tracing/,2:/جدول الضرب/,3:/قراءة وفهم|الكسور/,4:/$^/,5:/$^/,6:/$^/},o=["الصف الأول","الصف الثاني","الصف الثالث","الصف الرابع"],l=g=>{const u=o.findIndex(m=>g.name.includes(m));if(u>=0)return u+1;for(const m of[1,2,3,4])if(r[m].test(g.name))return m;return 0},d=[1,2,3,4].map(g=>i.filter(u=>l(u)===g)),f=i.filter(g=>!l(g)),p=`<div class="cat-chips grade-jump">${o.map((g,u)=>d[u].length?`<a class="chip" href="#grade-${u+1}">${t(n(g))} <small>${d[u].length}</small></a>`:"").join("")}</div>`,$=d.map((g,u)=>g.length?`<h2 class="sub-h" id="grade-${u+1}">${t(n(o[u]))} <small class="muted">(${g.length})</small></h2>${a.grid(e,g,{eagerCount:u===d.findIndex(m=>m.length)?4:0})}`:"").join("");return p+$+(f.length?a.grid(e,f,{eagerCount:0}):"")},a.category=function(e,s,{sort:i="default",shown:r=0}={}){const o=a.sortList(a.listings(e,e.products.filter(d=>d.category_id===s.id)),i),l=w(s,"description");return`${a.crumbs([{name:n("الرئيسية"),href:c.url.home()},{name:a.cname(s)}])}
             ${a.tiles(e,s)}
             <section class="catalog section" id="catalog">
                 <div class="wrap">

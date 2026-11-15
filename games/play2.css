@@ -237,3 +237,8 @@ body[data-zk] .zsg{background:#fff}
 .zkbt{grid-template-columns:repeat(5,minmax(0,1fr))}
 .zkb{font-size:18px;padding:2px}
 @media(max-height:760px){.zkpair{display:none}.zkh h1{margin-top:0}.zks img{max-height:84px}.zkcc img{width:46px}.zkpv img{width:50px}}
+
+/* وسوم الفئة العمرية والصف ومستوى المهارة على أقسام «المزيد» */
+.zag{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;font-style:normal}
+.zag i{font-style:normal;font-size:12px;font-weight:800;line-height:1;padding:4px 8px;border-radius:99px;white-space:normal}
+.zag .a{background:#E4DAFF;color:#4A22C4}.zag .g{background:#DDF1FC;color:#0F6A99}.zag .l{background:#FFEBD0;color:#955008}
