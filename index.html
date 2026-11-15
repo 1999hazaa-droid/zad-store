@@ -22,6 +22,7 @@
 <link rel="preload" href="/zad-store/fonts/cairo-regular.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="/zad-store/fonts/cairo-bold.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="/zad-store/css/store.css?v=a75f0da1d0">
+<link rel="stylesheet" href="/zad-store/css/home-simple.css?v=1">
 <style id="themeVars">:root{--primary:#5B34D6;--hero:#5B34D6;--bg:#F7F5FF;--text:#1B1430;--on-primary:#FFFFFF;--logo-filter:none;--font-head:"Cairo","Cairo",system-ui,sans-serif;--font-body:"Cairo",system-ui,-apple-system,"Segoe UI",sans-serif}</style>
 <script>window.ATHR_BASE = "/zad-store/";
 (function () { var d = document.documentElement; try { var m = JSON.parse(localStorage.getItem("huroof_mode")); if (m === "light" || m === "dark" || m === "auto") d.setAttribute("data-mode", m); } catch (e) {} try { if (JSON.parse(localStorage.getItem("huroof_lang")) === "en") { d.lang = "en"; d.dir = "ltr"; d.classList.add("i18n-wait"); setTimeout(function () { d.classList.remove("i18n-wait"); }, 2500); } } catch (e) {}
@@ -33,7 +34,7 @@ if (/^#(admin|orders)$/.test(location.hash)) { location.replace(window.ATHR_BASE
 <a class="skip-link" href="#view">انتقل إلى المحتوى</a>
 
 <header class="top" id="top">
-    <div class="top-row">
+    <div class="top-row hide-s">
         <button class="icon-btn" id="menuBtn" type="button" aria-label="القائمة" aria-haspopup="dialog">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
@@ -53,297 +54,20 @@ if (/^#(admin|orders)$/.test(location.hash)) { location.replace(window.ATHR_BASE
 
 <div id="bars" class="bars"></div>
 
-<main id="view" tabindex="-1" data-route="home" data-prerendered="1">
+<main id="view" tabindex="-1" data-route="home" data-prerendered="1"><h1 class="sr-only">منصة زاد التعليمية</h1>
+<section class="wrap zh-wel" aria-label="مرحبًا بك في زاد"><div class="zh-wc"><img class="zh-ch" src="/zad-store/games/chars/girl1-160.png" alt="" width="84" height="84" decoding="async"><div class="zh-wt"><h2>مرحبًا بك في زاد</h2><p>تعلم، العب، واكتشف</p></div><a class="zh-btn" href="/zad-store/my/">ابدأ التعلم</a></div></section>
+<section class="wrap zh-sec" aria-label="الأقسام"><div class="zh-grid">
+<a class="zh-card zh-main" href="/zad-store/free/"><span class="zh-ic" aria-hidden="true">🎮</span><span class="zh-tx"><b>الألعاب التعليمية المجانية</b><small>تعلم واستمتع بألعاب تعليمية مجانية</small></span><span class="zh-go">ابدأ اللعب</span></a>
+<div class="zh-card zh-grades"><span class="zh-tx"><b>اختر صفك</b><small>المواد والألعاب لكل صف</small></span><span class="zh-gr"><a href="/zad-store/grades/#grade=g1">الأول</a><a href="/zad-store/grades/#grade=g2">الثاني</a><a href="/zad-store/grades/#grade=g3">الثالث</a><a href="/zad-store/grades/#grade=g4">الرابع</a></span><a class="zh-more" href="/zad-store/grades/">كل الصفوف والأعمار</a></div>
+<a class="zh-card" href="/zad-store/library/"><span class="zh-ic" aria-hidden="true">📄</span><span class="zh-tx"><b>الملفات التعليمية</b><small>ملفات PDF، أوراق عمل، أنشطة تعليمية، ومواد جاهزة للطباعة</small></span><span class="zh-go">تصفح الملفات</span></a>
+<a class="zh-card" href="/zad-store/learn/"><span class="zh-ic" aria-hidden="true">🦉</span><span class="zh-tx"><b>تعلم والعب مع زوزو</b><small>أنشطة وألعاب تفاعلية للأطفال</small></span><span class="zh-go">اكتشف الأنشطة</span></a>
+</div></section></main>
 
-            <section class="hx" aria-label="منصة زاد التعليمية">
-            <div class="wrap"><div class="hx-in">
-                <span class="fl f1" aria-hidden="true">✏️</span><span class="fl f2" aria-hidden="true">⭐</span><span class="fl f3" aria-hidden="true">🎨</span><span class="fl f4" aria-hidden="true">🔤</span><span class="fl f5" aria-hidden="true">🌈</span>
-                <span class="hx-owl hx-chars" aria-hidden="true"><img src="/zad-store/games/chars/girl1-160.png" alt="" loading="lazy" decoding="async"><img src="/zad-store/games/chars/boy-160.png" alt="" loading="lazy" decoding="async"><img src="/zad-store/games/chars/girl2-160.png" alt="" loading="lazy" decoding="async"></span>
-                <div class="hx-txt">
-                    <h1>ملفات تعليمية جاهزة للطباعة<span class="hl">مرتّبة لكل صف</span></h1>
-                    <ul class="hx-pills"><li>📄 127 ملف</li><li>⚡ تصلك فوراً</li></ul>
-                    <a class="hx-btn main" href="#printables" data-home-cat="" data-jump><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h7.5l4 4v13h-11.5z"/><path d="M14 3.5v4h4M9.5 12h5M9.5 15.5h5"/></svg><span>تصفّح الملفات</span></a>
-                </div>
-            </div></div>
-        </section>
-            <section class="wrap ex-sec" aria-label="خدمات خاصة">
-            <a class="ex ex1" href="/zad-store/custom/"><span class="ex-i">✨</span><span class="ex-t"><b>ملف باسم طفلك</b><small>مخصّص لصفه ومستواه</small></span></a>
-            <a class="ex ex2" href="/zad-store/games/"><span class="ex-i">🎮</span><span class="ex-t"><b>ألعاب مجانية</b><small>العب وتعلّم الحروف والأرقام</small></span></a>
-        </section>
-            <section class="wrap lp-sec" id="learn" aria-label="تعلّم والعب">
-            <div class="lp">
-                <div class="lp-top">
-                    <span class="lp-owl" aria-hidden="true">🦉</span>
-                    <div class="lp-tx">
-                        <span class="lp-tag">تطبيق تفاعلي للأطفال</span>
-                        <h2>تعلّم والعب مع زوزو</h2>
-                        <p>٣ حروف مجاناً، والاشتراك من ١٫٥ ر.ع</p>
-                    </div>
-                </div>
-                                <a class="lp-go" href="/zad-store/learn/">جرّب مجاناً<svg class="side" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6l-6 6 6 6"/></svg></a>
-            </div>
-        </section>
-            <section class="wrap ct-sec" aria-label="تصفح حسب القسم"><div class="ct-row"><button type="button" class="ct c0" data-home-cat="3041931d-879b-507d-a2d4-738bcf47c429" data-jump><span class="ct-e">🎨</span><b>تعليمي للأطفال</b></button><button type="button" class="ct c1" data-home-cat="b1c0a0de-0c10-4a7e-9a11-c0107ab00001" data-jump><span class="ct-e">🖍️</span><b>كتب التلوين</b></button><button type="button" class="ct c2" data-home-cat="34c5e974-ceb6-53ae-bb1e-69f9c1b1efcd" data-jump><span class="ct-e">📚</span><b>كتب أنشطة</b></button><button type="button" class="ct c3" data-home-cat="aa77bcfe-be93-5dea-a57a-750879195d56" data-jump><span class="ct-e">🎓</span><b>طلاب الصفوف 1 إلى 6</b></button><button type="button" class="ct c4" data-home-cat="59351792-b075-5185-a325-51aefe4efd78" data-jump><span class="ct-e">👩‍🏫</span><b>للمعلمات</b></button><button type="button" class="ct c5" data-home-cat="2aeb0f7b-b969-5256-8f7a-e5a8d4e4d331" data-jump><span class="ct-e">🎁</span><b>حزم التوفير</b></button></div></section>
-            <section class="wrap pr-sec catalog" id="printables" aria-labelledby="pr-t">
-            <div class="pr">
-                <header class="pr-head">
-                    <span class="pr-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h7.5l4 4v13h-11.5z"/><path d="M14 3.5v4h4M9.5 12h5M9.5 15.5h5"/></svg></span>
-                    <div>
-                        <h2 id="pr-t">الملفات القابلة للطباعة</h2>
-                        <p>127 ملفاً PDF جاهزاً. تلوين وأنشطة وأوراق عمل لكل صف.</p>
-                    </div>
-                </header>
-                <div class="pr-body" id="catalogInner"><div class="pr-bar">
-                <h3 id="catalog-t">كل الملفات <small>(127)</small></h3>
-                <label class="sr-only" for="sortSelect">ترتيب حسب السعر</label>
-            <select class="select" id="sortSelect">
-                <option value="default" selected>الترتيب الافتراضي</option>
-                <option value="asc">السعر: الأقل أولاً</option>
-                <option value="desc">السعر: الأعلى أولاً</option>
-            </select>
-            </div>
-            <div class="cat-chips" role="group" aria-label="تصفية حسب القسم">
-                <button type="button" class="chip on" data-home-cat="" aria-pressed="true">الكل <small>127</small></button>
-                <button type="button" class="chip" data-home-cat="3041931d-879b-507d-a2d4-738bcf47c429" aria-pressed="false">تعليمي للأطفال <small>14</small></button><button type="button" class="chip" data-home-cat="b1c0a0de-0c10-4a7e-9a11-c0107ab00001" aria-pressed="false">كتب التلوين <small>6</small></button><button type="button" class="chip" data-home-cat="34c5e974-ceb6-53ae-bb1e-69f9c1b1efcd" aria-pressed="false">كتب أنشطة <small>14</small></button><button type="button" class="chip" data-home-cat="aa77bcfe-be93-5dea-a57a-750879195d56" aria-pressed="false">طلاب الصفوف 1 إلى 6 <small>65</small></button><button type="button" class="chip" data-home-cat="59351792-b075-5185-a325-51aefe4efd78" aria-pressed="false">للمعلمات <small>13</small></button><button type="button" class="chip" data-home-cat="2aeb0f7b-b969-5256-8f7a-e5a8d4e4d331" aria-pressed="false">حزم التوفير <small>15</small></button>
-            </div>
-            
-            <div id="gridBox"><div class="grid"><article class="card" data-card="8b177e82-db60-5dcb-bded-d2d881909312">
-            <a class="card-img" href="/zad-store/p/%D8%B9%D9%8A%D9%91%D9%86%D8%A9-%D9%85%D8%AC%D8%A7%D9%86%D9%8A%D8%A9-%D8%A7%D9%84%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D8%B5%D9%81-%D8%A7%D9%84%D8%A3%D9%88%D9%84/" tabindex="-1" aria-hidden="true">
-                <img src="/zad-store/images/t/2bf55fd2haj.webp" alt="" width="400" height="500" fetchpriority="high" decoding="async">
-                
-            </a>
-            <button class="fav-btn" type="button" data-fav="8b177e82-db60-5dcb-bded-d2d881909312" aria-pressed="false" aria-label="أضف للمفضلة"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-10.3A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 7.8 2.7c0 5.7-7.8 10.3-7.8 10.3Z"/></svg></button>
-            <div class="card-body">
-                <a class="card-name" href="/zad-store/p/%D8%B9%D9%8A%D9%91%D9%86%D8%A9-%D9%85%D8%AC%D8%A7%D9%86%D9%8A%D8%A9-%D8%A7%D9%84%D8%B9%D9%84%D9%88%D9%85-%D8%A7%D9%84%D8%B5%D9%81-%D8%A7%D9%84%D8%A3%D9%88%D9%84/">عيّنة مجانية: العلوم – الصف الأول</a>
-                
-                
-                
-                <div class="price"><b class="free-tag">مجاني</b></div>
-                
-            </div>
-            <div class="card-action" data-action-for="8b177e82-db60-5dcb-bded-d2d881909312"><a class="btn btn-primary free-dl" href="/zad-store/files/free/zad-free-sample-science1.pdf" download="عيّنة-مجانية-العلوم-الصف-الأول.pdf" data-free-dl="8b177e82-db60-5dcb-bded-d2d881909312" rel="noopener">⬇ تحميل مجاني</a></div>
-        </article><article class="card" data-card="00243fe3-8e23-54de-afb2-5eac92272172">
-            <a class="card-img" href="/zad-store/p/%D8%B9%D9%8A%D9%91%D9%86%D8%A9-%D9%85%D8%AC%D8%A7%D9%86%D9%8A%D8%A9-%D8%A7%D9%84%D8%A5%D9%86%D8%AC%D9%84%D9%8A%D8%B2%D9%8A%D8%A9-%D8%A7%D9%84%D8%B5%D9%81-%D8%A7%D9%84%D8%A3%D9%88%D9%84/" tabindex="-1" aria-hidden="true">
-                <img src="/zad-store/images/t/q43dfoi5wo.webp" alt="" width="400" height="500" fetchpriority="high" decoding="async">
-                
-            </a>
-            <button class="fav-btn" type="button" data-fav="00243fe3-8e23-54de-afb2-5eac92272172" aria-pressed="false" aria-label="أضف للمفضلة"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-10.3A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 7.8 2.7c0 5.7-7.8 10.3-7.8 10.3Z"/></svg></button>
-            <div class="card-body">
-                <a class="card-name" href="/zad-store/p/%D8%B9%D9%8A%D9%91%D9%86%D8%A9-%D9%85%D8%AC%D8%A7%D9%86%D9%8A%D8%A9-%D8%A7%D9%84%D8%A5%D9%86%D8%AC%D9%84%D9%8A%D8%B2%D9%8A%D8%A9-%D8%A7%D9%84%D8%B5%D9%81-%D8%A7%D9%84%D8%A3%D9%88%D9%84/">عيّنة مجانية: الإنجليزية – الصف الأول</a>
-                
-                
-                
-                <div class="price"><b class="free-tag">مجاني</b></div>
-                
-            </div>
-            <div class="card-action" data-action-for="00243fe3-8e23-54de-afb2-5eac92272172"><a class="btn btn-primary free-dl" href="/zad-store/files/free/zad-free-sample-english1.pdf" download="عيّنة-مجانية-الإنجليزية-الصف-الأول.pdf" data-free-dl="00243fe3-8e23-54de-afb2-5eac92272172" rel="noopener">⬇ تحميل مجاني</a></div>
-        </article><article class="card" data-card="9a72c925-7275-5865-8d95-8717570b872d">
-            <a class="card-img" href="/zad-store/p/%D8%B9%D9%8A%D9%91%D9%86%D8%A9-%D9%85%D8%AC%D8%A7%D9%86%D9%8A%D8%A9-%D9%84%D8%BA%D8%AA%D9%8A-%D8%A7%D9%84%D8%B5%D9%81-%D8%A7%D9%84%D8%A3%D9%88%D9%84/" tabindex="-1" aria-hidden="true">
-                <img src="/zad-store/images/t/r12shyqrur.webp" alt="" width="400" height="500" decoding="async">
-                
-            </a>
-            <button class="fav-btn" type="button" data-fav="9a72c925-7275-5865-8d95-8717570b872d" aria-pressed="false" aria-label="أضف للمفضلة"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-10.3A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 7.8 2.7c0 5.7-7.8 10.3-7.8 10.3Z"/></svg></button>
-            <div class="card-body">
-                <a class="card-name" href="/zad-store/p/%D8%B9%D9%8A%D9%91%D9%86%D8%A9-%D9%85%D8%AC%D8%A7%D9%86%D9%8A%D8%A9-%D9%84%D8%BA%D8%AA%D9%8A-%D8%A7%D9%84%D8%B5%D9%81-%D8%A7%D9%84%D8%A3%D9%88%D9%84/">عيّنة مجانية: لغتي – الصف الأول</a>
-                
-                
-                
-                <div class="price"><b class="free-tag">مجاني</b></div>
-                
-            </div>
-            <div class="card-action" data-action-for="9a72c925-7275-5865-8d95-8717570b872d"><a class="btn btn-primary free-dl" href="/zad-store/files/free/zad-free-sample-arabic1.pdf" download="عيّنة-مجانية-لغتي-الصف-الأول.pdf" data-free-dl="9a72c925-7275-5865-8d95-8717570b872d" rel="noopener">⬇ تحميل مجاني</a></div>
-        </article><article class="card" data-card="7cc31419-e6df-5d8a-b578-7057d4c7bf23">
-            <a class="card-img" href="/zad-store/p/%D8%B9%D9%8A%D9%91%D9%86%D8%A9-%D9%85%D8%AC%D8%A7%D9%86%D9%8A%D8%A9-%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA-%D8%A7%D9%84%D8%B5%D9%81-%D8%A7%D9%84%D8%A3%D9%88%D9%84/" tabindex="-1" aria-hidden="true">
-                <img src="/zad-store/images/t/1nu6rud3xfp.webp" alt="" width="400" height="500" decoding="async">
-                
-            </a>
-            <button class="fav-btn" type="button" data-fav="7cc31419-e6df-5d8a-b578-7057d4c7bf23" aria-pressed="false" aria-label="أضف للمفضلة"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-10.3A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 7.8 2.7c0 5.7-7.8 10.3-7.8 10.3Z"/></svg></button>
-            <div class="card-body">
-                <a class="card-name" href="/zad-store/p/%D8%B9%D9%8A%D9%91%D9%86%D8%A9-%D9%85%D8%AC%D8%A7%D9%86%D9%8A%D8%A9-%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A7%D8%AA-%D8%A7%D9%84%D8%B5%D9%81-%D8%A7%D9%84%D8%A3%D9%88%D9%84/">عيّنة مجانية: رياضيات الصف الأول</a>
-                
-                
-                
-                <div class="price"><b class="free-tag">مجاني</b></div>
-                
-            </div>
-            <div class="card-action" data-action-for="7cc31419-e6df-5d8a-b578-7057d4c7bf23"><a class="btn btn-primary free-dl" href="/zad-store/files/free/zad-free-sample-math1.pdf" download="عيّنة-مجانية-رياضيات-الصف-الأول.pdf" data-free-dl="7cc31419-e6df-5d8a-b578-7057d4c7bf23" rel="noopener">⬇ تحميل مجاني</a></div>
-        </article><article class="card" data-card="da782593-3579-5527-a0a6-29b2fec6f87f">
-            <a class="card-img" href="/zad-store/p/%D9%87%D8%AF%D9%8A%D8%A9-%D9%85%D8%AC%D8%A7%D9%86%D9%8A%D8%A9-%D8%AD%D8%B1%D9%88%D9%81-%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-%D9%84%D9%84%D8%AA%D9%84%D9%88%D9%8A%D9%86/" tabindex="-1" aria-hidden="true">
-                <img src="/zad-store/images/t/2a42z138zsb.webp" alt="" width="400" height="500" loading="lazy" decoding="async">
-                
-            </a>
-            <button class="fav-btn" type="button" data-fav="da782593-3579-5527-a0a6-29b2fec6f87f" aria-pressed="false" aria-label="أضف للمفضلة"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-10.3A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 7.8 2.7c0 5.7-7.8 10.3-7.8 10.3Z"/></svg></button>
-            <div class="card-body">
-                <a class="card-name" href="/zad-store/p/%D9%87%D8%AF%D9%8A%D8%A9-%D9%85%D8%AC%D8%A7%D9%86%D9%8A%D8%A9-%D8%AD%D8%B1%D9%88%D9%81-%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-%D9%84%D9%84%D8%AA%D9%84%D9%88%D9%8A%D9%86/">هدية مجانية: حروف عربية للتلوين</a>
-                
-                
-                
-                <div class="price"><b class="free-tag">مجاني</b></div>
-                
-            </div>
-            <div class="card-action" data-action-for="da782593-3579-5527-a0a6-29b2fec6f87f"><a class="btn btn-primary free-dl" href="/zad-store/files/free/zad-free-arabic-letters.pdf" download="هدية-مجانية-حروف-عربية-للتلوين.pdf" data-free-dl="da782593-3579-5527-a0a6-29b2fec6f87f" rel="noopener">⬇ تحميل مجاني</a></div>
-        </article><article class="card" data-card="eb885ba9-8cce-593a-9278-56b3a9b8f9cb">
-            <a class="card-img" href="/zad-store/p/%D9%87%D8%AF%D9%8A%D8%A9-%D9%85%D8%AC%D8%A7%D9%86%D9%8A%D8%A9-%D9%84%D9%88%D9%91%D9%86-%D9%88%D8%B9%D9%8F%D8%AF%D9%91-%D9%85%D9%86-1-%D8%A5%D9%84%D9%89-5/" tabindex="-1" aria-hidden="true">
-                <img src="/zad-store/images/t/285dghq96ei.webp" alt="" width="400" height="500" loading="lazy" decoding="async">
-                
-            </a>
-            <button class="fav-btn" type="button" data-fav="eb885ba9-8cce-593a-9278-56b3a9b8f9cb" aria-pressed="false" aria-label="أضف للمفضلة"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-10.3A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 7.8 2.7c0 5.7-7.8 10.3-7.8 10.3Z"/></svg></button>
-            <div class="card-body">
-                <a class="card-name" href="/zad-store/p/%D9%87%D8%AF%D9%8A%D8%A9-%D9%85%D8%AC%D8%A7%D9%86%D9%8A%D8%A9-%D9%84%D9%88%D9%91%D9%86-%D9%88%D8%B9%D9%8F%D8%AF%D9%91-%D9%85%D9%86-1-%D8%A5%D9%84%D9%89-5/">هدية مجانية: لوّن وعُدّ من 1 إلى 5</a>
-                
-                
-                
-                <div class="price"><b class="free-tag">مجاني</b></div>
-                
-            </div>
-            <div class="card-action" data-action-for="eb885ba9-8cce-593a-9278-56b3a9b8f9cb"><a class="btn btn-primary free-dl" href="/zad-store/files/free/zad-free-count-1-5.pdf" download="هدية-مجانية-لوّن-وعُدّ-من-1-إلى-5.pdf" data-free-dl="eb885ba9-8cce-593a-9278-56b3a9b8f9cb" rel="noopener">⬇ تحميل مجاني</a></div>
-        </article><article class="card" data-card="42bd425d-968e-5060-b915-e8b586e8dcbe">
-            <a class="card-img" href="/zad-store/p/%D8%AD%D8%B1%D9%88%D9%81-%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-%D9%84%D9%84%D8%AA%D9%84%D9%88%D9%8A%D9%86/" tabindex="-1" aria-hidden="true">
-                <img src="/zad-store/images/t/i3o9bsd73t.webp" alt="" width="400" height="500" loading="lazy" decoding="async">
-                
-            </a>
-            <button class="fav-btn" type="button" data-fav="42bd425d-968e-5060-b915-e8b586e8dcbe" aria-pressed="false" aria-label="أضف للمفضلة"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-10.3A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 7.8 2.7c0 5.7-7.8 10.3-7.8 10.3Z"/></svg></button>
-            <div class="card-body">
-                <a class="card-name" href="/zad-store/p/%D8%AD%D8%B1%D9%88%D9%81-%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-%D9%84%D9%84%D8%AA%D9%84%D9%88%D9%8A%D9%86/">حروف عربية للتلوين</a>
-                
-                
-                
-                <div class="price">
-            <b>1.000 ر.ع</b>
-            
-            
-            
-        </div>
-                
-            </div>
-            <div class="card-action" data-action-for="42bd425d-968e-5060-b915-e8b586e8dcbe"><button class="btn btn-primary" type="button" data-add="42bd425d-968e-5060-b915-e8b586e8dcbe">أضف للسلة</button></div>
-        </article><article class="card" data-card="765b1caa-d1f2-5d0b-8c7d-b0b6addb4598">
-            <a class="card-img" href="/zad-store/p/%D8%AD%D9%8A%D9%88%D8%A7%D9%86%D8%A7%D8%AA-%D8%A7%D9%84%D9%85%D8%B2%D8%B1%D8%B9%D8%A9/" tabindex="-1" aria-hidden="true">
-                <img src="/zad-store/images/t/l9f0bms047.webp" alt="" width="400" height="500" loading="lazy" decoding="async">
-                
-            </a>
-            <button class="fav-btn" type="button" data-fav="765b1caa-d1f2-5d0b-8c7d-b0b6addb4598" aria-pressed="false" aria-label="أضف للمفضلة"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-10.3A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 7.8 2.7c0 5.7-7.8 10.3-7.8 10.3Z"/></svg></button>
-            <div class="card-body">
-                <a class="card-name" href="/zad-store/p/%D8%AD%D9%8A%D9%88%D8%A7%D9%86%D8%A7%D8%AA-%D8%A7%D9%84%D9%85%D8%B2%D8%B1%D8%B9%D8%A9/">حيوانات المزرعة</a>
-                
-                
-                
-                <div class="price">
-            <b>0.800 ر.ع</b>
-            
-            
-            
-        </div>
-                
-            </div>
-            <div class="card-action" data-action-for="765b1caa-d1f2-5d0b-8c7d-b0b6addb4598"><button class="btn btn-primary" type="button" data-add="765b1caa-d1f2-5d0b-8c7d-b0b6addb4598">أضف للسلة</button></div>
-        </article><article class="card" data-card="27b63411-76e1-590e-9dd7-7c53c34df4de">
-            <a class="card-img" href="/zad-store/p/%D9%84%D9%88%D9%86-%D9%88%D8%B9%D8%AF-%D9%85%D9%86-1-%D8%A5%D9%84%D9%89-10/" tabindex="-1" aria-hidden="true">
-                <img src="/zad-store/images/t/1yqf9mkaddc.webp" alt="" width="400" height="500" loading="lazy" decoding="async">
-                
-            </a>
-            <button class="fav-btn" type="button" data-fav="27b63411-76e1-590e-9dd7-7c53c34df4de" aria-pressed="false" aria-label="أضف للمفضلة"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-10.3A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 7.8 2.7c0 5.7-7.8 10.3-7.8 10.3Z"/></svg></button>
-            <div class="card-body">
-                <a class="card-name" href="/zad-store/p/%D9%84%D9%88%D9%86-%D9%88%D8%B9%D8%AF-%D9%85%D9%86-1-%D8%A5%D9%84%D9%89-10/">لوّن وعُدّ من 1 إلى 10</a>
-                
-                
-                
-                <div class="price">
-            <b>0.800 ر.ع</b>
-            
-            
-            
-        </div>
-                
-            </div>
-            <div class="card-action" data-action-for="27b63411-76e1-590e-9dd7-7c53c34df4de"><button class="btn btn-primary" type="button" data-add="27b63411-76e1-590e-9dd7-7c53c34df4de">أضف للسلة</button></div>
-        </article><article class="card" data-card="078b4d7a-39e0-592b-9962-21b7d5e81a82">
-            <a class="card-img" href="/zad-store/p/%D8%B9%D8%A7%D9%84%D9%85-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1/" tabindex="-1" aria-hidden="true">
-                <img src="/zad-store/images/t/8p9d14vmuk.webp" alt="" width="400" height="500" loading="lazy" decoding="async">
-                
-            </a>
-            <button class="fav-btn" type="button" data-fav="078b4d7a-39e0-592b-9962-21b7d5e81a82" aria-pressed="false" aria-label="أضف للمفضلة"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-10.3A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 7.8 2.7c0 5.7-7.8 10.3-7.8 10.3Z"/></svg></button>
-            <div class="card-body">
-                <a class="card-name" href="/zad-store/p/%D8%B9%D8%A7%D9%84%D9%85-%D8%A7%D9%84%D8%A8%D8%AD%D8%B1/">عالم البحر</a>
-                
-                
-                
-                <div class="price">
-            <b>0.800 ر.ع</b>
-            
-            
-            
-        </div>
-                
-            </div>
-            <div class="card-action" data-action-for="078b4d7a-39e0-592b-9962-21b7d5e81a82"><button class="btn btn-primary" type="button" data-add="078b4d7a-39e0-592b-9962-21b7d5e81a82">أضف للسلة</button></div>
-        </article><article class="card" data-card="235eeab2-4124-5a3b-be25-72703f5edf95">
-            <a class="card-img" href="/zad-store/p/%D9%81%D9%88%D8%A7%D9%86%D9%8A%D8%B3-%D8%B1%D9%85%D8%B6%D8%A7%D9%86-%D9%88%D8%A7%D9%84%D8%B9%D9%8A%D8%AF/" tabindex="-1" aria-hidden="true">
-                <img src="/zad-store/images/t/2ak0tgdvf1r.webp" alt="" width="400" height="500" loading="lazy" decoding="async">
-                
-            </a>
-            <button class="fav-btn" type="button" data-fav="235eeab2-4124-5a3b-be25-72703f5edf95" aria-pressed="false" aria-label="أضف للمفضلة"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-10.3A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 7.8 2.7c0 5.7-7.8 10.3-7.8 10.3Z"/></svg></button>
-            <div class="card-body">
-                <a class="card-name" href="/zad-store/p/%D9%81%D9%88%D8%A7%D9%86%D9%8A%D8%B3-%D8%B1%D9%85%D8%B6%D8%A7%D9%86-%D9%88%D8%A7%D9%84%D8%B9%D9%8A%D8%AF/">فوانيس رمضان والعيد</a>
-                
-                
-                
-                <div class="price">
-            <b>0.900 ر.ع</b>
-            
-            
-            
-        </div>
-                
-            </div>
-            <div class="card-action" data-action-for="235eeab2-4124-5a3b-be25-72703f5edf95"><button class="btn btn-primary" type="button" data-add="235eeab2-4124-5a3b-be25-72703f5edf95">أضف للسلة</button></div>
-        </article><article class="card" data-card="336b08dd-7aaa-5009-bbb9-f91cbdbe1667">
-            <a class="card-img" href="/zad-store/p/%D8%A7%D9%84%D9%85%D9%87%D9%86-%D9%84%D9%84%D8%AA%D9%84%D9%88%D9%8A%D9%86/" tabindex="-1" aria-hidden="true">
-                <img src="/zad-store/images/t/w5bjxmpwj9.webp" alt="" width="400" height="500" loading="lazy" decoding="async">
-                
-            </a>
-            <button class="fav-btn" type="button" data-fav="336b08dd-7aaa-5009-bbb9-f91cbdbe1667" aria-pressed="false" aria-label="أضف للمفضلة"><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-10.3A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 7.8 2.7c0 5.7-7.8 10.3-7.8 10.3Z"/></svg></button>
-            <div class="card-body">
-                <a class="card-name" href="/zad-store/p/%D8%A7%D9%84%D9%85%D9%87%D9%86-%D9%84%D9%84%D8%AA%D9%84%D9%88%D9%8A%D9%86/">المهن للتلوين</a>
-                
-                
-                
-                <div class="price">
-            <b>1.000 ر.ع</b>
-            
-            
-            
-        </div>
-                
-            </div>
-            <div class="card-action" data-action-for="336b08dd-7aaa-5009-bbb9-f91cbdbe1667"><button class="btn btn-primary" type="button" data-add="336b08dd-7aaa-5009-bbb9-f91cbdbe1667">أضف للسلة</button></div>
-        </article></div><div class="more-wrap"><button class="btn btn-ghost more-btn" type="button" data-more>عرض المزيد <small>(115)</small></button></div></div></div>
-            </div>
-        </section>
-            
-            
-            
-            <section class="wrap seo-intro"><p class="intro">منصة زاد التعليمية عُمانية لملفات تعليمية جاهزة للطباعة: تلوين وأنشطة للأطفال، وأوراق عمل لكل صف، ومواد للمعلمات. تطلب على واتساب وتصلك الملفات.</p></section>
-</main>
-
-<footer id="footer" class="footer"><div class="wrap foot">
-            <div class="foot-head">
-                <div class="footer-brand"><img src="/zad-store/images/logo-zad-s.png" alt="منصة زاد التعليمية" width="40" height="40"></div>
-                <p class="foot-about">منصة زاد التعليمية عُمانية لملفات تعليمية جاهزة للطباعة: تلوين وأنشطة للأطفال، وأوراق عمل لكل صف، ومواد للمعلمات. تطلب على واتساب وتصلك الملفات.</p>
-            </div>
-            <ul class="foot-points"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h7.5l4 4v13h-11.5z"/><path d="M14 3.5v4h4M9.5 12h5M9.5 15.5h5"/></svg><span>ملفات PDF جاهزة للطباعة</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v10M8 9.8l4 3.7 4-3.7"/><path d="M4 13.5v5.5h16v-5.5"/></svg><span>تصلك على واتساب</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg><span>تحويل بنكي آمن</span></li></ul>
-            <details class="foot-acc">
-                <summary>الأقسام<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></summary>
-                <ul class="footer-cats"><li><a href="/zad-store/c/%D8%AA%D8%B9%D9%84%D9%8A%D9%85%D9%8A-%D9%84%D9%84%D8%A3%D8%B7%D9%81%D8%A7%D9%84/">تعليمي للأطفال</a></li><li><a href="/zad-store/c/%D9%83%D8%AA%D8%A8-%D8%A7%D9%84%D8%AA%D9%84%D9%88%D9%8A%D9%86/">كتب التلوين</a></li><li><a href="/zad-store/c/%D9%83%D8%AA%D8%A8-%D8%A3%D9%86%D8%B4%D8%B7%D8%A9/">كتب أنشطة</a></li><li><a href="/zad-store/c/%D8%B7%D9%84%D8%A7%D8%A8-%D8%A7%D9%84%D8%B5%D9%81%D9%88%D9%81-1-%D8%A5%D9%84%D9%89-4/">طلاب الصفوف 1 إلى 6</a></li><li><a href="/zad-store/c/%D9%84%D9%84%D9%85%D8%B9%D9%84%D9%85%D8%A7%D8%AA/">للمعلمات</a></li><li><a href="/zad-store/c/%D8%AD%D8%B2%D9%85-%D8%A7%D9%84%D8%AA%D9%88%D9%81%D9%8A%D8%B1/">حزم التوفير</a></li></ul>
-            </details>
-            <details class="foot-acc">
-                <summary>الاستلام والدفع<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></summary>
-                <ul class="foot-lines"><li>استلام الملفات على واتساب · مجاني · خلال ساعات</li><li>الدفع: تحويل بنكي</li></ul>
-                <a class="foot-more" href="/zad-store/shipping/">التفاصيل كاملة</a>
-            </details>
-            <div class="foot-follow"><span>تواصل معنا</span><div class="foot-icons"><a class="wa" href="https://wa.me/96877336242" target="_blank" rel="noopener" aria-label="واتساب"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6a9.3 9.3 0 0 0-8 14.1L2.7 21.4l4.8-1.3A9.3 9.3 0 1 0 12 2.6Z"/><path class="wa-glyph" d="M8.4 7.6c.2-.4.4-.4.7-.4h.6c.2 0 .4.1.5.4l.8 1.8c.1.3.1.5-.1.7l-.7.8c.7 1.3 1.7 2.3 3 3l.8-.7c.2-.2.4-.2.7-.1l1.8.8c.3.1.4.3.4.5v.6c0 .3-.1.5-.4.7-.4.3-1 .5-1.6.5-1.4 0-3.2-.8-4.7-2.3S8 9.9 8 8.5c0-.4.1-.7.4-.9Z"/></svg></a></div></div>
-            <div class="footer-bottom">© 2026 منصة زاد التعليمية · <a href="/zad-store/shipping/">طريقة الاستلام والدفع</a> · <a href="/zad-store/custom/">ملف باسم طفلك</a> · <a href="/zad-store/privacy/">سياسة الخصوصية</a> · <a href="/zad-store/review/" rel="nofollow">شاركنا رأيك</a></div>
-        </div></footer>
+<footer id="footer" class="footer"><div class="wrap foot zf">
+<div class="zf-brand"><img src="/zad-store/images/logo-zad-s.png" alt="منصة زاد التعليمية" width="40" height="40"><div><b>منصة زاد التعليمية</b><p>منصة عُمانية للتعلم واللعب: ألعاب مجانية وملفات تعليمية جاهزة للطباعة.</p></div></div>
+<nav class="zf-cols" aria-label="الأقسام"><ul><li><a href="/zad-store/free/">الألعاب المجانية</a></li><li><a href="/zad-store/grades/">اختر صفك</a></li><li><a href="/zad-store/library/">الملفات التعليمية</a></li><li><a href="/zad-store/learn/">تعلم والعب مع زوزو</a></li></ul><ul><li><a href="/zad-store/privacy/">سياسة الخصوصية</a></li><li><a href="/zad-store/terms/">شروط الاستخدام</a></li><li><a href="https://wa.me/96877336242" target="_blank" rel="noopener">التواصل معنا</a></li></ul></nav>
+<div class="footer-bottom">© 2026 منصة زاد التعليمية · جميع الحقوق محفوظة</div>
+</div></footer>
 
 <a id="waFloat" class="wa-float" hidden target="_blank" rel="noopener" aria-label="تواصل عبر واتساب">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6a9.3 9.3 0 0 0-8 14.1L2.7 21.4l4.8-1.3A9.3 9.3 0 1 0 12 2.6Z"/><path class="wa-glyph" d="M8.4 7.6c.2-.4.4-.4.7-.4h.6c.2 0 .4.1.5.4l.8 1.8c.1.3.1.5-.1.7l-.7.8c.7 1.3 1.7 2.3 3 3l.8-.7c.2-.2.4-.2.7-.1l1.8.8c.3.1.4.3.4.5v.6c0 .3-.1.5-.4.7-.4.3-1 .5-1.6.5-1.4 0-3.2-.8-4.7-2.3S8 9.9 8 8.5c0-.4.1-.7.4-.9Z"/></svg>
@@ -355,11 +79,11 @@ if (/^#(admin|orders)$/.test(location.hash)) { location.replace(window.ATHR_BASE
 
 <script src="/zad-store/js/zad-theme.js"></script><script src="/zad-store/js/supabase-config.js?v=beb96d8866" defer></script>
 <script src="/zad-store/js/defaults.js?v=85268c17ba" defer></script>
-<script src="/zad-store/js/views.js?v=23cbc457ac" defer></script>
+<script src="/zad-store/js/views.js?v=c18ff95cec" defer></script>
 <script src="/zad-store/js/i18n-en.js?v=117ce2836f" defer></script>
 <script src="/zad-store/js/thumbs.js?v=99914b932b" defer></script>
 <script src="/zad-store/js/rates.js?v=3245f6932f" defer></script>
 <script src="/zad-store/js/catalog.js?v=829fb7c8d6" defer></script>
-<script src="/zad-store/js/store.js?v=8717990ff6" defer></script>
+<script src="/zad-store/js/store.js?v=f391d6d639" defer></script>
 </body>
 </html>
