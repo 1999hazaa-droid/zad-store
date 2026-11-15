@@ -268,9 +268,9 @@ return`<section class="zm-hero" aria-labelledby="zm-h1"><div class="wrap zm-hg">
 <div class="zm-ft"><span class="zm-tag">${X("من سنة إلى الصف الرابع")}</span><b>${X("الألعاب التعليمية المجانية")}</b><small>${X("أكثر من 80 لعبة، ونختار لطفلك ما يناسب عمره وصفّه.")}</small>
 <span class="zm-fb"><span class="zm-btn zm-sm">${X("ابدأ اللعب")}</span><a href="${A("games/#lv")}">${X("حسب العمر")}</a><a href="${A("games/#lv")}">${X("حسب الصف")}</a></span></div>
 <span class="zm-fi" aria-hidden="true">${I("blocks",64)}<img src="${A("games/chars/poses/boy-joy-160.png")}" alt="" width="116" height="160" loading="lazy" decoding="async"></span></div>
-${K("owl","تعلّم والعب مع زوزو","حروف وكلمات وأنشطة متدرّجة","سنة – الصف الرابع","learn/","#E3F6EE","#0B6B4A")}
-${K("notebook","الملفات التعليمية","أوراق عمل جاهزة للطباعة","سنة – الصف الرابع","library/","#FFEEDD","#A34E00")}
-${K("sparkle","المزيد","عالم زاد، المغامرات، الإنجازات، متابعة الطفل وأكثر","كل الفئات","games/#more","#EFEAFF","#4A22C4")}
+${K("owl","تعلّم والعب مع زوزو","حروف وكلمات وأنشطة متدرّجة","سنة – الصف الرابع","learn/","#E4F6ED","#0B6B4A")}
+${K("notebook","الملفات التعليمية","أوراق عمل جاهزة للطباعة","سنة – الصف الرابع","library/","#FFF4D6","#8A5A00")}
+${K("sparkle","المزيد","عالم زاد والمغامرات والإنجازات وأكثر","كل الفئات","games/#more","#F0EAFE","#5526B8")}
 </div>
 <nav class="zm-browse" aria-label="${X("تصفّح أيضًا")}"><span>${X("تصفّح أيضًا:")}</span><a href="${A("grades/#subjects")}">${I("globe",24)}${X("جميع المواد الدراسية")}</a><a href="${A("grades/#ages")}">${I("ruler",24)}${X("جميع الصفوف والأعمار")}</a></nav>
 </div></section>

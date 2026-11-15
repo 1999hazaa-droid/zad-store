@@ -387,3 +387,33 @@ body:has(.zm-hero) main#view{margin-top:0!important;padding:0!important;border-r
 }
 @media(max-width:339px){.zm-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.zm-jg{grid-template-columns:minmax(0,1fr) 84px}.zm-jv{max-width:84px}}
 .zm-btn2{background:#FFC83A;color:#241154;border:0;box-shadow:0 6px 16px #ffc83a55}.zm-btn2:hover{background:#FFC83A;filter:brightness(1.05)}
+/* إعادة تصميم مضغوطة: البطاقة الرئيسية + بطاقات الأقسام */
+.zm-sec{padding-top:18px;padding-bottom:20px}
+.zm-sec .zm-head{margin-bottom:12px}.zm-sec .zm-head h2{font-size:21px}.zm-sec .zm-head p{font-size:13px}
+.zm-grid{gap:8px}
+.zm-feat{padding:12px 14px;gap:6px;border-radius:16px}
+.zm-feat:before{width:120px;height:120px;bottom:-60px}
+.zm-ft{gap:3px}
+.zm-feat b{font-size:16.5px;line-height:1.35}
+.zm-feat small{font-size:12px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.zm-feat .zm-tag{font-size:10.5px;padding:1px 8px}
+.zm-fb{flex-wrap:nowrap;gap:5px;margin-top:6px}
+.zm-fb a{min-height:34px;padding:0 10px;font-size:12px;border-radius:9px;white-space:nowrap}
+.zm-sm{min-height:34px;padding:0 13px;font-size:13px;border-radius:9px;white-space:nowrap}
+.zm-fi img:first-child{width:32px;height:32px;margin-inline-end:-8px}
+.zm-fi img:last-child{height:92px}
+.zm-card{display:grid;grid-template-columns:40px minmax(0,1fr);grid-template-areas:"ic tag" "ic b" "d d" "go go";column-gap:8px;row-gap:1px;align-items:center;padding:9px 10px 8px;border-radius:14px;background:var(--bg);border-color:#29204b14;color:var(--ink)}
+.zm-card .zm-ic{grid-area:ic;width:40px;height:40px;border-radius:12px;margin:0;align-self:center}
+.zm-card .zm-ic img{width:30px;height:30px}
+.zm-card .zm-tag{grid-area:tag;justify-self:start;font-size:10px;padding:0 7px;line-height:1.7}
+.zm-card b{grid-area:b;font-size:14px;line-height:1.35}
+.zm-card small{grid-area:d;font-size:11.5px;line-height:1.5;color:#68617D;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.zm-card .zm-go{grid-area:go;justify-self:end;margin:0;padding:0;font-size:12px}
+.zm-card .zm-go svg{width:12px;height:12px}
+.zm-grid>.zm-card:last-child{grid-column:1/-1}
+.zm-browse{margin-top:12px}
+@media(min-width:700px){
+ .zm-sec{padding-top:22px}.zm-grid{gap:10px}
+ .zm-feat{grid-column:1/-1;padding:14px 22px}.zm-feat b{font-size:19px}.zm-feat small{font-size:13px}.zm-fi img:last-child{height:108px}
+ .zm-card{padding:10px 12px 9px}.zm-card b{font-size:15px}.zm-card small{font-size:12.5px}
+}
