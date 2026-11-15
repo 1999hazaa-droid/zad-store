@@ -1,0 +1,19 @@
+/* ZAD — نظام الهوية البصرية الموحّد (المرحلة ١) — لم يُربط بالصفحات الحية بعد */
+:root{
+  /* العلامة */
+  --z-pri:#5B34D6;--z-pri-d:#3D1FA6;--z-pri-l:#8B5CF6;--z-tint:#F3EFFF;--z-tint2:#E7DFFF;
+  /* ألوان مستمدة من الشخصيات (الهوية العمانية) */
+  --z-maroon:#8F1C39;--z-navy:#2B395E;--z-gold:#E3B04B;--z-sand:#FFF6E5;
+  /* ألوان المهارات والحالات */
+  --z-sun:#FFC93C;--z-ok:#22B45E;--z-bad:#EF4444;--z-sky:#38BDF8;--z-coral:#FF7A59;--z-mint:#14B8A6;
+  /* النص والسطوح */
+  --z-ink:#241A45;--z-ink2:#6B5D99;--z-line:#E8E2FA;--z-bg:#F7F4FF;--z-card:#FFFFFF;
+  /* الخط والمقاييس */
+  --z-font:Cairo,system-ui,sans-serif;
+  --z-fs-xs:12px;--z-fs-sm:14px;--z-fs-md:16px;--z-fs-lg:20px;--z-fs-xl:26px;--z-fs-2xl:34px;
+  --z-r-sm:12px;--z-r-md:20px;--z-r-lg:28px;--z-r-pill:999px;
+  --z-sp-1:6px;--z-sp-2:10px;--z-sp-3:16px;--z-sp-4:24px;--z-sp-5:36px;
+  --z-sh-1:0 1px 2px #2b1b4f0d,0 6px 16px #5b34d612;
+  --z-sh-2:0 2px 4px #2b1b4f10,0 14px 34px #5b34d61f;
+  --z-btn-h:56px;
+}
