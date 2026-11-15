@@ -3,7 +3,7 @@
 var B="../images/ill/";
 var M={"⭐":"star","🌟":"star","☆":"star0","🔒":"lock","🔊":"sound","🗣":"sound","🎵":"music","🎶":"music","💡":"bulb","✈":"rocket","🟢":"ok","💪":"star","💛":"heart","🎉":"star","👏":"star","😊":"smile","🌱":"sprout","🏠":"home","🎮":"blocks","🏅":"trophy","🏆":"trophy","🗺":"map","🧭":"rocket","🧠":"puzzle","📈":"chart","📊":"chart","🏡":"home","🔁":"eraser","☁":"cloud","💾":"cloud","🔎":"search","🔍":"search","🦉":"owl","🖨":"notebook","🚀":"rocket","🎯":"target","📚":"books","🎒":"bag","✅":"ok","✓":"ok","⏳":"clock","⌛":"clock"};
 var RE=/[☀-➿⭐\uD83C-\uD83E][\uDC00-\uDFFF]?️?/g;
-var SEL=".zic,.lve,.lvs,.zpb,.bb,.hs,.zrp,.hintbtn,.zo-in,.zo-toast,.zpo,.zkf,.zkg .stars,.zknav,.zkhd,.zkstats,.hubgrid,.cta2,.achcard,.stg-e,.zpe,.zh1,.zh2,.zdock,.top .pill,.worldcard,.zbdg,.zkbig,.zkchips2,.zrow2";
+var SEL=".zic,.lve,.lvs,.zpb,.bb,.hs,.zrp,.hintbtn,.zo-in,.zo-toast,.zpo,.zkf,.zkg .stars,.zknav,.zkhd,.zkstats,.hubgrid,.cta2,.achcard,.stg-e,.zpe,.zh1,.zh2,.zdock,.top .pill,.worldcard,.zbdg,.zkbig,.zkchips2,.zrow2,.zrcem,.zhub .zpo";
 function key(s){return s.replace(/️/g,"")}
 function fix(n){
   var t=n.nodeValue;if(!t)return;RE.lastIndex=0;if(!RE.test(t))return;RE.lastIndex=0;
