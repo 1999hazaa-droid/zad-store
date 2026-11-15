@@ -7,3 +7,9 @@
 .opt.hint{animation:hintp 1s ease-in-out 3;border-color:#F0B429;box-shadow:0 0 0 4px #FFE9A8}
 @keyframes hintp{50%{transform:scale(1.06)}}
 @media (prefers-reduced-motion:reduce){.opt.hint,.hintbtn{animation:none}}
+
+.lvpick{max-width:460px;margin:0 auto;text-align:center}.lvpick h2{margin:6px 0}
+.lvcard{display:flex;align-items:center;gap:12px;width:100%;margin:12px 0;border:0;border-radius:22px;padding:14px 16px;background:#fff;box-shadow:0 5px #d7c8ff;font-family:Cairo,system-ui,sans-serif;cursor:pointer;text-align:start;color:inherit}
+.lvcard:active{transform:translateY(3px);box-shadow:0 2px #d7c8ff}.lvcard.lock{opacity:.55;cursor:default;box-shadow:none;background:#F1ECFF}
+.lve{font-size:34px}.lvt{flex:1}.lvt b{display:block;font-size:19px}.lvt small{color:#6B5F8E;font-weight:600}.lvs{color:#F0B429;font-size:17px;letter-spacing:1px;direction:ltr}
+.lvpick .prompt{font-size:16px;font-weight:600;margin:4px 0 10px;color:#6B5F8E}
