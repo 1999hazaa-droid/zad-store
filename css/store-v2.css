@@ -1,5 +1,5 @@
 /* هوية زاد الموحّدة للمتجر — تعمل فقط مع html.zv2 */
-html.zv2:not([data-mode=dark]){--primary:#5B34D6!important;--hero:#3D1FA6!important;--bg:#F7F4FF!important;--text:#241A45!important;--surface:#FFFFFF!important;--r:20px!important;--r-sm:14px!important;--star:#E3A30B!important;--shadow:0 1px 2px #2b1b4f0d,0 8px 22px #5b34d61a!important;--shadow-up:0 -6px 22px #5b34d61f!important}
+html.zv2:not([data-mode=dark]){--primary:#5427D5!important;--hero:#39209C!important;--bg:#F7F4FF!important;--text:#241A45!important;--surface:#FFFFFF!important;--r:20px!important;--r-sm:14px!important;--star:#E3A30B!important;--shadow:0 1px 2px #2b1b4f0d,0 8px 22px #5427D51a!important;--shadow-up:0 -6px 22px #5427D51f!important}
 html.zv2 body{background:var(--bg)}
 html.zv2 button,html.zv2 .btn,html.zv2 a.btn{border-radius:99px}
-html.zv2:not([data-mode=dark]){--p:#5B34D6;--bg:#F7F4FF}
+html.zv2:not([data-mode=dark]){--p:#5427D5;--bg:#F7F4FF}

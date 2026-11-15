@@ -1,37 +1,67 @@
 /* الصفحة الرئيسية المبسّطة + صفحة الملفات + التذييل — للجوال أولًا ثم التابلت والكمبيوتر */
 .top-row.hide-s .search{display:none}
 .top-row.hide-s{grid-template-columns:auto 1fr auto auto auto;grid-template-areas:"menu brand lang cur cart"}
+/* ===== ألوان الهوية: بنفسجي #5427D5 + داكن #39209C + فاتح #EEE8FF + سماوي #28A9E8 + أخضر #24B47E + برتقالي #FF9B38 + وردي #E94D9B + أصفر #FFD34D ===== */
+body:has(.zh-wel){background:radial-gradient(120% 60% at 100% 0,#28A9E81f 0,transparent 60%),radial-gradient(90% 50% at 0 8%,#EEE8FF 0,transparent 70%),linear-gradient(180deg,#fff 0,#EEE8FF 55%,#fff 100%)!important;background-repeat:no-repeat!important}
 .zh-wel{padding-top:14px}
-.zh-wc{display:flex;align-items:center;gap:12px 14px;flex-wrap:wrap;background:#fff;border:1px solid #E8E2FA;border-radius:20px;padding:12px 16px;box-shadow:0 1px 2px #2b1b4f0a,0 6px 18px #5b34d612}
+.zh-wc{display:flex;align-items:center;gap:12px 14px;flex-wrap:wrap;background:linear-gradient(135deg,#fff 0,#EEE8FF 100%);border:1px solid #DDD2FA;border-radius:22px;padding:12px 16px;box-shadow:0 1px 2px #39209C0d,0 8px 22px #5427D51a}
 .zh-ch{width:76px;height:76px;object-fit:contain;flex:none}
 .zh-wt{flex:1 1 150px;min-width:0}
-.zh-wt h2{margin:0;font-size:22px;line-height:1.35;color:#241A45}
-.zh-wt p{margin:2px 0 0;font-size:16px;color:#6B6486}
-.zh-btn,.zh-go{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 24px;border-radius:14px;background:var(--primary,#5B34D6);color:#fff;font-weight:700;font-size:17px;text-decoration:none}
+.zh-wt h2{margin:0;font-size:22px;line-height:1.35;color:#39209C}
+.zh-wt p{margin:2px 0 0;font-size:16px;color:#5a4a99}
+.zh-btn,.zh-go{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 24px;border-radius:14px;background:#5427D5;color:#fff;font-weight:700;font-size:17px;text-decoration:none;box-shadow:0 3px 0 #39209C;transition:transform .12s,box-shadow .12s,background .12s}
+.zh-btn:hover,.zh-go:hover{background:#6236E6}
+.zh-btn:active,.zh-go:active{transform:translateY(2px);box-shadow:0 1px 0 #39209C}
 .zh-btn{flex:1 1 100%}
-.zh-sec{padding-top:14px;padding-bottom:8px}
+.zh-sec{padding-top:14px;padding-bottom:12px}
 .zh-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
-.zh-card{display:flex;flex-direction:column;gap:12px;background:#fff;border:1px solid #E8E2FA;border-radius:20px;padding:18px;color:#241A45;text-decoration:none;box-shadow:0 1px 2px #2b1b4f0a,0 6px 18px #5b34d612;min-width:0}
-.zh-ic{display:grid;place-items:center;width:64px;height:64px;border-radius:18px;background:#F1ECFF;font-size:34px}
+.zh-card{display:flex;flex-direction:column;gap:12px;background:#fff;border:1px solid #E4DBFB;border-radius:22px;padding:18px;color:#241A45;text-decoration:none;box-shadow:0 1px 2px #39209C0d,0 8px 22px #5427D51a;min-width:0;transition:transform .15s,box-shadow .15s}
+a.zh-card:hover{transform:translateY(-3px);box-shadow:0 2px 4px #39209C14,0 14px 30px #5427D52b}
+a.zh-card:active{transform:scale(.985)}
+.zh-ic{display:grid;place-items:center;width:64px;height:64px;border-radius:18px;background:#EEE8FF;font-size:34px}
 .zh-tx b{display:block;font-size:20px;line-height:1.4}
-.zh-tx small{display:block;margin-top:2px;font-size:15px;line-height:1.7;color:#6B6486}
+.zh-tx small{display:block;margin-top:2px;font-size:15px;line-height:1.7;color:#5f5780}
 .zh-go{margin-top:auto;align-self:flex-start;min-width:150px}
-.zh-main{background:var(--primary,#5B34D6);border-color:transparent;color:#fff}
-.zh-main .zh-ic{background:#ffffff2b}
-.zh-main .zh-tx small{color:#ffffffd9}
-.zh-main .zh-go{background:#fff;color:var(--primary,#5B34D6)}
+/* الألعاب: بنفسجي إلى أزرق */
+.zh-main{background:linear-gradient(135deg,#5427D5 0,#3B3FD8 55%,#28A9E8 120%);border-color:transparent;color:#fff;box-shadow:0 10px 26px #5427D540}
+.zh-main .zh-ic{background:#ffffff2e}
+.zh-main .zh-tx small{color:#ffffffe6}
+.zh-main .zh-go{background:#FFD34D;color:#39209C;box-shadow:0 3px 0 #D9A91C}
+.zh-main .zh-go:hover{background:#FFDC6E}
+.zh-main .zh-go:active{box-shadow:0 1px 0 #D9A91C}
+/* الصفوف: بنفسجي فاتح وبطاقات هادئة */
+.zh-grades{background:linear-gradient(160deg,#fff 0,#EEE8FF 100%)}
 .zh-gr{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.zh-gr a{display:grid;place-items:center;min-height:52px;border-radius:14px;background:#F1ECFF;color:var(--primary,#5B34D6);font-weight:700;font-size:16px;text-decoration:none}
-.zh-more{margin-top:auto;font-weight:700;color:var(--primary,#5B34D6);font-size:15px;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.zh-gr a{display:grid;place-items:center;min-height:52px;border-radius:14px;font-weight:800;font-size:16px;text-decoration:none;transition:transform .12s}
+.zh-gr a:active{transform:scale(.95)}
+.zh-gr a:nth-child(1){background:#E1F3FC;color:#146E9C}
+.zh-gr a:nth-child(2){background:#DFF5EC;color:#14785A}
+.zh-gr a:nth-child(3){background:#FFEFDA;color:#9A5410}
+.zh-gr a:nth-child(4){background:#FBE4F0;color:#A3256A}
+.zh-more{margin-top:auto;font-weight:700;color:#5427D5;font-size:15px;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+/* الملفات: برتقالي فاتح */
+.zh-files{background:linear-gradient(160deg,#FFF4E4 0,#fff 100%);border-color:#FFD9A8}
+.zh-files .zh-ic{background:linear-gradient(135deg,#FFB35E,#FF9B38)}
+.zh-files .zh-go{background:#FF9B38;color:#3A2000;box-shadow:0 3px 0 #D97A12}
+.zh-files .zh-go:hover{background:#FFAA55}
+.zh-files .zh-go:active{box-shadow:0 1px 0 #D97A12}
+/* زوزو: أخضر لطيف */
+.zh-zozo{background:linear-gradient(160deg,#DDF6EC 0,#F3FCF8 100%);border-color:#B6E8D2}
+.zh-zozo .zh-ic{background:#fff;box-shadow:0 2px 8px #24B47E33}
+.zh-zozo .zh-tx small{color:#2d6a52}
+.zh-zozo .zh-go{background:#14935F;box-shadow:0 3px 0 #0E6C46}
+.zh-zozo .zh-go:hover{background:#1AA46C}
+.zh-zozo .zh-go:active{box-shadow:0 1px 0 #0E6C46}
 @media(min-width:640px){.zh-btn{flex:0 0 auto}.zh-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.zh-card{padding:22px}}
 @media(min-width:1024px){.zh-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.zh-wc{padding:16px 24px}.zh-ch{width:88px;height:88px}.zh-wt h2{font-size:26px}}
+@media(prefers-reduced-motion:reduce){.zh-card,.zh-btn,.zh-go,.zh-gr a{transition:none}}
 /* صفحة الملفات */
 .zh-lib{padding-top:16px}
 .zh-lh h1{margin:0;font-size:28px;color:#241A45}
 .zh-lh p{margin:4px 0 14px;color:#6B6486;font-size:16px}
 .zh-s{display:flex;gap:8px;margin-bottom:12px}
 .zh-s input{flex:1;min-width:0;min-height:48px;border:1.5px solid #D9CFF7;border-radius:14px;padding:0 14px;font:inherit;font-size:16px;background:#fff;color:#241A45}
-.zh-s button{min-width:52px;min-height:48px;border:0;border-radius:14px;background:var(--primary,#5B34D6);color:#fff;font-size:20px;cursor:pointer}
+.zh-s button{min-width:52px;min-height:48px;border:0;border-radius:14px;background:#5427D5;color:#fff;font-size:20px;cursor:pointer}
 .zh-gf{margin-bottom:8px}
 @media(min-width:760px){.zh-s{max-width:520px}}
 /* التذييل */
