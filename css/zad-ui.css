@@ -76,3 +76,11 @@ body{background:linear-gradient(170deg,#351078 0,#5427D5 40%,#7045E8 100%) no-re
 .ztop{background:#351078e6;border-bottom:1px solid #ffffff1f;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .ztop .zlogo{color:#fff}.ztop nav a{color:#E4DAFF}.ztop nav a:hover,.ztop nav a.zn-main{background:#ffffff1f;color:#fff}
 main.zw{background:#F7F4FF;border-radius:26px 26px 0 0;margin-top:14px;padding-bottom:90px;min-height:50vh}
+/* رسومات زاد بدل الإيموجي + لمسات الهوية الجديدة */
+.zem{display:inline-block;width:1.25em;height:1.25em;vertical-align:-.28em;object-fit:contain;flex:none}
+i>.zem,.zim>.zem,.zi>.zem{width:1.35em;height:1.35em;vertical-align:middle}
+.ztab a b .zem{width:26px;height:26px;vertical-align:middle}
+.ztop .zlogo:before{content:"";display:inline-block;width:36px;height:36px;border-radius:10px;background:#fff url(../images/logo-zad-s.png) center/80% no-repeat}
+main.zw{background:#fff}
+.zsec h2{color:#241A45}
+.zb1{background:linear-gradient(180deg,#FFE27A,#FFC83A);color:#241154;box-shadow:0 4px 0 #D9A91C}
