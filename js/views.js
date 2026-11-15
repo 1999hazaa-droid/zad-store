@@ -272,7 +272,6 @@ ${K("owl","تعلّم والعب مع زوزو","حروف وكلمات وأنش�
 ${K("notebook","الملفات التعليمية","أوراق عمل جاهزة للطباعة","سنة – الصف الرابع","library/","#FFF4D6","#8A5A00")}
 ${K("sparkle","المزيد","عالم زاد والمغامرات والإنجازات وأكثر","كل الفئات","games/#more","#F0EAFE","#5526B8")}
 </div>
-<nav class="zm-browse" aria-label="${X("تصفّح أيضًا")}"><span>${X("تصفّح أيضًا:")}</span><a href="${A("grades/#subjects")}">${I("globe",24)}${X("جميع المواد الدراسية")}</a><a href="${A("grades/#ages")}">${I("ruler",24)}${X("جميع الصفوف والأعمار")}</a></nav>
 </div></section>
 <section class="zm-band" aria-labelledby="zm-w"><div class="wrap">
 <div class="zm-head"><h2 id="zm-w">${X("لماذا")} <em>${X("زاد")}</em>${X("؟")}</h2></div>
