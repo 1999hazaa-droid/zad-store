@@ -407,12 +407,6 @@ const unlockAudio = () => {
 };
 ["pointerdown", "touchstart", "click"].forEach((e) => document.addEventListener(e, unlockAudio, { passive: true, capture: true }));
 fetch("audio/manifest.json?v=5").then((r) => r.ok ? r.json() : {}).then((m) => { MAN = m || {}; }).catch(() => {});
-let VOICE = null;
-function pickVoice() {
-  const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
-  VOICE = vs.find((v) => /^ar/i.test(v.lang) && /Majed|Maged|Laila|Hamed|Tarik|Google/i.test(v.name)) || vs.find((v) => /^ar/i.test(v.lang)) || null;
-}
-if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
 let lastSpeech = ["", ""];
 const BUF = {};
 function preload(id) {
@@ -435,7 +429,7 @@ async function playClip(file, onEnd, onFail) {
     curSrc = src; src.start();
   } catch (e) { onFail(); }
 }
-function stopVoice() { if (curSrc) { try { curSrc.onended = null; curSrc.stop(); } catch {} curSrc = null; } try { speechSynthesis.cancel(); } catch {} if (curAudio) { try { curAudio.pause(); } catch {} curAudio = null; } }
+function stopVoice() { if (curSrc) { try { curSrc.onended = null; curSrc.stop(); } catch {} curSrc = null; } if (curAudio) { try { curAudio.pause(); } catch {} curAudio = null; } }
 function speak(text, key) {
   lastSpeech = [text, key]; const tok = SCR;
   const owl = $(".owl"), talk = (on) => owl && owl.classList.toggle("talk", on);
@@ -459,40 +453,59 @@ function speak(text, key) {
     speakTTS(text, res); return;
   });
 }
-/* صوت الفتاة (ElevenLabs) لجمل فيها اسم الطفل: تُولَّد مرة وتُخزَّن، وإن تعذّر نرجع لصوت الجهاز */
+/* الصوت الوحيد في المنصة: صوت الفتاة «هلا» (ElevenLabs). الجمل تُولَّد مرة واحدة وتُخزَّن. لا يوجد صوت جهاز إطلاقاً */
 const GIRL = {};
+const girlChunks = (t) => {
+  t = String(t).replace(/[«»"“”:؛;…+=*\/()\[\]{}<>|_~^%$#@&`]/g, " ").replace(/[^\u0600-\u06ffA-Za-z0-9 ،؟.!?,'\-]/g, " ").replace(/\s+/g, " ").trim();
+  if (!t) return [];
+  const out = []; let cur = "";
+  t.split(/(?<=[.!?؟،,])\s+/).forEach((sn) => {
+    const ws = sn.split(" ");
+    ws.forEach((w) => { if ((cur + " " + w).trim().length > 86) { if (cur) out.push(cur); cur = w; } else cur = (cur + " " + w).trim(); });
+    if (cur.length > 40) { out.push(cur); cur = ""; }
+  });
+  if (cur) out.push(cur);
+  return out;
+};
+async function girlUrl(text) {
+  if (GIRL[text]) return GIRL[text];
+  for (let i = 0; i < 2; i++) {
+    try {
+      const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 9000);
+      const r = await fetch(SB + "/functions/v1/wiam-tts", { method: "POST", headers: { apikey: SBK, "Content-Type": "application/json", Authorization: "Bearer " + SBK }, body: JSON.stringify({ text }), signal: ctl.signal });
+      clearTimeout(tm); const j = await r.json(); if (j.url) return (GIRL[text] = j.url);
+    } catch {}
+  }
+  return null;
+}
 function speakGirl(text) {
   const tok = SCR; lastSpeech = [text, undefined];
   return new Promise(async (done) => {
+    const owl = $(".owl"), talk = (on) => { const o = $(".owl") || owl; o && o.classList.toggle("talk", on); };
     if (!S.voice) { setTimeout(done, 300); return; }
+    const parts = girlChunks(text);
+    if (!parts.length) { setTimeout(done, 200); return; }
+    stopVoice();
     try {
-      stopVoice();
-      let url = GIRL[text];
-      if (!url) {
-        const ctl = new AbortController(); setTimeout(() => ctl.abort(), 7000);
-        const r = await fetch(SB + "/functions/v1/wiam-tts", { method: "POST", headers: { apikey: SBK, "Content-Type": "application/json", Authorization: "Bearer " + SBK }, body: JSON.stringify({ text }), signal: ctl.signal });
-        const j = await r.json(); if (!j.url) throw new Error("no url"); url = GIRL[text] = j.url;
+      let nextP = girlUrl(parts[0]);
+      for (let i = 0; i < parts.length; i++) {
+        const url = await nextP;
+        if (i + 1 < parts.length) nextP = girlUrl(parts[i + 1]);
+        if (tok !== SCR) { talk(false); return done(); }
+        if (!url) continue;
+        await new Promise((ok) => {
+          const a = AUD; curAudio = a; a.playbackRate = 1;
+          const end = () => { a.onended = null; a.onerror = null; ok(); };
+          a.onended = end; a.onerror = end; a.src = url; talk(true);
+          const pr = a.play(); if (pr && pr.catch) pr.catch(end);
+        });
+        if (tok !== SCR) { talk(false); return done(); }
       }
-      if (tok !== SCR) return done();
-      const owl = $(".owl"), a = AUD; curAudio = a; a.playbackRate = 1;
-      const end = () => { owl && owl.classList.remove("talk"); done(); };
-      a.onended = end; a.onerror = () => { owl && owl.classList.remove("talk"); speak(text).then(done); };
-      a.src = url; owl && owl.classList.add("talk");
-      const p = a.play(); if (p && p.catch) p.catch(end);
-    } catch { if (tok === SCR) speak(text).then(done); else done(); }
+    } catch {}
+    talk(false); done();
   });
 }
-function speakTTS(text, res) {
-  {
-    const talk = (on) => { const o = $(".owl"); o && o.classList.toggle("talk", on); };
-    if (!window.speechSynthesis || !VOICE) { talk(true); setTimeout(() => { talk(false); res(); }, Math.min(3500, 300 + text.length * 55)); return; }
-    const u = new SpeechSynthesisUtterance(text);
-    u.voice = VOICE; u.lang = VOICE.lang; u.rate = .88; u.pitch = 1.15;
-    let done = false; const end = () => { if (done) return; done = true; talk(false); res(); };
-    u.onend = end; u.onerror = end; setTimeout(end, 9000);
-    talk(true); speechSynthesis.speak(u);
-  }
-}
+function speakTTS(text, res) { const ls = lastSpeech; speakGirl(text).then(() => res()); lastSpeech = ls; }
 
 /* ======================= الاحتفال ======================= */
 const fx = $("#fx"), fc = fx.getContext("2d"); let parts = [], raf = 0;
@@ -590,7 +603,6 @@ function start() {
     app.querySelectorAll(".kid[data-k]").forEach((b) => b.onclick = () => {
       useKid(b.dataset.k);
       try { ac().resume(); } catch {}
-      if (window.speechSynthesis) speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
       sfx.ok(); hub();
     });
     $("#addk").onclick = () => { const id = "k" + Date.now(); DB.kids[id] = DEF(); useKid(id); start(); };
@@ -616,7 +628,6 @@ function start() {
     if (!v) { $("#nm").classList.add("shake"); sfx.no(); setTimeout(() => $("#nm").classList.remove("shake"), 400); $("#nm").focus(); return; }
     S.name = v; save();
     try { ac().resume(); } catch {}
-    if (window.speechSynthesis) speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
     sfx.ok(); S.av.set ? hub() : avatarScreen(() => hub());
   };
   if ($("#bk")) $("#bk").onclick = () => { useKid(named[0][0]); start(); };
@@ -1243,7 +1254,7 @@ const CATS = {
   eng: { t: "كلمات إنجليزية", e: "🔤", en: true, items: () => [...ANI.slice(0, 6), ...FRU.slice(0, 5), ...THG.slice(0, 6)].map(([a, e, en]) => ({ a, v: `<span class="bg">${e}</span>`, en })).concat(NUMN.slice(1, 6).map((a, i) => ({ a, v: `<b class="bg">${AD(i + 1)}</b>`, en: NUME[i + 1] }))) }
 };
 for (const [k, c] of Object.entries(CATS)) if (!c.en) { const f = c.items; c.items = () => f().map((x, i) => ({ ...x, id: `c.${k}.${i}` })); }
-function speakEN(t) { try { if (!window.speechSynthesis) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = "en-US"; u.rate = .8; u.pitch = 1.1; speechSynthesis.speak(u); } catch {} }
+function speakEN(t) { return speakGirl(t); }
 function learnMenu() {
   shell(0, `<div class="card" style="text-align:center"><b style="color:var(--p)">اختر ما تريد أن تتعلّمه</b></div>
     <div class="games">${Object.entries(CATS).filter(([k]) => !LKEYS || LKEYS.includes(k)).map(([k, c]) => `<button class="gm" data-c="${k}"><b>${c.e}</b>${c.t}<small>${c.items().length} بطاقة</small></button>`).join("")}</div>
