@@ -106,3 +106,53 @@
 
 .zrp{position:absolute;inset-inline-start:10px;top:6px;width:42px;height:42px;border:0;border-radius:50%;background:#fff;box-shadow:0 3px #d7c8ff;font-size:20px;cursor:pointer;z-index:3}
 .stage{position:relative}
+
+.zch{display:block;height:auto;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.hm-mas .hmc{height:84px;width:auto}
+.ach-hero{position:relative}
+.ach-hero .ahc{position:absolute;inset-inline-end:12px;bottom:0;height:116px;width:auto}
+.advst .advc{height:150px;width:auto;margin:6px auto 0}
+.win>.winc{height:170px;width:auto;margin:0 auto -6px;animation:zbob 1.6s ease-in-out infinite}
+.hintmsg{display:flex;align-items:center;gap:10px;justify-content:center;text-align:start}
+.hintmsg .hintc{height:64px;width:auto;flex:none}
+@keyframes zbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@media(prefers-reduced-motion:reduce){.win>.winc{animation:none}}
+
+.buddy .zch.mas{height:96px;width:auto;display:none;transform-origin:bottom center}
+.buddy[data-p="0"] .bm0,.buddy[data-p="1"] .bm1,.buddy[data-p="2"] .bm2{display:block}
+.buddy:not([data-p]) .bm0{display:block}
+.buddy .bb{margin-bottom:56px}
+.ach-hero .ahc{height:96px}
+.ach-hero:has(.ahc) p,.ach-hero:has(.ahc) h1{padding-inline:78px}
+
+.zp{position:relative;display:inline-block;line-height:0;transform-origin:50% 100%}
+.zp .zch{height:100%;width:auto}
+.zpb{position:absolute;top:2%;inset-inline-end:-4%;font-style:normal;font-size:.9rem;line-height:1;background:#fff;border-radius:50%;width:1.9em;height:1.9em;display:grid;place-items:center;box-shadow:0 2px 6px #2b1b4f33;font-size:15px}
+.hm-mas .zp,.ach-hero .zp,.advst .zp,.win>.zp,.hintmsg .zp{height:var(--zh)}
+.hm-mas .zp{--zh:84px}
+.ach-hero .zp.ahc{--zh:96px;position:absolute;inset-inline-end:12px;bottom:0}
+.advst .zp.advc{--zh:150px;display:block;margin:6px auto 0;width:max-content}
+.win>.zp.winc{--zh:170px;display:block;width:max-content;margin:0 auto -6px;animation:none}
+.hintmsg .zp.hintc{--zh:64px;flex:none}
+.buddy .zp.mas{--zh:96px;display:none;height:var(--zh)}
+.buddy[data-p="0"] .zp.bm0,.buddy[data-p="1"] .zp.bm1,.buddy[data-p="2"] .zp.bm2{display:inline-block}
+.buddy:not([data-p]) .zp.bm0{display:inline-block}
+.buddy .zp .zch.mas{display:block}
+.zp-sway{animation:zpS 3s ease-in-out infinite}
+.zp-nod{animation:zpN 2.6s ease-in-out infinite}
+.zp-pt{animation:zpN 1.6s ease-in-out infinite}
+.zp-tilt{animation:zpT 3.2s ease-in-out infinite}
+.zp-walk{animation:zpW 2.2s ease-in-out infinite}
+.zp-hop{animation:zpH 1.2s ease-in-out infinite}
+.zp-jump{animation:zpJ 1.5s ease-in-out infinite}
+.zp-pop{animation:zpP 1.8s ease-in-out infinite}
+.zp-lean{animation:zpL 3.4s ease-in-out infinite}
+@keyframes zpS{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes zpN{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.02)}}
+@keyframes zpT{0%,100%{transform:rotate(0)}30%{transform:rotate(-5deg)}70%{transform:rotate(4deg)}}
+@keyframes zpW{0%,100%{transform:translateX(-3px) rotate(-2deg)}50%{transform:translateX(3px) rotate(2deg)}}
+@keyframes zpH{0%,100%{transform:translateY(0)}40%{transform:translateY(-12px)}}
+@keyframes zpJ{0%,100%{transform:translateY(0) scale(1,1)}20%{transform:translateY(0) scale(1.05,.94)}50%{transform:translateY(-16px) scale(.97,1.04)}}
+@keyframes zpP{0%,80%,100%{transform:scale(1)}90%{transform:scale(1.08)}}
+@keyframes zpL{0%,100%{transform:rotate(0)}50%{transform:rotate(-3deg) translateY(2px)}}
+@media(prefers-reduced-motion:reduce){.zp{animation:none!important}}
