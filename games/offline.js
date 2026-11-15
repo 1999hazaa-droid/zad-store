@@ -109,31 +109,38 @@
   }
   function closePanel() { const d = $("#zo-panel"); d && d.remove(); document.body.style.overflow = ""; }
   let confirmDel = false;
+  async function checkUpd() {
+    if (!navigator.onLine) { toast("نحتاج إنترنت للبحث عن تحديث 🌐"); return; }
+    await fetchManifest(); render();
+    if (updAvail()) download(true); else toast("ألعابك محدّثة ✅");
+  }
+  const COLS = ["#F472B6", "#FB923C", "#14B8A6", "#8B5CF6", "#3B82F6", "#8B5CF6", "#10B981", "#F59E0B", "#3B82F6"];
   function panelFill() {
-    const d = $("#zo-panel"); if (!d) return; const s = summary(), size = S.man ? S.man.total : (conf().size || 0), ready = S.state === "ready", busy = S.state === "busy";
-    const pct = Math.round(S.done / Math.max(1, S.total) * 100);
-    const main = busy ? "" : ready ? (updAvail() ? `<button class="zo-b" id="zo-do" ${S.online ? "" : "disabled"}>🔄 حدّث الألعاب</button><button class="zo-b g" id="zo-re" ${S.online ? "" : "disabled"}>إعادة التنزيل</button>` : `<button class="zo-b g" id="zo-re" ${S.online ? "" : "disabled"}>🔁 إعادة التنزيل</button>`) : `<button class="zo-b" id="zo-do" ${S.online ? "" : "disabled"}>${S.state === "partial" ? "📥 أكمل التنزيل" : "📥 نزّل الألعاب"}</button>`;
-    const del = (ready || S.state === "partial") && !busy ? `<button class="zo-b d" id="zo-del">🗑️ حذف الملفات من الجهاز</button>` : "";
-    d.innerHTML = `<div class="zp"><div class="zo-top"><button class="zo-x" id="zo-close">✕ إغلاق</button><span></span></div>
-      <div class="zo-hero"><div class="zi">✈️</div><h1>زاد بلا إنترنت</h1><p>مع زاد، التعلّم يرافقك أينما ذهبت</p></div>
-      <div class="zo-card"><div class="zo-st"><span class="zi">${s.ic}</span><span><b>${s.t}</b><small>${s.d}</small></span></div>
+    const d = $("#zo-panel"); if (!d) return; const s = summary(), size = S.man ? S.man.total : (conf().size || 0), ready = S.state === "ready", busy = S.state === "busy", part = S.state === "partial";
+    const pct = Math.round(S.done / Math.max(1, S.total) * 100), off = S.online ? "" : "disabled";
+    const main = busy ? "" : ready ? `<button class="zo-b" id="zo-do" ${off}>🔄 تحديث الألعاب</button><button class="zo-b g" id="zo-re" ${off}>🔁 إعادة التنزيل</button>` : `<button class="zo-b" id="zo-do" ${off}>${part ? "📥 أكمل التنزيل" : "📥 نزّل الألعاب"}</button>`;
+    const del = (ready || part) && !busy ? `<button class="zo-b d" id="zo-del">🗑️ حذف الألعاب المحمّلة</button>` : "";
+    const sub = ready ? `${AD(SECTIONS.length)} فئات · جاهزة بدون إنترنت` : busy ? "نجهّز الألعاب الآن…" : part ? "التنزيل لم يكتمل بعد" : "لم تُنزَّل الألعاب بعد";
+    d.innerHTML = `<div class="zo-in"><div class="zo-top"><button class="zo-x" id="zo-close">‹ رجوع</button></div>
+      <header class="zo-hd"><span class="zo-hi" aria-hidden="true">✈️</span><div><h1>ألعابي المحمّلة</h1><p>${sub}</p></div></header>
+      <section class="zo-card"><div class="zo-st"><span class="zi" aria-hidden="true">${s.ic}</span><span class="zo-stt"><b>${s.t}</b><small>${s.d}</small></span></div>
         ${busy ? `<div class="zo-bar"><i style="width:${pct}%"></i></div><small class="zo-note">${AD(pct)}٪ · لا تغلق الصفحة</small>` : ""}
-        ${confirmDel ? `<div class="zo-confirm">سنحذف ملفات الألعاب (${mb(size)}) من هذا الجهاز لتوفير المساحة. نجومك وتقدّمك لن تُحذف، ويمكنك تنزيل الألعاب مرة أخرى متى شئت.<div class="zo-btns"><button class="zo-b d" id="zo-del2">نعم، احذفها</button><button class="zo-b g" id="zo-no">لا، ابقِها</button></div></div>` : `<div class="zo-btns">${main}${del}</div>`}
         ${S.err ? `<p class="zo-note">${S.err}</p>` : ""}
-      </div>
-      <div class="zo-card"><h2>ألعابي المحمّلة</h2>
-        ${SECTIONS.map(([id, e, n, c]) => `<div class="zo-row"><span class="e">${e}</span><span class="t"><b>${n}<span class="zo-chip ${ready ? "ok" : "no"}">${ready ? "جاهزة بلا إنترنت ✓" : "تحتاج تنزيل"}</span></b><small>${AD(c)} ${c > 10 ? "لعبة" : "ألعاب"}</small></span><button class="zo-play" data-p="${id}">▶ تشغيل</button></div>`).join("")}
-        <p class="zo-note">حجم الملفات على جهازك: ${ready || S.state === "partial" ? mb(size) : "لم تُنزَّل بعد (" + (size ? mb(size) : "حزمة صغيرة") + ")"}. ملفات الألعاب مشتركة بين كل الأعمار والصفوف، لذلك تُنزَّل وتُحذف معاً.</p>
-      </div>
-      <div class="zo-card"><h2>معلومات مفيدة</h2><p class="zo-note">• تقدّمك ونجومك محفوظة على هذا الجهاز حتى بعد إغلاق الموقع.<br>• للحصول على أفضل تجربة أضف الموقع إلى الشاشة الرئيسية من قائمة المتصفح.<br>• التحديثات لا تُنزَّل إلا بموافقتك.</p></div></div>`;
+        <p class="zo-note">حجم الملفات: ${ready || part ? mb(size) : (size ? mb(size) : "حزمة صغيرة")}</p></section>
+      <section class="zo-card"><h2>إدارة الألعاب</h2>
+        ${confirmDel ? `<div class="zo-confirm">سنحذف ملفات الألعاب (${mb(size)}) من هذا الجهاز لتوفير المساحة. نجومك وتقدّمك لن تُحذف، ويمكنك تنزيل الألعاب مرة أخرى متى شئت.<div class="zo-btns"><button class="zo-b d" id="zo-del2">نعم، احذفها</button><button class="zo-b g" id="zo-no">لا، ابقِها</button></div></div>` : `<div class="zo-btns">${main}${del}</div>`}</section>
+      <h2 class="zo-h2">فئات الألعاب</h2>
+      <div class="zo-grid">${SECTIONS.map(([id, e, n, c], i) => `<article class="zo-gc" style="--c:${COLS[i % COLS.length]}"><span class="zo-ge" aria-hidden="true">${e}</span><span class="zo-gt"><b>${id[0] === "a" ? "ألعاب عمر " : "ألعاب "}${n}</b><span class="zo-chip ${ready ? "ok" : "no"}">${ready ? "جاهزة بدون إنترنت ✓" : "تحتاج تنزيل"}</span><small>${AD(c)} ${c > 10 ? "لعبة" : "ألعاب"}</small></span><button class="zo-play" data-p="${id}">▶ تشغيل</button></article>`).join("")}</div>
+      <section class="zo-card"><h2>معلومات مفيدة</h2><p class="zo-note">• ملفات الألعاب مشتركة بين كل الأعمار والصفوف، لذلك تُنزَّل وتُحذف معاً.<br>• تقدّمك ونجومك محفوظة على هذا الجهاز حتى بعد حذف الملفات.<br>• للحصول على أفضل تجربة أضف الموقع إلى الشاشة الرئيسية من قائمة المتصفح.<br>• التحديثات لا تُنزَّل إلا بموافقتك.</p></section></div>`;
     $("#zo-close", d).onclick = closePanel;
     const q = (id, fn) => { const b = $(id, d); b && (b.onclick = fn); };
-    q("#zo-do", () => download(updAvail())); q("#zo-re", () => download(false));
+    q("#zo-do", () => (ready && !updAvail() ? checkUpd() : download(updAvail()))); q("#zo-re", () => download(false));
     q("#zo-del", () => { confirmDel = true; panelFill(); }); q("#zo-no", () => { confirmDel = false; panelFill(); }); q("#zo-del2", () => { confirmDel = false; remove(); });
     d.querySelectorAll("[data-p]").forEach((b) => (b.onclick = () => play(b.dataset.p)));
   }
   async function play(id) {
     closePanel();
+    if (window.__zadStage) { window.__zadStage(id); return; }
     for (let i = 0; i < 5; i++) {
       const c = $(`.catcard[data-c="${id}"]`); if (c) { c.click(); return; }
       const bk = $("#back"); if (!bk) return; bk.click(); await new Promise((r) => setTimeout(r, 600));
