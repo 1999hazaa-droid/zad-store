@@ -31,6 +31,14 @@ const findPack = async (req, ignoreSearch) => {
 
 self.addEventListener("fetch", (e) => {
   const req = e.request, url = new URL(req.url);
+  if (req.method === "GET" && /\.supabase\.co$/.test(url.hostname) && url.pathname.startsWith("/storage/v1/object/public/wiam/")) {
+    e.respondWith((async () => {
+      const c = await caches.open("zad-voice"), hit = await c.match(req);
+      if (hit) return hit;
+      try { const r = await fetch(req); if (r.ok) c.put(req, r.clone()); return r; } catch { return new Response("", { status: 504 }); }
+    })());
+    return;
+  }
   if (req.method === "POST" && /\/functions\/v1\/game-log$/.test(url.pathname)) {
     e.respondWith((async () => {
       const body = await req.clone().text();

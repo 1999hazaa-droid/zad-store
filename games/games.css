@@ -103,3 +103,6 @@
 .zin{display:block;width:100%;box-sizing:border-box;margin:8px 0;padding:12px 14px;border:2px solid #d7c8ff;border-radius:14px;font:600 16px Cairo,system-ui,sans-serif;direction:ltr;background:#fff}
 .zin:focus{outline:0;border-color:#5B34D6}
 .ach-n.zok{color:#0b7a3b;font-weight:800;text-align:center}
+
+.zrp{position:absolute;inset-inline-start:10px;top:6px;width:42px;height:42px;border:0;border-radius:50%;background:#fff;box-shadow:0 3px #d7c8ff;font-size:20px;cursor:pointer;z-index:3}
+.stage{position:relative}

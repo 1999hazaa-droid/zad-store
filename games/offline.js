@@ -62,7 +62,7 @@
     render();
   }
   async function remove() {
-    const names = await packNames(); await Promise.all(names.map((n) => caches.delete(n)));
+    const names = await packNames(); await Promise.all(names.map((n) => caches.delete(n))); caches.delete("zad-voice");
     S.state = "none"; S.ver = null; save({ deleted: true }); toast("حُذفت ملفات الألعاب من الجهاز. تقدّمك محفوظ ✅"); render();
   }
 
