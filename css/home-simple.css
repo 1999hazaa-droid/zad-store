@@ -354,3 +354,6 @@ body:has(.zm-hero) main#view{margin-top:0!important;padding:0!important;border-r
 .zm-spk.s1{top:64px;inset-inline-end:3%}
 .zm-dot.d1{top:78px;inset-inline-end:auto;inset-inline-start:4%}
 @media(min-width:880px){.zm-kid{height:270px}.zm-chip.c2{top:4px}.zm-chip.c3{bottom:24px}}
+/* إزالة أيقونة السلة (العائمة وأعلى الصفحة) */
+.cart-float,#cartFloat,.top .cart-btn,.cart-btn{display:none!important}
+.top-row.hide-s{grid-template-columns:auto 1fr auto auto;grid-template-areas:"menu brand lang cur"}
