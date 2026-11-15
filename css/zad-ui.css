@@ -56,3 +56,13 @@ a{color:inherit;text-decoration:none}img{max-width:100%}
 .zempty{text-align:center;padding:var(--z-sp-5);color:var(--z-ink2)}.zempty img{height:110px}
 .zcnt{color:var(--z-ink2);font-size:14px;margin:var(--z-sp-3) 0 4px}
 @media(max-width:560px){.zgh .zw{grid-template-columns:1fr}.zgh img{display:none}.zgm{grid-template-columns:repeat(2,1fr);gap:10px}.zg .zim{height:88px;font-size:44px}}
+/* صفحات الصف والمادة */
+.zbc{padding:10px 0;font-size:14px;color:#ffffffcc}.zbc a{color:#fff;text-decoration:underline}
+.zph{color:#fff;padding:var(--z-sp-3) 0 var(--z-sp-5)}.zph .zw{display:grid;grid-template-columns:1fr auto;gap:var(--z-sp-3);align-items:end}.zph h1{margin:0;font-size:clamp(26px,5vw,38px);line-height:1.3}.zph p{margin:4px 0 0;font-weight:700;opacity:.95}.zph img{height:130px;width:auto}
+.zst{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.zst span{background:#ffffff2e;border-radius:99px;padding:3px 14px;font-weight:700;font-size:14px}
+.zsk{margin-top:var(--z-sp-4)}.zsk h3{margin:0 0 8px;font-size:var(--z-fs-lg);display:flex;align-items:center;gap:8px}.zsk h3 small{background:var(--z-tint);color:var(--z-pri);font-size:12px;border-radius:99px;padding:1px 10px}
+.zsw{display:flex;gap:8px;overflow-x:auto;padding:var(--z-sp-3) 0 0;scrollbar-width:none}.zsw::-webkit-scrollbar{display:none}
+.zlist{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.zrowc{display:flex;align-items:center;gap:12px;padding:12px;font-weight:700}.zrowc .zi{width:60px;height:60px;border-radius:16px;display:grid;place-items:center;font-size:32px;flex:none}.zrowc small{display:block;color:var(--z-ink2);font-weight:400;font-size:13px}.zrowc .go{margin-inline-start:auto;color:var(--z-pri);font-size:22px}
+.zpaid{margin-top:var(--z-sp-5)}
+@media(max-width:560px){.zph .zw{grid-template-columns:1fr}.zph img{display:none}}
