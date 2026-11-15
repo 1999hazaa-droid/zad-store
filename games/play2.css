@@ -45,3 +45,9 @@ body.v2 .win .btn-big{min-height:56px;font-size:18px}
 body.v2 .win .stars{transform:scale(1.15);margin:10px 0}
 @media(min-width:900px){body.v2 #app{max-width:760px}body.v2 .opt{min-height:108px}}
 @media(prefers-reduced-motion:reduce){body.v2 *{animation-duration:.01ms!important}}
+/* توحيد الصفحات الداخلية (إنجازات، مهارات، ولي الأمر، الحساب) */
+body.v2 .btn-big{min-height:56px;border-radius:99px;font-size:18px}
+body.v2 .ach-c,body.v2 .gcard,body.v2 .catcard,body.v2 .advcard{border-radius:24px}
+body.v2 .ach-c{box-shadow:0 2px 0 #E8E2FA,0 10px 26px #5b34d61a;border:1px solid #E8E2FA}
+body.v2 input,body.v2 select{font-family:Cairo,system-ui,sans-serif;min-height:52px;border-radius:16px}
+body.v2 .ach-hero{border-radius:28px}
