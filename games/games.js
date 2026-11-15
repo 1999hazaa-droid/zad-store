@@ -284,20 +284,21 @@ function zkdock(back){return`<div class="top">${back?`<button class="pill btn" i
 const zkpg=()=>{wz="";wt="";document.body.dataset.cat="";document.body.dataset.zk="1"};
 function zform(edit){zkpg();const o=edit&&zk?zk:{};let sv={};if(!edit){try{sv=JSON.parse(localStorage.getItem("zad_form")||"{}")||{}}catch{}}
 const d={n:o.n||"",sex:o.sex||sv.sex||"b",ch:o.ch||sv.ch||"",age:edit?(o.age||0):(o.age||sv.age||0),grade:edit?(o.grade||0):(o.grade||sv.grade||0)};d.sex=d.sex==="g"?"g":"b";if(!d.ch||(d.sex==="b")!==(d.ch==="boy"))d.ch=d.sex==="b"?"boy":"girl1";
-const kids=zkids(),back=!!zk,ages=[1,2,3,4,5,6],grades=[1,2,3,4];
+let md=d.grade&&!d.age?"g":"a";if(md==="a")d.grade=0;else d.age=0;const kids=zkids(),back=!!zk,ages=[1,2,3,4,5,6],grades=[1,2,3,4];
 U.innerHTML=`${zkdock(back)}<main class="zkf zst"><header class="zqh"><h1>${edit?"ملفي الشخصي":"ألعاب زاد"}</h1><p>${edit?"غيّر ما تريد ثم اضغط حفظ":"اختر شخصيتك وابدأ اللعب"}</p></header><section class="zkc zqc" id="zkst"></section><button type="button" class="zkgo zqgo" id="zkgo"></button><p class="zkerr" id="zke" role="alert"></p></main>`;ae();
 const nm=()=>{const i=y("#zkn");return(i?i.value:d.n).trim().replace(/\s+/g," ").slice(0,14)};
 const draw=()=>{const c=y("#zkst"),cur=y("#zkn");if(cur)d.n=nm();
 y("#zkgo").innerHTML=edit?"💾 حفظ":`<img class="zem" src="../images/ill/rocket.svg" alt="" width="30" height="30"> ابدأ اللعب`;
-const gi=d.ch==="girl2"?"girl2":"girl1",sm=d.age||d.grade?`ألعاب «${zkstage(d).name}»`:"إن لم تختر، سنعرض لك ألعاب عمر 5 سنوات",r=d.age&&d.grade?ZKGR[d.grade]:0,w=r&&(d.age<r[0]||d.age>r[1])?`عادةً يكون عمر أطفال ${zkgl(d.grade)} من ${r[0]} إلى ${r[1]} سنوات، وسنعرض لك ألعاب ${zkgl(d.grade)}.`:"";
+const gi=d.ch==="girl2"?"girl2":"girl1",sm=d.age||d.grade?`ألعاب «${zkstage(d).name}»`:"إن لم تختر، سنعرض لك ألعاب عمر 5 سنوات";
 c.innerHTML=`<div class="zksex zqs" id="zksex" role="group" aria-label="الشخصية"><button type="button" class="zks b${d.sex==="b"?" on":""}" data-s="b" aria-pressed="${d.sex==="b"}"><img src="chars/poses/boy-welcome-160.png" alt=""><b>ولد</b></button><button type="button" class="zks g${d.sex==="g"?" on":""}" data-s="g" aria-pressed="${d.sex==="g"}"><img src="chars/poses/${gi}-welcome-160.png" alt=""><b>بنت</b></button></div>
 <label class="zql" for="zkn">اسمك <small>(اختياري)</small></label><input id="zkn" class="zkin zqin" maxlength="14" autocomplete="off" placeholder="اكتب اسمك أو لقبك" value="${Ht(d.n)}">${!edit&&kids.length?`<div class="zkchips">${kids.map(id=>{const k=zkload(id);return`<button type="button" class="zkchip" data-id="${Ht(id)}">${zkav(k)}<span>${Ht(k.n||id)}</span></button>`}).join("")}</div>`:""}
-<div class="zql">عمري</div><div class="zkbt zqb" id="zka">${ages.map(a=>`<button type="button" class="zkb${d.age===a?" on":""}" data-a="${a}" aria-pressed="${d.age===a}">${a<=1?"سنة":a==2?"سنتان":a}</button>`).join("")}</div>
-<div class="zql">صفّي</div><div class="zkbt g zqb" id="zkg">${grades.map(g=>`<button type="button" class="zkb${d.grade===g?" on":""}" data-g="${g}" aria-pressed="${d.grade===g}">${ZKGN[g]}</button>`).join("")}</div>
-<p class="zqsum" id="zks">${sm}</p>${w?`<p class="zqw" id="zkw">${w}</p>`:""}`;
+<div class="zqmode" id="zqm" role="group" aria-label="طريقة الاختيار"><button type="button" class="${md==="a"?"on":""}" data-m="a" aria-pressed="${md==="a"}">حسب العمر</button><button type="button" class="${md==="g"?"on":""}" data-m="g" aria-pressed="${md==="g"}">حسب الصف</button></div>
+${md==="a"?`<div class="zkbt zqb" id="zka">${ages.map(a=>`<button type="button" class="zkb${d.age===a?" on":""}" data-a="${a}" aria-pressed="${d.age===a}">${a<=1?"سنة":a==2?"سنتان":a}</button>`).join("")}</div>`:`<div class="zkbt g zqb" id="zkg">${grades.map(g=>`<button type="button" class="zkb${d.grade===g?" on":""}" data-g="${g}" aria-pressed="${d.grade===g}">${ZKGN[g]}</button>`).join("")}</div>`}
+<p class="zqsum" id="zks">${sm}</p>`;
 U.querySelectorAll(".zks").forEach(b=>b.onclick=()=>{const v=b.dataset.s;d.n=nm();if(d.sex!==v){d.sex=v;d.ch=v==="b"?"boy":"girl1"}draw()});
 U.querySelectorAll(".zkchip").forEach(b=>b.onclick=()=>{zkset(b.dataset.id);P(zkid)});
-y("#zka").onclick=e=>{const b=e.target.closest(".zkb");if(b){const a=+b.dataset.a;d.n=nm();d.age=d.age===a?0:a;draw()}};y("#zkg").onclick=e=>{const b=e.target.closest(".zkb");if(b){const g=+b.dataset.g;d.n=nm();d.grade=d.grade===g?0:g;draw()}};
+U.querySelectorAll("#zqm button").forEach(b=>b.onclick=()=>{d.n=nm();md=b.dataset.m;if(md==="a")d.grade=0;else d.age=0;draw()});
+const za=y("#zka"),zg=y("#zkg");za&&(za.onclick=e=>{const b=e.target.closest(".zkb");if(b){const a=+b.dataset.a;d.n=nm();d.age=d.age===a?0:a;d.grade=0;draw()}});zg&&(zg.onclick=e=>{const b=e.target.closest(".zkb");if(b){const g=+b.dataset.g;d.n=nm();d.grade=d.grade===g?0:g;d.age=0;draw()}});
 y("#zkn").onkeydown=e=>{e.key==="Enter"&&(e.preventDefault(),y("#zkgo").click())}};
 y("#zkgo").onclick=()=>{const n=nm()||"صديقي";d.n=n;
 if(edit){zk={...zk,n,sex:d.sex,ch:d.ch,age:d.age,grade:d.grade};zksv(zt,zk);$.win();P(()=>zprof("تم حفظ ملفك ✅"));return}

@@ -276,3 +276,6 @@ body[data-zk] .zsg{background:#fff}
 .zqgo:active{transform:translateY(3px)}
 .zqgo .zem{width:28px;height:28px;margin:0}
 @media(max-width:340px){.zqb{grid-template-columns:repeat(3,minmax(0,1fr))}.zqs .zks img{width:46px}}
+.zqmode{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:10px 0 8px;background:#F0EAFE;border-radius:12px;padding:3px}
+.zqmode button{min-height:38px;border:0;border-radius:10px;background:none;color:#5526B8;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+.zqmode button.on{background:#5526B8;color:#fff;box-shadow:0 2px 6px #5526b844}
