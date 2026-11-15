@@ -25,6 +25,7 @@ for f in sorted(os.listdir(os.path.join(G, "chars"))):
 for f in sorted(os.listdir(os.path.join(G, "chars", "poses"))):
     if f.endswith(("-160.png", "-320.png")): add("chars/poses/" + f, "core")
 add("characters.html", "core")
+add("catalog.json", "core")
 out = {"version": h.hexdigest()[:10], "total": sum(f["s"] for f in files), "files": files}
 json.dump(out, open(os.path.join(G, "offline.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 print(out["version"], len(files), out["total"])

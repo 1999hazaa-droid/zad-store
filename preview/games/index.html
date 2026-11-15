@@ -1,0 +1,44 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><meta name="theme-color" content="#5B34D6"><title>الألعاب المجانية — معاينة</title>
+<link rel="stylesheet" href="../../css/zad-tokens.css"><link rel="stylesheet" href="../../css/zad-ui.css"></head><body>
+<header class="ztop"><div class="zw"><a class="zlogo" href="../home/">زاد التعليمية</a><nav><a class="zn-main" href="../home/">🏠 الرئيسية</a><a href="../../learn/">⭐ تعلّم والعب</a><a href="../../">🛒 المتجر</a></nav></div></header>
+<section class="zgh"><div class="zw"><div><h1>🎮 الألعاب المجانية</h1><p id="tot">ألعاب تعليمية للعب والتعلّم، كلها مجانية</p></div><img src="../../games/chars/poses/boy-joy-320.png" alt=""></div></section>
+<div class="zsrch"><div class="zw"><div><span>🔍</span><input id="q" type="search" placeholder="ابحث عن لعبة… (حروف، جمع، ساعة)" autocomplete="off" enterkeyhint="search"><button id="x" hidden aria-label="مسح">✕</button></div></div></div>
+<main class="zw"><div class="zfil">
+<div class="zrow" id="fs"><b>المادة</b></div><div class="zrow" id="fa"><b>العمر</b></div><div class="zrow" id="fl"><b>المستوى</b></div></div>
+<div id="out"></div></main>
+<nav class="ztab"><a href="../home/"><b>🏠</b>الرئيسية</a><a class="on" href="./"><b>🎮</b>ألعاب</a><a href="../../learn/"><b>⭐</b>تعلّم</a><a href="../../"><b>🛒</b>المتجر</a></nav>
+<script>
+(function(){
+var G=[],f={s:"",a:"",l:0,q:""},$=function(i){return document.getElementById(i)};
+var norm=function(t){return String(t).replace(/[ً-ْـ]/g,"").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").toLowerCase()};
+var esc=function(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+var LV=["","مبتدئ","متوسط","متقدّم"];
+var AGES=[["","الكل"],["٢–٤","٢–٤ سنوات"],["٤–٦","٤–٦ سنوات"],["٥–٧","٥–٧ سنوات"],["الأول","الصف الأول"],["الثاني","الصف الثاني"],["الثالث","الصف الثالث"],["الرابع","الصف الرابع"]];
+var FEAT="letters memory add animal clock1 build".split(" "),SUG0="letters count memory animal shape".split(" ");
+function card(g,tag){return '<a class="zcard zg" href="../../games/#g='+g.id+'"><div class="zim" style="background:'+g.c+'">'+(g.new?'<em>جديدة</em>':tag?'<em>'+tag+'</em>':'')+g.ic+'</div><div class="zbd"><b>'+esc(g.t)+'</b><small>'+esc(g.s)+'</small><div class="zt"><span class="zchip">'+esc(g.age)+'</span><span class="zchip zlv l'+g.lv+'">'+LV[g.lv]+'</span></div><small>🎯 '+esc(g.skill)+'</small><span class="zbtn zb2 zgo">▶ العب</span></div></a>'}
+function sec(t,sub,list,tag){return list.length?'<section class="zsec" style="padding:var(--z-sp-4) 0 0"><div class="zhead"><div><h2>'+t+'</h2>'+(sub?'<p class="zsub" style="margin:0">'+sub+'</p>':'')+'</div></div><div class="zgm">'+list.map(function(g){return card(g,tag)}).join("")+'</div></section>':''}
+function match(g){if(f.s&&g.subj!==f.s)return 0;if(f.a&&g.age.indexOf(f.a)<0)return 0;if(f.l&&g.lv!==f.l)return 0;if(f.q){var h=norm([g.t,g.s,g.skill,g.zn,g.subj,g.age].join(" "));if(f.q.split(/\s+/).some(function(w){return w&&h.indexOf(w)<0}))return 0}return 1}
+function pills(id,items,key,cur){var e=$(id);e.querySelectorAll(".zpill").forEach(function(n){n.remove()});items.forEach(function(it){var b=document.createElement("button");b.className="zpill"+(String(cur)===String(it[0])?" on":"");b.textContent=it[1];b.onclick=function(){f[key]=key==="l"?+it[0]:it[0];draw()};e.appendChild(b)})}
+function draw(){
+ var subs=[["","الكل"]].concat(Array.from(new Set(G.map(function(g){return g.subj}))).map(function(s){return[s,s]}));
+ pills("fs",subs,"s",f.s);pills("fa",AGES,"a",f.a);pills("fl",[[0,"الكل"],[1,"مبتدئ"],[2,"متوسط"],[3,"متقدّم"]],"l",f.l);
+ var filt=!!(f.s||f.a||f.l||f.q),R=G.filter(match),h="";
+ if(!filt){
+  var by=function(ids){return ids.map(function(i){return G.find(function(g){return g.id===i})}).filter(Boolean)};
+  h+=sec("⭐ الألعاب المميزة","اخترناها لك",by(FEAT),"");
+  h+=sec("🆕 الألعاب الجديدة","أحدث ما أضفنا",G.filter(function(g){return g.new}),"");
+  h+=sec("💡 مقترحة لطفلك","بداية سهلة وممتعة",by(sug()),"");
+  h+='<div class="zcnt" style="margin-top:var(--z-sp-4)">كل الألعاب ('+G.length+')</div><div class="zgm">'+G.map(function(g){return card(g)}).join("")+'</div>';
+ }else{
+  h+='<div class="zcnt">'+R.length+' لعبة</div>';
+  h+=R.length?'<div class="zgm">'+R.map(function(g){return card(g)}).join("")+'</div>':'<div class="zempty"><img src="../../games/chars/poses/girl1-soft-320.png" alt=""><p>ما وجدنا لعبة بهذا الاسم. جرّب كلمة أخرى أو امسح الفلاتر.</p><button class="zbtn zb2" id="rs">مسح الفلاتر</button></div>';
+ }
+ $("out").innerHTML=h;var rs=$("rs");if(rs)rs.onclick=reset;$("x").hidden=!f.q&&!$("q").value;
+}
+function sug(){try{var done={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf("hg_prog")>=0){var m=JSON.parse(localStorage.getItem(k)||"{}");for(var x in m)if(m[x]>0)done[x]=1}}if(Object.keys(done).length){var rest=G.filter(function(g){return!done[g.id]&&g.lv===1});if(rest.length)return rest.slice(0,5).map(function(g){return g.id})}}catch(e){}return SUG0}
+function reset(){f={s:"",a:"",l:0,q:""};$("q").value="";draw()}
+$("q").oninput=function(){f.q=norm(this.value.trim());draw();$("q").focus()};
+$("x").onclick=reset;
+fetch("../../games/catalog.json").then(function(r){return r.json()}).then(function(d){G=d;$("tot").textContent=G.length+" لعبة تعليمية، كلها مجانية";draw()}).catch(function(){$("out").innerHTML='<div class="zempty"><p>تعذّر تحميل الألعاب. تحقق من الاتصال وأعد المحاولة.</p></div>'});
+})();
+</script></body></html>
