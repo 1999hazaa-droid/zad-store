@@ -35,7 +35,7 @@ function grade(id){
  h+='<main class="zw">';
  if(!L.length)h+='<div class="zempty"><p>سنضيف ألعابًا لهذه المرحلة قريبًا. جرّب «تعلّم والعب».</p></div>';
  subs.forEach(function(s){var l=L.filter(function(x){return x.subj===s});h+='<section class="zsk"><h3>'+(SUBJ[s]?SUBJ[s][0]:"")+' '+s+' <small>'+l.length+'</small></h3><div class="zlist">'+l.map(tile).join("")+'</div></section>'});
- h+='<section class="zpaid"><div class="zband" style="background:linear-gradient(135deg,var(--z-navy),#4B5FA0)"><img src="../games/chars/poses/'+g.pose+'-320.png" alt=""><div><h3>⭐ تعلّم والعب لـ'+g.n+'</h3><p>'+esc(g.paid)+'. تُفتح بكود التفعيل.</p></div><a class="zbtn zb1" href="../learn/">افتح تعلّم والعب</a></div></section></main>';
+ h+='<section class="zpaid"><div class="zband" style="background:linear-gradient(135deg,var(--z-navy),#4B5FA0)"><img src="../games/chars/poses/'+g.pose+'-320.png" alt=""><div><h3>⭐ تعلّم والعب لـ'+g.n+'</h3><p>'+esc(g.paid)+'.</p><span class="zlock">🔒 قريباً</span></div><span class="zbtn zb1 zdis" aria-disabled="true">🔒 قريباً</span></div></section></main>';
  $("app").innerHTML=h}
 function subject(s){
  var L=G.filter(function(x){return x.subj===s});if(!L.length)return home();var c=SUBJ[s]||["📘","#6D3FE0","#4C2BB0",""];

@@ -135,7 +135,7 @@
         </section>`},a.learnBanner=function(e){return`<section class="wrap gift-promo custom-promo" aria-label="${t(n("تعلّم والعب"))}">
             <a class="gp" href="${a.asset("learn/")}">
                 <span class="gp-art" aria-hidden="true" style="font-size:24px">🦉</span>
-                <span class="gp-text"><b>${t(n("تعلّم والعب"))}</b><small>${t(n("طفلك يتعلّم الحروف بالصوت واللعب مع البومة زوزو. ٣ حروف مجاناً، والاشتراك من ١٫٥ ر.ع."))}</small></span>
+                <span class="gp-text"><b>${t(n("تعلّم والعب"))}</b><small>${t(n("طفلك يتعلّم الحروف بالصوت واللعب مع البومة زوزو. ٣ حروف مجاناً، والاشتراك الكامل 🔒 قريباً."))}</small></span>
                 <span class="gp-go">${t(n("جرّب"))}${a.icon.side}</span>
             </a>
         </section>`},a.giftBanner=function(e){const s=e.cfg.sales;return!s.gift_enabled||s.gift_banner===!1?"":`<section class="wrap gift-promo" aria-label="${t(n("أرسل هدية"))}">
@@ -313,7 +313,7 @@ a.heroHome=function(e){const s=e.cfg;if(!s.theme.hero_show)return`<h1 class="sr-
                     <div class="lp-tx">
                         <span class="lp-tag">${t(n("تطبيق تفاعلي للأطفال"))}</span>
                         <h2>${t(n("تعلّم والعب مع زوزو"))}</h2>
-                        <p>${t(n("٣ حروف مجاناً، والاشتراك من ١٫٥ ر.ع"))}</p>
+                        <p>${t(n("٣ حروف مجاناً، والاشتراك الكامل 🔒 قريباً"))}</p>
                     </div>
                 </div>
                                 <a class="lp-go" href="${a.asset("learn/")}">${t(n("جرّب مجاناً"))}${a.icon.side}</a>

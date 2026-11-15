@@ -3537,12 +3537,24 @@ const FREE_L = 3, WA = "96877336242";
 const PLANS = [["شهر", "1.5", "شهري", 30], ["٣ أشهر", "3.5", "٣ أشهر", 90], ["سنة", "10", "سنوي", 365]];
 let DEV = ""; try { DEV = localStorage.getItem("zad-dev") || ""; if (!DEV) { DEV = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()); localStorage.setItem("zad-dev", DEV); } } catch { DEV = "tmp" + Date.now(); }
 let SUB = 0; try { SUB = +localStorage.getItem("zad-sub") || 0; } catch {}
-const subOk = () => SUB > Date.now();
+const PAID_LOCKED = true; /* القسم المدفوع مقفل «قريباً» — اجعلها false لإعادة الفتح */
+const subOk = () => !PAID_LOCKED && SUB > Date.now();
 const setSub = (t) => { SUB = t; try { localStorage.setItem("zad-sub", String(t)); } catch {} };
 const rpc = (fn, body) => sb("/rest/v1/rpc/" + fn, { method: "POST", body });
-(async () => { try { const t = await rpc("learn_check", { p_device: DEV }); setSub(t ? Date.parse(t) : 0); } catch {} })();
+(async () => { if (PAID_LOCKED) return; try { const t = await rpc("learn_check", { p_device: DEV }); setSub(t ? Date.parse(t) : 0); } catch {} })();
 function payScreen(msg = "") {
   SCR++; stopVoice(); HOLD = true;
+  if (PAID_LOCKED) {
+    app.innerHTML = `<div class="top"><button class="icon-btn" id="home">↩</button><span class="badge">🔒 قريباً</span></div>
+    <div class="stage" style="justify-content:flex-start;gap:12px">
+      <div style="width:100px">${OWL}</div>
+      <div class="card" style="text-align:center"><div style="font-size:54px;line-height:1">🔒</div>
+      <h2 style="margin:6px 0 4px;color:var(--p)">قريباً</h2>
+      <p style="margin:0;font-weight:700">هذا القسم المدفوع مقفل حالياً، وسنفتحه قريباً بإذن الله. يمكنك الآن اللعب مع أول ${FREE_L} حروف مجاناً.</p></div>
+      <button class="btn alt" id="lk">العودة للحروف المجانية</button></div>`;
+    $("#home").onclick = $("#lk").onclick = () => { HOLD = false; hub(); };
+    return;
+  }
   const left = subOk() ? Math.ceil((SUB - Date.now()) / 864e5) : 0;
   app.innerHTML = `<div class="top"><button class="icon-btn" id="home">↩</button><span class="badge">⭐ الاشتراك</span></div>
   <div class="stage" style="justify-content:flex-start;gap:12px">
