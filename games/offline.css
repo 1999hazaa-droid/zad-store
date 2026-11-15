@@ -8,8 +8,6 @@
 #zo-banner{display:flex;align-items:center;gap:12px;margin:12px 0;padding:14px 16px;background:linear-gradient(135deg,#5B3FD1,#7C5CE8);color:#fff;border-radius:20px;cursor:pointer;border:0;width:100%;text-align:start;font-family:Cairo,system-ui,sans-serif;box-shadow:0 8px 20px #5b3fd133}
 #zo-banner .zi{font-size:34px;flex:none}#zo-banner b{display:block;font-size:17px}#zo-banner small{display:block;opacity:.92;font-size:13px;font-weight:600;margin-top:2px}
 #zo-banner .zb{margin-inline-start:auto;flex:none;background:#fff;color:var(--zo-p);border-radius:99px;padding:7px 13px;font-weight:800;font-size:13px}
-body[data-zo=ready] .catcard,body[data-zo=ready] .gcard{position:relative}
-body[data-zo=ready] .catcard::after,body[data-zo=ready] .gcard::after{content:"✈️ بلا إنترنت";position:absolute;top:6px;inset-inline-end:8px;background:#E7F8F0;color:#0B7D52;border-radius:99px;padding:2px 8px;font:800 10.5px/1.4 Cairo,system-ui,sans-serif;pointer-events:none}
 #zo-panel{position:fixed;inset:0;z-index:90;background:#F5F1FF;overflow:auto;font-family:Cairo,system-ui,sans-serif;color:var(--zo-ink);direction:rtl;-webkit-overflow-scrolling:touch}
 #zo-panel .zp{max-width:640px;margin:auto;padding:14px 14px calc(30px + env(safe-area-inset-bottom))}
 .zo-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
