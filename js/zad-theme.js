@@ -1,2 +1,2 @@
-/* مفتاح الهوية الجديدة: ?ui=2 يفعّل، ?ui=1 يلغي (محفوظ في المتصفح) */
-(function(){try{var u=new URLSearchParams(location.search).get("ui"),k="zui2";if(u==="2")localStorage.setItem(k,"1");if(u==="1")localStorage.removeItem(k);if(localStorage.getItem(k)!=="1")return;var d=document.documentElement;d.classList.add("zv2");var l=document.createElement("link");l.rel="stylesheet";l.href="/zad-store/css/store-v2.css";document.head.appendChild(l)}catch(e){}})();
+/* الهوية الجديدة مفعّلة افتراضيًا. ?ui=1 يعيد الشكل القديم، ?ui=2 يعيد التفعيل */
+(function(){var d=document.documentElement,k="zui2",on=!0;try{var u=new URLSearchParams(location.search).get("ui");if(u==="1")localStorage.setItem(k,"0");if(u==="2")localStorage.removeItem(k);on=localStorage.getItem(k)!=="0"}catch(e){}if(!on)return;d.classList.add("zv2");var l=document.createElement("link");l.rel="stylesheet";l.href="/zad-store/css/store-v2.css";document.head.appendChild(l)})();

@@ -1,8 +1,8 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><meta name="theme-color" content="#5B34D6"><title>الصفوف والمواد — معاينة</title>
-<link rel="stylesheet" href="../../css/zad-tokens.css"><link rel="stylesheet" href="../../css/zad-ui.css"></head><body>
-<header class="ztop"><div class="zw"><a class="zlogo" href="../home/">زاد التعليمية</a><nav><a class="zn-main" href="../home/">🏠 الرئيسية</a><a href="../games/">🎮 الألعاب</a><a href="../../learn/">⭐ تعلّم والعب</a></nav></div></header>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#5B34D6"><title>الصفوف والمواد</title>
+<link rel="stylesheet" href="../css/zad-tokens.css"><link rel="stylesheet" href="../css/zad-ui.css"></head><body>
+<header class="ztop"><div class="zw"><a class="zlogo" href="../home/">زاد التعليمية</a><nav><a class="zn-main" href="../home/">🏠 الرئيسية</a><a href="../free/">🎮 الألعاب</a><a href="../learn/">⭐ تعلّم والعب</a></nav></div></header>
 <div id="app"></div>
-<nav class="ztab"><a href="../home/"><b>🏠</b>الرئيسية</a><a href="../games/"><b>🎮</b>ألعاب</a><a class="on" href="#"><b>📚</b>الصفوف</a><a href="../../learn/"><b>⭐</b>تعلّم</a></nav>
+<nav class="ztab"><a href="../home/"><b>🏠</b>الرئيسية</a><a href="../free/"><b>🎮</b>ألعاب</a><a class="on" href="#"><b>📚</b>الصفوف</a><a href="../learn/"><b>⭐</b>تعلّم</a></nav>
 <script>
 (function(){
 var G=[],$=function(i){return document.getElementById(i)};
@@ -19,11 +19,11 @@ var GR=[
 {id:"g3",n:"الصف الثالث",em:"3️⃣",c:["#F59E0B","#B45309"],sub:"الأعداد حتى ١٠٠٠ والضرب والكسور",age:["الثالث"],pose:"girl1-read",paid:"أبطال أكاديمية زوزو: مواد المنهج ومغامرة كل أسبوع"},
 {id:"g4",n:"الصف الرابع",em:"4️⃣",c:["#EF4444","#B91C1C"],sub:"أعداد كبيرة وقسمة وكسور",age:["الرابع"],pose:"girl2-think",paid:"أكاديمية التحديات: مواد المنهج ومغامرة كل أسبوع"}];
 var SUBJ={"الرياضيات":["🔢","#3B82F6","#1D4ED8","عدّ وجمع وطرح وضرب وكسور"],"اللغة العربية":["✍️","#F59E0B","#B45309","حروف وكلمات وجمل وأضداد"],"العلوم والوقت":["🔬","#0EA5E9","#0369A1","كائنات حية وساعة وأيام وأشهر"],"الأشكال والتفكير":["🧠","#8B5CF6","#5B21B6","ذاكرة وأنماط وتصنيف وملاحظة"],"مهارات الصغار":["🧩","#EC4899","#BE185D","ألعاب الحواس والملاحظة للصغار"],"القراءة والقرآن":["📖","#8F1C39","#570418","آيات وأدعية"]};
-function tile(g){return '<a class="zcard zrowc" href="../../games/#g='+g.id+'"><span class="zi" style="background:'+g.c+'">'+g.ic+'</span><span>'+esc(g.t)+'<small>'+esc(g.s)+' · '+LV[g.lv]+'</small></span><span class="go">‹</span></a>'}
+function tile(g){return '<a class="zcard zrowc" href="../games/#g='+g.id+'"><span class="zi" style="background:'+g.c+'">'+g.ic+'</span><span>'+esc(g.t)+'<small>'+esc(g.s)+' · '+LV[g.lv]+'</small></span><span class="go">‹</span></a>'}
 function groupBy(list){var m={},o=[];list.forEach(function(g){var k=g.subj+"|"+g.skill;if(!m[k]){m[k]={subj:g.subj,skill:g.skill,l:[]};o.push(m[k])}m[k].l.push(g)});return o}
-function head(bg,bc,h,p,pose,stats){return '<section class="zph" style="background:linear-gradient(135deg,'+bg[0]+','+bg[1]+')"><div class="zw"><div><div class="zbc">'+bc+'</div><h1>'+h+'</h1><p>'+p+'</p><div class="zst">'+stats.map(function(s){return'<span>'+s+'</span>'}).join("")+'</div></div>'+(pose?'<img src="../../games/chars/poses/'+pose+'-320.png" alt="">':'')+'</div></section>'}
+function head(bg,bc,h,p,pose,stats){return '<section class="zph" style="background:linear-gradient(135deg,'+bg[0]+','+bg[1]+')"><div class="zw"><div><div class="zbc">'+bc+'</div><h1>'+h+'</h1><p>'+p+'</p><div class="zst">'+stats.map(function(s){return'<span>'+s+'</span>'}).join("")+'</div></div>'+(pose?'<img src="../games/chars/poses/'+pose+'-320.png" alt="">':'')+'</div></section>'}
 function home(){
- var h='<section class="zph" style="background:linear-gradient(135deg,var(--z-pri),var(--z-pri-l))"><div class="zw"><div><h1>📚 الصفوف والمواد</h1><p>اختر عمر طفلك أو صفه، أو ابدأ من المادة</p></div><img src="../../games/chars/poses/girl1-read-320.png" alt=""></div></section><main class="zw"><section class="zsec"><div class="zhead"><h2>حسب العمر والصف</h2></div><div class="zgrid" style="grid-template-columns:repeat(auto-fill,minmax(104px,1fr))">';
+ var h='<section class="zph" style="background:linear-gradient(135deg,var(--z-pri),var(--z-pri-l))"><div class="zw"><div><h1>📚 الصفوف والمواد</h1><p>اختر عمر طفلك أو صفه، أو ابدأ من المادة</p></div><img src="../games/chars/poses/girl1-read-320.png" alt=""></div></section><main class="zw"><section class="zsec"><div class="zhead"><h2>حسب العمر والصف</h2></div><div class="zgrid" style="grid-template-columns:repeat(auto-fill,minmax(104px,1fr))">';
  GR.forEach(function(g){h+='<a class="zcard zgr" href="#grade='+g.id+'"><b>'+g.em+'</b>'+g.n+'<small>'+g.sub+'</small></a>'});
  h+='</div></section><section class="zsec" style="padding-top:0"><div class="zhead"><h2>حسب المادة</h2></div><div class="zgrid w2">';
  Object.keys(SUBJ).forEach(function(s){var n=G.filter(function(g){return g.subj===s}).length;h+='<a class="zcard zsubj" href="#subj='+encodeURIComponent(s)+'"><i>'+SUBJ[s][0]+'</i><span>'+s+'<small>'+n+' لعبة · '+SUBJ[s][3]+'</small></span></a>'});
@@ -35,7 +35,7 @@ function grade(id){
  h+='<main class="zw">';
  if(!L.length)h+='<div class="zempty"><p>سنضيف ألعابًا لهذه المرحلة قريبًا. جرّب «تعلّم والعب».</p></div>';
  subs.forEach(function(s){var l=L.filter(function(x){return x.subj===s});h+='<section class="zsk"><h3>'+(SUBJ[s]?SUBJ[s][0]:"")+' '+s+' <small>'+l.length+'</small></h3><div class="zlist">'+l.map(tile).join("")+'</div></section>'});
- h+='<section class="zpaid"><div class="zband" style="background:linear-gradient(135deg,var(--z-navy),#4B5FA0)"><img src="../../games/chars/poses/'+g.pose+'-320.png" alt=""><div><h3>⭐ تعلّم والعب لـ'+g.n+'</h3><p>'+esc(g.paid)+'. تُفتح بكود التفعيل.</p></div><a class="zbtn zb1" href="../../learn/">افتح تعلّم والعب</a></div></section></main>';
+ h+='<section class="zpaid"><div class="zband" style="background:linear-gradient(135deg,var(--z-navy),#4B5FA0)"><img src="../games/chars/poses/'+g.pose+'-320.png" alt=""><div><h3>⭐ تعلّم والعب لـ'+g.n+'</h3><p>'+esc(g.paid)+'. تُفتح بكود التفعيل.</p></div><a class="zbtn zb1" href="../learn/">افتح تعلّم والعب</a></div></section></main>';
  $("app").innerHTML=h}
 function subject(s){
  var L=G.filter(function(x){return x.subj===s});if(!L.length)return home();var c=SUBJ[s]||["📘","#6D3FE0","#4C2BB0",""];
@@ -45,6 +45,6 @@ function subject(s){
  $("app").innerHTML=h+'</main>'}
 function route(){var m=location.hash.slice(1),p=m.split("=");window.scrollTo(0,0);if(p[0]==="grade")grade(p[1]);else if(p[0]==="subj")subject(decodeURIComponent(p[1]||""));else home()}
 window.addEventListener("hashchange",route);
-fetch("../../games/catalog.json").then(function(r){return r.json()}).then(function(d){G=d;route()}).catch(function(){$("app").innerHTML='<div class="zempty"><p>تعذّر التحميل. أعد المحاولة.</p></div>'});
+fetch("../games/catalog.json").then(function(r){return r.json()}).then(function(d){G=d;route()}).catch(function(){$("app").innerHTML='<div class="zempty"><p>تعذّر التحميل. أعد المحاولة.</p></div>'});
 })();
 </script></body></html>
