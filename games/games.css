@@ -85,3 +85,10 @@
 .parg{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #eee8ff;font-size:14px}
 .parg span{display:flex;gap:8px;flex-wrap:wrap}.parg small{color:#8A5A00;font-weight:700}
 .parw span{min-width:70px}
+
+.wsum{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+.wsum span{background:#fff;border-radius:99px;padding:4px 12px;font-weight:800;font-size:12.5px;color:#5B34D6;box-shadow:0 2px #e0d6ff}
+.wnav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.wnav .btn-big{font-size:14px;padding:12px 8px}
+.zsec{margin:14px 0 8px}h2.zsec{font-size:17px}
+.zdone{background:#D8F8E4;color:#0b5a2d;border-radius:16px;padding:10px 14px;font-weight:800;text-align:center}
