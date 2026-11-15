@@ -243,22 +243,29 @@
             </section>`:""}
             ${a.storeReviews(e)}
             ${a.homeFaq(e)}`},a.bundleCat=e=>(e.categories||[]).find(s=>/حزم|bundle/i.test(s.name||"")||/bundle/i.test(s.slug||"")),a.simpleHome=function(e){const A=a.asset,N=n,T=t;
-return`<section class="wrap zh-hero" aria-label="${T(N("مرحبًا بك في زاد"))}"><div class="zh-hi">
-<div class="zh-ht"><h1>${T(N("مرحبًا بك في زاد"))}</h1><p>${T(N("تعلم، العب، واكتشف"))}</p>
-<ul class="zh-pills"><li>🎮 ${T(N("ألعاب مجانية"))}</li><li>📄 ${T(N("ملفات للطباعة"))}</li><li>✈️ ${T(N("بدون إنترنت"))}</li></ul>
+const I=x=>`<img src="${A("images/ill/"+x+".svg")}" alt="" width="64" height="64" loading="lazy" decoding="async">`,
+C=(c,ic,t1,d,go,href,extra)=>`<div class="zc" style="--c:${c[0]};--t:${c[1]}"><a class="zc-ov" href="${A(href)}" aria-label="${T(N(t1))}"></a><span class="zc-ic" aria-hidden="true">${I(ic)}</span><span class="zc-tx"><b>${T(N(t1))}</b><small>${T(N(d))}</small></span>${extra||""}<span class="zc-go">${T(N(go))}</span></div>`;
+return`<section class="wrap zh-hero" aria-label="${T(N("مرحبًا بك في عالم زاد!"))}"><div class="zh-hi">
+<div class="zh-ht"><h1>${T(N("مرحبًا بك في عالم زاد!"))}</h1><p>${T(N("تعلّم، العب، واكتشف عالم المعرفة"))}</p>
+<ul class="zh-pills"><li><img src="${A("images/ill/blocks.svg")}" alt="" width="22" height="22">${T(N("ألعاب مجانية"))}</li><li><img src="${A("images/ill/notebook.svg")}" alt="" width="22" height="22">${T(N("ملفات للطباعة"))}</li><li><img src="${A("images/ill/tablet.svg")}" alt="" width="22" height="22">${T(N("بدون إنترنت"))}</li></ul>
 <a class="zh-btn" href="${A("my/")}">${T(N("ابدأ التعلم"))}</a></div>
-<div class="zh-hc" aria-hidden="true"><img src="${A("games/chars/poses/girl1-welcome-320.png")}" alt="" width="220" height="220" decoding="async" fetchpriority="high"></div>
+<div class="zh-hc" aria-hidden="true"><img class="zh-bag" src="${A("images/ill/bag.svg")}" alt="" width="70" height="70"><img src="${A("games/chars/poses/girl1-welcome-320.png")}" alt="" width="220" height="220" decoding="async" fetchpriority="high"><img class="zh-pen" src="${A("images/ill/pencils.svg")}" alt="" width="64" height="64"></div>
 </div></section>
-<section class="wrap zh-sec" aria-label="${T(N("الأقسام"))}"><div class="zh-grid">
-<div class="zh-card zh-main"><a class="zh-ov" href="${A("games/#start")}" aria-label="${T(N("الألعاب التعليمية المجانية"))}"></a><img class="zh-deco" src="${A("games/chars/poses/boy-joy-160.png")}" alt="" width="96" height="96" loading="lazy" decoding="async"><span class="zh-ic" aria-hidden="true">🎮</span><span class="zh-tx"><b>${T(N("الألعاب التعليمية المجانية"))}</b><small>${T(N("تعلم واستمتع بألعاب تعليمية مجانية"))}</small></span><span class="zh-chips"><a href="${A("games/#lv")}">🧒 ${T(N("حسب العمر"))}</a><a href="${A("games/#lv")}">🎒 ${T(N("حسب الصف"))}</a></span><span class="zh-go">${T(N("ابدأ اللعب"))}</span></div>
-<a class="zh-card zh-zozo" href="${A("learn/")}"><span class="zh-ic" aria-hidden="true">🦉</span><span class="zh-tx"><b>${T(N("تعلم والعب مع زوزو"))}</b><small>${T(N("أنشطة وألعاب تفاعلية للأطفال"))}</small></span><span class="zh-go">${T(N("اكتشف الأنشطة"))}</span></a>
-<a class="zh-card zh-files" href="${A("library/")}"><span class="zh-ic" aria-hidden="true">📄</span><span class="zh-tx"><b>${T(N("الملفات التعليمية"))}</b><small>${T(N("ملفات PDF، أوراق عمل، أنشطة تعليمية، ومواد جاهزة للطباعة"))}</small></span><span class="zh-go">${T(N("تصفح الملفات"))}</span></a>
+<section class="wrap zh-sec" aria-label="${T(N("الأقسام"))}"><div class="zc-grid">
+${C(["#6D3FE0","#fff"],"blocks","الألعاب التعليمية المجانية","ألعاب ممتعة لكل عمر وصف","ابدأ اللعب","games/#start",`<span class="zc-chips"><a href="${A("games/#lv")}">${T(N("حسب العمر"))}</a><a href="${A("games/#lv")}">${T(N("حسب الصف"))}</a></span>`)}
+${C(["#24B47E","#fff"],"owl","تعلّم والعب مع زوزو","الحروف والكلمات مع البومة زوزو","اكتشف","learn/")}
+${C(["#FF9B38","#fff"],"notebook","الملفات التعليمية","أوراق عمل وملفات جاهزة للطباعة","تصفّح الملفات","library/")}
+${C(["#28A9E8","#fff"],"books","المكتبة التعليمية","ابحث في كل ما نقدّمه","ابحث","search/")}
+${C(["#E94D9B","#fff"],"palette","الأنشطة التفاعلية","مغامرات وأنشطة ممتعة","ابدأ","adventures/")}
+${C(["#F5A623","#fff"],"bag","عالم زاد للأطفال","ألعاب وقصص صغيرة للتعلم","ادخل العالم","games/#m-wd")}
+${C(["#1E86CF","#fff"],"globe","جميع المواد الدراسية","عربي، رياضيات، علوم وغيرها","المواد","grades/#subjects")}
+${C(["#4A22C4","#fff"],"ruler","جميع الصفوف والأعمار","من سنتين إلى الصف الرابع","الصفوف","grades/#ages")}
 </div></section>
 <section class="wrap zh-feat" aria-labelledby="zf-t"><h2 id="zf-t">${T(N("لماذا زاد؟"))}</h2><div class="zh-fg">
-<div><i aria-hidden="true">🎮</i><b>${T(N("ألعاب مجانية"))}</b><small>${T(N("تعلّم باللعب بدون حساب"))}</small></div>
-<div><i aria-hidden="true">✈️</i><b>${T(N("بدون إنترنت"))}</b><small>${T(N("العب في أي مكان"))}</small></div>
-<div><i aria-hidden="true">📄</i><b>${T(N("ملفات للطباعة"))}</b><small>${T(N("PDF جاهزة لكل صف"))}</small></div>
-<div><i aria-hidden="true">🎯</i><b>${T(N("لكل عمر وصف"))}</b><small>${T(N("من سنة إلى الصف الرابع"))}</small></div>
+<div><i aria-hidden="true">${I("blocks")}</i><b>${T(N("ألعاب مجانية"))}</b><small>${T(N("تعلّم باللعب بدون حساب"))}</small></div>
+<div><i aria-hidden="true">${I("tablet")}</i><b>${T(N("بدون إنترنت"))}</b><small>${T(N("العب في أي مكان"))}</small></div>
+<div><i aria-hidden="true">${I("notebook")}</i><b>${T(N("ملفات للطباعة"))}</b><small>${T(N("PDF جاهزة لكل صف"))}</small></div>
+<div><i aria-hidden="true">${I("cap")}</i><b>${T(N("لكل عمر وصف"))}</b><small>${T(N("من سنتين إلى الصف الرابع"))}</small></div>
 </div></section>`},
 a.GRADES=[["الأول",/الأول/],["الثاني",/الثاني/],["الثالث",/الثالث/],["الرابع",/الرابع/],["الخامس",/الخامس/],["السادس",/السادس/]],
 a.gradeOf=function(p){for(const g of a.GRADES)if(g[1].test(p.name||""))return g[0];return""},

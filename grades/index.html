@@ -23,9 +23,9 @@ function tile(g){return '<a class="zcard zrowc" href="../games/#g='+g.id+'"><spa
 function groupBy(list){var m={},o=[];list.forEach(function(g){var k=g.subj+"|"+g.skill;if(!m[k]){m[k]={subj:g.subj,skill:g.skill,l:[]};o.push(m[k])}m[k].l.push(g)});return o}
 function head(bg,bc,h,p,pose,stats){return '<section class="zph" style="background:linear-gradient(135deg,'+bg[0]+','+bg[1]+')"><div class="zw"><div><div class="zbc">'+bc+'</div><h1>'+h+'</h1><p>'+p+'</p><div class="zst">'+stats.map(function(s){return'<span>'+s+'</span>'}).join("")+'</div></div>'+(pose?'<img src="../games/chars/poses/'+pose+'-320.png" alt="">':'')+'</div></section>'}
 function home(){
- var h='<section class="zph" style="background:linear-gradient(135deg,var(--z-pri),var(--z-pri-l))"><div class="zw"><div><h1>📚 الصفوف والمواد</h1><p>اختر عمر طفلك أو صفه، أو ابدأ من المادة</p></div><img src="../games/chars/poses/girl1-read-320.png" alt=""></div></section><main class="zw"><section class="zsec"><div class="zhead"><h2>حسب العمر والصف</h2></div><div class="zgrid" style="grid-template-columns:repeat(auto-fill,minmax(104px,1fr))">';
+ var h='<section class="zph" style="background:linear-gradient(135deg,var(--z-pri),var(--z-pri-l))"><div class="zw"><div><h1>📚 الصفوف والمواد</h1><p>اختر عمر طفلك أو صفه، أو ابدأ من المادة</p></div><img src="../games/chars/poses/girl1-read-320.png" alt=""></div></section><main class="zw"><section class="zsec" id="ages"><div class="zhead"><h2>حسب العمر والصف</h2></div><div class="zgrid" style="grid-template-columns:repeat(auto-fill,minmax(104px,1fr))">';
  GR.forEach(function(g){h+='<a class="zcard zgr" href="#grade='+g.id+'"><b>'+g.em+'</b>'+g.n+'<small>'+g.sub+'</small></a>'});
- h+='</div></section><section class="zsec" style="padding-top:0"><div class="zhead"><h2>حسب المادة</h2></div><div class="zgrid w2">';
+ h+='</div></section><section class="zsec" id="subjects" style="padding-top:0"><div class="zhead"><h2>حسب المادة</h2></div><div class="zgrid w2">';
  Object.keys(SUBJ).forEach(function(s){var n=G.filter(function(g){return g.subj===s}).length;h+='<a class="zcard zsubj" href="#subj='+encodeURIComponent(s)+'"><i>'+SUBJ[s][0]+'</i><span>'+s+'<small>'+n+' لعبة · '+SUBJ[s][3]+'</small></span></a>'});
  $("app").innerHTML=h+'</div></section></main>'}
 function grade(id){
@@ -43,7 +43,7 @@ function subject(s){
  h+='<main class="zw">';
  groupBy(L).forEach(function(k){h+='<section class="zsk"><h3>'+esc(k.skill)+' <small>'+k.l.length+'</small></h3><div class="zlist">'+k.l.map(tile).join("")+'</div></section>'});
  $("app").innerHTML=h+'</main>'}
-function route(){var m=location.hash.slice(1),p=m.split("=");window.scrollTo(0,0);if(p[0]==="grade")grade(p[1]);else if(p[0]==="subj")subject(decodeURIComponent(p[1]||""));else home()}
+function route(){var m=location.hash.slice(1),p=m.split("=");window.scrollTo(0,0);if(p[0]==="grade")grade(p[1]);else if(p[0]==="subj")subject(decodeURIComponent(p[1]||""));else{home();var el=document.getElementById(m);if(el&&(m==="ages"||m==="subjects"))setTimeout(function(){el.scrollIntoView()},30)}}
 window.addEventListener("hashchange",route);
 fetch("../games/catalog.json").then(function(r){return r.json()}).then(function(d){G=d;route()}).catch(function(){$("app").innerHTML='<div class="zempty"><p>تعذّر التحميل. أعد المحاولة.</p></div>'});
 })();

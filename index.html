@@ -22,7 +22,7 @@
 <link rel="preload" href="/zad-store/fonts/cairo-regular.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="/zad-store/fonts/cairo-bold.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="/zad-store/css/store.css?v=a75f0da1d0">
-<link rel="stylesheet" href="/zad-store/css/home-simple.css?v=12">
+<link rel="stylesheet" href="/zad-store/css/home-simple.css?v=13">
 <style id="themeVars">:root{--primary:#5B34D6;--hero:#5B34D6;--bg:#F7F5FF;--text:#1B1430;--on-primary:#FFFFFF;--logo-filter:none;--font-head:"Cairo","Cairo",system-ui,sans-serif;--font-body:"Cairo",system-ui,-apple-system,"Segoe UI",sans-serif}</style>
 <script>window.ATHR_BASE = "/zad-store/";
 (function () { var d = document.documentElement; try { var m = JSON.parse(localStorage.getItem("huroof_mode")); if (m === "light" || m === "dark" || m === "auto") d.setAttribute("data-mode", m); } catch (e) {} try { if (JSON.parse(localStorage.getItem("huroof_lang")) === "en") { d.lang = "en"; d.dir = "ltr"; d.classList.add("i18n-wait"); setTimeout(function () { d.classList.remove("i18n-wait"); }, 2500); } } catch (e) {}
@@ -54,22 +54,27 @@ if (/^#(admin|orders)$/.test(location.hash)) { location.replace(window.ATHR_BASE
 
 <div id="bars" class="bars"></div>
 
-<main id="view" tabindex="-1" data-route="home" data-prerendered="1"><section class="wrap zh-hero" aria-label="مرحبًا بك في زاد"><div class="zh-hi">
-<div class="zh-ht"><h1>مرحبًا بك في زاد</h1><p>تعلم، العب، واكتشف</p>
-<ul class="zh-pills"><li>🎮 ألعاب مجانية</li><li>📄 ملفات للطباعة</li><li>✈️ بدون إنترنت</li></ul>
+<main id="view" tabindex="-1" data-route="home" data-prerendered="1"><section class="wrap zh-hero" aria-label="مرحبًا بك في عالم زاد!"><div class="zh-hi">
+<div class="zh-ht"><h1>مرحبًا بك في عالم زاد!</h1><p>تعلّم، العب، واكتشف عالم المعرفة</p>
+<ul class="zh-pills"><li><img src="/zad-store/images/ill/blocks.svg" alt="" width="22" height="22">ألعاب مجانية</li><li><img src="/zad-store/images/ill/notebook.svg" alt="" width="22" height="22">ملفات للطباعة</li><li><img src="/zad-store/images/ill/tablet.svg" alt="" width="22" height="22">بدون إنترنت</li></ul>
 <a class="zh-btn" href="/zad-store/my/">ابدأ التعلم</a></div>
-<div class="zh-hc" aria-hidden="true"><img src="/zad-store/games/chars/poses/girl1-welcome-320.png" alt="" width="220" height="220" decoding="async" fetchpriority="high"></div>
+<div class="zh-hc" aria-hidden="true"><img class="zh-bag" src="/zad-store/images/ill/bag.svg" alt="" width="70" height="70"><img src="/zad-store/games/chars/poses/girl1-welcome-320.png" alt="" width="220" height="220" decoding="async" fetchpriority="high"><img class="zh-pen" src="/zad-store/images/ill/pencils.svg" alt="" width="64" height="64"></div>
 </div></section>
-<section class="wrap zh-sec" aria-label="الأقسام"><div class="zh-grid">
-<div class="zh-card zh-main"><a class="zh-ov" href="/zad-store/games/#start" aria-label="الألعاب التعليمية المجانية"></a><img class="zh-deco" src="/zad-store/games/chars/poses/boy-joy-160.png" alt="" width="96" height="96" loading="lazy" decoding="async"><span class="zh-ic" aria-hidden="true">🎮</span><span class="zh-tx"><b>الألعاب التعليمية المجانية</b><small>تعلم واستمتع بألعاب تعليمية مجانية</small></span><span class="zh-chips"><a href="/zad-store/games/#lv">🧒 حسب العمر</a><a href="/zad-store/games/#lv">🎒 حسب الصف</a></span><span class="zh-go">ابدأ اللعب</span></div>
-<a class="zh-card zh-zozo" href="/zad-store/learn/"><span class="zh-ic" aria-hidden="true">🦉</span><span class="zh-tx"><b>تعلم والعب مع زوزو</b><small>أنشطة وألعاب تفاعلية للأطفال</small></span><span class="zh-go">اكتشف الأنشطة</span></a>
-<a class="zh-card zh-files" href="/zad-store/library/"><span class="zh-ic" aria-hidden="true">📄</span><span class="zh-tx"><b>الملفات التعليمية</b><small>ملفات PDF، أوراق عمل، أنشطة تعليمية، ومواد جاهزة للطباعة</small></span><span class="zh-go">تصفح الملفات</span></a>
+<section class="wrap zh-sec" aria-label="الأقسام"><div class="zc-grid">
+<div class="zc" style="--c:#6D3FE0;--t:#fff"><a class="zc-ov" href="/zad-store/games/#start" aria-label="الألعاب التعليمية المجانية"></a><span class="zc-ic" aria-hidden="true"><img src="/zad-store/images/ill/blocks.svg" alt="" width="64" height="64" loading="lazy" decoding="async"></span><span class="zc-tx"><b>الألعاب التعليمية المجانية</b><small>ألعاب ممتعة لكل عمر وصف</small></span><span class="zc-chips"><a href="/zad-store/games/#lv">حسب العمر</a><a href="/zad-store/games/#lv">حسب الصف</a></span><span class="zc-go">ابدأ اللعب</span></div>
+<div class="zc" style="--c:#24B47E;--t:#fff"><a class="zc-ov" href="/zad-store/learn/" aria-label="تعلّم والعب مع زوزو"></a><span class="zc-ic" aria-hidden="true"><img src="/zad-store/images/ill/owl.svg" alt="" width="64" height="64" loading="lazy" decoding="async"></span><span class="zc-tx"><b>تعلّم والعب مع زوزو</b><small>الحروف والكلمات مع البومة زوزو</small></span><span class="zc-go">اكتشف</span></div>
+<div class="zc" style="--c:#FF9B38;--t:#fff"><a class="zc-ov" href="/zad-store/library/" aria-label="الملفات التعليمية"></a><span class="zc-ic" aria-hidden="true"><img src="/zad-store/images/ill/notebook.svg" alt="" width="64" height="64" loading="lazy" decoding="async"></span><span class="zc-tx"><b>الملفات التعليمية</b><small>أوراق عمل وملفات جاهزة للطباعة</small></span><span class="zc-go">تصفّح الملفات</span></div>
+<div class="zc" style="--c:#28A9E8;--t:#fff"><a class="zc-ov" href="/zad-store/search/" aria-label="المكتبة التعليمية"></a><span class="zc-ic" aria-hidden="true"><img src="/zad-store/images/ill/books.svg" alt="" width="64" height="64" loading="lazy" decoding="async"></span><span class="zc-tx"><b>المكتبة التعليمية</b><small>ابحث في كل ما نقدّمه</small></span><span class="zc-go">ابحث</span></div>
+<div class="zc" style="--c:#E94D9B;--t:#fff"><a class="zc-ov" href="/zad-store/adventures/" aria-label="الأنشطة التفاعلية"></a><span class="zc-ic" aria-hidden="true"><img src="/zad-store/images/ill/palette.svg" alt="" width="64" height="64" loading="lazy" decoding="async"></span><span class="zc-tx"><b>الأنشطة التفاعلية</b><small>مغامرات وأنشطة ممتعة</small></span><span class="zc-go">ابدأ</span></div>
+<div class="zc" style="--c:#F5A623;--t:#fff"><a class="zc-ov" href="/zad-store/games/#m-wd" aria-label="عالم زاد للأطفال"></a><span class="zc-ic" aria-hidden="true"><img src="/zad-store/images/ill/bag.svg" alt="" width="64" height="64" loading="lazy" decoding="async"></span><span class="zc-tx"><b>عالم زاد للأطفال</b><small>ألعاب وقصص صغيرة للتعلم</small></span><span class="zc-go">ادخل العالم</span></div>
+<div class="zc" style="--c:#1E86CF;--t:#fff"><a class="zc-ov" href="/zad-store/grades/#subjects" aria-label="جميع المواد الدراسية"></a><span class="zc-ic" aria-hidden="true"><img src="/zad-store/images/ill/globe.svg" alt="" width="64" height="64" loading="lazy" decoding="async"></span><span class="zc-tx"><b>جميع المواد الدراسية</b><small>عربي، رياضيات، علوم وغيرها</small></span><span class="zc-go">المواد</span></div>
+<div class="zc" style="--c:#4A22C4;--t:#fff"><a class="zc-ov" href="/zad-store/grades/#ages" aria-label="جميع الصفوف والأعمار"></a><span class="zc-ic" aria-hidden="true"><img src="/zad-store/images/ill/ruler.svg" alt="" width="64" height="64" loading="lazy" decoding="async"></span><span class="zc-tx"><b>جميع الصفوف والأعمار</b><small>من سنتين إلى الصف الرابع</small></span><span class="zc-go">الصفوف</span></div>
 </div></section>
 <section class="wrap zh-feat" aria-labelledby="zf-t"><h2 id="zf-t">لماذا زاد؟</h2><div class="zh-fg">
-<div><i aria-hidden="true">🎮</i><b>ألعاب مجانية</b><small>تعلّم باللعب بدون حساب</small></div>
-<div><i aria-hidden="true">✈️</i><b>بدون إنترنت</b><small>العب في أي مكان</small></div>
-<div><i aria-hidden="true">📄</i><b>ملفات للطباعة</b><small>PDF جاهزة لكل صف</small></div>
-<div><i aria-hidden="true">🎯</i><b>لكل عمر وصف</b><small>من سنة إلى الصف الرابع</small></div>
+<div><i aria-hidden="true"><img src="/zad-store/images/ill/blocks.svg" alt="" width="64" height="64" loading="lazy" decoding="async"></i><b>ألعاب مجانية</b><small>تعلّم باللعب بدون حساب</small></div>
+<div><i aria-hidden="true"><img src="/zad-store/images/ill/tablet.svg" alt="" width="64" height="64" loading="lazy" decoding="async"></i><b>بدون إنترنت</b><small>العب في أي مكان</small></div>
+<div><i aria-hidden="true"><img src="/zad-store/images/ill/notebook.svg" alt="" width="64" height="64" loading="lazy" decoding="async"></i><b>ملفات للطباعة</b><small>PDF جاهزة لكل صف</small></div>
+<div><i aria-hidden="true"><img src="/zad-store/images/ill/cap.svg" alt="" width="64" height="64" loading="lazy" decoding="async"></i><b>لكل عمر وصف</b><small>من سنتين إلى الصف الرابع</small></div>
 </div></section></main>
 
 <footer id="footer" class="footer"><div class="wrap foot zf">
@@ -88,7 +93,7 @@ if (/^#(admin|orders)$/.test(location.hash)) { location.replace(window.ATHR_BASE
 
 <script src="/zad-store/js/zad-theme.js"></script><script src="/zad-store/js/supabase-config.js?v=beb96d8866" defer></script>
 <script src="/zad-store/js/defaults.js?v=85268c17ba" defer></script>
-<script src="/zad-store/js/views.js?v=60be8f99e9" defer></script>
+<script src="/zad-store/js/views.js?v=11ac030c9f" defer></script>
 <script src="/zad-store/js/i18n-en.js?v=117ce2836f" defer></script>
 <script src="/zad-store/js/thumbs.js?v=99914b932b" defer></script>
 <script src="/zad-store/js/rates.js?v=3245f6932f" defer></script>
