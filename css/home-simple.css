@@ -358,3 +358,31 @@ body:has(.zm-hero) main#view{margin-top:0!important;padding:0!important;border-r
 .cart-float,#cartFloat,.top .cart-btn,.cart-btn{display:none!important}
 .top-row.hide-s{grid-template-columns:auto 1fr auto auto;grid-template-areas:"menu brand lang cur"}
 .zm-grid>.zm-card:last-child{grid-column:1/-1}
+/* تصغير «لماذا زاد؟» و«ابدأ رحلة التعلّم» */
+.zm-band{padding:16px 0 18px}
+.zm-band .zm-head{margin-bottom:10px}.zm-band .zm-head h2{font-size:19px;line-height:1.4}
+.zm-stats{gap:8px}
+.zm-st{padding:8px 6px;gap:0;border-radius:12px}
+.zm-sti img{width:28px;height:28px}
+.zm-st b{font-size:13.5px;line-height:1.4}
+.zm-st small{font-size:11px;line-height:1.4}
+.zm-join{padding:14px 0 18px}
+.zm-jg{grid-template-columns:minmax(0,1fr) 112px;gap:8px;padding:12px 14px;border-radius:16px;align-items:center}
+.zm-jt{text-align:start}
+.zm-jt h2{font-size:16.5px;line-height:1.45;margin:0 0 3px}
+.zm-jt p{font-size:12.5px;margin:0 0 8px;line-height:1.5}
+.zm-jt .zm-btn{padding:8px 16px;font-size:13.5px;min-height:0;border-radius:11px}
+.zm-jv{height:96px;max-width:112px}
+.zm-jv .zm-circ{width:78px;height:78px;bottom:2px;box-shadow:0 0 0 5px #ffc83a2e}
+.zm-jv>img:not(.zm-spk):not(.zm-jb):not(.zm-jp){width:68px;height:68px;bottom:6px}
+.zm-jb{width:30px;height:30px;bottom:0;inset-inline-start:0}
+.zm-jp{width:28px;height:28px;bottom:2px;inset-inline-end:0}
+.zm-jv .zm-spk{width:14px;height:14px}
+@media(min-width:700px){
+ .zm-band{padding:20px 0 22px}.zm-band .zm-head h2{font-size:22px}
+ .zm-stats{gap:10px}.zm-st{padding:10px 8px}.zm-sti img{width:32px;height:32px}.zm-st b{font-size:15px}.zm-st small{font-size:12px}
+ .zm-join{padding:18px 0 24px}.zm-jg{grid-template-columns:minmax(0,1fr) 150px;padding:14px 28px}
+ .zm-jt h2{font-size:21px}.zm-jt p{font-size:14px}.zm-jv{height:110px;max-width:150px}
+ .zm-jv .zm-circ{width:92px;height:92px}.zm-jv>img:not(.zm-spk):not(.zm-jb):not(.zm-jp){width:80px;height:80px}
+}
+@media(max-width:339px){.zm-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.zm-jg{grid-template-columns:minmax(0,1fr) 84px}.zm-jv{max-width:84px}}
