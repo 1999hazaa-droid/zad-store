@@ -30,6 +30,16 @@
   }
   const updAvail = () => S.state === "ready" && S.latest && S.ver && S.latest !== S.ver;
 
+  const VB = "https://zcnwzpevehudhnsuljdy.supabase.co/storage/v1/object/public/wiam/";
+  async function vhash(t) { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("hala1|" + t)); return [...new Uint8Array(b)].slice(0, 12).map((x) => x.toString(16).padStart(2, "0")).join(""); }
+  async function voicePack() {
+    try {
+      const r = await fetch("_phrases.json", { cache: "no-cache" }); if (!r.ok) return;
+      const list = await r.json(), vc = await caches.open("zad-voice"), q = list.slice();
+      const w = async () => { while (q.length) { try { const u = VB + (await vhash(q.shift())) + ".mp3"; if (!(await vc.match(u))) { const x = await fetch(u); if (x.ok) await vc.put(u, x); } } catch {} } };
+      await Promise.all(Array.from({ length: 4 }, w));
+    } catch {}
+  }
   async function download(isUpdate) {
     if (!supported || S.state === "busy") return;
     if (!navigator.onLine) { toast("نحتاج إنترنت لتجهيز الألعاب. جرّب عندما تتصل 🌐"); return; }
@@ -55,6 +65,7 @@
       S.ver = man.version; S.state = "ready"; save({ ver: man.version, at: Date.now(), deleted: false });
       try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch {}
       toast(isUpdate ? "تم تحديث الألعاب ✅" : "الألعاب جاهزة للعب بلا إنترنت ✈️");
+      voicePack();
     } catch {
       S.state = "partial"; S.err = "لم يكتمل التنزيل. اضغط «أكمل التنزيل» عند توفر الإنترنت.";
       toast("لم يكتمل تجهيز الألعاب، سنكمله عندما يتحسن الاتصال 🙏");
