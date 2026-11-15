@@ -386,3 +386,4 @@ body:has(.zm-hero) main#view{margin-top:0!important;padding:0!important;border-r
  .zm-jv .zm-circ{width:92px;height:92px}.zm-jv>img:not(.zm-spk):not(.zm-jb):not(.zm-jp){width:80px;height:80px}
 }
 @media(max-width:339px){.zm-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.zm-jg{grid-template-columns:minmax(0,1fr) 84px}.zm-jv{max-width:84px}}
+.zm-btn2{background:#FFC83A;color:#241154;border:0;box-shadow:0 6px 16px #ffc83a55}.zm-btn2:hover{background:#FFC83A;filter:brightness(1.05)}
