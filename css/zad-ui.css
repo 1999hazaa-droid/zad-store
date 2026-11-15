@@ -70,3 +70,9 @@ a{color:inherit;text-decoration:none}img{max-width:100%}
 /* تبسيط بطاقات الألعاب: لون واحد */
 .zg .zim{background:var(--z-tint)!important;height:96px}
 .zg .zbd{gap:6px}.zg .zgo{min-height:44px}
+/* إطار المنصة: خلفية بنفسجية + هيدر بنفسجي + لوحة محتوى فاتحة */
+html{background:#351078}
+body{background:linear-gradient(170deg,#351078 0,#5427D5 40%,#7045E8 100%) no-repeat #351078}
+.ztop{background:#351078e6;border-bottom:1px solid #ffffff1f;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.ztop .zlogo{color:#fff}.ztop nav a{color:#E4DAFF}.ztop nav a:hover,.ztop nav a.zn-main{background:#ffffff1f;color:#fff}
+main.zw{background:#F7F4FF;border-radius:26px 26px 0 0;margin-top:14px;padding-bottom:90px;min-height:50vh}
