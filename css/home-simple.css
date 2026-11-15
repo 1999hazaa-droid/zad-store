@@ -435,3 +435,24 @@ body:has(.zm-hero) main#view{margin-top:0!important;padding:0!important;border-r
 .sheet-menu .mfollow{gap:6px;margin-top:4px}
 .sheet-menu .mf{padding:8px 4px 6px;gap:3px;border-radius:12px;font-size:12px;background:#F7F4FF;border-color:#ECE6FA}
 .sheet-menu .mf svg{width:20px;height:20px}
+/* لماذا زاد؟ + الفوتر: مبسّطان */
+.zm-band{background:#F7F4FF;padding:14px 0 16px}
+.zm-band:before{display:none}
+.zm-band .zm-head{margin-bottom:8px}
+.zm-band .zm-head h2{color:#29204B;font-size:18px}.zm-band .zm-head h2 em{color:#5526B8}
+.zm-stats{gap:8px}
+.zm-st{box-shadow:none;border:1px solid #29204b12;padding:9px 6px 8px;border-radius:12px;gap:1px}
+.zm-sti img{width:30px;height:30px}
+.zm-st b{font-size:13px;line-height:1.4;color:#29204B}
+.zm-st small{font-size:11px;line-height:1.4;color:#68617D}
+#footer,.footer,body:has(.zm-hero) #footer,body:has(.zm-hero) .footer{background:#27105F!important}
+#footer .zf{gap:10px;padding-top:18px;padding-bottom:12px}
+#footer .zf-brand{gap:10px;align-items:center}
+#footer .zf-brand img{width:34px;height:34px;border-radius:10px}
+#footer .zf-brand b{font-size:15px}
+#footer .zf-brand p{font-size:12px;line-height:1.5;margin:1px 0 0}
+#footer .zf-cols{gap:8px 16px}
+#footer .zf-h{margin:0 0 2px;font-size:11.5px;font-weight:800;color:#FFD34D}
+#footer .zf-cols ul{gap:0}
+#footer .zf-cols a{min-height:32px;font-size:13px;font-weight:500;color:#EDE6FF}
+#footer .zf .footer-bottom{margin-top:2px;padding-top:10px;font-size:11.5px;border-top:1px solid #ffffff26;color:#CFC2FA}
