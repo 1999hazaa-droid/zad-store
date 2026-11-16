@@ -1361,3 +1361,14 @@
 :root body .g2shp{display:inline-block;width:110px;height:110px}
 :root body .g2shp.rect{width:150px;height:90px}
 :root body .g2shp svg{width:100%;height:100%}
+:root body .g3ltr{direction:ltr;unicode-bidi:isolate;display:inline-block;font-weight:900;font-size:26px;letter-spacing:1px}
+:root body .g3fr{display:inline-flex;flex-direction:column;align-items:center;line-height:1;font-weight:900;font-size:28px;color:#4C1D95;direction:ltr}
+:root body .g3fr i{display:block;width:100%;height:3px;background:#4C1D95;margin:3px 0;border-radius:2px}
+:root body .g3fb{width:100%;max-width:220px;height:auto;display:block;margin:6px auto;direction:ltr}
+:root body .g3cm{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%}
+:root body .g3cm .g3fb{max-width:130px}
+:root body .tg-g1t.g3cmp .tg-ch{grid-template-columns:1fr 1fr}
+:root body .g3rect{width:100%;max-width:230px;height:auto;display:block;margin:4px auto}
+:root body .g3arr{display:flex;flex-direction:column;gap:3px;align-items:center}
+:root body .g3row{display:flex;gap:3px;justify-content:center}
+:root body .g3row img,:root body .g3row svg{width:30px;height:30px}
