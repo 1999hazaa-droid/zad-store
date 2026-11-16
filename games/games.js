@@ -1893,7 +1893,7 @@ a3:{colors:"a3_colors",shapes:"a3_shapes",nums:"a3_nums",animals:"a3_animals",ma
 a4:{animals:"a4_animals",nums:"a4_nums",letters:"a4_letters",colors:"a4_colors",shapes:"a4_shapes",fruits:"a4_fruits",memory:"a4_memory",order:"a4_order",weather:"a4_weather",trans:"a4_trans",clothes:"a4_clothes",home:"a4_home",art:"a5_art"},
 a5:{art:"a5_art",think:"a5_think",nums:"a5_math",letters:"a5_letters",memory:"a5_memory",maze:"a5_maze",science:"a5_science",animals:"a5_animals",weather:"a5_weather",shapes:"a5_shapes",env:"a5_env",life:"a5_life"},
 a6:{art:"a6_art",letters:"a6_letters",math:"a6_math",puzzles:"a6_puzzles",shapes:"a6_shapes",science:"a6_science",animals:"a6_animals",memory:"a6_memory",weather:"a6_weather",env:"a6_env",life:"a6_life",maze:"a6_maze",move:"a5_maze",match:"a3_match"},
-g1:{think:"g1_think",science:"g1_science",math:"g1_math",arabic:"g1_arabic",shapes:"g1_shapes",memory:"g1_memory",maze:"g1_maze",art:"g1_art",weather:"g1_weather",animals:"g1_animals",life:"g1_life",env:"g1_env"},
+g1:{time:"a5_life",think:"g1_think",science:"g1_science",math:"g1_math",arabic:"g1_arabic",shapes:"g1_shapes",memory:"g1_memory",maze:"g1_maze",art:"g1_art",weather:"g1_weather",animals:"g1_animals",life:"g1_life",env:"g1_env"},
 g2:{arabic:"g1_arabic",math:"g1_math",time:"a5_life",think:"g1_think",memory:"g1_memory",maze:"g1_maze",science:"g1_science",art:"g1_art"},
 g3:{arabic:"g1_arabic",math:"g1_math",time:"a5_life",think:"g1_think",memory:"g1_memory",maze:"g1_maze",science:"g1_science",art:"g1_art"},
 g4:{arabic:"g1_arabic",math:"g1_math",time:"a5_life",think:"g1_think",memory:"g1_memory",maze:"g1_maze",science:"g1_science",art:"g1_art"}};
