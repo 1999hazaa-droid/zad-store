@@ -1128,6 +1128,187 @@ D("k6_g1wash","🧼","غسل اليدين","رتّب الخطوات",["#14B8A6",
 D("k6_g1beh","🤝","سلوك صحيح أم خاطئ","اختر الصحيح",["#F97316","#C2410C"],g1TF(BEH,"عرفت السلوك الصحيح!","سلوك صحيح","سلوك خاطئ","هل هذا سلوك صحيح أم خاطئ؟")),
 D("k6_g1coop","💛","نتعاون ونتشارك","ماذا تفعل؟",["#EAB308","#A16207"],g1Coop));
 K.forEach(g=>{if(/^k6_g1/.test(g.id)){ZOFF.add(g.id);const r0=g.run;g.run=t=>{if(!zl.done)return zpick(t,()=>r0(t));r0(t)}}});
+
+/* ===== ألعاب الصف الثاني: لغة وقراءة، حساب، علوم، تفكير، مهارات حياتية ===== */
+const sp=s=>zsay(String(s).replace(/\d+/g,x=>zar(+x)||x)),
+dist=(a,lo,hi,n,ex=[])=>{const c=[a-1,a+1,a-2,a+2,a-10,a+10,a-5,a+5,a-3,a+3].filter(x=>x>=lo&&x<=hi&&x!==a&&!ex.includes(x));return m(c.slice(0,Math.max(4,n+1)),n)},
+nopts=(a,lo,hi,n,j,i,ex)=>w([a,...dist(a,lo,hi,n-1,ex)]).map((x,k)=>({h:tgnum(x,k+(i||0)),ok:x===a,al:"عدد"}));
+/* اختيار نصي عام: [نص السؤال، الإجابة، الخطأ[]، (صورة)] */
+function mcT(items,msg,q,n=6){return t=>{const e=m(items,n);
+tgRounds(t,e.length,msg,(i,L)=>{const[s,a,d,im]=e[i],no=tgo(i,2,3),o=w([a,...m(d,no-1)]);
+return{cls:"tg-g1t",chcls:"rows",top:im?`<div class="tg-top">${tgim(im)}</div>`+box(`<span class="g1sent">${s}</span>`,"g1sentbox"):box(`<span class="g1sent">${s}</span>`,"g1sentbox"),opts:o.map(x=>opt(x,x===a,x)),say:[()=>sp(i===0&&q?q+" "+s:s)],after:[()=>sp(a)]}})}}
+/* خيارين ثابتين: [نص، رقم الخيار الصحيح 0/1] */
+function ch2(items,msg,q,l0,l1,c0="good",c1="bad"){return t=>{const e=m(items,6);
+tgRounds(t,e.length,msg,i=>{const[s,k]=e[i];
+return{cls:"tg-g1t g1tf",chcls:"rows",top:box(`<span class="g1sent">${s}</span>`,"g1sentbox"),opts:[opt(l0,k===0,l0,c0),opt(l1,k===1,l1,c1)],say:[()=>sp(i===0?q+" "+s:s)],after:[()=>sp(k?l1:l0)]}})}}
+/* بناء بالترتيب: كل جولة مصفوفة كلمات (أو عدة ترتيبات صحيحة) */
+function seqBuild(t,rounds,msg,prompt,grid){let i=0,fc=0;const HT=zl.m?99:zl.l||2;tgpre("chime","boing");
+function show(){if(i>=rounds.length)return tgend(t,rounds.length,msg,900,fc);X(rounds.length,i);const r=rounds[i],V=r.v||[r.words],ws=V[0],n=ws.length;let seq=[],wc=0,lk=0;
+let ord;do{ord=w(ws.map((_,j)=>j))}while(n>1&&V.some(v=>ord.every((j,k)=>ws[j]===v[k])));
+t.innerHTML=`${R}<div class="tg tg-g1t g2sq"><div class="tg-top g1top g2slots">${ws.map(()=>'<span class="g2slot"></span>').join("")}</div><div class="tg-ch ${grid?"":"rows"} n${grid?2:1} g2pool${grid?" g2grid":""}">${ord.map(j=>`<button class="tgb tg-opt" data-j="${j}" aria-label="${ws[j]}"><span class="g1o">${grid?tgnum(ws[j],j):ws[j]}</span></button>`).join("")}</div></div>`;
+const sl=[...t.querySelectorAll(".g2slot")],bs=[...t.querySelectorAll(".tg-opt")],say=()=>tgs(()=>sp(r.say||prompt));O(say);setTimeout(()=>{t.isConnected&&say()},350);
+bs.forEach(b=>b.onclick=async()=>{if(lk||b.disabled)return;Ft();const x=ws[+b.dataset.j],cand=V.filter(v=>seq.every((y,k)=>v[k]===y));
+if(cand.some(v=>v[seq.length]===x)){seq.push(x);b.disabled=true;b.classList.add("used");sl[seq.length-1].textContent=x;sl[seq.length-1].classList.add("on");zfx("pop",.5);tgok(t,sl[seq.length-1]);bs.forEach(z=>z.classList.remove("hint"));
+if(seq.length===n){lk=1;wc||fc++;$.ok();zfx("chime");tgboom(t.querySelector(".g2slots"),30);const q=await tgs(()=>G(300),()=>sp(r.after||seq.join(" ")),tgpr());t.isConnected&&setTimeout(()=>{t.isConnected&&(i++,show())},q?300:900)}}
+else{wc++;tgno(b);$.bad();if(wc>=HT){const nx=bs.find(z=>!z.disabled&&cand.some(v=>v[seq.length]===ws[+z.dataset.j]));nx&&nx.classList.add("hint");wc===HT&&Fe("hint","جرّب الكلمة اللامعة")}}})}show()}
+const seqG=(rs,msg,p,g)=>t=>seqBuild(t,rs(),msg,p,g);
+
+/* ---------- اللغة العربية والقراءة ---------- */
+const ERR=[["مدرسة","مدرسه"],["حديقة","حديقه"],["القلم","ألقلم"],["الشمس","الشمص"],["كتاب","كتأب"],["قطة","قطه"],["الباب","البأب"],["شجرة","شجره"]];
+function g2Err(t){const e=m(ERR,6);
+tgRounds(t,6,"اكتشفت الأخطاء!",(i,L)=>{const[c,x]=e[i],o=w([x,...m(ERR.filter(z=>z[0]!==c&&z[0]!==x),tgo(i,2,3)-1).map(z=>z[0])]);
+return{cls:"tg-g1t",chcls:"rows",top:`<div class="tg-top g1top"><span class="g1q">أيّ كلمة مكتوبة بشكل خاطئ؟</span></div>`,opts:o.map(z=>opt(`<span class="g1w">${z}</span>`,z===x,z)),say:[()=>zsay("أيّ كلمة مكتوبة بشكل خاطئ؟")],after:[()=>zsay("الكلمة الصحيحة "+c)]}})}
+const SYN=[["كبير","ضخم",["صغير","سريع"]],["بيت","منزل",["مدرسة","سيارة"]],["ولد","صبي",["بنت","رجل"]],["جميل","رائع",["قبيح","بعيد"]],["سعيد","فرحان",["حزين","جائع"]],["يجلس","يقعد",["يقف","يركض"]],["طريق","شارع",["نهر","جبل"]]].map(([a,b,d])=>[`ما معنى كلمة «${a}»؟`,b,d]),
+ANT=[["كبير","صغير",["ضخم","طويل"]],["طويل","قصير",["عالٍ","كبير"]],["حار","بارد",["دافئ","ساخن"]],["سريع","بطيء",["عاجل","قوي"]],["نهار","ليل",["صباح","شمس"]],["فرح","حزن",["ضحك","لعب"]],["ثقيل","خفيف",["كبير","قوي"]],["قريب","بعيد",["جانب","هنا"]]].map(([a,b,d])=>[`ما عكس كلمة «${a}»؟`,b,d]),
+PLR=[["كتاب","كتب",["كتابات","كتّاب"]],["قلم","أقلام",["قلمات","قلوم"]],["ولد","أولاد",["ولدات","ولود"]],["بنت","بنات",["بنتان","بنوت"]],["شجرة","أشجار",["شجران","شجور"]],["طائر","طيور",["طوائر","طائرون"]],["باب","أبواب",["بابات","بوب"]],["بيت","بيوت",["بيتات","بيتون"]],["رجل","رجال",["رجلات","رجلون"]]].map(([a,b,d])=>[`ما جمع كلمة «${a}»؟`,b,d]);
+/* تصنيف الكلمات */
+const FN={apple:"تفاحة",banana:"موزة",grape:"عنب",orange:"برتقالة",watermelon:"بطيخة",strawberry:"فراولة",lemon:"ليمونة",cherry:"كرز",bike:"دراجة",bag:"حقيبة",pencil:"قلم",book:"كتاب",carrot:"جزرة",cucumber:"خيارة",eggplant:"باذنجانة",pumpkin:"يقطينة",car:"سيارة",bus:"حافلة",train:"قطار",plane:"طائرة",ship:"سفينة",lion:"أسد",cow:"بقرة",rabbit:"أرنب",dog:"كلب",cat:"قطة",horse:"حصان",sheep:"خروف",duck:"بطة"},
+GR=[["حيوان",["lion","cow","rabbit","dog","cat","horse","sheep","duck"]],["فاكهة",["apple","banana","grape","orange","watermelon","strawberry","lemon","cherry"]],["خضار",["carrot","cucumber","eggplant","pumpkin"]],["وسيلة نقل",["car","bus","train","plane","ship","bike"]],["أداة مدرسية",["book","pencil","bag"]]];
+function g2Cls(t){const q=w(GR.flatMap(([g,ks])=>m(ks,2).map(k=>[k,g]))).slice(0,6);
+tgRounds(t,6,"صنّفت الكلمات!",(i,L)=>{const[k,g]=q[i],no=tgo(i,2,3),o=w([g,...m(GR.map(x=>x[0]).filter(x=>x!==g),no-1)]);
+return{cls:"tg-g1t",chcls:"rows",top:`<div class="tg-top">${tgim(k)}</div>`+box(`<span class="g1word" style="font-size:34px">${FN[k]}</span>`),opts:o.map(x=>opt(x,x===g,x)),say:[()=>zsay("إلى أيّ مجموعة تنتمي هذه الكلمة؟")],after:[()=>zsay(FN[k]+" من "+(g==="حيوان"?"الحيوانات":g==="فاكهة"?"الفواكه":g==="خضار"?"الخضار":g==="وسيلة نقل"?"وسائل النقل":"الأدوات المدرسية"))]}})}
+/* مطابقة الجملة بالصورة */
+const SPC=[["الأسد ملك الغابة","lion"],["الأرنب يحب الجزر","rabbit"],["البقرة تعطينا الحليب","cow"],["الساعة تدلّنا على الوقت","clock"],["أضع كتبي في الحقيبة","bag"],["نركب الحافلة إلى المدرسة","bus"],["السمكة تعيش في الماء","fish"],["أكتب بالقلم","pencil"]];
+function g2Pic(t){const e=m(SPC,6);
+tgRounds(t,6,"طابقت الجمل بالصور!",(i,L)=>{const[s,k]=e[i],no=tgo(i,2,3),o=w([k,...m(SPC.map(x=>x[1]).filter(x=>x!==k),no-1)]);
+return{cls:"tg-use g1rd",top:box(`<span class="g1sent">${s}</span>`,"g1sentbox"),opts:o.map(x=>({h:tgim(x),ok:x===k,al:"صورة"})),say:[()=>zsay(i===0?"اقرأ الجملة واختر الصورة المناسبة "+s:s)],after:[()=>zsay(s)]}})}
+/* علامات الترقيم */
+const PN=[["ما اسمك","؟"],["هذه حديقة جميلة","."],["ما أجمل السماء","!"],["أين تسكن","؟"],["أحب مدرستي","."],["يا له من يوم رائع","!"],["كم عمرك","؟"],["ذهبت إلى السوق","."]];
+function g2Punc(t){const e=m(PN,6);
+tgRounds(t,6,"عرفت علامات الترقيم!",(i,L)=>{const[s,a]=e[i],o=w(L===1?[a,...m(["؟",".","!"].filter(x=>x!==a),1)]:["؟",".","!"]);
+return{cls:"tg-g1t g2pn",chcls:"",top:box(`<span class="g1sent">${s} <span class="g1blank">؟</span></span>`,"g1sentbox"),opts:o.map(x=>({h:`<span class="g1big g2pc">${x}</span>`,ok:x===a,al:x==="؟"?"علامة استفهام":x==="!"?"علامة تعجب":"نقطة"})),say:[()=>zsay(i===0?"أيّ علامة نضع في نهاية الجملة؟ "+s:s)],after:[()=>zsay(s+(a==="؟"?"؟":a==="!"?"!":"."))]}})}
+/* بناء الجمل الصحيحة */
+const SOK=[["هذه سيارة جديدة","هذا سيارة جديدة"],["الأولاد يلعبون في الحديقة","الأولاد يلعب في الحديقة"],["البنت تقرأ القصة","البنت يقرأ القصة"],["هذا كتاب مفيد","هذه كتاب مفيد"],["الطالبات يكتبن الدرس","الطالبات يكتب الدرس"],["أنا أحب مدرستي","أنا تحب مدرستي"]];
+function g2Okay(t){const e=m(SOK,6);
+tgRounds(t,6,"اخترت الجمل الصحيحة!",(i,L)=>{const[a,b]=e[i],o=w([a,b]);
+return{cls:"tg-g1t",chcls:"rows",top:`<div class="tg-top g1top"><span class="g1q">أيّ جملة صحيحة؟</span></div>`,opts:o.map(x=>opt(x,x===a,x)),say:[()=>zsay("أيّ جملة صحيحة؟")],after:[()=>zsay(a)]}})}
+/* فهم المقروء */
+const ST=[["ذهب سالم إلى الحديقة مع أخيه. لعبا بالكرة تحت الشجرة. ثم عادا إلى البيت سعيدين.",[["إلى أين ذهب سالم؟","الحديقة",["المدرسة","السوق"]],["بماذا لعبا؟","بالكرة",["بالدراجة","بالطائرة"]]]],["في الصباح استيقظت ليلى مبكرة. غسلت وجهها وأكلت فطورها. ثم ذهبت إلى المدرسة.",[["ماذا فعلت ليلى بعد أن استيقظت؟","غسلت وجهها",["ذهبت إلى السوق","نامت مرة أخرى"]],["إلى أين ذهبت ليلى في النهاية؟","المدرسة",["الحديقة","البحر"]]]],["زرع أحمد بذرة صغيرة في الأصيص. سقاها بالماء كل يوم. بعد أيام ظهرت نبتة خضراء.",[["ماذا زرع أحمد؟","بذرة",["سمكة","حجرًا"]],["ماذا ظهر بعد أيام؟","نبتة خضراء",["شجرة كبيرة","وردة حمراء"]]]]];
+function g2Story(t){const e=m(ST,3).flatMap(([s,qs])=>qs.map((q,j)=>[s,q,j]));
+tgRounds(t,e.length,"فهمت القصص!",(i,L)=>{const[s,[q,a,d],j]=e[i],o=w([a,...m(d,tgo(i,2,3)-1)]);
+return{cls:"tg-g1t",chcls:"rows",top:box(`<span class="g1story">${s}</span><span class="g1q">${q}</span>`,"g1sentbox g2sbox"),opts:o.map(x=>opt(x,x===a,x)),say:[()=>zsay(j===0?s+" "+q:q)],after:[()=>zsay(a)]}})}
+/* ترتيب الكلمات لتكوين جملة (مع قبول الترتيبات الصحيحة المتعددة) */
+const SQ1=[[["الولد","يقرأ","القصة"],["يقرأ","الولد","القصة"]],[["البنت","ترسم","وردة"],["ترسم","البنت","وردة"]],[["القطة","تشرب","الحليب"],["تشرب","القطة","الحليب"]],[["الطائر","يطير","عاليًا"],["يطير","الطائر","عاليًا"]]],
+SQ2=[[["ذهب","الولد","إلى","المدرسة"],["الولد","ذهب","إلى","المدرسة"]],[["تلعب","البنت","في","الحديقة"],["البنت","تلعب","في","الحديقة"]],[["أكل","سالم","التفاحة","الحمراء"],["سالم","أكل","التفاحة","الحمراء"]],[["يظهر","القمر","في","الليل"],["القمر","يظهر","في","الليل"]]],
+SQ3=[[["ذهبت","أمي","إلى","السوق","صباحًا"],["أمي","ذهبت","إلى","السوق","صباحًا"]],[["يلعب","الأولاد","بالكرة","في","الحديقة"],["الأولاد","يلعبون","بالكرة","في","الحديقة"]],[["تسقي","الطالبة","النبتة","كل","يوم"],["الطالبة","تسقي","النبتة","كل","يوم"]]];
+const g2Sent=seqG(()=>m(tgLV(SQ1,SQ2,SQ3),4).map(v=>({v,after:v[0].join(" ")})),"رتّبت الجمل!","رتّب الكلمات لتكوين جملة");
+
+/* ---------- الرياضيات ---------- */
+const NUMW=["أحد","اثنان"];
+function g2NumWord(t){
+tgRounds(t,6,"قرأت الأعداد وكتبتها!",(i,L)=>{const mx=L===1?30:L===2?60:99,n=11+p(mx-10),rd=i%2===0;
+if(rd){const o=w([n,...dist(n,11,mx,tgo(i,2,3)-1)]);return{cls:"tg-numw g1f",top:box(`<span class="g1word" style="font-size:clamp(30px,9vw,42px)">${zar(n)}</span>`),opts:o.map((x,j)=>({h:tgnum(x,j+i),ok:x===n,al:"عدد"})),say:[()=>zsay(zar(n))],after:[()=>zsay(zar(n))]}}
+const o=w([zar(n),...dist(n,11,mx,tgo(i,2,3)-1).map(zar)]);return{cls:"tg-g1t",chcls:"rows",top:box(`<span class="g1big">${n}</span>`),opts:o.map(x=>opt(x,x===zar(n),x)),say:[()=>zsay("كيف نقرأ هذا العدد؟")],after:[()=>zsay(zar(n))]}})}
+function g2Place(t){
+tgRounds(t,6,"كوّنت الأعداد!",(i,L)=>{const mx=L===1?5:L===2?7:9,a=1+p(mx),b=p(10),n=a*10+b,bl=`<span class="g2blocks">${[...Array(a)].map(()=>'<i class="g2t"></i>').join("")}${[...Array(b)].map(()=>'<i class="g2u"></i>').join("")}</span>`,
+o=w([n,...m([...new Set([b*10+a,a+b,a*10+(b+1)%10,(a%9+1)*10+b])].filter(x=>x!==n&&x>0),tgo(i,2,3)-1)]);
+return{cls:"tg-numw g1f",top:box(`${bl}<span class="g1q">${a} ${a>2&&a<11?"عشرات":a===2?"عشرتان":"عشرة"}${b?` و ${b} ${b>2?"آحاد":b===2?"وحدتان":"وحدة"}`:""}</span>`),opts:o.map((x,j)=>({h:tgnum(x,j+i),ok:x===n,al:"عدد"})),say:[()=>sp(`كوّن العدد من ${a} عشرات${b?" و "+b+" آحاد":""}`)],after:[()=>zsay(zar(n))]}})}
+function g2Prev(t){
+tgRounds(t,6,"عرفت السابق واللاحق!",(i,L)=>{const mx=L===1?30:L===2?60:99,k=L===3&&i%3===2?2:p(2),n=k===2?2+p(mx-3):k?2+p(mx-1):1+p(mx-1);
+if(k===2){const a=n-1,b=n+1,o=w([n,...dist(n,1,mx,tgo(i,2,3)-1,[a,b])]);return{cls:"tg-numw g1f",top:box(`<span class="g1q">العدد بين</span><span class="g1word" style="font-size:44px">${a} و ${b}</span>`),opts:o.map((x,j)=>({h:tgnum(x,j+i),ok:x===n,al:"عدد"})),say:[()=>sp(`ما العدد الذي يقع بين ${a} و ${b}؟`)],after:[()=>zsay(zar(n))]}}
+const aft=k===0,a=aft?n+1:n-1,o=w([a,...dist(a,1,mx+1,tgo(i,2,3)-1,[n])]);
+return{cls:"tg-numw g1f",top:box(`<span class="g1q">العدد الذي <b>${aft?"بعد":"قبل"}</b></span><span class="g1big">${n}</span>`),opts:o.map((x,j)=>({h:tgnum(x,j+i),ok:x===a,al:"عدد"})),say:[()=>sp(`ما العدد الذي يأتي ${aft?"بعد":"قبل"} ${n}؟`)],after:[()=>zsay(zar(a))]}})}
+function g2NSeq(t){const ST_=tgLV([2,10],[2,5,10],[3,4,5,10]);
+tgRounds(t,6,"أكملت الأنماط!",(i,L)=>{const s0=ST_[p(ST_.length)],st=s0*(1+p(Math.max(1,Math.floor(25/s0)))),seq=[0,1,2,3,4].map(j=>st+j*s0),b=L===1?4:1+p(4),a=seq[b],wr=[...new Set([a+s0,a-s0,a+1,a-1,a+2])].filter(x=>x>=0&&!seq.includes(x)),o=w([a,...m(wr,tgo(i,2,3)-1)]);
+return{cls:"tg-numw g1f",top:box(`<span class="g1seq">${seq.map((x,j)=>j===b?'<span class="g1blank">؟</span>':`<span class="g1sl">${x}</span>`).join("")}</span><small>نعدّ بالقفز ${s0}</small>`),opts:o.map((x,j)=>({h:tgnum(x,j+i),ok:x===a,al:"عدد"})),say:[()=>zsay("ما العدد الناقص في النمط؟")],after:[()=>zsay(zar(a))]}})}
+const g2NOrd=seqG(()=>[0,1,2,3].map(r=>{const mx=tgLV(20,50,99),asc=r%2===0,ns=m([...Array(mx).keys()].map(x=>x+1),4).sort((a,b)=>asc?a-b:b-a);return{words:ns,say:asc?"رتّب الأعداد من الأصغر إلى الأكبر":"رتّب الأعداد من الأكبر إلى الأصغر",after:ns.map(zar).join("، ")}}),"رتّبت الأعداد!","رتّب الأعداد",true);
+function g2Cmp(t){
+tgRounds(t,6,"قارنت الأعداد!",(i,L)=>{const mx=L===1?30:L===2?60:99,a=1+p(mx),b=i%4===3?a:1+p(mx),ans=a>b?"أكبر من":a<b?"أصغر من":"يساوي",o=["أكبر من","أصغر من","يساوي"];
+return{cls:"tg-g1t",chcls:"rows",top:box(`<span class="g1seq g2cmp">${tgnum(a,i)}<span class="g1blank">؟</span>${tgnum(b,i+3)}</span>`),opts:(L===1?o.filter(x=>x!==(ans==="يساوي"?"أصغر من":"يساوي")):o).map(x=>opt(x,x===ans,x)),say:[()=>sp(`قارن بين ${a} و ${b}`)],after:[()=>sp(`${a} ${ans} ${b}`)]}})}
+function g2Mental(t){
+tgRounds(t,6,"أتقنت الحساب الذهني!",(i,L)=>{const mx=L===1?20:L===2?50:100,add=p(2)===0;let a,b,r;if(add){r=4+p(mx-3);a=1+p(r-2);b=r-a}else{a=5+p(mx-4);b=1+p(a-1);r=a-b}
+return{cls:"tg-numw g1f",top:box(`<span class="g1word">${a} ${add?"+":"−"} ${b} = ؟</span>`),opts:nopts(r,0,mx+5,tgo(i,2,3),0,i),say:[()=>sp(`${a} ${add?"زائد":"ناقص"} ${b} يساوي كم؟`)],after:[()=>sp(`${a} ${add?"زائد":"ناقص"} ${b} يساوي ${r}`)]}})}
+function g2Miss(t){
+tgRounds(t,6,"أكملت المعادلات!",(i,L)=>{const mx=L===1?20:L===2?50:100,h=mx/2|0,add=p(2)===0,front=p(2)===0;let a,b,r,ans,txt;
+if(add){a=1+p(h);b=1+p(h);r=a+b;ans=front?a:b;txt=front?`؟ + ${b} = ${r}`:`${a} + ؟ = ${r}`}else{r=1+p(h);b=1+p(h);a=r+b;ans=front?a:b;txt=front?`؟ − ${b} = ${r}`:`${a} − ؟ = ${r}`}
+return{cls:"tg-numw g1f",top:box(`<span class="g1word" style="direction:ltr">${txt}</span>`),opts:nopts(ans,0,mx+10,tgo(i,2,3),0,i),say:[()=>zsay("ما العدد الناقص؟")],after:[()=>sp(txt.replace("؟",ans))]}})}
+/* مسائل لفظية مصورة */
+const WN=[["سالم",1],["أحمد",1],["خالد",1],["ليلى",0],["مريم",0]],OB=[["apple","تفاحة","تفاحات","تفاحةً"],["ball","كرة","كرات","كرةً"],["cookie","كعكة","كعكات","كعكةً"],["book","كتاب","كتب","كتابًا"],["pencil","قلم","أقلام","قلمًا"],["orange","برتقالة","برتقالات","برتقالةً"]],
+plw=(o,n)=>n<=10?o[2]:o[3];
+function g2Word(t){
+tgRounds(t,6,"حللت المسائل!",(i,L)=>{const[nm,ml]=m(WN,1)[0],o=m(OB,1)[0],add=p(2)===0,mx=L===1?10:L===2?15:20;let a,b,r,tx;
+if(add){a=3+p(Math.max(1,Math.min(7,mx-6)));b=3+p(Math.max(1,Math.min(7,mx-a-2)));r=a+b;tx=`${ml?"اشترى":"اشترت"} ${nm} ${a} ${plw(o,a)}، ثم ${ml?"اشترى":"اشترت"} ${b} ${plw(o,b)} أخرى. كم ${o[3]} ${ml?"اشترى":"اشترت"} ${nm} في المجموع؟`}
+else{a=5+p(Math.max(1,Math.min(15,mx-4)));b=3+p(a-3);r=a-b;tx=`كان مع ${nm} ${a} ${plw(o,a)}، ثم ${ml?"أعطى":"أعطت"} ${b} منها لصديق${ml?"ه":"تها"}. كم بقي ${ml?"معه":"معها"}؟`}
+const pics=`<span class="g2imgs">${[...Array(Math.min(a,10))].map(()=>tgim(o[0])).join("")}</span>`;
+return{cls:"tg-numw g1f",top:box(`${pics}<span class="g1sent" style="font-size:19px">${tx}</span>`,"g1sentbox"),opts:nopts(r,0,mx+5,tgo(i,2,3),0,i),say:[()=>sp(tx)],after:[()=>sp(`الإجابة ${r}`)]}})}
+/* قياس الأطوال */
+const rl=(a,n)=>{const u=24,W=u*12+12;return`<svg class="g2rl" viewBox="0 0 ${W} 76" aria-hidden="true"><rect x="${6+a*u}" y="5" width="${n*u}" height="22" rx="8" fill="#F59E0B"/><rect x="0" y="36" width="${W}" height="38" rx="6" fill="#DDF3CF" stroke="#6BBF4A" stroke-width="2"/>${[...Array(13).keys()].map(i=>`<path d="M${6+i*u} 36v${i%5===0?20:13}" stroke="#2E7D32" stroke-width="2.500"/><text x="${6+i*u}" y="69" text-anchor="middle" font-size="12" font-weight="800" fill="#2E7D32">${i}</text>`).join("")}</svg>`};
+function g2Ruler(t){
+tgRounds(t,6,"قسْت الأطوال!",(i,L)=>{const off=L===3?1+p(4):0,n=2+p(10-off),o=nopts(n,1,12,tgo(i,2,3),0,i);
+return{cls:"tg-numw g1f",top:box(`${rl(off,n)}<span class="g1q">كم سنتيمترًا طول الشريط؟</span>`),opts:o,say:[()=>zsay(off?"ما طول الشريط؟ انظر إلى بداية الشريط ونهايته":"ما طول الشريط بالسنتيمتر؟")],after:[()=>sp(`طوله ${n} سنتيمتر`)]}})}
+function g2Long(t){
+tgRounds(t,6,"قارنت الأطوال!",(i,L)=>{const lg=p(2)===0,ls=m([25,40,55,70,85,95],tgo(i,2,3)),tg=lg?Math.max(...ls):Math.min(...ls),cl=["#F59E0B","#3B82F6","#EC4899","#10B981"];
+return{cls:"tg-g1t",chcls:"rows",top:`<div class="tg-top g1top"><span class="g1q">اختر الشريط الأ${lg?"طول":"قصر"}</span></div>`,opts:ls.map((x,j)=>({h:`<span class="g2bar" style="width:${x}%;background:${cl[(i+j)%4]}"></span>`,ok:x===tg,al:"شريط"})),say:[()=>zsay(`اختر الشريط الأ${lg?"طول":"قصر"}`)],after:[()=>zsay("أحسنت")]}})}
+/* الأشكال الهندسية */
+const SHP=[["circle","دائرة",0,"#F59E0B"],["square","مربع",4,"#3B82F6"],["triangle","مثلث",3,"#EC4899"],["rect","مستطيل",4,"#10B981"]];
+function g2Shape(t){
+tgRounds(t,6,"عرفت الأشكال الهندسية!",(i,L)=>{const poly=SHP.filter(x=>x[2]),sd=i%2===1,s=sd?poly[p(poly.length)]:SHP[p(4)],sv=`<span class="g2shp ${s[0]}">${tgshape(s[0],s[3])}</span>`;
+if(!sd){const o=w([s[1],...m(SHP.map(x=>x[1]).filter(x=>x!==s[1]),tgo(i,2,3)-1)]);return{cls:"tg-g1t",chcls:"rows",top:box(sv),opts:o.map(x=>opt(x,x===s[1],x)),say:[()=>zsay("ما اسم هذا الشكل؟")],after:[()=>zsay(s[1])]}}
+const o=w([s[2],...m([3,4,5,6,2].filter(x=>x!==s[2]),tgo(i,2,3)-1)]);return{cls:"tg-numw g1f",top:box(sv+`<span class="g1q">كم ضلعًا للـ${s[1]}؟</span>`),opts:o.map((x,j)=>({h:tgnum(x,j+i),ok:x===s[2],al:"عدد"})),say:[()=>zsay("كم ضلعًا لهذا الشكل؟")],after:[()=>sp(`${s[1]} له ${s[2]} أضلاع`)]}})}
+
+/* ---------- العلوم ---------- */
+const ORG=[["eye","العين","نرى"],["ear","الأذن","نسمع"],["nose","الأنف","نشمّ"],["mouth","الفم","نتذوّق"],["hand","اليد","نمسك"],["foot","القدم","نمشي"]],
+g2Org=t=>{const e=m(ORG,6);
+tgRounds(t,6,"عرفت وظائف الأعضاء!",(i,L)=>{const[k,n,f]=e[i],o=w([f,...m(ORG.map(x=>x[2]).filter(x=>x!==f),tgo(i,2,3)-1)]);
+return{cls:"tg-g1t",chcls:"rows",top:`<div class="tg-top">${tgim(k)}</div>`+box(`<span class="g1q">ماذا نفعل بـ${n}؟</span>`),opts:o.map(x=>opt(x,x===f,x)),say:[()=>zsay(`ماذا نفعل بـ${n}؟`)],after:[()=>zsay(`${n} تساعدنا أن ${f}`)]}})},
+FD=[["lion","اللحم",["العشب","الجزر"],"الأسد"],["cow","العشب",["اللحم","العسل"],"البقرة"],["hen","الحبوب",["اللحم","الجزر"],"الدجاجة"],["rabbit","الجزر",["اللحم","العسل"],"الأرنب"],["monkey","الفواكه",["اللحم","الحبوب"],"القرد"],["sheep","العشب",["اللحم","السمك"],"الخروف"]],
+g2Food=t=>{const e=m(FD,6);
+tgRounds(t,6,"عرفت غذاء الحيوانات!",(i,L)=>{const[k,a,d,n]=e[i],o=w([a,...m(d,tgo(i,2,3)-1)]);
+return{cls:"tg-g1t",chcls:"rows",top:`<div class="tg-top">${tgim(k)}</div>`+box(`<span class="g1q">ماذا يأكل ${n}؟</span>`),opts:o.map(x=>opt(x,x===a,x)),say:[()=>zsay(`ماذا يأكل ${n}؟`)],after:[()=>zsay(`${n} يأكل ${a}`)]}})},
+WTR=[["ماء البحر",1],["ماء النهر",0],["ماء المطر",0],["ماء المحيط",1],["ماء البئر",0],["ماء الينبوع",0]],
+MAT=[["الزجاج شفاف",1],["الحجر ناعم جدًا",0],["الخشب يطفو على الماء",1],["الحديد خفيف مثل الريشة",0],["الإسفنج يمتص الماء",1],["الصوف يدفئنا في الشتاء",1],["الحجر يمتص الماء مثل الإسفنج",0]],
+/* ---------- التفكير ---------- */
+LGN=[["علي","سالم","خالد","أحمد","عمر"],["ليلى","مريم","سارة","نور","هدى"]];
+function g2Logic(t){
+tgRounds(t,6,"فكّرت بذكاء!",(i,L)=>{const g=LGN[p(2)],[a,b,c]=m(g,3),tl=p(2)===0,ds=tl?"أطول":"أقصر",tx=`${a} ${ds} من ${b}، و${b} ${ds} من ${c}. من الأ${tl?"طول":"قصر"} بين الثلاثة؟`,o=w([a,b,c]);
+return{cls:"tg-g1t",chcls:"rows",top:box(`<span class="g1sent">${tx}</span>`,"g1sentbox"),opts:o.map(x=>opt(x,x===a,x)),say:[()=>zsay(tx)],after:[()=>zsay(`الأ${tl?"طول":"قصر"} هو ${a}`)]}})}
+const PRD=[["السماء ملبدة بالغيوم وتهبّ رياح باردة. ماذا نتوقع؟","ستمطر",["ستشرق شمس حارة","سنذهب للسباحة"]],["وضعت الماء في المجمّد طوال الليل. ماذا حدث له؟","تجمّد",["غلى","اختفى"]],["نسيت سقاية النبتة أسبوعًا كاملًا. ماذا نتوقع؟","ذبلت",["ازدادت طولًا","أزهرت فجأة"]],["أشرقت الشمس وصار الجو دافئًا. ماذا يفعل الجليد؟","يذوب",["يزداد","يطير"]],["أكل الولد الكثير من الحلوى ولم ينظّف أسنانه. ماذا نتوقع؟","قد تتسوّس أسنانه",["ستطول أسنانه","سيصبح أقوى"]],["رأيت سحابة سوداء وسمعت صوت الرعد. ماذا نفعل؟","نبقى في البيت",["نسبح في البحر","نلعب على السطح"]]],
+SOLV=[["انكسر قلمك أثناء الدرس. ماذا تفعل؟","أبريه أو أطلب قلمًا بأدب",["أبكي وأترك الدرس","أكسر قلم زميلي"]],["ضاعت حقيبتك المدرسية. ماذا تفعل؟","أخبر معلمي أو أهلي لنبحث عنها",["أخفي الأمر","أتشاجر مع زملائي"]],["انسكب الماء على الأرض. ماذا تفعل؟","أمسحه بقطعة قماش",["أتركه","أركض فوقه"]],["اختلفت مع صديقك على اللعبة. ماذا تفعل؟","نتناوب اللعب بالدور",["أضربه","أغادر غاضبًا"]],["نسيت واجبك في البيت. ماذا تفعل؟","أخبر معلمي بصدق",["أكذب","أمزق دفتري"]]],
+EVT=[["استيقظ سالم","غسل وجهه","أكل فطوره","ذهب إلى المدرسة"],["زرعنا البذرة","سقيناها بالماء","ظهرت النبتة","أصبحت شجرة"],["وضعنا الدقيق والماء","عجنّا العجين","وضعناه في الفرن","أكلنا الخبز"],["رأيت الغيوم","نزل المطر","امتلأت الأرض بالماء","نبتت الأزهار"]],
+g2Evt=seqG(()=>m(EVT,3).map(ws=>({words:ws,say:"رتّب الأحداث بالترتيب",after:ws.join("، ثم ")})),"رتّبت الأحداث!","رتّب الأحداث"),
+RTN=[["نستيقظ","نتناول الفطور","ندرس","نلعب","ننام"],["نصحو من النوم","نغسل أسناننا","نرتدي ملابسنا","نذهب إلى المدرسة"],["نعود من المدرسة","نأكل الغداء","نكتب الواجب","نلعب مع أصدقائنا"]],
+g2Rtn=seqG(()=>m(RTN,3).map(ws=>({words:ws,say:"رتّب يومك بالترتيب",after:ws.join("، ثم ")})),"نظّمت وقتك!","رتّب يومك"),
+/* ---------- مهارات حياتية ---------- */
+SAF=[["ألعب بالكبريت",0],["أبتعد عن الكهرباء والمقابس",1],["أمسك السكين الحادة",0],["أنزل الدرج ببطء",1],["أتناول الدواء دون إذن الكبار",0],["أخبر الكبار إذا شممت رائحة غاز",1],["أشرب أي سائل أجده في المنزل",0],["أطلب من أمي أن تفتح لي الموقد",1]],
+RSP=[["يتحدث معلمك. ماذا تفعل؟","أنصت إليه بهدوء",["أتحدث مع زميلي","أصرخ"]],["دخل ضيف إلى بيتكم. ماذا تفعل؟","أسلّم عليه بابتسامة",["أتجاهله","أختبئ وأضحك"]],["أخطأ زميلك. ماذا تقول؟","أتحدث إليه بلطف",["أسخر منه","أنعته بلقب سيئ"]],["جدك يحتاج مساعدة. ماذا تفعل؟","أساعده بسرور",["أتجاهله","أهرب"]],["تريد الكلام وزميلك يتحدث. ماذا تفعل؟","أنتظر حتى ينتهي",["أقاطعه","أرفع صوتي"]]],
+RSB=[["بعد الانتهاء من الأكل. ماذا تفعل؟","أضع الصحن في مكانه",["أتركه على الأرض","أخفيه تحت السرير"]],["حان وقت الواجب. ماذا تفعل؟","أبدأ بحل واجبي",["ألعب أولًا","أنام"]],["حقيبتك تحتاج ترتيبًا. ماذا تفعل؟","أرتب كتبي بنفسي",["أتركها مفتوحة","أرميها في الزاوية"]],["لديك نبتة صغيرة. ماذا تفعل؟","أسقيها كل يوم",["أنساها","أقطف أوراقها"]],["ملابسك متسخة. ماذا تفعل؟","أضعها في سلة الغسيل",["أرميها على الأرض","أخبئها"]]];
+
+K.push(
+D("k6_g2err","🔍","اكتشف الخطأ","أيّ كلمة مكتوبة خطأ؟",["#EF4444","#B91C1C"],g2Err),
+D("k6_g2syn","📚","المرادفات","ما معنى الكلمة؟",["#8B5CF6","#6D28D9"],mcT(SYN,"عرفت معاني الكلمات!","ما معنى الكلمة؟")),
+D("k6_g2ant","↔️","المتضادات","ما عكس الكلمة؟",["#F97316","#C2410C"],mcT(ANT,"عرفت الأضداد!","ما عكس الكلمة؟")),
+D("k6_g2pl","📚","المفرد والجمع","ما جمع الكلمة؟",["#3B82F6","#1D4ED8"],mcT(PLR,"عرفت الجموع!","ما جمع الكلمة؟")),
+D("k6_g2cls","🗂️","تصنيف الكلمات","إلى أيّ مجموعة تنتمي؟",["#10B981","#047857"],g2Cls),
+D("k6_g2pic","🖼️","الجملة والصورة","اقرأ واختر الصورة",["#EC4899","#BE185D"],g2Pic),
+D("k6_g2punc","❓","علامات الترقيم","نقطة أم استفهام أم تعجب؟",["#14B8A6","#0F766E"],g2Punc),
+D("k6_g2okay","✅","الجملة الصحيحة","اختر الجملة السليمة",["#22C55E","#15803D"],g2Okay),
+D("k6_g2story","📖","قصة وأسئلة","اقرأ القصة وأجب",["#F59E0B","#B45309"],g2Story),
+D("k6_g2sent","📝","رتّب الجملة","رتّب الكلمات بالترتيب",["#6366F1","#4338CA"],g2Sent),
+D("k6_g2nw","🔢","اقرأ العدد","اقرأ الأعداد واكتبها",["#3B82F6","#1D4ED8"],g2NumWord),
+D("k6_g2place","🧱","آحاد وعشرات","كوّن العدد من العشرات والآحاد",["#EC4899","#BE185D"],g2Place),
+D("k6_g2prev","↔️","قبل وبعد","السابق واللاحق حتى ١٠٠",["#10B981","#047857"],g2Prev),
+D("k6_g2nseq","🔢","نمط الأعداد","أكمل النمط بالقفز",["#8B5CF6","#6D28D9"],g2NSeq),
+D("k6_g2nord","🔢","رتّب الأعداد","من الأصغر إلى الأكبر",["#F59E0B","#B45309"],g2NOrd),
+D("k6_g2cmp","⚖️","قارن الأعداد","أكبر أم أصغر أم يساوي؟",["#EAB308","#A16207"],g2Cmp),
+D("k6_g2mental","🧠","حساب ذهني","اجمع واطرح في عقلك",["#EF4444","#B91C1C"],g2Mental),
+D("k6_g2miss","➕","العدد الناقص","أكمل المعادلة",["#0EA5E9","#0369A1"],g2Miss),
+D("k6_g2word","🍎","مسألة مصوّرة","اقرأ المسألة وحلّها",["#22C55E","#15803D"],g2Word),
+D("k6_g2ruler","📏","قياس الأطوال","كم سنتيمترًا؟",["#F97316","#C2410C"],g2Ruler),
+D("k6_g2long","📐","الأطول والأقصر","قارن الأطوال",["#14B8A6","#0F766E"],g2Long),
+D("k6_g2shape","🔷","الأشكال والأضلاع","اسم الشكل وعدد أضلاعه",["#6366F1","#4338CA"],g2Shape),
+D("k6_g2org","👁️","وظائف الأعضاء","ماذا نفعل بكل عضو؟",["#EC4899","#BE185D"],g2Org),
+D("k6_g2food","🦁","غذاء الحيوانات","ماذا يأكل الحيوان؟",["#F59E0B","#B45309"],g2Food),
+D("k6_g2wtr","💧","ماء عذب أم مالح","اختر نوع الماء",["#0EA5E9","#0369A1"],ch2(WTR,"عرفت أنواع الماء!","ما نوع الماء؟","عذب","مالح","","")),
+D("k6_g2mat","🧱","المواد من حولنا","صحيح أم خطأ؟",["#8B5CF6","#6D28D9"],g1TF(MAT,"عرفت خصائص المواد!","صحيح","خطأ","هل هذه الجملة صحيحة أم خطأ؟")),
+D("k6_g2logic","🧩","فكّر بذكاء","من الأطول؟ من الأقصر؟",["#6366F1","#4338CA"],g2Logic),
+D("k6_g2pred","🔮","ماذا سيحدث؟","توقّع واستنتج",["#A855F7","#7E22CE"],mcT(PRD,"توقعت بذكاء!","")),
+D("k6_g2solv","🛠️","حلّ المشكلات","ماذا تفعل؟",["#F97316","#C2410C"],mcT(SOLV,"حللت المشكلات!","",5)),
+D("k6_g2evt","📋","رتّب الأحداث","من الأول إلى الأخير",["#3B82F6","#1D4ED8"],g2Evt),
+D("k6_g2rtn","⏰","نظّم وقتك","رتّب يومك",["#10B981","#047857"],g2Rtn),
+D("k6_g2saf","🏠","السلامة في المنزل","صحيح أم خطأ؟",["#EF4444","#B91C1C"],g1TF(SAF,"عرفت قواعد السلامة!","سلوك آمن","سلوك خطر","هل هذا سلوك آمن أم خطر؟")),
+D("k6_g2rsp","🤝","احترام الآخرين","ماذا تفعل؟",["#EC4899","#BE185D"],mcT(RSP,"تعلمت احترام الآخرين!","",5)),
+D("k6_g2res","📌","مسؤوليتي اليومية","ماذا تفعل؟",["#EAB308","#A16207"],mcT(RSB,"تعلمت المسؤولية!","",5)));
+K.forEach(g=>{if(/^k6_g2/.test(g.id)){ZOFF.add(g.id);const r0=g.run;g.run=t=>{if(!zl.done)return zpick(t,()=>r0(t));r0(t)}}});
 })();
 
 const sn={a2:["k_meet","k_farm","k_bubble","k_peek","k_snd","k_yum","k_birds","k_col","k_fly","k_basket","k_wild","k_bal","k_open","k_fish","k_cmatch","k_where","k_home","k_fruit","k_food","k_updown","k_pmatch","k_inout","k_feed"],a3:["k_live","k_snd","k_cfish","k_shpq","k_count","k_baby","k_paint","k_peek","k_build","k_sort","k_give","k_gone","k_care","k_odd","k_grp","k_cup","k_use","k_more","k_long","k_fv","k_wild","k_col","k_cmatch","k_shape","k_size","k_mem","k_puz","k_pmatch","k_where","k_feed","k_fruit","k_basket","k_updown","k_inout","k_open","k_bal","k_feel"],a4:["k_live","k_snd","k_wild","k_baby","k_feed","k_care","k_peek","k4_num","k4_cnt","k4_nq","k4_add","k4_order","k4_miss","k_more","k_give","count","k4_lsnd","k4_lsim","k4_lpic","k4_word","k4_first","k4_hunt","k4_spell","k_col","k_sort","k_cfish","k_paint","k_cmatch","k_bal","k_shpq","k_shape","k_build","k_puz","k4_pat","k_fv","k_fruit","k_basket","k_mem","k_gone","k_cup","k_odd","k4_diff","k_where","k_pmatch","k4_seq","k_long","k_size","k4_wear","k4_season","k4_dn","k_nat","k4_trans","k4_tway","k4_cloth","k4_room","k_use","k_clean","k_home","k4_body","k4_sense","k_feel","k4_job","k4_jobt","k4_draw","k4_garden","k_grp"],a5:["k4_lsnd","k4_lsim","k5_oddl","k4_lpic","k4_first","k5_last","k4_hunt","k5_spell","k5_missl","k5_wordpick","k5_rhyme","k4_word","k5_listen","k4_spell","k5_num20","k5_tenf","k4_cnt","k4_nq","k5_feedn","k4_order","k5_desc","k4_miss","k4_add","k5_sub","k5_cmp","k5_share","k5_shop","k_more","k5_shreal","k_shpq","k4_pat","k5_mkpat","k5_class","k5_size","k_long","k_build","k5_solve","k5_rel","k5_next","k5_err","k5_maze","k4_seq","k_odd","k_mem","k4_diff","k5_hidden","k_gone","k_cup","k_puz","k5_plant","k5_water","k5_float","k5_space","k_nat","k_live","k_baby","k_feed","k_wild","k_snd","k4_body","k4_sense","k5_healthy","k_clean","k_feel","k5_bag","k5_road","k4_room","k4_cloth","k_use","k_home","k5_char","k5_shpart","k5_shade","k_paint","k4_draw","k4_garden","k5_recy","k5_clean","k4_wear","k4_season","k4_dn","k4_job","k4_jobt","k4_trans","k4_tway","k_shape","k_size","k_col","count","first"],a6:["k_paint","k5_char","k5_shpart","k5_shade","k5_mkpat","k4_draw","k4_garden","k6_balloon","k5_spell","k5_last","k5_missl","k5_wordpick","k5_rhyme","k4_lsnd","k4_first","k5_oddl","k6_collect","k6_add","k6_group","k6_numseq","k6_bigger","k5_sub","k5_cmp","k4_order","k5_num20","count","k6_piece","k6_jig","k6_code","k6_odd","k6_dots","k5_next","k5_err","k4_seq","k6_build","k6_sort","k6_tap","k4_pat","k5_shreal","k_shpq","k5_size","k6_cycle","k6_plantneed","k5_plant","k4_body","k4_sense","k5_space","k5_water","k5_float","k6_aniclass","k6_sndsrc","k_live","k_feed","k_snd","k_baby","k_wild","k6_mem","k6_simon","k6_watch","k6_sndmem","k6_where","k6_shadow","k4_diff","k5_hidden","k6_weather","k4_season","k4_wear","k4_dn","k5_recy","k5_clean","k_clean","k6_func","k5_healthy","k5_bag","k5_road","k4_room","k4_cloth","k6_amaze","k6_jump","k6_lanes","k6_catch","k5_maze","k_fv","k5_class","k4_job","k4_jobt","k4_trans","k4_tway","k_mem","k_puz","k_shape","k_nat","k_fruit","k_col","k_bal","k_feel","build"]};st.forEach(t=>{sn[t.id]&&(t.games=sn[t.id])}),st.find(t=>t.id==="a2").sub="لمس واكتشاف وأصوات حقيقية",st.find(t=>t.id==="a3").sub="ألوان وأشكال وعدّ وذاكرة وتفكير",st.find(t=>t.id==="a4").sub="حروف وأعداد وعلوم وإبداع",st.find(t=>t.id==="a5").sub="حروف وكلمات وأعداد حتى ٢٠ وعلوم وإبداع",st.find(t=>t.id==="a6").sub="ألغاز وذاكرة وحركة وعلوم ورياضيات",(()=>{try{const u=new URLSearchParams(location.search).get("ui");u==="2"&&localStorage.removeItem("zui2"),u==="1"&&localStorage.setItem("zui2","0"),localStorage.getItem("zui2")!=="0"&&document.body.classList.add("v2")}catch{document.body.classList.add("v2")}document.addEventListener("click",e=>{const o=e.target.closest&&e.target.closest(".opt");o&&setTimeout(()=>{if(o.classList.contains("ok")&&!o.dataset.cn){o.dataset.cn=1,zhud.c++;const h=document.querySelector(".hud .hs");h&&(h.hidden=!1,h.textContent="⭐ "+zhud.c)}},0)},!0)})(),document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("#vmute");if(!b)return;NV=!NV;try{localStorage.setItem("hg_vmute",NV?"1":"0")}catch{}b.innerHTML=zvi(),NV&&(++zvt,[ft,mt].forEach(x=>{try{x.pause()}catch{}}),zfxs())}),window.__zadStage=id=>{st.find(s=>s.id===id)&&P(()=>je(id))},window.__zadK=()=>K.map(({id,ic,t,s,c})=>({id,ic,t,s,c}));
@@ -1321,9 +1502,18 @@ c.push(C("weather","الطقس والفصول","الطقس • الفصول • 
 const gs=i=>st.find(t=>t.id===i).games,has=(id,L)=>L.filter(x=>gs(id).includes(x));
 grade("g1","ألعاب الصف الأول",has("g1",GA),has("g1",GM),has("g1",GT));grade("g2","ألعاب الصف الثاني",has("g2",GA),has("g2",GM),has("g2",GT));grade("g3","ألعاب الصف الثالث",has("g3",GA),has("g3",GM),has("g3",GT));grade("g4","ألعاب الصف الرابع",has("g4",GA),has("g4",GM),has("g4",GT));
 {const c=ZCAT.g1.cats,f=i=>c.find(x=>x[0]===i)[4];f("arabic").push("k6_balloon","k5_spell","k5_last","k5_missl","k5_wordpick","k5_rhyme","k4_lsnd","k4_first","k5_oddl");f("math").push("k6_collect","k6_add","k6_group","k6_numseq","k6_bigger","k5_sub","k5_cmp","k4_order","k5_num20","count");f("think").push("k4_seq","k4_pat");f("shapes").push("k_shpq","k_fv","k5_class");f("life").push("k4_job","k4_jobt","k4_trans","k4_tway");f("arabic").push("k6_g1form","k6_g1alpha","k6_g1read","k6_g1sent","k4_lsim","k4_lpic","k4_word","k4_hunt","k4_spell","k5_listen");f("math").push("k6_g1prev","k4_nq","k4_cnt","k4_miss","k4_num","k4_add","k5_tenf","k5_desc","k5_share","k5_shop","k5_feedn");f("science").push("k6_g1alive","k6_g1air");f("think").push("k6_g1riddle","k5_solve","k5_rel");f("animals").push("k_meet","k_birds");f("life").push("k6_g1wash","k6_g1beh","k6_g1coop","k_feel","k_care","k_use")}
+{const c=ZCAT.g2.cats,f=i=>c.find(x=>x[0]===i)[4],A=l=>l.map(x=>"k6_g2"+x);
+f("arabic").push(...A(["err","syn","ant","pl","cls","pic","punc","okay","story","sent"]),"k4_lsim","k4_lsnd","k5_spell","k4_spell","k5_wordpick","k5_missl","k5_listen","k5_rhyme","k6_g1form","k6_g1read","k6_g1sent");
+f("math").push(...A(["nw","place","prev","nseq","nord","cmp","mental","miss","word"]),"k5_shop","k5_share","k5_tenf","k5_desc");
+f("think").push(...A(["logic","pred","solv","evt"]),"k5_solve","k5_rel","k4_seq","k4_pat","k6_g1riddle");
+f("science").push(...A(["org","wtr","mat"]),"k6_g1alive","k6_g1air");
+c.splice(4,0,C("shapes","الأشكال والقياس","الأشكال • الأطوال • المقارنة",["zad/1f9e9.webp"],[...A(["shape","ruler","long"]),"k6_build","k6_sort","k5_shreal","k5_size","k_long"]));
+c.push(C("weather","الطقس والفصول","الطقس • الفصول • الليل والنهار",["zad/2600.webp"],["k6_weather","k4_season","k4_wear","k4_dn"]),C("animals","عالم الحيوانات","التعرف • التصنيف • الغذاء",["zad/1f404.webp"],["k6_aniclass","k6_g2food","k6_sndsrc","k_live","k_feed","k_snd","k_baby","k_wild"]),C("life","مهارات الحياة","السلامة • الاحترام • المسؤولية",["zad/1f392.webp"],[...A(["saf","rsp","res","rtn"]),"k6_g1beh","k6_g1coop","k6_g1wash","k5_healthy","k5_bag","k5_road","k_feel","k_care"]),C("env","البيئة والحياة","النظافة • التدوير • المحافظة",["zad/x_recbin.webp"],["k5_recy","k5_clean","k_clean"]));
+Object.assign(ZHA.g2,{shapes:"g1_shapes",weather:"g1_weather",animals:"g1_animals",life:"g1_life",env:"g1_env"});
+ex("g2",["k6_g2err", "k6_g2syn", "k6_g2ant", "k6_g2pl", "k6_g2cls", "k6_g2pic", "k6_g2punc", "k6_g2okay", "k6_g2story", "k6_g2sent", "k6_g2nw", "k6_g2place", "k6_g2prev", "k6_g2nseq", "k6_g2nord", "k6_g2cmp", "k6_g2mental", "k6_g2miss", "k6_g2word", "k6_g2ruler", "k6_g2long", "k6_g2shape", "k6_g2org", "k6_g2food", "k6_g2wtr", "k6_g2mat", "k6_g2logic", "k6_g2pred", "k6_g2solv", "k6_g2evt", "k6_g2rtn", "k6_g2saf", "k6_g2rsp", "k6_g2res", "k4_lsim", "k4_lsnd", "k5_spell", "k4_spell", "k5_wordpick", "k5_missl", "k5_listen", "k5_rhyme", "k6_g1form", "k6_g1read", "k6_g1sent", "k5_shop", "k5_share", "k5_tenf", "k5_desc", "k5_solve", "k5_rel", "k4_seq", "k4_pat", "k6_g1riddle", "k6_g1alive", "k6_g1air", "k6_build", "k6_sort", "k5_shreal", "k5_size", "k_long", "k6_weather", "k4_season", "k4_wear", "k4_dn", "k6_aniclass", "k6_sndsrc", "k_live", "k_feed", "k_snd", "k_baby", "k_wild", "k6_g1beh", "k6_g1coop", "k6_g1wash", "k5_healthy", "k5_bag", "k5_road", "k_feel", "k_care", "k5_recy", "k5_clean", "k_clean"]);ex("g1",["k6_g1form", "k6_g1alpha", "k6_g1read", "k6_g1sent", "k6_g1prev", "k6_g1alive", "k6_g1air", "k6_g1riddle", "k6_g1wash", "k6_g1beh", "k6_g1coop", "k4_lsim", "k4_lpic", "k4_word", "k4_hunt", "k4_spell", "k5_listen", "k4_nq", "k4_cnt", "k4_miss", "k4_num", "k4_add", "k5_tenf", "k5_desc", "k5_share", "k5_shop", "k5_feedn", "k5_solve", "k5_rel", "k_meet", "k_birds", "k_feel", "k_care", "k_use"])}
 /* لا نعرض قسمًا فارغًا */
 Object.values(ZCAT).forEach(Z=>{Z.cats=Z.cats.map(c=>[c[0],c[1],c[2],c[3],c[4].filter(i=>K.some(a=>a.id===i))]).filter(c=>c[4].length)})})();
-const ZHT={a2:["ألعاب عمر","","سنة إلى سنتين","استكشف • العب • تعلم","cottage"],a3:["ألعاب عمر","3","سنوات","تعلّم • استكشف • العب","castle"],a4:["ألعاب عمر","4","سنوات","تعلّم باللعب والمرح","castle"],a5:["ألعاب عمر","5","سنوات","تعلّم • اكتشف • العب","castle"],a6:["ألعاب عمر","6","سنوات","تعلّم • اكتشف • فكّر • العب","castle"],g1:["ألعاب","الصف الأول","","تعلّم • تدرّب • العب","school"],g2:["ألعاب","الصف الثاني","","تعلّم • تدرّب • العب","school"],g3:["ألعاب","الصف الثالث","","تعلّم • تدرّب • العب","school"],g4:["ألعاب","الصف الرابع","","تعلّم • تدرّب • العب","school"]},
+const ZHT={a2:["ألعاب عمر","","سنة إلى سنتين","استكشف • العب • تعلم","cottage"],a3:["ألعاب عمر","3","سنوات","تعلّم • استكشف • العب","castle"],a4:["ألعاب عمر","4","سنوات","تعلّم باللعب والمرح","castle"],a5:["ألعاب عمر","5","سنوات","تعلّم • اكتشف • العب","castle"],a6:["ألعاب عمر","6","سنوات","تعلّم • اكتشف • فكّر • العب","castle"],g1:["ألعاب","الصف الأول","","تعلّم • تدرّب • العب","school"],g2:["ألعاب","الصف الثاني","","تعلم • تدرب • اكتشف • تحدَّ","school"],g3:["ألعاب","الصف الثالث","","تعلّم • تدرّب • العب","school"],g4:["ألعاب","الصف الرابع","","تعلّم • تدرّب • العب","school"]},
 ZHPAD='<svg class="zhpc" viewBox="0 0 64 40" aria-hidden="true"><path d="M14 4h36c7 0 12 6 13 14l1 12c.6 6-5 9-10 5l-6-5H16l-6 5c-5 4-10 1-10-5l1-12C2 10 7 4 14 4z" fill="#6D3FE0"/><path d="M14 4h36c4 0 8 2 10 6H4c2-4 6-6 10-6z" fill="#8B63F5"/><path d="M15 15h3v-3h3v3h3v3h-3v3h-3v-3h-3z" fill="#fff"/><circle cx="43" cy="14" r="3" fill="#FFC62B"/><circle cx="50" cy="19" r="3" fill="#FF6FA8"/><circle cx="43" cy="24" r="3" fill="#4FD1C5"/></svg>',
 zhhd=(h1,tag,sc,back)=>`<header class="zhd" data-sc="${sc}">${zkdock(back)}<section class="zhero"><span class="zhch" id="zhch">${h1.ch||zp("welcome","",320)}</span><div class="zhcl"><h1 class="zhh1">${h1.t}</h1></div><p class="zhpl"><span>${tag}</span>${ZHPAD}</p></section></header>`,
 zhdr=sid=>{const T=ZHT[sid]||ZHT.a4;return zhhd({t:T[1]?`${T[0]} <b class="zhn${T[2]?"":" zhg"}">${T[1]}</b> ${T[2]}`:`${T[0]}<br>${T[2]}`},T[3],T[4],0)},
@@ -1331,6 +1521,7 @@ zhart=(x,s)=>{const k=(ZHA[s]||{})[x[0]];return k?`<span class="zca"><img src=".
 zhbg=(x,s)=>{const k=(ZHA[s]||{})[x[0]];return k&&ZHC[k]?` style="--zb:${ZHC[k]}"`:""};
 Object.assign(ZGI,{k6_g1form:"ill/pen.svg",k6_g1alpha:"ill/notebook.svg",k6_g1read:"ill/book.svg",k6_g1sent:"ill/books.svg",k6_g1prev:"ill/numbers.svg",k6_g1alive:"ill/sprout.svg",k6_g1air:"zad/x_water.webp",k6_g1riddle:"ill/bulb.svg",k6_g1wash:"zad/1f9fc.webp",k6_g1beh:"ill/smile.svg",k6_g1coop:"ill/heart.svg"});
 _e.push(["g1mast","بطل الإتقان","اجتز مستوى «إتقان» بنجمتين في أي لعبة","trophy",()=>Object.values(zall()).some(v=>(v[3]||0)>=2)],["g1life","صديق الأخلاق","العب ٣ ألعاب سلوك وتعاون ونظافة","smile",()=>["k6_g1beh","k6_g1coop","k6_g1wash"].filter(zpl).length>=3]);
+Object.assign(ZGI,{k6_g2err:"ill/search.svg",k6_g2syn:"ill/books.svg",k6_g2ant:"ill/notebook.svg",k6_g2pl:"ill/book.svg",k6_g2cls:"zad/1f9fa.webp",k6_g2pic:"ill/palette.svg",k6_g2punc:"ill/pen.svg",k6_g2okay:"ill/ok.svg",k6_g2story:"zad/1f4d6.webp",k6_g2sent:"ill/pencils.svg",k6_g2nw:"ill/numbers.svg",k6_g2place:"ill/blocks.svg",k6_g2prev:"ill/n2.svg",k6_g2nseq:"ill/n3.svg",k6_g2nord:"ill/n1.svg",k6_g2cmp:"ill/chart.svg",k6_g2mental:"ill/brain.svg",k6_g2miss:"zad/plus.svg",k6_g2word:"zad/1f34e.webp",k6_g2ruler:"ill/ruler.svg",k6_g2long:"ill/pencil.svg",k6_g2shape:"ill/puzzle.svg",k6_g2org:"ill/smile.svg",k6_g2food:"zad/1f981.webp",k6_g2wtr:"zad/1f4a7.webp",k6_g2mat:"ill/tools.svg",k6_g2logic:"ill/bulb.svg",k6_g2pred:"ill/globe.svg",k6_g2solv:"ill/target.svg",k6_g2evt:"ill/clock.svg",k6_g2rtn:"ill/clock.svg",k6_g2saf:"ill/home.svg",k6_g2rsp:"ill/heart.svg",k6_g2res:"ill/star.svg"});
 let zkcat=null,zkmore=!1;
 const zfavs=()=>{try{const f=JSON.parse(localStorage.getItem(vt("hg_fav"))||"[]");return Array.isArray(f)?f:[]}catch{return[]}},
 zfavt=id=>{const f=zfavs(),i=f.indexOf(id);i<0?f.unshift(id):f.splice(i,1);try{localStorage.setItem(vt("hg_fav"),JSON.stringify(f.slice(0,40)))}catch{}return i<0},
