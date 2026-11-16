@@ -190,3 +190,183 @@
 :root body .opt:not(.txt)>.zxe:only-of-type{width:clamp(56px,17vw,78px);height:clamp(56px,17vw,78px)}
 :root body .emo.shadow{filter:none;background:linear-gradient(150deg,#F4F0FF,#FFF6E4)}
 :root body .emo.shadow .zxe{filter:brightness(0) opacity(.82)}
+
+/* ===== ألعاب عمر سنة إلى سنتين: مشاهد كبيرة، لمس بسيط، بلا نصوص ===== */
+:root body .tg{width:100%;position:relative;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-sizing:border-box}
+:root body .tg *{box-sizing:border-box}
+:root body .tgi{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;-webkit-user-drag:none}
+:root body .tgb{border:0;background:none;padding:0;margin:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;font:inherit;color:inherit}
+:root body .tgb:focus-visible{outline:4px solid #FFD84D;outline-offset:3px;border-radius:22px}
+:root body .tg-pop{animation:tgPop .5s cubic-bezier(.3,1.6,.5,1)}
+:root body .tg-no{animation:tgNo .42s ease}
+@keyframes tgPop{0%{transform:scale(1)}35%{transform:scale(1.16) rotate(-5deg)}70%{transform:scale(.96) rotate(3deg)}100%{transform:scale(1)}}
+@keyframes tgNo{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px) rotate(-3deg)}60%{transform:translateX(9px) rotate(3deg)}}
+@keyframes tgBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+:root body .tg-scene{height:clamp(300px,58vh,470px);border-radius:24px;overflow:hidden;box-shadow:inset 0 0 0 3px #fff}
+:root body .tg .seen::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:4px solid #FFD84D;box-shadow:0 0 0 3px #fff;pointer-events:none;animation:tgPop .5s}
+:root body .tg-it{position:absolute;display:block}
+
+/* ١) بطاقة الحيوان الكبيرة */
+:root body .tg-meet{display:grid;justify-items:center;gap:14px;padding:4px 0 6px}
+:root body .tg-card{position:relative;width:min(78vw,330px);aspect-ratio:1;border-radius:36px;padding:9%;background:radial-gradient(circle at 50% 40%,#fff 0 46%,#FFF6D8 47% 100%);box-shadow:0 0 0 5px #fff,0 10px 0 #F3D98A,0 16px 30px #8a6a0a26}
+:root body .tg-card.tc1{background:radial-gradient(circle at 50% 40%,#fff 0 46%,#E4F6FF 47% 100%);box-shadow:0 0 0 5px #fff,0 10px 0 #A9D8F2,0 16px 30px #0a5a8a22}
+:root body .tg-card.tc2{background:radial-gradient(circle at 50% 40%,#fff 0 46%,#EAF9E1 47% 100%);box-shadow:0 0 0 5px #fff,0 10px 0 #B9E3A0,0 16px 30px #2a7a0a22}
+:root body .tg-card.tc3{background:radial-gradient(circle at 50% 40%,#fff 0 46%,#F6EEFF 47% 100%);box-shadow:0 0 0 5px #fff,0 10px 0 #D5C2F7,0 16px 30px #5426c722}
+:root body .tg-card:not(.on){animation:tgBob 2.4s ease-in-out infinite}
+:root body .tg-hand{position:absolute;inset-inline-end:6%;bottom:8%;width:22%;aspect-ratio:1;border-radius:50%;background:#5426C7 url("../images/zad/1f446.webp") center/70% no-repeat;box-shadow:0 0 0 4px #fff;animation:tgBob 1.2s ease-in-out infinite}
+:root body .tg-card.on .tg-hand{display:none}
+:root body .tg-next{width:84px;height:84px;border-radius:24px;display:grid;place-items:center;animation:tgBob 1.4s ease-in-out infinite}
+:root body .tg-next img{width:100%;height:100%}
+:root body .tg-next[hidden]{display:grid;visibility:hidden;animation:none}
+
+/* ٢) خياران كبيران */
+:root body .tg-wild{padding:6px 0}
+:root body .tg-ch{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%}
+:root body .tg-ch.n3{grid-template-columns:repeat(3,1fr);gap:10px}
+:root body .tg-opt{aspect-ratio:1;border-radius:30px;padding:12%;background:linear-gradient(180deg,#F1FBEA,#DDF3CF);box-shadow:0 0 0 4px #fff,0 8px 0 #B6DE9C;transition:transform .15s}
+:root body .tg-opt:active{transform:scale(.96)}
+:root body .tg-opt.ok{background:linear-gradient(180deg,#FFF7D6,#FFE79A);box-shadow:0 0 0 4px #fff,0 0 0 9px #FFD84D,0 8px 0 #E9C24A}
+
+/* ٣) حديقة الطيور */
+:root body .tg-garden{background:linear-gradient(180deg,#BDE8FF 0 56%,#9FDB6E 56% 100%)}
+:root body .tg-sunny{position:absolute;top:5%;inset-inline-start:6%;width:15%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#FFE680 0 55%,#FFD23F 56% 100%);box-shadow:0 0 0 10px #FFE68055}
+:root body .tg-cl{position:absolute;height:9%;aspect-ratio:3;border-radius:999px;background:#fff;opacity:.9}
+:root body .tg-cl::before{content:"";position:absolute;width:45%;aspect-ratio:1;border-radius:50%;background:#fff;left:20%;bottom:30%}
+:root body .tg-cl.a{top:9%;inset-inline-start:30%;width:22%}
+:root body .tg-cl.b{top:20%;inset-inline-start:52%;width:16%}
+:root body .tg-treeimg{position:absolute;inset-inline-end:0;bottom:30%;width:58%;height:68%}
+:root body .tg-pond{position:absolute;inset-inline-end:8%;bottom:5%;width:42%;height:17%;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#9BE3FF 0 40%,#4FB8EA 70%);box-shadow:inset 0 -6px 0 #3A9ED0}
+:root body .tg-garden .tg-it{width:19%;aspect-ratio:1}
+:root body .tg-garden .b1{inset-inline-end:32%;top:9%}
+:root body .tg-garden .b2{inset-inline-end:7%;top:24%}
+:root body .tg-garden .b3{inset-inline-start:5%;bottom:24%;width:24%}
+:root body .tg-garden .b4{inset-inline-start:30%;bottom:8%;width:22%}
+:root body .tg-garden .b5{inset-inline-start:7%;bottom:3%;width:15%}
+:root body .tg-garden .b6{inset-inline-end:18%;bottom:8%}
+
+/* ٤) الشجيرات */
+:root body .tg-peek{background:linear-gradient(180deg,#CFEFFF 0 48%,#A7E07A 48% 100%)}
+:root body .tg-bushes{position:absolute;inset:auto 3% 7% 3%;display:flex;justify-content:space-around;align-items:flex-end;height:72%}
+:root body .tg-bush{position:relative;width:31%;height:100%;display:block}
+:root body .tg-peek.n2 .tg-bush{width:44%}
+:root body .tg-hid{position:absolute;left:12%;right:12%;bottom:22%;height:58%;transition:transform .35s cubic-bezier(.3,1.5,.5,1);transform:translateY(9%)}
+:root body .tg-bush.open .tg-hid{transform:translateY(-6%) scale(1.05)}
+:root body .tg-leaf{position:absolute;inset:auto 0 0 0;height:58%;transition:transform .35s ease}
+:root body .tg-leaf i{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7EDB5A,#3FA535 70%);box-shadow:inset 0 -8px 0 #2F8A2A}
+:root body .tg-leaf i:nth-child(1){left:0;bottom:0;width:62%;height:78%}
+:root body .tg-leaf i:nth-child(2){right:0;bottom:0;width:62%;height:84%}
+:root body .tg-leaf i:nth-child(3){left:20%;bottom:28%;width:60%;height:72%}
+:root body .tg-bush.open .tg-leaf{transform:translateY(46%) scaleY(.7)}
+
+/* ٥) الفقاعات */
+:root body .tg-bubs{background:linear-gradient(180deg,#E9F7FF,#CDEBFF 60%,#B5E2FF)}
+:root body .tg-bub{position:absolute;bottom:-120px;width:var(--s);height:var(--s);border-radius:50%;animation:tgRise var(--d) linear forwards;box-shadow:inset 0 0 0 2px #ffffffb3}
+:root body .tg-bub.pop{animation:tgBurst .3s ease-out forwards}
+@keyframes tgRise{0%{transform:translate(0,0)}25%{transform:translate(var(--x),-120px)}50%{transform:translate(calc(var(--x)*-1),-260px)}75%{transform:translate(var(--x),-400px)}100%{transform:translate(0,-620px)}}
+@keyframes tgBurst{to{transform:scale(1.5);opacity:0}}
+
+/* ٦) الكرة والسلال */
+:root body .tg-cm{display:grid;gap:26px;padding:8px 0 4px}
+:root body .tg-ballrow{display:grid;justify-items:center;min-height:130px}
+:root body .tg-ball{width:118px;height:118px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0 9%,var(--c) 30%,color-mix(in srgb,var(--c) 70%,#000) 100%);background:radial-gradient(circle at 34% 30%,#fff 0 9%,#fff0 10%),var(--c);box-shadow:inset -10px -14px 0 #0000002e,0 8px 0 #00000014;touch-action:none;cursor:grab;animation:tgBob 1.6s ease-in-out infinite;position:relative;z-index:3}
+:root body .tg-ball.grab{animation:none;cursor:grabbing}
+:root body .tg-ball[data-done]{animation:none}
+:root body .tg-bins{display:flex;justify-content:space-around;gap:14px}
+:root body .tg-bin{position:relative;width:44%;max-width:190px;aspect-ratio:1.05}
+:root body .tg-binbody{position:absolute;inset:16% 6% 0 6%;border-radius:10px 10px 30px 30px;background:var(--c);box-shadow:inset 0 -12px 0 #00000026,inset 0 0 0 4px #ffffff40;clip-path:polygon(0 0,100% 0,90% 100%,10% 100%)}
+:root body .tg-binlip{position:absolute;inset:6% 0 auto 0;height:18%;border-radius:999px;background:var(--c);box-shadow:inset 0 -6px 0 #00000033,0 0 0 4px #fff}
+:root body .tg-bin.ok .tg-binlip{box-shadow:inset 0 -6px 0 #00000033,0 0 0 4px #fff,0 0 0 10px #FFD84D}
+
+/* ٧) سلة الفواكه */
+:root body .tg-bask{display:grid;gap:12px}
+:root body .tg-fruits{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;min-height:120px}
+:root body .tg-fr,:root body .tg-food{width:clamp(76px,22vw,104px);aspect-ratio:1;padding:8px;border-radius:24px;background:#fff;box-shadow:0 0 0 3px #F3E8FF,0 6px 0 #E4D6FA;touch-action:none;cursor:grab;position:relative;z-index:2}
+:root body .tg-fr.grab,:root body .tg-food.grab{z-index:5;box-shadow:0 0 0 4px #FFD84D,0 12px 20px #0002}
+:root body .tg-basket{position:relative;width:min(70vw,290px);aspect-ratio:1.1;margin:0 auto}
+:root body .tg-bimg{position:absolute;inset:0;z-index:2}
+:root body .tg-pile{position:absolute;left:18%;right:18%;top:14%;height:34%;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;z-index:1}
+:root body .tg-pf{width:34%;aspect-ratio:1;margin:-6% -4%;animation:tgPop .5s}
+
+/* ٨) أطعم صديقنا */
+:root body .tg-yum{display:grid;justify-items:center;gap:12px}
+:root body .tg-pal{position:relative;width:min(62vw,240px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 50% 60%,#FFF3C4 0 58%,#FFE38A 59% 100%);display:grid;place-items:end center;overflow:hidden;box-shadow:0 0 0 5px #fff,0 10px 0 #F1C74F}
+:root body .tg-pal .zp{height:96%;width:auto;filter:none;--zh:96%}
+:root body .tg-pal .zp .zch{height:100%;width:auto}
+:root body .tg-pal.chew .zp{animation:tgChew .7s ease 2}
+@keyframes tgChew{0%,100%{transform:scale(1)}30%{transform:scale(1.05,.95)}60%{transform:scale(.97,1.04)}}
+:root body .tg-mouth{display:none}
+:root body .tg-foods{display:flex;justify-content:center;gap:12px;min-height:110px}
+
+/* ٩) الفراشات */
+:root body .tg-flyz{background:linear-gradient(180deg,#E9F6FF 0 64%,#B9E79A 64% 100%)}
+:root body .tg-flowers{position:absolute;left:0;right:0;bottom:2%;display:flex;justify-content:space-around;align-items:flex-end;height:22%;padding:0 2%}
+:root body .tg-flowers .tgi{width:17%;height:100%}
+:root body .tg-bf{position:absolute;width:clamp(70px,20vw,96px);aspect-ratio:1;animation:tgDrift var(--d) ease-in-out infinite alternate;filter:hue-rotate(var(--h))}
+:root body .tg-bf .tgi{animation:tgWing .45s ease-in-out infinite alternate}
+:root body .tg-bf.away{animation:tgAway .9s ease-in forwards}
+@keyframes tgDrift{from{transform:translate(0,0)}to{transform:translate(var(--dx),var(--dy))}}
+@keyframes tgWing{from{transform:scaleX(1)}to{transform:scaleX(.72)}}
+@keyframes tgAway{to{transform:translate(40px,-360px) rotate(18deg) scale(.6);opacity:0}}
+
+/* ١٠) صناديق المفاجآت */
+:root body .tg-open{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:clamp(70px,20vw,110px) 2px 12px;align-items:end;max-width:620px;margin:0 auto}
+:root body .tg-box{position:relative;height:clamp(130px,36vw,200px);width:100%}
+:root body .tg-bx{position:absolute;inset:34% 4% 0 4%;border-radius:14px 14px 20px 20px;background:linear-gradient(90deg,#0000 42%,#FFD84D 42% 58%,#0000 58%),linear-gradient(180deg,#9B7BFF,#5426C7);box-shadow:inset 0 -10px 0 #0000002e;z-index:2}
+:root body .tg-lid{position:absolute;inset:22% 0 auto 0;height:17%;border-radius:12px;background:linear-gradient(90deg,#0000 42%,#FFD84D 42% 58%,#0000 58%),linear-gradient(180deg,#FFB3D1,#EC4899);box-shadow:inset 0 -6px 0 #0000002e;z-index:3;transform-origin:8% 100%;transition:transform .45s cubic-bezier(.3,1.5,.5,1)}
+:root body .tg-box.tc1 .tg-bx{background:linear-gradient(90deg,#0000 42%,#FFD84D 42% 58%,#0000 58%),linear-gradient(180deg,#5FD3C4,#0F9C8C)}
+:root body .tg-box.tc1 .tg-lid{background:linear-gradient(90deg,#0000 42%,#FFD84D 42% 58%,#0000 58%),linear-gradient(180deg,#B9A6FF,#7B5CF0)}
+:root body .tg-box.tc2 .tg-bx{background:linear-gradient(90deg,#0000 42%,#fff 42% 58%,#0000 58%),linear-gradient(180deg,#FFB070,#F97316)}
+:root body .tg-box.tc2 .tg-lid{background:linear-gradient(90deg,#0000 42%,#fff 42% 58%,#0000 58%),linear-gradient(180deg,#8FE0A0,#22A447)}
+:root body .tg-box:not(.open){animation:tgBob 2s ease-in-out infinite}
+:root body .tg-box:nth-child(2):not(.open){animation-delay:.3s}
+:root body .tg-box:nth-child(3):not(.open){animation-delay:.6s}
+:root body .tg-box.open .tg-lid{transform:rotate(-58deg) translate(-6%,-30%)}
+:root body .tg-sur{position:absolute;left:12%;right:12%;top:26%;aspect-ratio:1;z-index:1;transform:translateY(40%) scale(.4);opacity:0;transition:transform .45s cubic-bezier(.3,1.6,.5,1) .12s,opacity .2s .12s}
+:root body .tg-box.open .tg-sur{transform:translateY(-62%) scale(1);opacity:1;z-index:4}
+
+/* ١١) حوض السمك */
+:root body .tg-sea{background:linear-gradient(180deg,#9FE3FF,#4FB3E8 60%,#2E8FCC)}
+:root body .tg-sand{position:absolute;left:0;right:0;bottom:0;height:13%;background:radial-gradient(ellipse at 30% 0,#FFE9B0 0 60%,#0000 61%),#F5D48A}
+:root body .tg-weed{position:absolute;bottom:8%;width:7%;height:34%;border-radius:999px 999px 0 0;background:linear-gradient(90deg,#2FAE5A,#5DD37E);transform-origin:bottom;animation:tgWeed 3s ease-in-out infinite alternate}
+:root body .tg-weed.a{inset-inline-start:8%}
+:root body .tg-weed.b{inset-inline-end:12%;height:26%;animation-delay:.8s}
+@keyframes tgWeed{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+:root body .tg-bb{position:absolute;bottom:10%;width:14px;height:14px;border-radius:50%;border:2px solid #ffffffcc;animation:tgUp 4s linear infinite}
+:root body .tg-bb.a{left:22%}:root body .tg-bb.b{left:58%;animation-delay:1.3s;width:10px;height:10px}:root body .tg-bb.c{left:80%;animation-delay:2.6s}
+@keyframes tgUp{0%{transform:translateY(0);opacity:0}10%{opacity:1}100%{transform:translateY(-300px);opacity:0}}
+:root body .tg-sw{position:absolute;width:24%;aspect-ratio:1;animation:tgSwim 9s ease-in-out infinite alternate}
+:root body .tg-sw .tg-it{position:relative;width:100%;height:100%}
+:root body .tg-sw.s0{top:4%;left:2%}
+:root body .tg-sw.s1{top:30%;left:40%;animation-duration:11s;animation-delay:-3s}
+:root body .tg-sw.s2{top:52%;left:6%;animation-duration:13s;animation-delay:-6s}
+:root body .tg-sw.s3{top:6%;left:50%;animation-duration:10s;animation-delay:-2s;width:22%}
+:root body .tg-sw.s4{bottom:5%;left:36%;width:20%;animation:tgCrab 6s ease-in-out infinite alternate}
+@keyframes tgSwim{from{transform:translateX(0)}to{transform:translateX(110%)}}
+@keyframes tgCrab{from{transform:translateX(-60%)}to{transform:translateX(90%)}}
+
+/* ١٢) فوق وتحت */
+:root body .tg-updown{background:linear-gradient(180deg,#D7F1FF 0 70%,#A7E07A 70% 100%)}
+:root body .tg-bigtree{position:absolute;left:16%;right:16%;bottom:12%;top:16%}
+:root body .tg-updown .tg-a{width:27%;aspect-ratio:1;left:36.5%;top:1%}
+:root body .tg-updown .tg-b{width:29%;aspect-ratio:1;left:58%;bottom:3%}
+:root body .tg-updown .ok,:root body .tg-inout .ok{filter:drop-shadow(0 0 0 #fff) drop-shadow(0 0 10px #FFD84D)}
+
+/* ١٣) داخل وخارج */
+:root body .tg-inout{background:linear-gradient(180deg,#FFF4D6 0 66%,#F5D9A0 66% 100%)}
+:root body .tg-bwrap{position:absolute;left:4%;bottom:6%;width:62%;aspect-ratio:1.05}
+:root body .tg-bwrap .tg-a{left:20%;right:20%;top:-4%;height:62%;z-index:1}
+:root body .tg-bwrap .tg-bimg{position:absolute;inset:18% 0 0 0;width:100%;height:82%;z-index:2}
+:root body .tg-inout .tg-b{width:32%;aspect-ratio:1;right:2%;bottom:6%}
+
+/* ١٤) رفوف الغرفة */
+:root body .tg-room{background:linear-gradient(180deg,#FFF1E3,#FFE6CC);display:flex;flex-direction:column;justify-content:space-around;padding:4% 4% 6%}
+:root body .tg-shelf{position:relative;display:flex;justify-content:space-around;align-items:flex-end;height:40%;border-bottom:16px solid #C98A4B;border-radius:0 0 6px 6px;box-shadow:0 10px 0 #A86F35}
+:root body .tg-room .tg-it{position:relative;width:29%;aspect-ratio:1;margin-bottom:4px;border-radius:22px}
+
+/* ١٥) أطباق المفرش */
+:root body .tg-picnic{background:repeating-linear-gradient(45deg,#ffffff00 0 22px,#ffffff59 22px 44px),repeating-linear-gradient(-45deg,#F87171 0 22px,#FCA5A5 22px 44px);display:grid;place-items:center;padding:4%}
+:root body .tg-plates{display:grid;grid-template-columns:repeat(3,1fr);gap:4%;width:100%}
+:root body .tg-plate{position:relative;aspect-ratio:1;border-radius:50%;padding:16%;background:radial-gradient(circle,#fff 0 58%,#EEF2F7 60% 66%,#fff 68%);box-shadow:0 6px 0 #00000026}
+
+@media (prefers-reduced-motion:reduce){:root body .tg *,:root body .tg{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important}:root body .tg-bub{animation:tgRise 9s linear forwards!important}:root body .tg-bf{animation:none!important}}
+@media (min-width:700px){:root body .tg-scene{height:clamp(380px,60vh,520px)}:root body .tg-ch{max-width:520px;margin:0 auto}:root body .tg-card{width:min(56vw,400px)}:root body .tg-pal{width:min(44vw,300px)}:root body .tg-fr,:root body .tg-food{width:118px}:root body .tg-basket{width:min(50vw,340px)}:root body .tg-cm{max-width:520px;margin:0 auto}:root body .tg-ball{width:140px;height:140px}}
