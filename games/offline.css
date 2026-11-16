@@ -43,3 +43,13 @@
 .zo-gt small{display:block;line-height:1.6;margin:0}
 .zo-gt b{display:block;margin:0}
 .zo-gt .zo-chip{margin:0}
+/* الحالة داخل الشريط العلوي + سطر ثابت تحته (لا شيء يطفو فوق البطاقات) */
+#zo-pill{position:static;inset:auto;bottom:auto;flex:none;width:44px;height:44px;min-width:44px;padding:0;justify-content:center;border-radius:50%;margin-inline-start:auto;box-shadow:none;background:#fff;border:1px solid #E4DBFA}
+#zo-pill .zo-il{width:24px;height:24px;display:block}
+.zo-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#zo-strip{display:flex;align-items:center;gap:8px;width:100%;margin:0 0 10px;padding:8px 12px;min-height:44px;border-radius:14px;border:1px solid #D9CCFF;background:#F4F0FF;color:#351477;font:800 14px/1.4 Cairo,system-ui,sans-serif;text-align:start;cursor:pointer;box-shadow:none}
+#zo-strip.off{background:#FFF8EC;border-color:#F7D7A8}
+#zo-strip .zo-il{width:24px;height:24px;flex:none}
+#zo-strip span{flex:1;min-width:0}
+#zo-strip b{flex:none;background:#5426C7;color:#fff;border-radius:99px;padding:4px 14px;font-size:13px}
+.zo-toast.zo-inl{position:static;inset:auto;bottom:auto;max-width:none;margin:0 0 10px;border-radius:14px;padding:9px 14px;font-size:14px;box-shadow:none;background:#351477}

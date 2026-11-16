@@ -80,7 +80,10 @@
   /* ---------- واجهة ---------- */
   let toastT = 0;
   function toast(msg) {
-    const old = $(".zo-toast"); old && old.remove(); const t = document.createElement("div"); t.className = "zo-toast"; t.setAttribute("role", "status"); t.textContent = msg; document.body.appendChild(t);
+    const old = $(".zo-toast"); old && old.remove(); const t = document.createElement("div"); t.setAttribute("role", "status"); t.textContent = msg;
+    // داخل لوحة الألعاب المحمّلة: رسالة عائمة فوق اللوحة. خارجها: سطر ثابت تحت الشريط العلوي لا يغطي البطاقات. داخل اللعبة: لا نقاطع الطفل.
+    if ($("#zo-panel")) { t.className = "zo-toast"; document.body.appendChild(t); }
+    else { const top = slotTop(); if (!top) return; t.className = "zo-toast zo-inl"; top.insertAdjacentElement("afterend", t); }
     clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 4200);
   }
   function summary() {
@@ -91,10 +94,27 @@
     if (S.state === "partial") return { cls: "off", ic: "📥", short: "بقي تنزيل بعض الملفات", t: "التنزيل لم يكتمل", d: S.online ? "اضغط «أكمل التنزيل»." : "عندما يعود الإنترنت سنكمل التجهيز." };
     return S.online ? { cls: "", ic: "🟢", short: "متصل · جهّز الألعاب بلا إنترنت", t: "متصل بالإنترنت", d: "نزّل الألعاب مرة واحدة وتعلّم بعدها بلا إنترنت." } : { cls: "off", ic: "📡", short: "بلا إنترنت · نحتاج تجهيز الألعاب", t: "لا يوجد إنترنت الآن", d: "الألعاب تحتاج تجهيزاً لمرة واحدة عند توفر الإنترنت." };
   }
+  const IL = (n) => `<img class="zo-il" src="../images/${n}.svg" alt="" width="22" height="22">`;
+  const ICN = { "🔄": "gm/refresh", "⏳": "ill/clock", "📥": "gm/download", "🟢": "gm/plane", "✈️": "gm/plane", "📡": "ill/cloud", "ℹ️": "ill/bulb" };
+  // مكان ثابت: الشريط العلوي للصفحة (ليس داخل اللعبة)
+  function slotTop() { const a = $("#app"); return a && $(".top", a); }
+  function stripOn() { return supported && (S.state === "busy" || updAvail() || S.state === "partial" || (S.state !== "ready" && !S.online)); }
+  function place() {
+    const top = slotTop(), p = $("#zo-pill"), st = $("#zo-strip");
+    if (!top) { p && p.remove(); st && st.remove(); return; }
+    if (p) { let d = $("#vmute", top); while (d && d.parentNode !== top) d = d.parentNode; if (p.parentNode !== top || (d && p.nextElementSibling !== d)) top.insertBefore(p, d || null); }
+    if (st) { if (!stripOn()) st.remove(); else if (top.nextElementSibling !== st) top.insertAdjacentElement("afterend", st); }
+  }
   function render() {
     document.body.dataset.zo = S.state === "ready" ? "ready" : "";
-    let p = $("#zo-pill"); if (!p) { p = document.createElement("button"); p.id = "zo-pill"; p.type = "button"; p.onclick = openPanel; document.body.appendChild(p); }
-    const s = summary(); p.className = s.cls; p.innerHTML = `<i>${s.ic}</i><span>${s.short}</span>`;
+    const s = summary(), ic = IL(ICN[s.ic] || "gm/plane");
+    let p = $("#zo-pill"); if (!p) { p = document.createElement("button"); p.id = "zo-pill"; p.type = "button"; p.onclick = openPanel; }
+    p.className = s.cls; p.setAttribute("aria-label", s.short); p.innerHTML = `${ic}<span class="zo-sr">${s.short}</span>`;
+    let st = $("#zo-strip");
+    if (stripOn()) { if (!st) { st = document.createElement("button"); st.id = "zo-strip"; st.type = "button"; st.onclick = openPanel; } st.className = s.cls; st.innerHTML = `${ic}<span>${s.short}</span>${updAvail() && S.online ? "<b>حدّث</b>" : ""}`; }
+    const top = slotTop(); if (top && st && stripOn() && !st.parentNode) top.insertAdjacentElement("afterend", st);
+    if (top && !p.parentNode) top.appendChild(p);
+    place();
     const b = $("#zo-banner"); if (b) bannerFill(b);
     if ($("#zo-panel")) panelFill();
   }
@@ -146,7 +166,7 @@
       const bk = $("#back"); if (!bk) return; bk.click(); await new Promise((r) => setTimeout(r, 600));
     }
   }
-  function tick() { const f = $("#zo-panel .zo-bar i"); const p = $("#zo-pill span"); const pct = Math.round(S.done / Math.max(1, S.total) * 100); if (f) { f.style.width = pct + "%"; const n = $("#zo-panel .zo-note"); n && (n.textContent = AD(pct) + "٪ · لا تغلق الصفحة"); } if (p) p.textContent = `نجهّز الألعاب ${AD(pct)}٪`; }
+  function tick() { const f = $("#zo-panel .zo-bar i"); const p = $("#zo-pill span"); const pct = Math.round(S.done / Math.max(1, S.total) * 100); if (f) { f.style.width = pct + "%"; const n = $("#zo-panel .zo-note"); n && (n.textContent = AD(pct) + "٪ · لا تغلق الصفحة"); } if (p) p.textContent = `نجهّز الألعاب ${AD(pct)}٪`; const q = $("#zo-strip span"); if (q) q.textContent = `نجهّز الألعاب ${AD(pct)}٪`; }
 
   /* ---------- الاتصال ---------- */
   function setOnline(v) {
@@ -169,9 +189,9 @@
       try { await navigator.serviceWorker.register("sw.js"); await navigator.serviceWorker.ready; } catch {}
     }
     await readStatus(); render();
-    new MutationObserver(injectBanner).observe($("#app"), { childList: true }); injectBanner();
+    new MutationObserver(() => { injectBanner(); render(); }).observe($("#app"), { childList: true }); injectBanner();
     if (navigator.onLine) { await fetchManifest(); await readStatus(); render(); setTimeout(autoPrepare, 1500); }
-    window.__zo = { S, download, remove, readStatus, render };
+    window.__zo = { S, download, remove, readStatus, render, openPanel };
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();

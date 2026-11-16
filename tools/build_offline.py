@@ -24,6 +24,9 @@ for f in sorted(os.listdir(os.path.join(G, "chars"))):
     if f.endswith(("-160.png", "-320.png")): add("chars/" + f, "core")
 for f in sorted(os.listdir(os.path.join(G, "chars", "poses"))):
     if f.endswith(("-160.png", "-320.png")): add("chars/poses/" + f, "core")
+GM = os.path.join(G, "..", "images", "gm")
+for f in sorted(os.listdir(GM)):
+    if f.endswith(".svg"): add("../images/gm/" + f, "core")
 IL = os.path.join(G, "..", "images", "ill")
 for f in sorted(os.listdir(IL)):
     if f.endswith(".svg"): add("../images/ill/" + f, "core")

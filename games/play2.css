@@ -290,65 +290,92 @@ body[data-zk] .zsg{background:#fff}
 .zcf-k{background:linear-gradient(180deg,#FFD34D,#F5A623);color:#3A2400;box-shadow:0 4px 0 #B87A10}
 .zcf-x{background:#F0EAFE;color:#5526B8}
 
-/* ===== hub redesign: flat, compact (Zad violet/gold) ===== */
-body[data-zk="hub"]{background:#F3EEFF;color:#241747}
-.zhub{max-width:720px;margin:0 auto;color:#241747;direction:rtl}
-.zhub .top{margin-bottom:10px}
-.zhub .top .pill{box-shadow:none;border:1px solid #E4DBFA;min-height:40px;font-size:15px;color:#351477}
-.zkcard{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #E4DBFA;border-radius:16px;padding:8px 12px;margin:0}
-.zkav{flex:none;width:52px;height:52px;border-radius:50%;background:#F3EEFF;overflow:hidden;display:grid;place-items:end center}
-.zkav .zp{display:block;width:100%}
-.zkav img{width:52px;height:auto;filter:none;margin:0}
-.zkav .zpb{display:none}
-.zkci{display:grid;gap:1px;min-width:0}
-.zkci b{font-size:16px;font-weight:800;color:#241747;line-height:1.3}
-.zkci span{font-size:13px;color:#77718D;font-weight:600}
-.zht{margin:16px 0 0;font-size:24px;font-weight:800;color:#351477;text-align:start;line-height:1.3}
-.zhs{margin:0 0 10px;font-size:14px;color:#77718D;font-weight:600;text-align:start}
-.zhub .grid.zkg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-@media(min-width:560px){.zhub .grid.zkg{grid-template-columns:repeat(3,1fr)}}
-@media(min-width:820px){.zhub .grid.zkg{grid-template-columns:repeat(4,1fr)}}
-.zhub .gcard{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;height:128px;min-height:0;padding:12px 8px 8px;border:1px solid #E4DBFA;border-radius:16px;background:#fff;box-shadow:none;color:#241747;text-align:center;overflow:hidden;transition:transform .1s,border-color .1s}
-.zhub .gcard:active{transform:scale(.97);border-color:#5426C7}
-.zhub .gcard .ic{width:44px;height:44px;border-radius:14px;font-size:26px;box-shadow:none;background:color-mix(in srgb,var(--c,#5426C7) 12%,#fff);color:var(--c,#5426C7);display:grid;place-items:center;flex:none}
-.zhub .gcard .ic .ics{width:24px;height:24px;stroke:var(--c,#5426C7)}
-.zhub .gcard b{font-size:14.5px;font-weight:800;line-height:1.3;color:#241747;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.zhub .gcard small{font-size:11.5px;line-height:1.35;color:#77718D;font-weight:600;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.zhub .gcard .zpo{position:absolute;top:6px;inset-inline-start:6px;margin:0;padding:1px 7px;font-size:10px;background:#EAF7F0;color:#0B7D52}
-.zhub .gcard .zpo .zem{width:11px;height:11px}
-.zhh{margin:16px 0 6px;font-size:15px;font-weight:800;color:#351477}
-.zhub .zsug{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.zhub .zsg{display:flex;align-items:center;gap:8px;min-height:0;padding:8px 10px;border:1px solid #E4DBFA;border-radius:14px;background:#fff;box-shadow:none;text-align:start;color:#241747}
-.zhub .zrcem{flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:#F3EEFF;font-size:18px}
-.zhub .zrcem .zem{width:20px;height:20px}
-.zhub .zrt{display:grid;min-width:0}
-.zhub .zrt b{font-size:13px;font-weight:800;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.zhub .zrt small{display:none}
+/* ===== صفحة ألعاب زاد (الإصدار الملوّن) ===== */
+body[data-zk="hub"]{background:linear-gradient(180deg,#EEE7FF 0,#F7F4FF 320px,#F4FAFF 100%);min-height:100vh;color:#241747}
+.zhub{max-width:960px;margin:0 auto;color:#241747;direction:rtl}
+.zhub .top{margin-bottom:12px;gap:8px}
+.zhub .top .pill{box-shadow:none;border:1px solid #E4DBFA;min-height:44px;font-size:15px;color:#351477;background:#fff}
+/* الترحيب */
+.zwel{position:relative;overflow:hidden;display:flex;align-items:center;gap:10px;padding:0 16px 0 10px;border-radius:24px;background:linear-gradient(135deg,#8357FF 0%,#5426C7 55%,#3F8CFF 100%);color:#fff;isolation:isolate}
+.zwd{position:absolute;z-index:0;pointer-events:none}
+.zwd.d1{width:150px;height:150px;border-radius:50%;background:#ffffff1c;inset-inline-end:-36px;top:-46px}
+.zwd.d2{width:70px;height:70px;border-radius:50%;background:#3FD0C91f;inset-inline-end:110px;bottom:-34px}
+.zwd.d3{width:10px;height:10px;border-radius:50%;background:#FFC83D;inset-inline-start:7px;top:7px}
+.zwd.d4{width:18px;height:18px;inset-inline-end:14px;top:12px}
+.zwd.d5{width:16px;height:16px;inset-inline-end:104px;top:12px;opacity:.9}
+.zwtx{position:relative;z-index:1;flex:1;min-width:0;padding:16px 0}
+.zwh{margin:0 0 8px;font-size:clamp(22px,6.2vw,30px);font-weight:800;line-height:1.3;color:#fff;overflow-wrap:anywhere}
+.zwchips{display:flex;flex-wrap:wrap;gap:6px}
+.zwc{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 12px;border-radius:99px;background:#ffffff26;border:1px solid #ffffff3d;font-size:13px;font-weight:700;color:#fff;line-height:1.5}
+.zwc .zem{width:16px;height:16px;vertical-align:0}
+.zwq{display:inline-flex;align-items:center;gap:6px;margin:10px 0 0;padding:5px 14px 5px 12px;border-radius:99px;background:#FFC83D;color:#351477;font-size:14px;font-weight:800;line-height:1.5}
+.zwq .zem{width:18px;height:18px;vertical-align:0}
+.zwav{position:relative;z-index:1;flex:none;align-self:flex-end;width:116px;height:136px;display:flex;align-items:flex-end;justify-content:center}
+.zwav::before{content:"";position:absolute;z-index:-1;left:4px;right:4px;bottom:10px;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#ffffff4d 0,#ffffff1a 60%,#fff0 71%)}
+.zwav .zp{--zh:130px;height:130px;width:auto;display:inline-block}
+.zwav .zp .zch{height:100%;width:auto;max-width:none;filter:drop-shadow(0 6px 8px #1b075340)}
+.zwav .zpb{display:none}
+@media(min-width:560px){.zwel{padding-inline-start:24px}.zwav{width:150px;height:172px}.zwav .zp{--zh:166px;height:166px}.zwd.d5{inset-inline-end:140px}.zwd.d2{inset-inline-end:150px}}
+/* عنوان الألعاب */
+.zgh{margin:20px 2px 10px}
+.zht{margin:0;font-size:22px;font-weight:800;color:#351477;line-height:1.3}
+.zhs{margin:2px 0 0;font-size:14px;color:#77718D;font-weight:600}
+/* بطاقات الألعاب */
+.zhub .grid.zkg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch}
+@media(min-width:560px){.zhub .grid.zkg{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:820px){.zhub .grid.zkg{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}}
+.zhub .gcard{--bg:#F2ECFF;--bd:#E2D7FC;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;height:auto;min-height:0;padding:14px 10px 12px;border:1px solid var(--bd);border-radius:20px;background:var(--bg);box-shadow:0 1px 0 var(--bd);color:#241747;text-align:center;overflow:visible;transition:transform .15s ease,box-shadow .15s ease;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.zhub .gcard.zc0{--bg:#EAF5FF;--bd:#D2E8FB}.zhub .gcard.zc1{--bg:#E7F8EF;--bd:#CBEDD9}.zhub .gcard.zc2{--bg:#FFF6DB;--bd:#F6E4AE}
+.zhub .gcard.zc3{--bg:#FFEDF4;--bd:#F7D3E2}.zhub .gcard.zc4{--bg:#F2ECFF;--bd:#E0D4FB}.zhub .gcard.zc5{--bg:#E2F8F6;--bd:#C1EBE6}
+.zhub .gcard:active{transform:scale(.97)}
+@media(hover:hover){.zhub .gcard:hover{transform:translateY(-2px);box-shadow:0 6px 16px #5426C71a}}
+.zhub .gcard .ic.zgi{width:68px;height:68px;border-radius:22px;background:#ffffffc2;box-shadow:none;display:grid;place-items:center;flex:none;margin:0 0 4px;padding:0;font-size:34px;color:inherit}
+.zhub .gcard .zgim{width:54px;height:54px;display:block}
+.zhub .gcard b{display:block;font-size:15px;font-weight:800;line-height:1.35;color:#241747;max-width:100%;white-space:normal;overflow:visible;text-wrap:balance}
+.zhub .gcard small{display:block;font-size:12px;line-height:1.45;color:#6F6987;font-weight:600;max-width:100%;white-space:normal;overflow:visible}
+.zhub .gcard .zpo{position:static;margin:auto 0 0;transform:none;align-self:center;padding:2px 9px;font-size:11px;line-height:1.6;background:#fff;color:#0B7D52;border-radius:99px;gap:4px}
+.zhub .gcard .zpo .zem{width:13px;height:13px;vertical-align:0}
+.zhub .gcard small+.zpo{margin-top:auto}
+.zhub .gcard>small{margin-bottom:6px}
+/* مقترحات */
+.zhh{margin:22px 2px 8px;font-size:16px;font-weight:800;color:#351477}
+.zhub .zsug{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.zhub .zsg{display:flex;align-items:center;gap:10px;min-height:0;padding:10px 12px;border:1px solid #E9E2FB;border-radius:16px;background:#fff;box-shadow:none;text-align:start;color:#241747;cursor:pointer}
+.zhub .zsg b{font-size:13.5px;font-weight:800;line-height:1.4;min-width:0}
+.zhub .zrcem{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:#F3EEFF}
+.zhub .zrcem .zem{width:28px;height:28px}
 @media(max-width:340px){.zhub .zsug{grid-template-columns:1fr}}
-.zhub .zkacts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
-.zhub .zkact{display:flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:6px 10px;border:1px solid #E4DBFA;border-radius:12px;background:#fff;color:#351477;font-size:14px;font-weight:800;box-shadow:none;width:100%}
-.zhub .zkact .zem{width:20px;height:20px}
-.zmorebtn{display:flex;align-items:center;justify-content:center;gap:6px;margin:10px auto 6px;min-height:44px;padding:8px 28px;border:0;border-radius:99px;background:#FFC83D;color:#351477;font-size:15px;font-weight:800;box-shadow:none}
-.zmorebtn .zem{width:18px;height:18px}
+/* الملف والإنجازات والمزيد */
+.zhub .zkacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.zhub .zkact{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:0;padding:10px 6px;border:1px solid #E9E2FB;border-radius:16px;background:#fff;color:#351477;font-size:13px;font-weight:800;line-height:1.35;box-shadow:none;width:100%;cursor:pointer}
+.zhub .zkact .zem{width:28px;height:28px}
+.zhub .zkact:active,.zhub .zsg:active{transform:scale(.97)}
+/* قائمة المزيد */
 .zsheet[hidden]{display:none}
-.zsheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.zsheet{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center}
 .zsbg{position:absolute;inset:0;background:#241747a6}
-.zsp{position:relative;width:min(100%,520px);max-height:80vh;overflow:auto;background:#fff;border-radius:22px 22px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));display:grid;gap:2px;animation:zsup .18s ease-out}
-@keyframes zsup{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+.zsp{position:relative;width:min(100%,520px);max-height:82vh;overflow:auto;background:#fff;border-radius:22px 22px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));display:grid;gap:2px;animation:zsup .2s ease-out}
+@media(min-width:700px){.zsheet{align-items:center}.zsp{border-radius:22px}}
+@keyframes zsup{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
 .zsgrip{width:40px;height:4px;border-radius:9px;background:#E4DBFA;margin:2px auto 6px}
 .zsh1{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 6px}
 .zsh1 b{font-size:17px;font-weight:800;color:#351477}
-.zsx{width:34px;height:34px;border:0;border-radius:50%;background:#F3EEFF;color:#351477;font-size:15px;font-weight:800}
-.zsi{display:flex;align-items:center;gap:12px;min-height:50px;padding:6px 8px;border:0;border-bottom:1px solid #F3EEFF;background:none;text-align:start;color:#241747;width:100%}
+.zsx{width:36px;height:36px;border:0;border-radius:50%;background:#F3EEFF;color:#351477;font-size:15px;font-weight:800;cursor:pointer}
+.zsi{display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 8px;border:0;border-bottom:1px solid #F3EEFF;background:none;text-align:start;color:#241747;width:100%;cursor:pointer;border-radius:10px}
+.zsi .zem{width:30px;height:30px}
 .zsi span{display:grid;gap:0}
 .zsi b{font-size:14.5px;font-weight:800}
 .zsi small{font-size:12px;color:#77718D;font-weight:600}
-.zsi:active{background:#F3EEFF}
-.zkav .zp{width:100%;height:100%;display:block}
-.zkav img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}
-.zhub .gcard{height:116px;padding-top:10px}
-.zmorebtn .zem{filter:brightness(.6)}
-.zkav .zp{--zh:52px;width:auto;height:52px;display:inline-block}
-.zkav .zp .zch{height:100%;width:auto;max-width:none}
-.zkav img{width:auto;height:100%;object-fit:initial}
-.zkav{place-items:end center}
+.zsi:active,.zsi:hover{background:#F7F4FF}
+@media(prefers-reduced-motion:reduce){.zhub .gcard,.zsp{transition:none;animation:none}}
+/* أيقونات الألعاب الكرتونية في بقية الصفحات */
+.gcard .ic.zgi .zgim{width:78%;height:78%;display:block}
+.gcard .ic.zgi{font-size:30px}
+.zhub .gcard{padding:12px 8px 10px;gap:3px}
+.zhub .gcard .ic.zgi{width:60px;height:60px;border-radius:19px;margin-bottom:3px}
+.zhub .gcard .zgim{width:48px;height:48px}
+.zhub .gcard>small{margin-bottom:5px}
+@media(min-width:820px){.zhub .gcard .ic.zgi{width:66px;height:66px}.zhub .gcard .zgim{width:52px;height:52px}}
+@media(max-width:374px){.zwel{padding-inline-start:12px;gap:6px}.zwav{width:88px;height:116px}.zwav .zp{--zh:112px;height:112px}.zwh{font-size:21px}.zwc{font-size:12px;padding:2px 8px}.zwq{font-size:12.5px;padding:4px 10px;gap:4px;white-space:nowrap}.zwq .zem{width:15px;height:15px}.zwd.d5{inset-inline-end:76px}}
+.gcard .ic.zgi{background:#fff!important;box-shadow:0 3px 0 color-mix(in srgb,var(--c,#8B5CF6) 22%,#fff)!important;border:1px solid color-mix(in srgb,var(--c,#8B5CF6) 18%,#fff)}
+.zhub .gcard .ic.zgi{background:#ffffffc9!important;box-shadow:none!important;border:0}
