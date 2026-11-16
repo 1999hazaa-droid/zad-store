@@ -39,6 +39,9 @@ add("emo.js", "core")
 ZD = os.path.join(G, "..", "images", "zad")
 for f in sorted(os.listdir(ZD)):
     if f.endswith((".svg", ".webp")): add("../images/zad/" + f, "core")
+ZH = os.path.join(ZD, "h")
+for f in sorted(os.listdir(ZH)):
+    if f.endswith((".webp", ".png")): add("../images/zad/h/" + f, "core")
 add("adventures.json", "core")
 out = {"version": h.hexdigest()[:10], "total": sum(f["s"] for f in files), "files": files}
 json.dump(out, open(os.path.join(G, "offline.json"), "w"), ensure_ascii=False, separators=(",", ":"))

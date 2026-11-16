@@ -1199,3 +1199,113 @@
 :root body .tg-amh{position:absolute;left:calc(8px + (100% - 16px)*var(--x)/var(--n));top:calc(8px + (100% - 16px)*var(--y)/var(--n));width:calc((100% - 16px)/var(--n));height:calc((100% - 16px)/var(--n));display:grid;place-items:end center;transition:left .2s,top .2s;z-index:2;pointer-events:none}
 @media (min-width:700px){:root body .tg-ch.tg-wch.n10{grid-template-columns:repeat(5,1fr)}:root body .tg-jsc{height:clamp(300px,46vh,420px)}}
 @media (prefers-reduced-motion:reduce){:root body .tg-t6sc .tg-t6i{animation:none}:root body .tg-lnsc{animation:none}}
+
+/* ===== الهوية الموحّدة لألعاب زاد: رأس + بطاقات (مطابق للتصاميم المرجعية) ===== */
+:root body body[data-zk]{background:linear-gradient(180deg,#E9E0FF 0,#F4F0FF 380px,#F6F8FF 100%)}
+:root body .zv2{--zp1:#6B3FE0;--zp2:#8B5CF6;--zy:#FFC62B;--zink:#2A1766;position:relative}
+:root body .zv2 .zhd{position:relative;margin:0 -14px;padding:0 0 30px;background:#8B5CF6 var(--hero) right bottom/cover no-repeat;overflow:hidden;isolation:isolate}
+:root body .zv2 .zhd[data-sc=castle]{--hero:url(../images/zad/h/hero_castle.webp)}
+:root body .zv2 .zhd[data-sc=cottage]{--hero:url(../images/zad/h/hero_cottage.webp)}
+:root body .zv2 .zhd[data-sc=school]{--hero:url(../images/zad/h/hero_school.webp)}
+:root body .zv2 .zhd::before{content:"";position:absolute;inset:0 0 auto;height:96px;background:linear-gradient(180deg,#5B2FCC,#7C4DEB 70%,#7C4DEB00);z-index:-1}
+:root body .zv2 .zhd .top{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0;padding:12px 14px 0;min-height:60px}
+:root body .zv2 .zhd .top::after{content:"";position:absolute;left:50%;top:8px;width:min(34vw,128px);aspect-ratio:432/194;transform:translateX(-50%);background:url(../images/zad/h/logo-hdr.png) center/contain no-repeat;pointer-events:none;filter:drop-shadow(0 2px 3px #3a1a9a66)}
+:root body .zv2 .zhd .top .pill{min-height:42px;min-width:42px;border:0;border-radius:999px;background:#fff;color:#5B2FCC;font-weight:800;font-size:15px;box-shadow:0 3px 8px #2a17664d;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+:root body .zv2 .zhd .top .zdock{display:flex;gap:8px}
+:root body .zv2 .zhd .top .zdock .pill{width:44px;padding:0}
+:root body .zv2 .zhd .top .pill svg{width:22px;height:22px}
+:root body .zv2 .zhero{position:relative;min-height:236px;padding:6px 12px 0;text-align:center}
+:root body .zv2 .zhch{position:absolute;left:-4px;top:64px;bottom:-30px;width:38%;max-width:250px;z-index:2;pointer-events:none}
+:root body .zv2 .zhch .zp{display:block;height:100%}:root body .zv2 .zhch .zch{display:block;height:100%;width:auto;max-width:100%;object-fit:contain;object-position:left bottom}
+:root body .zv2 .zhch .zpb{display:none}
+:root body .zv2 .zhch img{filter:drop-shadow(0 6px 8px #2a17663a)}
+:root body .zv2 .zhcl{position:relative;width:min(54%,340px);margin:2px auto 0;padding:16px 10px 14px;background:#fff;border-radius:46px;box-shadow:0 8px 18px #3a1a9a40,inset 0 -4px 0 #EFE8FF}
+:root body .zv2 .zhcl::before,:root body .zv2 .zhcl::after{content:"";position:absolute;top:-16px;width:44%;aspect-ratio:1.4;background:#fff;border-radius:50%;z-index:-1}
+:root body .zv2 .zhcl::before{left:8%}:root body .zv2 .zhcl::after{right:12%;top:-12px;width:36%}
+:root body .zv2 .zhh1{margin:0;font:900 clamp(16px,4.9vw,30px)/1.35 Cairo,Tajawal,system-ui,sans-serif;color:#33208F;letter-spacing:0}
+:root body .zv2 .zhn{display:inline-block;margin:0 2px;font-size:1.75em;line-height:.95;color:var(--zy);-webkit-text-stroke:.14em #5B2FC2;paint-order:stroke fill;vertical-align:-.08em}
+:root body .zv2 .zhn.zhg{font-size:1.28em;-webkit-text-stroke:.12em #4B25AE}
+:root body .zv2 .zhpl{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:max-content;max-width:58%;margin:12px auto 0;padding:6px 14px;white-space:nowrap;border-radius:999px;background:linear-gradient(180deg,#FFE066,#FFC62B);box-shadow:0 4px 0 #E0A010,0 8px 14px #3a1a9a38;color:#3A1F8A;font:800 clamp(10.5px,3vw,17px)/1.3 Cairo,Tajawal,system-ui,sans-serif;z-index:1}
+:root body .zv2 .zhpc{width:30px;height:20px;flex:none}
+:root body .zv2 .zhb{position:relative;margin:-26px 0 0;padding:16px 12px 8px;border-radius:30px 30px 0 0;background:linear-gradient(180deg,#F7F3FF,#FFFFFF 70%);box-shadow:0 -8px 20px #4b2bb51f;z-index:3}
+:root body .zv2 .zhwl{margin:0 4px 12px;text-align:center;font-weight:800;font-size:15px;color:#5B3FD1}
+:root body .zv2 .zgh0{display:none}
+/* بطاقات الأقسام */
+:root body .zv2 .zcats{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+:root body .zv2 .zcat{--zb:#F4EEFF;display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:0 0 12px;border:2.5px solid #fff;border-radius:24px;background:var(--zb);box-shadow:0 6px 16px #5b3fd126,0 0 0 1px #E6DCFF;overflow:hidden;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .2s}
+:root body .zv2 .zcat:hover{transform:translateY(-3px);box-shadow:0 12px 26px #5b3fd13d,0 0 0 1px #CDB9FF,0 0 22px #b79bff66}
+:root body .zv2 .zcat:active{transform:scale(.95);box-shadow:0 3px 8px #5b3fd126,0 0 0 1px #CDB9FF}
+:root body .zv2 .zcat .zca{display:block;position:relative;margin:0}
+:root body .zv2 .zcat .zca img{display:block;width:100%;aspect-ratio:2/1;object-fit:cover;-webkit-mask-image:linear-gradient(#000 80%,#0000);mask-image:linear-gradient(#000 80%,#0000)}
+:root body .zv2 .zcat .zca.zcf{display:grid;place-items:center;aspect-ratio:2/1;background:linear-gradient(135deg,#F1E8FF,#E3D5FF);-webkit-mask-image:linear-gradient(#000 80%,#0000);mask-image:linear-gradient(#000 80%,#0000)}
+:root body .zv2 .zcat .zca .zci{height:84%;width:100%}
+:root body .zv2 .zcat b{margin-top:-2px;padding:0 6px;font:900 clamp(15px,4.3vw,19px)/1.3 Cairo,Tajawal,system-ui,sans-serif;color:#2A1766}
+:root body .zv2 .zcat small{padding:0 8px;min-height:2.6em;font-size:clamp(11.5px,3.2vw,13.5px);line-height:1.45;color:#6A5A9A}
+:root body .zv2 .zcat .zcbadge{position:absolute;top:8px;left:8px;margin:0;padding:3px 9px;background:#ffffffe6;color:#5B2FCC;font-size:11px;font-weight:800;box-shadow:0 2px 6px #2a176626}
+:root body .zv2 .zcmore{display:flex;align-items:center;justify-content:center;gap:10px;width:min(100%,380px);margin:18px auto 8px;min-height:56px;padding:0 22px;border:0;border-radius:999px;background:linear-gradient(180deg,#9A6BFF,#5B2FD0);color:#fff;font:900 clamp(16px,4.8vw,20px)/1 Cairo,Tajawal,system-ui,sans-serif;box-shadow:0 5px 0 #43229F,0 12px 22px #5b2fd04d;cursor:pointer;transition:transform .12s}
+:root body .zv2 .zcmore:active{transform:translateY(3px);box-shadow:0 2px 0 #43229F}
+:root body .zv2 .zcmi{width:auto;height:auto;background:none;display:inline-flex}
+:root body .zv2 .zcmi .zhpc{width:36px;height:23px;filter:drop-shadow(0 1px 0 #0003)}
+:root body .zv2 .zcmi .zhpc path:first-child{fill:#fff}:root body .zv2 .zcmi .zhpc path:nth-child(2){fill:#EFE8FF}:root body .zv2 .zcmi .zhpc path:nth-child(3){fill:#6B3FE0}
+/* رأس القسم الفرعي */
+:root body .zv2 .zcathd{margin:2px 0 14px}
+:root body .zv2 .zcback{min-height:42px;padding:0 16px;border:0;border-radius:999px;background:#fff;color:#5B2FCC;font:800 15px/1 Cairo,Tajawal,system-ui,sans-serif;box-shadow:0 3px 8px #5b3fd130}
+:root body .zv2 .zcht{display:flex;align-items:center;gap:12px;margin-top:12px;padding:0 12px 0 0;border:2.5px solid #fff;border-radius:24px;background:var(--zb,#F4EEFF);box-shadow:0 6px 16px #5b3fd126,0 0 0 1px #E6DCFF;overflow:hidden}
+:root body .zv2 .zcht .zca{flex:0 0 42%;max-width:220px}
+:root body .zv2 .zcht .zca img{display:block;width:100%;aspect-ratio:2/1;object-fit:cover;-webkit-mask-image:linear-gradient(90deg,#0000,#000 25%);mask-image:linear-gradient(90deg,#0000,#000 25%)}
+:root body .zv2 .zcht .zca.zcf{display:grid;place-items:center;height:96px}
+:root body .zv2 .zcht .zctx{padding:12px 4px}
+:root body .zv2 .zcht .zht{font:900 clamp(17px,5vw,22px)/1.3 Cairo,Tajawal,system-ui,sans-serif;color:#2A1766}
+:root body .zv2 .zcht .zhs{margin:2px 0 0;color:#6A5A9A;font-size:13px}
+/* بطاقات الألعاب */
+:root body .zv2 .zkg{gap:14px}
+:root body .zv2 .zkg .gcard{position:relative;border-radius:26px;border:2.5px solid #fff;box-shadow:0 8px 18px #5b3fd12e,0 0 0 1px #E6DCFF;padding-bottom:50px;transition:transform .15s,box-shadow .2s}
+:root body .zv2 .zkg .gcard:hover{transform:translateY(-3px);box-shadow:0 14px 26px #5b3fd13f,0 0 22px #b79bff66,0 0 0 1px #CDB9FF}
+:root body .zv2 .zkg .gcard:active{transform:scale(.95)}
+:root body .zv2 .zkg .gcard::after{content:"ابدأ اللعب";position:absolute;inset:auto 14px 12px 14px;width:auto;height:auto;top:auto;opacity:1;transform:none;display:grid;place-items:center;min-height:32px;border-radius:999px;background:linear-gradient(180deg,#9A6BFF,#6B3FE0);color:#fff;font:800 14px/1 Cairo,Tajawal,system-ui,sans-serif;box-shadow:0 3px 0 #4A26AE}
+:root body .zv2 .zkg .gcard b{font:900 clamp(15px,4.2vw,18px)/1.3 Cairo,Tajawal,system-ui,sans-serif}
+@media(min-width:600px){:root body .zv2 .zcats{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}}
+@media(min-width:760px){:root body .zv2 .zcats{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}:root body .zv2 .zhd{margin:0;border-radius:30px 30px 0 0}:root body .zv2 .zhero{min-height:230px}:root body .zv2 .zhcl{margin-top:10px}:root body .zv2 .zhh1{font-size:32px}:root body .zv2 .zhd .top::after{width:150px}:root body .zv2 .zhb{padding:22px 18px 10px}}
+@media(min-width:1000px){:root body .zv2 .zhh1{font-size:36px}}
+/* الصفحة الرئيسية (اختيار الشخصية والعمر) */
+:root body .zv2.zhome .zhb{display:block}
+:root body .zv2.zhome .zqh{display:none}
+:root body .zv2.zhome .zqc{margin-top:0}
+:root body .zv2 .zkbt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+:root body .zv2 .zkbt .zkb{display:flex;flex-direction:column;align-items:stretch;gap:0;padding:0 0 10px;min-height:0;border:2.5px solid #fff;border-radius:22px;background:#F4EEFF;box-shadow:0 6px 14px #5b3fd126,0 0 0 1px #E6DCFF;overflow:hidden;font:900 17px/1.3 Cairo,Tajawal,system-ui,sans-serif;color:#2A1766;cursor:pointer;transition:transform .15s,box-shadow .2s}
+:root body .zv2 .zkbt .zkb.on{background:#EDE3FF;box-shadow:0 0 0 3px #7C4DEB,0 8px 18px #5b3fd13f,0 0 22px #b79bff80}
+:root body .zv2 .zkbt .zkb:active{transform:scale(.95)}
+:root body .zv2 .zkbi{display:block}:root body .zv2 .zkbi img{display:block;width:100%;aspect-ratio:2/1;object-fit:cover;-webkit-mask-image:linear-gradient(#000 78%,#0000);mask-image:linear-gradient(#000 78%,#0000)}
+:root body .zv2 .zkbt .zkb b{margin-top:-2px;font-weight:900}
+:root body .zv2 .zkbt .zkb.on::after{content:"✓";position:absolute}
+@media(min-width:600px){:root body .zv2 .zkbt{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:760px){:root body .zv2 .zkbt{grid-template-columns:repeat(3,minmax(0,1fr))}}
+:root body .zv2 .zkgo{min-height:58px;border:0;border-radius:999px;background:linear-gradient(180deg,#FFD84D,#F5A623);color:#3A2400;font:900 20px/1 Cairo,Tajawal,system-ui,sans-serif;box-shadow:0 5px 0 #B87A10,0 12px 22px #f5a62344}
+:root body .zv2.zhome .zhb.zkf{width:auto;max-width:none;margin:-26px 0 0;display:block}
+:root body .zv2.zhome .zhb>.zkc,:root body .zv2.zhome .zhb>.zkgo,:root body .zv2.zhome .zhb>.zhmore,:root body .zv2.zhome .zhb>.zkerr{max-width:560px;margin-inline:auto}
+:root body .zv2.zhome .zhb>.zkgo{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px}
+:root body .zv2.zhome .zhb>.zhmore{width:100%}
+/* ===== الصفحات الداخلية: شريط بنفسجي موحّد + بطاقات ناعمة ===== */
+:root body .top,:root body .bar{position:relative;z-index:5;margin:-14px -14px 16px;padding:12px 14px 16px;min-height:66px;background:linear-gradient(180deg,#5B2FCC,#7C4DEB 70%,#8B5CF6);border-radius:0 0 28px 28px;box-shadow:0 8px 18px #5b2fcc3d;align-items:center}
+:root body .top::after{content:"";position:absolute;left:50%;top:9px;width:min(34vw,120px);aspect-ratio:432/194;transform:translateX(-50%);background:url(../images/zad/h/logo-hdr.png) center/contain no-repeat;pointer-events:none;filter:drop-shadow(0 2px 3px #3a1a9a66)}
+:root body .top .pill,:root body .bar .pill{min-height:42px;min-width:42px;border:0;border-radius:999px;background:#fff;color:#5B2FCC;font-weight:800;box-shadow:0 3px 8px #2a17664d}
+:root body .top .pill svg,:root body .bar .pill svg{color:#5B2FCC}
+:root body .bar .title{flex:1;text-align:center;color:#fff;font:900 clamp(16px,4.6vw,20px)/1.3 Cairo,Tajawal,system-ui,sans-serif;text-shadow:0 2px 4px #2a176655}
+:root body .zv2 .zhd .top{margin:0;background:none;border-radius:0;box-shadow:none;min-height:60px;padding:12px 14px 0}
+:root body .zv2 .zhd .top::after{top:8px}
+@media(min-width:760px){:root body .top,:root body .bar{margin:0 0 16px;border-radius:28px}:root body .zv2 .zhd .top{margin:0;border-radius:0}}
+/* لوحات وبطاقات */
+:root body .ach-hero,:root body .ach-c,:root body .ach-stats>div,:root body .zkc,:root body .zkhd,:root body .zkstats>*,:root body .zcf-b{border:2.5px solid #fff;border-radius:24px;box-shadow:0 6px 16px #5b3fd124,0 0 0 1px #E6DCFF}
+:root body .ach-hero,:root body .zkhd{background:linear-gradient(135deg,#F3ECFF,#E6DAFF)}
+:root body .lvpick{max-width:480px;padding:6px 2px 4px;border:0;box-shadow:none;background:none}
+:root body .lvpick h2{font:900 22px/1.3 Cairo,Tajawal,system-ui,sans-serif;color:#33208F}
+:root body .lvcard{border:2.5px solid #fff;border-radius:24px;box-shadow:0 6px 14px #5b3fd124,0 0 0 1px var(--ld);min-height:76px;transition:transform .15s,box-shadow .2s}
+:root body .lvcard:not(.lock):hover{box-shadow:0 10px 20px #5b3fd130,0 0 18px #b79bff66,0 0 0 1px var(--lc)}
+:root body .lvcard .lvt b{font:900 18px/1.3 Cairo,Tajawal,system-ui,sans-serif}
+:root body .lvcard .lvgo{padding:8px 16px;font-size:15px;box-shadow:0 3px 0 #0003}
+:root body .zsp{border-radius:30px 30px 0 0}
+:root body .zcf-b{border-radius:28px}
+:root body .zcf-k{border-radius:999px;box-shadow:0 5px 0 #B87A10}
+:root body .zcf-x{border-radius:999px}
+:root body .win{border:2.5px solid #fff;border-radius:28px;box-shadow:0 8px 20px #5b3fd126,0 0 0 1px #E6DCFF}
+:root body .win button,:root body .win .btn-big{border-radius:999px;font-family:Cairo,Tajawal,system-ui,sans-serif;font-weight:900;min-height:52px}
