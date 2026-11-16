@@ -47,7 +47,7 @@ self.addEventListener("fetch", (e) => {
     return;
   }
   if (req.method !== "GET" || url.origin !== location.origin) return;
-  if (!url.pathname.includes("/games/") && !url.pathname.includes("/fonts/") && !url.pathname.includes("/images/logo.png") && !/\/images\/(ill|gm)\//.test(url.pathname)) return;
+  if (!url.pathname.includes("/games/") && !url.pathname.includes("/fonts/") && !url.pathname.includes("/images/logo.png") && !/\/images\/(ill|gm|emo)\//.test(url.pathname)) return;
   const isAudio = url.pathname.includes("/games/audio/");
   if (req.mode === "navigate") {
     e.respondWith((async () => {

@@ -5,6 +5,7 @@ var M={"⭐":"star","🌟":"star","☆":"star0","🔒":"lock","🔊":"sound","�
 var RE=/[☀-➿⭐\uD83C-\uD83E][\uDC00-\uDFFF]?️?/g;
 var SEL=".zic,.lve,.lvs,.zpb,.bb,.hs,.zrp,.hintbtn,.zo-in,.zo-toast,.zpo,.zkf,.zkg .stars,.zknav,.zkhd,.zkstats,.hubgrid,.cta2,.achcard,.stg-e,.zpe,.zh1,.zh2,.zdock,.top .pill,.worldcard,.zbdg,.zkbig,.zkchips2,.zrow2,.zrcem,.zhub .zpo";
 function key(s){return s.replace(/️/g,"")}
+window.__zill={SEL:SEL,has:function(e){return !!M[key(e)]}};
 function fix(n){
   var t=n.nodeValue;if(!t)return;RE.lastIndex=0;if(!RE.test(t))return;RE.lastIndex=0;
   var p=n.parentNode;if(!p||!p.closest||!p.closest(SEL)||p.closest("input,textarea,script,style"))return;

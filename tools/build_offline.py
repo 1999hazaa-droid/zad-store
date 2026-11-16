@@ -33,7 +33,12 @@ for f in sorted(os.listdir(IL)):
 add("characters.html", "core")
 add("catalog.json", "core")
 add("play2.css", "core")
+add("zui.css", "core")
 add("ill.js", "core")
+add("emo.js", "core")
+EM = os.path.join(G, "..", "images", "emo")
+for f in sorted(os.listdir(EM)):
+    if f.endswith(".svg"): add("../images/emo/" + f, "core")
 add("adventures.json", "core")
 out = {"version": h.hexdigest()[:10], "total": sum(f["s"] for f in files), "files": files}
 json.dump(out, open(os.path.join(G, "offline.json"), "w"), ensure_ascii=False, separators=(",", ":"))

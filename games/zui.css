@@ -1,0 +1,183 @@
+/* ===== زاد — نظام تصميم موحّد لكل صفحات الألعاب (الإصدار ٣) =====
+   خلفيات فاتحة، بطاقات بزوايا موحّدة وظلال خفيفة جدًا، عناوين أصغر، ملهم لا يغطي أي زر. */
+:root{--z1:#5426C7;--z2:#351477;--zink:#241747;--zmut:#77718D;--zline:#E9E2FB;--zsoft:#F4F0FF;--zok:#1FA971;--zbad:#E5484D;--zr:18px}
+:root body,:root body[data-zk]{background:linear-gradient(180deg,#EFE9FF 0,#F7F5FF 300px,#F5FAFF 100%);background-attachment:scroll;color:var(--zink);min-height:100vh}
+:root body .sky{display:none}
+:root body #app{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+
+/* الشريط العلوي */
+:root body .top,:root body .bar{gap:8px;margin-bottom:10px;align-items:center}
+:root body .top .pill,:root body .bar .pill{min-height:42px;min-width:42px;border:1px solid var(--zline);box-shadow:none;background:#fff}
+:root body .bar .title{font-size:16px;font-weight:800;color:var(--zink);line-height:1.35}
+:root body .top .pill.btn#back,:root body .top #zhome,:root body .bar #back{font-size:15px}
+
+/* عناوين الصفحات */
+:root body .zh1{font-size:22px;font-weight:800;color:var(--z2);margin:6px 0 10px;text-align:start}
+:root body .zh2{font-size:16px;font-weight:800;color:var(--z2);margin:16px 0 8px}
+
+/* رأس الصفحات الداخلية: بطاقة فاتحة صغيرة بدل البطاقات البنفسجية الكبيرة */
+:root body .ach-hero,:root body .wk-hero{position:relative;background:#EFE8FF;color:var(--zink);border:1px solid #E1D6FB;border-radius:20px;padding:14px 16px;margin:2px 0 12px;text-align:start;box-shadow:none;min-height:0;overflow:hidden}
+:root body .wk-hero{background:color-mix(in srgb,var(--c,#5426C7) 13%,#fff);border-color:color-mix(in srgb,var(--c,#5426C7) 26%,#fff)}
+:root body .ach-hero h1,:root body .wk-hero h1{font-size:20px;font-weight:800;color:var(--z2);margin:2px 0;line-height:1.35}
+:root body .ach-hero p,:root body .wk-hero p{font-size:13.5px;color:var(--zmut);font-weight:700;margin:0;opacity:1}
+:root body .ach-hero .ah-t,:root body .wk-hero .ah-t{font-size:26px;line-height:1;margin:0 0 4px;display:inline-block}
+:root body .ach-hero .ah-t .zem,:root body .wk-hero .ah-t .zem{width:30px;height:30px}
+:root body .ach-hero .zp.ahc{--zh:78px;height:78px;inset-inline-end:10px;bottom:0}
+:root body .ach-hero:has(.ahc) h1,:root body .ach-hero:has(.ahc) p,:root body .ach-hero:has(.ahc)>*:not(.ahc){padding-inline:0;padding-inline-end:84px}
+:root body .ach-hero a,:root body .ach-hero button{position:relative;z-index:1}
+:root body .cathead{background:color-mix(in srgb,var(--c,#5426C7) 12%,#fff);border:1px solid color-mix(in srgb,var(--c,#5426C7) 24%,#fff);color:var(--zink);box-shadow:none;border-radius:20px;padding:12px 14px;margin:2px 0 12px}
+:root body .cathead h1{color:var(--z2);font-size:19px}
+:root body .cathead p{color:var(--zmut);font-size:13px}
+:root body .cathead span{background:#fff;box-shadow:none;color:var(--c,#5426C7)}
+:root body .cathead span .ics{stroke:var(--c,#5426C7)}
+
+/* البطاقات العامة */
+:root body .ach-c,:root body .zkc{background:#fff;border:1px solid var(--zline);border-radius:var(--zr);box-shadow:none;padding:14px}
+:root body .ach-c h2,:root body .zkc h2{font-size:16px;color:var(--z2);margin:0 0 10px}
+:root body .achcard{border:1px solid var(--zline);box-shadow:none;border-radius:var(--zr)}
+:root body .btn-big{min-height:48px;border-radius:14px;font-size:16px;padding:10px 20px;background:var(--z1);box-shadow:none;color:#fff}
+:root body .btn-big:active{transform:scale(.97);box-shadow:none}
+:root body .btn-big.alt{background:#fff;color:var(--z1);border:1.5px solid #D9CCFF}
+
+/* ملفي الشخصي وبداية اللعب على الخلفية الفاتحة */
+:root body .zkhd{background:#fff;border:1px solid var(--zline)}
+:root body .zkchip2{background:var(--zsoft);color:var(--z2)}
+:root body .zkchip2.g{background:#E3F6EC;color:#0B7D52}
+:root body .zkt{color:var(--z2)}
+:root body .zksub{color:var(--zmut)}
+:root body .zqh h1{color:var(--z2)}
+:root body .zqh p{color:var(--zmut)}
+:root body .zkok{color:#0B7D52;background:#E3F6EC;border-radius:12px;padding:8px 12px}
+
+/* ===== شاشة اللعب ===== */
+:root body[data-gm] .dots{margin:0 0 6px}
+:root body .hud{background:none;box-shadow:none;padding:0 2px;gap:4px}
+:root body .hq{font-size:13px;font-weight:700;color:var(--zmut)}
+:root body .hp{height:8px;background:#E7DFFF;border-radius:99px}
+:root body .hp i{background:linear-gradient(90deg,#8E6CFF,#5426C7)}
+/* ملهم: سطر صغير فوق منطقة اللعب (ليس فوق الأسئلة أو الأزرار) */
+:root body .buddy{position:static;inset:auto;display:flex;align-items:center;gap:8px;min-height:50px;margin:0 0 10px;padding:0;pointer-events:none;z-index:auto}
+:root body .buddy .zp.mas{--zh:50px;height:50px;filter:none}
+:root body .buddy .zp .zch.mas{height:100%}
+:root body .buddy .bb{margin:0;opacity:1;transform:none;white-space:normal;flex:0 1 auto;max-width:calc(100% - 60px);font-size:14px;font-weight:800;line-height:1.45;padding:7px 12px;border-radius:16px 16px 4px 16px;background:#fff;border:1px solid var(--zline);box-shadow:none;color:var(--z2)}
+:root body .buddy.ok .bb{background:#E6F8EE;border-color:#BDE8CF;color:#0B6B44}
+:root body .buddy.bad .bb{background:#FFF4E5;border-color:#F8DDB4;color:#8A5300}
+:root body .buddy .bb:empty{visibility:hidden}
+/* منطقة اللعب */
+:root body .stage{background:#fff;border:1px solid var(--zline);border-radius:22px;padding:14px 12px 16px;box-shadow:0 1px 2px #2b1b4f0d;min-height:0;gap:12px;margin-bottom:12px}
+:root body .stage:has(.zrp){padding-top:58px}
+:root body .stage .prompt{font-size:clamp(17px,4.6vw,21px);font-weight:800;line-height:1.5;margin:0;color:var(--z2);background:var(--zsoft);border-radius:14px;padding:9px 14px;width:100%;box-sizing:border-box;text-align:center}
+:root body .stage .prompt small{font-size:.8em;color:var(--zmut)}
+:root body .emo{width:clamp(108px,30vw,128px);height:clamp(108px,30vw,128px);border-radius:30px;font-size:clamp(60px,17vw,72px);background:linear-gradient(150deg,#F4F0FF,#FFF6E4);box-shadow:none;border:1px solid var(--zline)}
+:root body .emo.big{width:clamp(118px,33vw,140px);height:clamp(118px,33vw,140px);font-size:clamp(66px,19vw,80px)}
+:root body .eq,:root body .eq.big{font-size:clamp(34px,10vw,46px);color:var(--z2)}
+:root body .rep{width:64px;height:64px;font-size:30px;box-shadow:none;background:linear-gradient(145deg,#8E6CFF,#5426C7)}
+:root body .opts{gap:10px}
+:root body .opt{min-height:80px;font-size:clamp(38px,10.5vw,50px);border:2px solid var(--zline);border-radius:18px;box-shadow:0 2px 0 var(--zline);background:#fff;padding:6px;transition:transform .12s,background-color .2s,border-color .2s}
+:root body .opts .opt{min-height:84px}
+:root body .opt.txt{font-size:clamp(19px,5.2vw,24px);font-weight:800;color:var(--zink)}
+:root body .opt.txt.long{font-size:clamp(16px,4.4vw,19px)}
+:root body .opt:active{transform:scale(.97);box-shadow:none}
+:root body .opt.ok{background:#E6F8EE;border-color:#2BB673;box-shadow:0 2px 0 #A7E3C3;animation:zpop .35s ease}
+:root body .opt.no{background:#FFF0F0;border-color:#F3A0A0;box-shadow:none}
+@keyframes zpop{0%{transform:scale(1)}45%{transform:scale(1.06)}100%{transform:scale(1)}}
+:root body .hintbtn{min-height:44px;padding:0 20px;margin:4px auto 0;font-size:15px;border:1.5px solid #F2D77A;background:#FFFBEA;box-shadow:none;color:#8A5A00;border-radius:99px}
+:root body .zrp{height:40px;box-shadow:none;border:1px solid var(--zline);background:var(--zsoft)}
+
+/* ===== اختر مستواك ===== */
+:root body .lvpick{max-width:460px;margin:0 auto;text-align:center;width:100%}
+:root body .lvpick h2{font-size:20px;font-weight:800;color:var(--z2);margin:2px 0 0}
+:root body .lvpick .lvsub{font-size:14px;color:var(--zmut);font-weight:700;margin:2px 0 12px}
+:root body .lvcard{--lb:#E7F8EF;--ld:#CBEDD9;--lc:#1E9B66;display:flex;align-items:center;gap:12px;width:100%;margin:0 0 10px;padding:10px 12px;border:1px solid var(--ld);border-radius:18px;background:var(--lb);box-shadow:none;text-align:start;color:var(--zink);cursor:pointer;transition:transform .12s}
+:root body .lvcard.l2{--lb:#E8F4FF;--ld:#CFE5FB;--lc:#1E86CF}
+:root body .lvcard.l3{--lb:#FFF4E0;--ld:#F7DDB0;--lc:#E07A10}
+:root body .lvcard:active{transform:scale(.98)}
+:root body .lvcard .lve{flex:none;width:46px;height:46px;border-radius:14px;background:#fff;display:grid;place-items:center;font-size:24px}
+:root body .lvcard .lve .zem{width:30px;height:30px;vertical-align:0}
+:root body .lvcard .lvt{flex:1;min-width:0;display:grid;gap:1px}
+:root body .lvcard .lvt b{font-size:16px;font-weight:800;color:var(--zink);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+:root body .lvcard .lvt small{font-size:12.5px;color:var(--zmut);font-weight:700;line-height:1.4}
+:root body .lvcard .lvs{display:flex;gap:2px;direction:ltr;justify-content:flex-end;margin-top:2px}
+:root body .lvcard .lvs .zem{width:14px;height:14px;vertical-align:0}
+:root body .lvcard .lvgo{flex:none;background:var(--lc);color:#fff;border-radius:99px;padding:6px 14px;font-size:14px;font-weight:800}
+:root body .lvcard .lvrec{font-size:11px;padding:1px 8px;margin:0}
+:root body .lvcard.lock{--lb:#F6F4FB;--ld:#ECE8F6;opacity:1;cursor:default}
+:root body .lvcard.lock .lve{background:#EEEAF6}
+:root body .lvcard.lock .lve .zem{width:22px;height:22px;opacity:.6;filter:grayscale(.6)}
+:root body .lvcard.lock .lvt b{color:#9C95B3}
+:root body .lvcard.lock .lvt small{color:#A9A3BD}
+:root body .lvcard.lock .lvs{opacity:.5}
+
+/* ===== النتائج والنجوم ===== */
+:root body .win{gap:8px;padding:4px 0}
+:root body .win>.zp.winc{--zh:112px;height:112px;margin:0 auto -4px}
+:root body .win .trophy{width:64px;height:64px;border-radius:20px;font-size:30px;box-shadow:none}
+:root body .win h2{font-size:clamp(22px,6vw,26px);color:var(--z2);margin:2px 0}
+:root body .stars{transform:none;margin:2px 0}
+:root body .stars .ics{width:34px;height:34px}
+:root body .res{gap:8px;margin:6px 0;width:100%}
+:root body .res>div{background:var(--zsoft);border-radius:14px;padding:8px 4px}
+:root body .res b{font-size:20px;color:var(--z1)}
+:root body .res small{font-size:11.5px}
+:root body .win .prompt{font-size:14px;font-weight:700;color:var(--zmut);background:none;padding:0;margin:0}
+:root body .win .row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%}
+:root body .win .btn-big{flex:1 1 140px;min-height:48px;font-size:15px}
+:root body .realcard{border-radius:16px;box-shadow:none;border:1px solid #CBEDD9}
+
+/* شارة/مكافأة تظهر فوق الصفحة */
+:root body .unlock .u-in{border-radius:22px;box-shadow:0 10px 30px #2b1b4f33}
+
+@media(min-width:700px){
+  :root body .stage{padding:18px 20px 20px}
+  :root body .opt{min-height:96px}
+}
+@media(max-width:360px){
+  :root body .opt{min-height:70px}
+  :root body .opts .opt{min-height:74px}
+  :root body .lvcard .lvgo{padding:5px 10px;font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){:root body .opt.ok{animation:none}}
+
+/* ===== ملفي الشخصي ===== */
+:root body .zkhd{flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;padding:10px 14px;border-radius:20px;text-align:start}
+:root body .zkhd .zkavb{flex:none;width:96px;display:flex;justify-content:center}
+:root body .zkhd .zkavb .zp{--zh:112px;height:112px;width:auto;display:inline-block}
+:root body .zkhd .zkavb .zch,:root body .zkhd .zkavb img{height:100%;width:auto;max-width:none;filter:none}
+:root body .zkhd .zkavb .zpb{display:none}
+:root body .zkhd .zkhi{flex:1;min-width:0}
+:root body .zkhd .zkt.s{font-size:20px;margin:0 0 6px;text-align:start}
+:root body .zkhd .zkchips2{justify-content:flex-start}
+:root body .zkhd .zkchip2{font-size:13px;padding:3px 10px}
+:root body .zkstats>div{border-radius:14px}
+:root body .buddy .zpb{display:none}
+
+/* ===== المغامرات وعالم زاد: بطاقات فاتحة هادئة ===== */
+:root body .advcard{background:color-mix(in srgb,var(--c1,#5426C7) 12%,#fff);border:1px solid color-mix(in srgb,var(--c1,#5426C7) 26%,#fff);color:var(--zink);box-shadow:none;border-radius:18px;padding:10px 12px;min-height:0}
+:root body .advcard .ae{flex:none;width:46px;height:46px;border-radius:14px;background:#fff;display:grid;place-items:center;font-size:28px}
+:root body .advcard .at b{font-size:15.5px;color:var(--zink)}
+:root body .advcard .at small{color:var(--zmut);font-weight:700;font-size:12.5px;opacity:1}
+:root body .advcard .as{background:var(--c1,#5426C7);color:#fff}
+:root body .zone{background:color-mix(in srgb,var(--c,#5426C7) 13%,#fff);border:1px solid color-mix(in srgb,var(--c,#5426C7) 28%,#fff);box-shadow:none;color:var(--zink);border-radius:20px;padding:10px 12px}
+:root body .zone:active{transform:scale(.98);box-shadow:none}
+:root body .zone .ze{flex:none;width:48px;height:48px;border-radius:15px;background:#fff;display:grid;place-items:center;font-size:28px}
+:root body .zone .zt b{color:var(--zink);font-size:15.5px}
+:root body .zone .zt small{color:var(--zmut);font-weight:700;opacity:1}
+:root body .zone .zb{background:#ffffffb3}
+:root body .zone .zb i{background:var(--c,#5426C7)}
+:root body .zone .zn{background:#fff;color:var(--zink)}
+
+/* ===== بطاقات الألعاب في كل الصفحات (غير صفحة الألعاب الرئيسية) ===== */
+:root body .gcard:not(.zhub .gcard){background:color-mix(in srgb,var(--c,#5426C7) 9%,#fff);border:1px solid color-mix(in srgb,var(--c,#5426C7) 22%,#fff);box-shadow:none;border-radius:18px;color:var(--zink);padding:12px 8px 10px;gap:3px}
+:root body .gcard:not(.zhub .gcard):active{transform:scale(.97)}
+:root body .gcard:not(.zhub .gcard) b{font-size:14.5px;font-weight:800;color:var(--zink);line-height:1.35}
+:root body .gcard:not(.zhub .gcard) small{font-size:12px;color:var(--zmut);line-height:1.4}
+:root body .gcard:not(.zhub .gcard) .ic.zgi{width:58px;height:58px;border-radius:18px;margin-bottom:2px}
+:root body .gcard .gst,:root body .gcard .stars{font-size:12px;color:#F0B429;letter-spacing:1px}
+/* أزرار الملف الشخصي */
+:root body .zkc .zkact,:root body .zkacts .zkact{min-height:46px;border-radius:14px;font-size:14.5px;border:1.5px solid var(--zline);box-shadow:none;padding:8px 12px;line-height:1.35}
+:root body .zkc .zkact.p{background:var(--z1);border-color:var(--z1);color:#fff}
+:root body .zkchip{border-radius:14px;box-shadow:none;border:1px solid var(--zline)}
+:root body .win .trophy{display:none}
+:root body .win .btn-big{white-space:nowrap;padding:10px 12px;font-size:14.5px;gap:6px}
+:root body .win .btn-big .ics{width:18px;height:18px}
+:root body .ic .zxe{width:76%;height:76%;vertical-align:middle}
