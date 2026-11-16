@@ -370,3 +370,152 @@
 
 @media (prefers-reduced-motion:reduce){:root body .tg *,:root body .tg{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important}:root body .tg-bub{animation:tgRise 9s linear forwards!important}:root body .tg-bf{animation:none!important}}
 @media (min-width:700px){:root body .tg-scene{height:clamp(380px,60vh,520px)}:root body .tg-ch{max-width:520px;margin:0 auto}:root body .tg-card{width:min(56vw,400px)}:root body .tg-pal{width:min(44vw,300px)}:root body .tg-fr,:root body .tg-food{width:118px}:root body .tg-basket{width:min(50vw,340px)}:root body .tg-cm{max-width:520px;margin:0 auto}:root body .tg-ball{width:140px;height:140px}}
+
+/* ===== ألعاب عمر ٣ سنوات ===== */
+:root body .tg-top{width:min(40vw,170px);aspect-ratio:1;margin:0 auto 14px;padding:14px;border-radius:30px;background:#fff;box-shadow:0 0 0 4px #EDE4FF,0 8px 0 #DCCDFB;transition:transform .35s,opacity .35s;animation:tgBob 2.2s ease-in-out infinite}
+:root body .tg-top.big{width:min(46vw,200px)}
+:root body .tg-top.gone{transform:translateY(60%) scale(.2);opacity:0;animation:none}
+:root body .tg-opt{position:relative;transition:transform .15s,opacity .25s}
+:root body .tg-opt.dim{opacity:.5}
+:root body .tg-opt.bare,:root body .tg-opt.bare.ok{background:none;box-shadow:none;padding:0;border-radius:0}
+:root body .tg-opt.bare.ok{filter:drop-shadow(0 0 10px #FFD84D)}
+:root body .tg-ch.wait{visibility:hidden}
+:root body .tg-ch.rows{grid-template-columns:1fr}
+:root body .tg-shp{width:100%;height:100%;display:block;fill:var(--c);overflow:visible}
+
+/* أين يعيش؟ */
+:root body .tg-live .tg-opt{padding:5%;background:#fff;box-shadow:0 0 0 4px #fff,0 8px 0 #D9CCF5}
+:root body .tg-live .tg-opt.ok{box-shadow:0 0 0 4px #fff,0 0 0 9px #FFD84D,0 8px 0 #E9C24A}
+:root body .tg-pl{display:flex;align-items:flex-end;justify-content:center;width:100%;height:100%;border-radius:22px;overflow:hidden;padding:6% 4% 4%}
+:root body .tg-pl .tgi{width:78%;height:86%}
+:root body .tg-pl.farm{background:linear-gradient(180deg,#CDEBFF 0 58%,#B5E08A 58%)}
+:root body .tg-pl.forest{background:linear-gradient(180deg,#BFE8C9 0 62%,#6DBB6B 62%)}
+:root body .tg-pl.forest .tgi{width:48%;margin:0}
+:root body .tg-pl.sea{background:linear-gradient(180deg,#BDE8FF 0 46%,#4FB3E8 46%)}
+
+/* الأم وصغيرها */
+:root body .tg-baby .tg-opt{background:linear-gradient(180deg,#FFF3E0,#FFE2B8);box-shadow:0 0 0 4px #fff,0 8px 0 #F2C98A}
+:root body .tg-baby .tg-opt.ok{box-shadow:0 0 0 4px #fff,0 0 0 9px #FFD84D,0 8px 0 #E9C24A}
+:root body .tg-sm{display:block;width:66%;height:66%;margin:17% auto 0}
+
+/* فرز الألوان */
+:root body .tg-opt.bk .tg-bin{display:block;width:100%;max-width:none}
+
+/* المختلف / الأشكال / ماذا نستخدم / ماذا اختفى */
+:root body .tg-odd .tg-opt{background:linear-gradient(180deg,#EAF4FF,#D3E8FF);box-shadow:0 0 0 4px #fff,0 8px 0 #A9CDF2}
+:root body .tg-shq .tg-opt{padding:17%;background:#fff;box-shadow:0 0 0 4px #F3E8FF,0 8px 0 #DCCDFB}
+:root body .tg-use .tg-opt{background:linear-gradient(180deg,#E6FAF6,#C9F1E9);box-shadow:0 0 0 4px #fff,0 8px 0 #97D9CC}
+:root body .tg-gone .tg-opt{background:linear-gradient(180deg,#FFF0F6,#FFDDEB);box-shadow:0 0 0 4px #fff,0 8px 0 #F3B3CF}
+:root body .tg-care .tg-opt{background:linear-gradient(180deg,#F6EEFF,#E7D9FF);box-shadow:0 0 0 4px #fff,0 8px 0 #CBB5F5}
+:root body .tg-odd .tg-opt.ok,:root body .tg-shq .tg-opt.ok,:root body .tg-use .tg-opt.ok,:root body .tg-gone .tg-opt.ok,:root body .tg-care .tg-opt.ok,:root body .tg-grpw .tg-opt.ok,:root body .tg-long .tg-opt.ok,:root body .tg-fv .tg-opt.ok{box-shadow:0 0 0 4px #fff,0 0 0 9px #FFD84D,0 8px 0 #E9C24A}
+
+/* المجموعات: كم العدد؟ / أكثر وأقل */
+:root body .tg-grp{display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:5%;width:100%;height:100%}
+:root body .tg-grp .tgi{width:42%;height:auto;aspect-ratio:1}
+:root body .tg-grp.g1 .tgi{width:62%}
+:root body .tg-grp.g4 .tgi,:root body .tg-grp.g5 .tgi,:root body .tg-grp.g6 .tgi{width:29%}
+:root body .tg-grpw .tg-opt{border-radius:50%;padding:15%;background:radial-gradient(circle,#fff 0 60%,#EEF2F7 62% 68%,#fff 70%);box-shadow:0 0 0 4px #fff,0 7px 0 #00000021}
+:root body .tg-more .tg-opt{border-radius:30px;padding:9%;background:linear-gradient(180deg,#FFF7D6,#FFEDB0);box-shadow:0 0 0 4px #fff,0 8px 0 #EBCB6B}
+
+/* فاكهة أم خضار */
+:root body .tg-fv .tg-opt{padding:8%}
+:root body .tg-fv .tg-opt.f{background:linear-gradient(180deg,#FFF0F6,#FFD9E8);box-shadow:0 0 0 4px #fff,0 8px 0 #F3B3CF}
+:root body .tg-fv .tg-opt.v{background:linear-gradient(180deg,#F1FBEA,#DDF3CF);box-shadow:0 0 0 4px #fff,0 8px 0 #B6DE9C}
+:root body .tg-bsk{position:relative;display:block;width:100%;height:100%}
+:root body .tg-bsk>.tgi{position:absolute;inset:22% 0 0 0;width:100%;height:78%}
+:root body .tg-bsk b{position:absolute;top:0;left:14%;right:14%;height:44%;display:flex;justify-content:center}
+:root body .tg-bsk b .tgi{width:50%;height:100%;margin:0 -4%}
+
+/* طويل وقصير */
+:root body .tg-long .tg-opt.row{aspect-ratio:auto;padding:18px 14px;display:flex;direction:ltr;justify-content:flex-start;border-radius:26px;background:linear-gradient(180deg,#F1FBEA,#E2F5D3);box-shadow:0 0 0 4px #fff,0 8px 0 #B6DE9C}
+:root body .tg-cat{--z:min(10vw,46px);display:flex;align-items:center;direction:ltr;padding-inline-start:4px}
+:root body .tg-cat i{flex:none;width:var(--z);height:var(--z);border-radius:50%;background:var(--c);margin-left:calc(var(--z)*-.16);box-shadow:inset -4px -5px 0 #0000001f}
+:root body .tg-cat i.h{margin-left:0;position:relative;z-index:1;transform:scale(1.16);background:radial-gradient(circle at 34% 40%,#1b0753 0 8%,#fff 9% 19%,#0000 20%),radial-gradient(circle at 70% 40%,#1b0753 0 8%,#fff 9% 19%,#0000 20%),var(--c)}
+
+/* ماذا اختفى؟ */
+:root body .tg-stage2{position:relative;display:flex;justify-content:space-around;align-items:flex-end;height:clamp(120px,34vw,180px);margin-bottom:16px;padding:10px 8px 12px;border-radius:24px;background:linear-gradient(180deg,#FFF1E3,#FFE0C2);border-bottom:14px solid #C98A4B;overflow:hidden}
+:root body .tg-si{width:28%;max-height:100%;aspect-ratio:1}
+:root body .tg-si.out{visibility:hidden}
+:root body .tg-curt{position:absolute;inset:0;background:repeating-linear-gradient(90deg,#7C3AED 0 22px,#6D28D9 22px 44px);transform:translateY(-103%);transition:transform .5s ease}
+:root body .tg-stage2.closed .tg-curt{transform:none}
+
+/* تذكّر المكان: الأكواب */
+:root body .tg-cupw{padding-top:clamp(56px,16vw,84px)}
+:root body .tg-ch.tg-cups{row-gap:clamp(60px,17vw,90px)}
+:root body .tg-opt.cupo{aspect-ratio:.86}
+:root body .tg-hidc{position:absolute;left:14%;right:14%;bottom:3%;aspect-ratio:1}
+:root body .tg-cup{position:absolute;inset:4% 3% 0 3%;clip-path:polygon(17% 0,83% 0,100% 100%,0 100%);background:linear-gradient(180deg,#ffffff66 0 10%,#0000 10% 78%,#00000026 78%),var(--c);transition:transform .45s cubic-bezier(.3,1.4,.5,1)}
+:root body .tg-cups.show .tg-cup,:root body .cupo.ok .tg-cup,:root body .cupo.lift .tg-cup{transform:translateY(-58%) rotate(-7deg)}
+
+/* صيد الألوان */
+:root body .tg-pondw{background:linear-gradient(180deg,#9FE3FF,#4FB3E8 60%,#2E8FCC)}
+:root body .tg-ch.tg-fpond{position:absolute;inset:0;display:block;width:auto;max-width:none;margin:0}
+:root body .tg-opt.fishy{position:absolute;width:38%;aspect-ratio:1.5;animation:tgSw2 3.2s ease-in-out infinite alternate}
+:root body .fishy svg{width:100%;height:100%;display:block;filter:drop-shadow(0 4px 0 #0000002b)}
+:root body .fishy:nth-child(1){top:5%;left:6%}
+:root body .fishy:nth-child(2){top:24%;left:55%;animation-delay:-1s}
+:root body .fishy:nth-child(3){top:44%;left:8%;animation-delay:-2s}
+:root body .fishy:nth-child(4){top:60%;left:54%;animation-delay:-.5s}
+:root body .fishy:nth-child(5){top:72%;left:16%;animation-delay:-1.5s;width:32%}
+:root body .fishy.ok{animation:tgJump .8s ease forwards}
+@keyframes tgSw2{from{transform:translate(-5%,0)}to{transform:translate(8%,-9%)}}
+@keyframes tgJump{40%{transform:translateY(-34%) rotate(-18deg) scale(1.15)}100%{transform:scale(1.1)}}
+
+/* اعتنِ بصديقك */
+:root body .tg-pet{position:relative;width:min(54vw,230px);aspect-ratio:1;margin:8px auto 18px;padding:8%;border-radius:36px;background:radial-gradient(circle at 50% 45%,#fff 0 50%,#FFF0C9 51%);box-shadow:0 0 0 5px #fff,0 10px 0 #F1D48A;transition:background .5s}
+:root body .tg-pet>.tgi{transition:transform .6s,filter .6s}
+:root body .tg-mud{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(circle at 30% 62%,#8B5A2B 0 6%,#0000 7%),radial-gradient(circle at 63% 40%,#8B5A2B 0 5%,#0000 6%),radial-gradient(circle at 68% 70%,#8B5A2B 0 7%,#0000 8%),radial-gradient(circle at 42% 33%,#8B5A2B 0 4%,#0000 5%)}
+:root body .tg-pet.s1 .tg-mud{opacity:.85}
+:root body .tg-pet.d1 .tg-mud{opacity:0}
+:root body .tg-need{position:absolute;top:-7%;inset-inline-end:-9%;width:36%;aspect-ratio:1;padding:6%;border-radius:50%;background:#fff;box-shadow:0 0 0 4px #EDE4FF,0 5px 0 #DCCDFB;animation:tgBob 1.4s ease-in-out infinite}
+:root body .tg-pet.d0 .tg-need,:root body .tg-pet.d1 .tg-need,:root body .tg-pet.d2 .tg-need{display:none}
+:root body .tg-fxb{position:absolute;inset:6%;opacity:0;pointer-events:none}
+:root body .tg-pet.d1 .tg-fxb{animation:tgFxb 1.1s ease}
+@keyframes tgFxb{0%{opacity:0;transform:scale(.5)}40%{opacity:1;transform:scale(1.05)}100%{opacity:0;transform:scale(1.2)}}
+:root body .tg-pet.d0>.tgi{animation:tgChew .6s ease 2}
+:root body .tg-pet.d2{background:radial-gradient(circle at 50% 45%,#4a3aa8 0 50%,#241a66 51%);box-shadow:0 0 0 5px #fff,0 10px 0 #1b0753}
+:root body .tg-pet.d2>.tgi{transform:rotate(9deg) scale(.9);filter:brightness(.82)}
+
+/* عدّ معي */
+:root body .tg-cnt{background:linear-gradient(180deg,#E9F6FF 0 64%,#F5D9A0 64%);display:grid;place-items:center}
+:root body .tg-cntrow{display:flex;justify-content:center;gap:4%;width:100%;padding:0 4%;direction:ltr}
+:root body .tg-ci{position:relative;width:29%;max-width:170px;aspect-ratio:1;animation:tgBob 2s ease-in-out infinite}
+:root body .tg-ci:nth-child(2){animation-delay:.3s}
+:root body .tg-ci:nth-child(3){animation-delay:.6s}
+:root body .tg-ci.cnt{animation:none}
+:root body .tg-badge{position:absolute;top:-20%;left:50%;transform:translateX(-50%);display:none;gap:4px;padding:7px 10px;border-radius:999px;background:#5426C7;box-shadow:0 0 0 3px #fff}
+:root body .tg-ci.cnt .tg-badge{display:flex}
+:root body .tg-badge i{width:11px;height:11px;border-radius:50%;background:#FFD84D}
+
+/* أعطني */
+:root body .tg-want{display:flex;justify-content:center;gap:10px;direction:ltr;min-height:42px}
+:root body .tg-want i{width:36px;height:36px;border-radius:50%;border:4px dashed #C9B6F3;background:#fff}
+:root body .tg-want i.on{border:4px solid #fff;background:#22C55E;box-shadow:0 0 0 3px #22C55E;animation:tgPop .5s}
+:root body .tg-give .tg-foods{flex-wrap:wrap;gap:8px}
+:root body .tg-give .tg-food{width:clamp(50px,14.500vw,92px);padding:6px;border-radius:20px}
+:root body .tg-give .tg-pal{width:min(46vw,200px)}
+:root body .tg-food.off{opacity:.35}
+
+/* ابنِ بالأشكال */
+:root body .tg-build{--u:min(.74vw,3.100px);display:grid;justify-items:center;gap:14px}
+:root body .tg-board{position:relative;width:calc(var(--u)*100);height:calc(var(--u)*100);border-radius:26px;background:linear-gradient(180deg,#EAF6FF 0 80%,#C9EFB1 80%);box-shadow:0 0 0 4px #fff,0 8px 0 #BFDDF2}
+:root body .tg-board.done{animation:tgPop .7s}
+:root body .tg-sl{position:absolute}
+:root body .tg-sl .tg-shp{fill:#ffffffb3;stroke:#8E79D6;stroke-width:3;stroke-dasharray:7 6}
+:root body .tg-sl .tg-shp *{vector-effect:non-scaling-stroke}
+:root body .tg-sl.in .tg-shp{fill:var(--c);stroke:none;animation:tgPop .45s}
+:root body .tg-tray{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:14px;width:100%;min-height:112px;padding:12px;border-radius:22px;background:#fff;box-shadow:0 0 0 3px #F3E8FF}
+:root body .tg-pc{position:relative;z-index:2;touch-action:none;cursor:grab;animation:tgBob 1.8s ease-in-out infinite}
+:root body .tg-pc.grab,:root body .tg-pc.fly{animation:none;z-index:5}
+:root body .tg-pc.used{visibility:hidden}
+
+/* هيا نلوّن */
+:root body .tg-paint{display:grid;justify-items:center;gap:14px}
+:root body .tg-pic{width:min(76vw,320px);aspect-ratio:1;padding:8px;border-radius:26px;background:#fff;box-shadow:0 0 0 4px #F3E8FF,0 8px 0 #DCCDFB}
+:root body .tg-pic svg{width:100%;height:100%;display:block}
+:root body .tg-pic [data-r]{fill:#fff;stroke:#3B2A6B;stroke-width:4;stroke-linejoin:round;cursor:pointer;transition:fill .2s}
+:root body .tg-pic .np{fill:#3B2A6B;pointer-events:none}
+:root body .tg-pal2{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(6px,1.800vw,12px);direction:ltr;padding:6px 0}
+:root body .tg-clr{width:clamp(36px,9.600vw,58px);aspect-ratio:1;border-radius:50%;background:var(--c);box-shadow:inset -5px -7px 0 #00000026,0 0 0 4px #fff,0 4px 0 #00000026;transition:transform .15s}
+:root body .tg-clr.sel{transform:scale(1.18);box-shadow:inset -5px -7px 0 #00000026,0 0 0 4px #fff,0 0 0 8px #5426C7}
+@media (min-width:700px){:root body .tg-top{width:190px}:root body .tg-top.big{width:220px}:root body .tg-long .tg-ch,:root body .tg-cupw .tg-ch{max-width:560px;margin:0 auto}:root body .tg-ch.n3,:root body .tg-ch.n4{max-width:640px;margin:0 auto}}
