@@ -1372,3 +1372,8 @@
 :root body .g3arr{display:flex;flex-direction:column;gap:3px;align-items:center}
 :root body .g3row{display:flex;gap:3px;justify-content:center}
 :root body .g3row img,:root body .g3row svg{width:30px;height:30px}
+:root body .g1sent.g4eq{display:flex;align-items:center;justify-content:center;gap:14px;direction:ltr}
+:root body .g4eq>b{font-size:30px;color:#4C1D95}
+:root body .g4ang{width:100%;max-width:240px;height:auto;display:block;margin:4px auto}
+:root body .g4chart{width:100%;max-width:300px;height:auto;display:block;margin:4px auto;direction:ltr}
+:root body .g4big .tg-num{font-size:34px;letter-spacing:0}
