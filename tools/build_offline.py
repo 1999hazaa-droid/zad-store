@@ -36,9 +36,9 @@ add("play2.css", "core")
 add("zui.css", "core")
 add("ill.js", "core")
 add("emo.js", "core")
-EM = os.path.join(G, "..", "images", "emo")
-for f in sorted(os.listdir(EM)):
-    if f.endswith(".svg"): add("../images/emo/" + f, "core")
+ZD = os.path.join(G, "..", "images", "zad")
+for f in sorted(os.listdir(ZD)):
+    if f.endswith((".svg", ".webp")): add("../images/zad/" + f, "core")
 add("adventures.json", "core")
 out = {"version": h.hexdigest()[:10], "total": sum(f["s"] for f in files), "files": files}
 json.dump(out, open(os.path.join(G, "offline.json"), "w"), ensure_ascii=False, separators=(",", ":"))

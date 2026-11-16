@@ -181,3 +181,12 @@
 :root body .win .btn-big{white-space:nowrap;padding:10px 12px;font-size:14.5px;gap:6px}
 :root body .win .btn-big .ics{width:18px;height:18px}
 :root body .ic .zxe{width:76%;height:76%;vertical-align:middle}
+
+/* ===== رسومات زاد الكرتونية داخل الألعاب ===== */
+:root body .opt:not(.txt) .zxe{width:1.5em;height:1.5em;vertical-align:middle}
+:root body .emo .zxe{width:1.45em;height:1.45em;vertical-align:middle}
+:root body .zxe{filter:drop-shadow(0 2px 2px #2b1b4f1f)}
+:root body .opt .zxe{filter:none}
+:root body .opt:not(.txt)>.zxe:only-of-type{width:clamp(56px,17vw,78px);height:clamp(56px,17vw,78px)}
+:root body .emo.shadow{filter:none;background:linear-gradient(150deg,#F4F0FF,#FFF6E4)}
+:root body .emo.shadow .zxe{filter:brightness(0) opacity(.82)}
