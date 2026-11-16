@@ -244,12 +244,12 @@
             ${a.storeReviews(e)}
             ${a.homeFaq(e)}`},a.bundleCat=e=>(e.categories||[]).find(s=>/حزم|bundle/i.test(s.name||"")||/bundle/i.test(s.slug||"")),a.simpleHome=function(e){const A=a.asset,N=n,T=t;
 const I=(x,w)=>`<img src="${A("images/ill/"+x+".svg")}" alt="" width="${w||56}" height="${w||56}" loading="lazy" decoding="async">`,
-X=x=>T(N(x)),
+X=x=>T(N(x)),I2=f=>`<img src="${A("images/zad/h/"+f+".webp")}" alt="" width="30" height="30" loading="lazy" decoding="async">`,
 CH=`<svg class="zm-ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>`,
-K=(ic,t1,d,tag,href,bg,ink)=>`<a class="zm-card" href="${A(href)}" style="--bg:${bg};--ink:${ink}"><span class="zm-ic" aria-hidden="true">${I(ic)}</span><span class="zm-tag">${X(tag)}</span><b>${X(t1)}</b><small>${X(d)}</small><span class="zm-go">${X("ادخل")}${CH}</span></a>`,
-H=(ic,big,sm,c)=>`<div class="zm-st" style="--bg:${c}"><span class="zm-sti" aria-hidden="true">${I(ic,48)}</span><b>${X(big)}</b><small>${X(sm)}</small></div>`;
+K=(ic,t1,d,tag,href,bg,ink)=>`<a class="zm-card" href="${A(href)}" style="--bg:${bg};--ink:${ink}"><span class="zm-ph" aria-hidden="true"><img src="${A("images/zad/h/"+ic+".webp")}" alt="" width="320" height="180" loading="lazy" decoding="async"></span><span class="zm-tag">${X(tag)}</span><b>${X(t1)}</b><small>${X(d)}</small><span class="zm-go">${X("ادخل")}${CH}</span></a>`,
+H=(ic,big,sm,c)=>`<div class="zm-st" style="--bg:${c}"><span class="zm-sti" aria-hidden="true"><img src="${A("images/zad/h/"+ic+".webp")}" alt="" width="320" height="180" loading="lazy" decoding="async"></span><b>${X(big)}</b><small>${X(sm)}</small></div>`;
 return`<section class="zm-hero" aria-labelledby="zm-h1"><div class="wrap zm-hg">
-<div class="zm-ht"><span class="zm-kick"><img src="${A("images/ill/sparkle.svg")}" alt="" width="16" height="16">${X("للأطفال من عمر سنة إلى الصف الرابع")}</span>
+<div class="zm-ht"><span class="zm-kick"><i class="zm-kd"></i>${X("للأطفال من عمر سنة إلى الصف الرابع")}</span>
 <h1 id="zm-h1">${X("مرحبًا بك في عالم")} <em>${X("زاد!")}</em></h1>
 <p class="zm-lead">${X("تعلّم، العب، واكتشف عالم المعرفة")}</p>
 <p class="zm-sub">${X("ألعاب تعليمية مجانية، وأنشطة ممتعة، وملفات جاهزة للطباعة… كلها في مكان واحد.")}</p>
@@ -257,7 +257,7 @@ return`<section class="zm-hero" aria-labelledby="zm-h1"><div class="wrap zm-hg">
 <div class="zm-hv" aria-hidden="true"><span class="zm-circ"></span>
 <img class="zm-kid k1" src="${A("games/chars/poses/boy-welcome-320.png")}" alt="" width="168" height="320" decoding="async" fetchpriority="high">
 <img class="zm-kid k2" src="${A("games/chars/poses/girl1-welcome-320.png")}" alt="" width="161" height="320" decoding="async" fetchpriority="high">
-<span class="zm-chip c1">${I("blocks",28)}${X("ألعاب مجانية")}</span><span class="zm-chip c2">${I("notebook",28)}${X("ملفات للطباعة")}</span><span class="zm-chip c3">${I("tablet",28)}${X("بدون إنترنت")}</span>
+<span class="zm-chip c1">${I2("a6_puzzles")}${X("ألعاب مجانية")}</span><span class="zm-chip c2">${I2("g1_art")}${X("ملفات للطباعة")}</span><span class="zm-chip c3">${I2("g1_shapes")}${X("بدون إنترنت")}</span>
 <img class="zm-spk s1" src="${A("images/ill/sparkle.svg")}" alt="" width="26" height="26"><img class="zm-spk s2" src="${A("images/ill/sparkle.svg")}" alt="" width="18" height="18"><span class="zm-dot d1"></span><span class="zm-dot d2"></span>
 <svg class="zm-sq" viewBox="0 0 60 30"><path d="M2 20C8 4 14 4 18 16S28 28 32 14 42 2 46 14 54 26 58 10"/></svg></div>
 </div></section>
@@ -265,17 +265,17 @@ return`<section class="zm-hero" aria-labelledby="zm-h1"><div class="wrap zm-hg">
 <div class="zm-head"><h2 id="zm-s">${X("أقسام")} <em>${X("زاد")}</em> ${X("التعليمية")}</h2><p>${X("اختر القسم المناسب لطفلك وابدأ رحلة التعلّم")}</p></div>
 <div class="zm-grid">
 <div class="zm-feat"><a class="zm-ov" href="${A("games/#start")}" aria-label="${X("الألعاب التعليمية المجانية")}"></a>
-<div class="zm-ft"><span class="zm-tag">${X("من سنة إلى الصف الرابع")}</span><b>${X("الألعاب التعليمية المجانية")}</b><small>${X("أكثر من 80 لعبة، ونختار لطفلك ما يناسب عمره وصفّه.")}</small>
+<div class="zm-ft"><span class="zm-tag">${X("من سنة إلى الصف الرابع")}</span><b>${X("الألعاب التعليمية المجانية")}</b><small>${X("مئات الألعاب، ونختار لطفلك ما يناسب عمره وصفّه.")}</small>
 <span class="zm-fb"><span class="zm-btn zm-sm">${X("ابدأ اللعب")}</span><a href="${A("games/#lv")}">${X("حسب العمر")}</a><a href="${A("games/#lv")}">${X("حسب الصف")}</a></span></div>
-<span class="zm-fi" aria-hidden="true">${I("blocks",64)}<img src="${A("games/chars/poses/boy-joy-160.png")}" alt="" width="116" height="160" loading="lazy" decoding="async"></span></div>
-${K("owl","تعلّم والعب مع زوزو","حروف وكلمات وأنشطة متدرّجة","سنة – الصف الرابع","learn/","#E4F6ED","#0B6B4A")}
-${K("notebook","الملفات التعليمية","أوراق عمل جاهزة للطباعة","سنة – الصف الرابع","library/","#FFF4D6","#8A5A00")}
-${K("sparkle","المزيد","عالم زاد والمغامرات والإنجازات وأكثر","كل الفئات","games/#more","#F0EAFE","#5526B8")}
+<span class="zm-fi" aria-hidden="true"><img class="zm-fs" src="${A("images/zad/h/hero_school.webp")}" alt="" width="640" height="360" loading="lazy" decoding="async"><img class="zm-fk" src="${A("games/chars/poses/boy-joy-160.png")}" alt="" width="116" height="160" loading="lazy" decoding="async"></span></div>
+${K("g1_arabic","تعلّم والعب مع زوزو","حروف وكلمات وأنشطة متدرّجة","سنة – الصف الرابع","learn/","#E4F6ED","#0B6B4A")}
+${K("g1_art","الملفات التعليمية","أوراق عمل جاهزة للطباعة","سنة – الصف الرابع","library/","#FFF4D6","#8A5A00")}
+${K("g1_memory","المزيد","عالم زاد والمغامرات والإنجازات وأكثر","كل الفئات","games/#more","#F0EAFE","#5526B8")}
 </div>
 </div></section>
 <section class="zm-band" aria-labelledby="zm-w"><div class="wrap">
 <div class="zm-head"><h2 id="zm-w">${X("لماذا")} <em>${X("زاد")}</em>${X("؟")}</h2></div>
-<div class="zm-stats">${H("blocks","ألعاب تعليمية ممتعة","تعلّم من خلال اللعب","#F0EAFE")}${H("star","مجانية بالكامل","ألعاب تعليمية مجانية للأطفال","#FFF4D6")}${H("tablet","بدون إنترنت","العب في أي وقت ومكان","#E5F3FF")}${H("cap","من سنة إلى الصف الرابع","محتوى مناسب للأطفال","#E4F6ED")}</div>
+<div class="zm-stats">${H("a6_puzzles","ألعاب تعليمية ممتعة","تعلّم من خلال اللعب","#F0EAFE")}${H("g1_memory","مجانية بالكامل","ألعاب تعليمية مجانية للأطفال","#FFF4D6")}${H("g1_shapes","بدون إنترنت","العب في أي وقت ومكان","#E5F3FF")}${H("g1_math","من سنة إلى الصف الرابع","محتوى مناسب للأطفال","#E4F6ED")}</div>
 </div></section>`},
 a.GRADES=[["الأول",/الأول/],["الثاني",/الثاني/],["الثالث",/الثالث/],["الرابع",/الرابع/]],
 a.gradeOf=function(p){for(const g of a.GRADES)if(g[1].test(p.name||""))return g[0];return""},

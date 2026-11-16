@@ -457,3 +457,56 @@ body:has(.zm-hero) main#view{margin-top:0!important;padding:0!important;border-r
 #footer .zf-cols a{min-height:32px;font-size:13px;font-weight:500;color:#EDE6FF}
 #footer .zf .footer-bottom{margin-top:2px;padding-top:10px;font-size:11.5px;border-top:1px solid #ffffff26;color:#CFC2FA}
 .zm-sec{padding-bottom:16px}
+/* ===== تحديث الصفحة الرئيسية: رسومات 3D موحدة + تجاوب كامل ===== */
+.zm-kd{width:8px;height:8px;border-radius:50%;background:#FFC83A;display:inline-block;flex:none}
+/* الهيرو: مشهد 3D خلف الطفلين */
+.zm-hv{height:270px;max-width:400px}
+.zm-circ{left:0;right:0;bottom:0;width:auto;height:200px;transform:none;border-radius:26px;background:#cbb8ff url(../images/zad/h/hero_school.webp) center bottom/cover no-repeat;box-shadow:0 14px 30px #1b075366,0 0 0 4px #ffffff40}
+.zm-kid{height:236px}
+.zm-chip img{width:30px;height:30px;border-radius:9px;object-fit:cover;box-shadow:0 2px 6px #2a175c30}
+.zm-chip.c1{top:0}.zm-chip.c2{top:0}
+@media(min-width:700px){.zm-hv{height:340px;max-width:470px}.zm-circ{height:260px;border-radius:30px}.zm-kid{height:310px}.zm-chip img{width:34px;height:34px}}
+@media(min-width:1100px){.zm-hv{height:380px;max-width:540px}.zm-circ{height:290px}.zm-kid{height:350px}.zm-ht h1{font-size:46px}.zm-hg{gap:48px}}
+/* بطاقات الأقسام: صورة في الأعلى */
+.zm-card{display:flex;flex-direction:column;align-items:stretch;gap:3px;padding:8px 8px 10px;border-radius:18px;background:var(--bg);border:1.5px solid #5B34D630;box-shadow:0 6px 16px #2a175c14;text-align:start}
+.zm-card .zm-ph{display:block;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin:0 0 5px;background:#fff}
+.zm-card .zm-ph img{display:block;width:100%;height:100%;object-fit:cover}
+.zm-card .zm-tag{align-self:flex-start;font-size:10.5px;padding:0 8px}
+.zm-card b{font-size:15px;line-height:1.4;padding-inline:3px}
+.zm-card small{display:block;font-size:12px;line-height:1.55;padding-inline:3px;-webkit-line-clamp:2}
+.zm-card .zm-go{align-self:flex-end;margin-top:auto;padding:4px 6px 0;font-size:12.5px}
+.zm-grid>.zm-card:last-child{grid-column:auto}
+.zm-grid>.zm-card:last-child:nth-child(4){grid-column:1/-1}
+.zm-grid>.zm-card:last-child .zm-ph{aspect-ratio:21/8}
+/* البطاقة الرئيسية: مشهد المدرسة + الطفل */
+.zm-feat{flex-direction:column-reverse;align-items:stretch;padding:12px 12px 14px;gap:10px;border-radius:20px}
+.zm-fi{display:block;width:100%;height:132px;border-radius:14px;overflow:hidden;background:#cbb8ff}
+.zm-fs{display:block;width:100%;height:100%;object-fit:cover;object-position:center 72%}
+.zm-fi img.zm-fk{position:absolute;bottom:0;inset-inline-end:16px;width:auto;height:112px;margin:0;filter:drop-shadow(0 6px 8px #0b0a4a66)}
+.zm-fi img:first-child{width:100%;height:100%;margin:0}
+.zm-feat small{-webkit-line-clamp:3}
+.zm-fb{flex-wrap:wrap}
+/* لماذا زاد */
+.zm-st{padding:8px 8px 10px;border-radius:16px;gap:4px;border:1.5px solid #5B34D626}
+.zm-sti{display:block;width:100%;aspect-ratio:16/8;border-radius:11px;overflow:hidden}
+.zm-sti img{display:block;width:100%;height:100%;object-fit:cover}
+.zm-st b{font-size:14px}.zm-st small{font-size:11.5px}
+@media(min-width:700px){
+ .zm-sec{padding-top:30px;padding-bottom:34px}.zm-sec .zm-head h2{font-size:28px}.zm-sec .zm-head p{font-size:15px}
+ .zm-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+ .zm-feat{grid-column:1/-1;flex-direction:row;align-items:center;gap:22px;padding:18px 22px}
+ .zm-ft{flex:1}.zm-feat b{font-size:23px}.zm-feat small{font-size:14.5px}
+ .zm-fi{flex:0 0 46%;height:210px}.zm-fi img.zm-fk{height:176px}
+ .zm-grid>.zm-card:last-child:nth-child(4){grid-column:auto}
+ .zm-grid>.zm-card:last-child .zm-ph{aspect-ratio:16/9}
+ .zm-card{padding:10px 10px 12px}.zm-card b{font-size:17px}.zm-card small{font-size:13.5px}
+ .zm-sm{min-height:44px;font-size:15px}.zm-fb a{min-height:44px;font-size:13.5px}
+ .zm-band{padding:30px 0 34px}.zm-band .zm-head h2{font-size:26px}
+ .zm-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+ .zm-st b{font-size:16px}.zm-st small{font-size:13px}
+}
+@media(min-width:1100px){.zm-grid .zm-card,.zm-st{max-width:none}.zm-fi{height:240px}.zm-fi img.zm-fk{height:200px}}
+@media(max-width:339px){.zm-grid{grid-template-columns:minmax(0,1fr)}.zm-stats{grid-template-columns:minmax(0,1fr)}.zm-card b{font-size:14.5px}}
+.zm-grid>.zm-card:last-child:nth-child(4) .zm-ph{aspect-ratio:21/7}
+@media(min-width:700px){.zm-card .zm-ph,.zm-grid>.zm-card:last-child .zm-ph{aspect-ratio:2/1}.zm-sti{aspect-ratio:2/1}}
+@media(max-width:339px){.zm-card .zm-ph,.zm-grid>.zm-card:last-child .zm-ph{aspect-ratio:21/9}.zm-sti{aspect-ratio:21/8}}
