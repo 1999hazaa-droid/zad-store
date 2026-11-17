@@ -1449,3 +1449,8 @@
 .sn-v .sn-ans,.sn-v .sn-bank{flex-direction:column;align-items:stretch;flex-wrap:nowrap}
 .tg .sn-v .sn-w,.sn-v .tg .sn-w{font-size:17px!important;line-height:1.5!important;text-align:center;padding:10px 12px}
 .sn-v .sn-im{max-height:100px}.sn-n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#8B5CF6;color:#fff;font-size:14px;margin-left:6px}
+.tg-bc .tg-top,.tg-kd .tg-top,.tg-op .tg-top{aspect-ratio:auto!important;width:100%!important;max-width:100%!important;height:auto!important;min-height:110px!important}
+.bc{width:100%;display:flex;flex-direction:column;gap:8px;padding:8px 10px;direction:rtl}
+.bc-r{display:flex;align-items:center;gap:8px}.bc-ic .tgi{width:34px!important;height:34px!important;max-width:34px!important;max-height:34px!important}
+.bc-t{flex:1;height:22px;background:#EDE9FE;border-radius:11px;overflow:hidden}.bc-b{display:block;height:100%;background:linear-gradient(90deg,#8B5CF6,#6D28D9);border-radius:11px}
+.bc-v{min-width:22px;text-align:center;color:#2B1B4F;font-size:18px}
