@@ -80,11 +80,39 @@ nav button i{position:absolute;top:2px;right:calc(50% - 22px);background:var(--n
 .thumb{width:100%;max-height:220px;object-fit:contain;border-radius:16px;background:#efeaff;margin-bottom:6px}
 .empty{text-align:center;color:var(--m);padding:30px 0}
 .spin{text-align:center;padding:40px;color:var(--m)}
+/* الاختبارات */
+.qz-kp{margin:4px 0}.qz-pr{font-size:13px;margin:6px 2px 10px}
+#qzs{margin-bottom:4px}
+.qz-pb{border:0;cursor:pointer;font:inherit;font-size:12px;padding:4px 12px;flex:none}
+.qz-n{font-weight:700;color:var(--p);font-size:16px!important}
+.qz-q .chip{padding:6px 10px;flex:none}
+.qz-th{width:44px;height:44px;object-fit:contain;border-radius:10px;background:#f3efff;flex:none;display:inline-grid;place-items:center;font-size:11px;color:var(--m)}
+.qz-th.bad{outline:2px solid var(--no)}
+.qz-mf{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.qz-mf input[type=text]{flex:1 1 150px;min-width:0;font-size:14px;padding:9px 10px}
+.qz-upl{font-size:13px;padding:8px 12px;cursor:pointer}.qz-upl.busy{opacity:.6;pointer-events:none}
+.qz-pv{display:flex;gap:4px;flex-wrap:wrap}
+.qz-it{background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px;margin:8px 0;display:grid;gap:6px}
+.qz-r1{display:flex;gap:6px;align-items:center}.qz-r1 .qx{flex:1;min-width:0}
+.qz-rm{padding:6px 10px;font-size:13px;color:var(--no);flex:none}
+.qz-ok{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:var(--ok);flex:none;cursor:pointer}
+.qz-ok input{width:22px;height:22px;accent-color:var(--ok)}
+.qz-ok.big{flex:1;justify-content:center;background:#fff;border:2px solid var(--line);border-radius:14px;padding:12px;font-size:16px;color:var(--t)}
+.qz-bin{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700}.qz-bin select{padding:7px 10px;font-size:14px}
+.qz-side{display:grid;gap:6px;padding:6px;border-radius:12px;background:#faf8ff}
+.qz-types{display:grid;gap:8px}
+.qz-types button{border:2px solid var(--line);background:#fff;border-radius:16px;padding:12px;text-align:right;cursor:pointer;display:grid;gap:2px}
+.qz-types button b{color:var(--p)}.qz-types button small{color:var(--m)}
+.sheet h4{margin:14px 0 4px;font-size:15px}
+.qz-adv{margin:10px 0;background:#fff;border-radius:14px;padding:8px 12px}.qz-adv summary{font-weight:700;cursor:pointer;color:var(--p);padding:4px 0}
+.qz-err{color:var(--no);font-weight:700;min-height:20px;margin:6px 0}
+.qz-bar{position:sticky;bottom:88px;z-index:4;display:none;align-items:center;gap:10px;background:#fff3c4;border-radius:18px;padding:8px 10px;margin:12px 0;box-shadow:0 4px 14px #5b34d633}
+.qz-bar.on{display:flex}.qz-bar span{font-weight:700;font-size:14px;color:#8a6500;flex:1}.qz-bar .btn{width:auto;padding:10px 16px}
 </style>
 </head>
 <body>
 <div id="app"><div class="spin">جاري التحميل…</div></div>
 <script src="../js/vendor/supabase.js"></script>
-<script src="panel.js"></script>
+<script src="panel.js?v=2"></script>
 </body>
 </html>

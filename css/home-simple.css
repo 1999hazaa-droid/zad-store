@@ -457,3 +457,7 @@ body:has(.zm-hero) main#view{margin-top:0!important;padding:0!important;border-r
 #footer .zf-cols a{min-height:32px;font-size:13px;font-weight:500;color:#EDE6FF}
 #footer .zf .footer-bottom{margin-top:2px;padding-top:10px;font-size:11.5px;border-top:1px solid #ffffff26;color:#CFC2FA}
 .zm-sec{padding-bottom:16px}
+
+/* خمسة أقسام: «المزيد» لا يترك فراغًا في الشبكة */
+.zm-grid>.zm-card:last-child{grid-column:auto}
+@media(min-width:700px) and (max-width:1023px){.zm-grid>.zm-card:last-child{grid-column:1/-1}}

@@ -1633,7 +1633,7 @@ html.zv-mute body .rep .zx,html.zv-mute body .zrp .zx{display:inline}
 :root body .zpd-kid img{width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:top;background:var(--zsoft)}
 :root body .zpd-kid.on{border-color:#7C3AED;background:#F3EDFF}
 :root body .zpd-msg{margin:0;padding:10px 14px;border-radius:14px;background:#E6F8EE;color:#0B6B44;font-weight:800;font-size:14px}
-:root body .zpd-tabs{position:sticky;top:0;z-index:4;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:5px;border-radius:18px;background:#fffffff0;border:1px solid var(--zline);box-shadow:0 4px 12px #35147712;backdrop-filter:blur(6px)}
+:root body .zpd-tabs{position:sticky;top:0;z-index:4;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;padding:5px;border-radius:18px;background:#fffffff0;border:1px solid var(--zline);box-shadow:0 4px 12px #35147712;backdrop-filter:blur(6px)}
 :root body .zpd-tab{display:grid;justify-items:center;gap:2px;padding:7px 2px;border:0;border-radius:13px;background:none;font:inherit;font-size:12.5px;font-weight:800;color:var(--zmut);cursor:pointer;min-height:52px}
 :root body .zpd-tab .zem{width:20px;height:20px;opacity:.7}
 :root body .zpd-tab.on{background:#7C3AED;color:#fff}
@@ -1756,3 +1756,19 @@ html.zv-mute body .rep .zx,html.zv-mute body .zrp .zx{display:inline}
 @media (max-width:420px){:root body .zpd-ar{grid-template-columns:22px minmax(0,1fr) auto}:root body .zpd-ar .zpd-tag{grid-column:auto;justify-self:end}}
 :root body .zhub .zkacts{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 :root body .zhub .zkacts .zkact{padding:8px 4px;font-size:13.5px}
+
+/* تبويب الاختبارات في لوحة ولي الأمر */
+:root body .zpd-tab span{overflow-wrap:anywhere;line-height:1.25}
+@media (max-width:420px){:root body .zpd-tabs{gap:2px;padding:4px}:root body .zpd-tab{font-size:10.5px;padding:6px 1px}}
+:root body .zpd-kpi b.zpd-kd{font-size:15px;line-height:1.5;min-height:32px;display:grid;place-items:center}
+:root body .zpd-qc{display:flex;align-items:flex-end;gap:6px;height:170px;padding:4px 2px 0;border-bottom:2px solid #EEE9FA}
+:root body .zpd-qb{flex:1 1 0;min-width:0;max-width:56px;height:100%;display:grid;grid-template-rows:auto 1fr auto;justify-items:center;gap:3px}
+:root body .zpd-qb b{font-size:11.5px;color:var(--z2);font-weight:800}
+:root body .zpd-qb span{width:100%;max-width:30px;display:flex;align-items:flex-end;background:#F6F3FD;border-radius:9px 9px 4px 4px;overflow:hidden}
+:root body .zpd-qb i{display:block;width:100%;border-radius:9px 9px 4px 4px;background:#8B5CF6}
+:root body .zpd-qb i.ok{background:#22C55E}:root body .zpd-qb i.go{background:#8B5CF6}:root body .zpd-qb i.rv{background:#F5A524}
+:root body .zpd-qb small{font-size:10.5px;color:var(--zmut);font-weight:700;white-space:nowrap}
+:root body .zpd-qa{text-decoration:none;cursor:pointer;min-height:32px;display:inline-flex;align-items:center}
+:root body .zpd-c>small.zpd-n{font-size:12px;color:var(--zmut);display:block}
+/* الهاتف: الشعار يأخذ المساحة الفارغة بين «رجوع» والأزرار حتى لا يتداخل مع زر «بلا إنترنت» */
+@media (max-width:430px){:root body .top:has(#zo-pill)::after{position:static;transform:none;order:1;flex:0 1 96px;min-width:0;width:auto;height:42px;aspect-ratio:auto;margin-inline:auto}:root body .top:has(#zo-pill) #back{order:0}:root body .top:has(#zo-pill) #zo-pill{order:2;margin-inline-start:0}:root body .top:has(#zo-pill) .zdock{order:3}}

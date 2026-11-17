@@ -90,7 +90,8 @@ function shell() {
   go(location.hash.slice(1) || "home");
 }
 function badge() { const i = $('nav button[data-t="orders"] i'); if (i) { i.textContent = pendingCount; i.hidden = !pendingCount; } }
-function go(t) {
+function go(t, force) {
+  if (qzDirty && !force) { ask("لم تحفظ تغييرات الاختبار. هل تخرج دون حفظ؟", "خروج دون حفظ").then((y) => { if (y) { qzDirty = false; go(t, true); } else { const b = $("#qzbar"); b && b.classList.add("on"); } }); return; }
   if (!TABS.some((x) => x[0] === t) && !SUB[t]) t = "home";
   tab = t; history.replaceState(null, "", "#" + t);
   const main = TABS.some((x) => x[0] === t) ? t : "more";
@@ -394,7 +395,7 @@ function codeSheet(code, plan, reload, c) {
 /* ---------- المزيد ---------- */
 const SUB = {};
 function more(m) {
-  const items = [["cats", "🗂️", "التصنيفات", "#d6ecff", "#9cc9ef"], ["coupons", "🎟️", "أكواد الخصم", "#d8f5e6", "#9fdcbc"], ["customers", "👥", "الزبائن", "#ffe3d1", "#f2b895"], ["reviews", "⭐", "التقييمات", "#fff3c4", "#ecd57d"], ["settings", "🏪", "إعدادات المنصة", "#ffdbe9", "#f0a9c6"], ["account", "🔐", "حسابي", "#e6dcff", "#c1aef0"]];
+  const items = [["cats", "🗂️", "التصنيفات", "#d6ecff", "#9cc9ef"], ["coupons", "🎟️", "أكواد الخصم", "#d8f5e6", "#9fdcbc"], ["customers", "👥", "الزبائن", "#ffe3d1", "#f2b895"], ["reviews", "⭐", "التقييمات", "#fff3c4", "#ecd57d"], ["settings", "🏪", "إعدادات المنصة", "#ffdbe9", "#f0a9c6"], ["account", "🔐", "حسابي", "#e6dcff", "#c1aef0"], ["quizzes", `<img src="${SITE}images/ill/target.svg" alt="" width="40" height="40" style="display:block">`, "الاختبارات والتقييمات", "#efe7ff", "#cdb8f5"]];
   m.innerHTML = `<div class="big">${items.map(([k, e, l, c, s]) => `<button data-g="${k}" style="--c:${c};--s:${s}"><b>${e}</b>${l}</button>`).join("")}</div>`;
   $$("[data-g]", m).forEach((b) => b.onclick = () => go(b.dataset.g));
 }
@@ -491,6 +492,284 @@ SUB.account = { title: "حسابي", fn: async (m) => {
   $("#cp", m).onclick = async () => { const v = $("#np", m).value; if (v.length < 8) return toast("كلمة المرور قصيرة"); const { error } = await sb.auth.updateUser({ password: v }); if (error) return fail(error); $("#np", m).value = ""; toast("تم التغيير ✓"); };
   $("#lo", m).onclick = async () => { await sb.auth.signOut(); location.reload(); };
 } };
+
+/* ---------- الاختبارات والتقييمات ---------- */
+const QSUBJ = { ar: ["اللغة العربية", "u_letters"], math: ["الرياضيات", "u_nums"], sci: ["العلوم", "i_microscope"], gen: ["المهارات العامة", "i_brain"] };
+const QKIND = { basic: "تقييم بسيط", practice: "تقييم تدريبي", full: "تقييم شامل" };
+const QT = { mc: "اختيار من متعدد", tf: "صح أو خطأ", num: "إدخال عدد", order: "ترتيب", fill: "إكمال الفراغ", sort: "تصنيف", match: "توصيل" };
+const QTD = { mc: "سؤال وخيارات (نص أو صور) وإجابة صحيحة واحدة", tf: "عبارة والطفل يختار صح أو خطأ", num: "الطفل يكتب الناتج بلوحة أرقام", order: "ترتيب حروف أو كلمات أو صور أو أعداد", fill: "جملة فيها فراغ __ وخيارات لإكماله", sort: "سحب العناصر إلى مجموعاتها", match: "توصيل كل صورة أو كلمة بما يناسبها" };
+const QMAX = { o: 6, order: 8, sort: 10, b: 3, p: 6 };
+const QDIFF = { 1: "سهل", 2: "متوسط", 3: "صعب" };
+const qLv = (v) => (LIBLV.find((l) => l[0] === v) || [v, v])[1];
+const qIcon = (sj) => `${SITE}images/zad/${(QSUBJ[sj] || ["", "i_target"])[1]}.webp`;
+const qClean = (s) => String(s ?? "").replace(/[⟦⟧]/g, "");
+const qHas = (v) => v != null && (typeof v === "object" ? !!(v.i || (v.x != null && String(v.x).trim())) : String(v).trim() !== "");
+const qPct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+let qzF = { lv: "all", sj: "all", st: "all", q: "" };
+function qImg(spec) {
+  spec = String(spec || "").trim(); if (!spec) return "";
+  if (spec.includes("|")) return spec.split("|").map((x) => qImg(x)).join("");
+  spec = spec.replace(/@[0-9.]+$/, "");
+  if (/^(svg|cnt):/.test(spec)) return `<span class="qz-th qz-svg">رسم</span>`;
+  return `<img class="qz-th" src="${esc(/^https?:/.test(spec) ? spec : SITE + "images/zad/" + spec + ".webp")}" alt="" onerror="this.classList.add('bad')">`;
+}
+const AUDT = { mp3: "audio/mpeg", m4a: "audio/mp4", mp4: "audio/mp4", aac: "audio/aac", wav: "audio/wav", ogg: "audio/ogg", webm: "audio/webm" };
+function qShrink(file, max) {
+  const png = file.type === "image/png";
+  return new Promise((res, rej) => {
+    const im = new Image(), u = URL.createObjectURL(file);
+    im.onload = () => { const k = Math.min(1, max / Math.max(im.width || max, im.height || max)); const c = document.createElement("canvas"); c.width = Math.max(1, Math.round((im.width || max) * k)); c.height = Math.max(1, Math.round((im.height || max) * k)); const g = c.getContext("2d"); if (!png) { g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); } g.drawImage(im, 0, 0, c.width, c.height); c.toBlob((b) => b ? res({ b, type: png ? "image/png" : "image/jpeg", ext: png ? "png" : "jpg" }) : rej(new Error("img")), png ? "image/png" : "image/jpeg", .86); URL.revokeObjectURL(u); };
+    im.onerror = () => { URL.revokeObjectURL(u); rej(new Error("type")); }; im.src = u;
+  });
+}
+async function qUpload(file, kind) {
+  let body = file, type = file.type || "", ext = (file.name.split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (kind === "img") {
+    if (!/^image\//.test(type)) throw new Error("type");
+    if (type !== "image/gif") { const r = await qShrink(file, 900); body = r.b; type = r.type; ext = r.ext; }
+  } else {
+    if (!type && AUDT[ext]) type = AUDT[ext];
+    if (type === "audio/x-m4a" || type === "audio/m4a") type = "audio/mp4";
+    if (!/^audio\//.test(type)) throw new Error("type");
+  }
+  if (body.size > 10 * 1024 * 1024) throw new Error("size");
+  const path = `${kind}/${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${ext || "bin"}`;
+  const { error } = await sb.storage.from("quiz-media").upload(path, body, { contentType: type, cacheControl: "31536000", upsert: false });
+  if (error) throw error;
+  return sb.storage.from("quiz-media").getPublicUrl(path).data.publicUrl;
+}
+const mediaField = (kind, val, ph) => `<div class="qz-mf" data-mf="${kind}"><input type="text" dir="ltr" value="${esc(Array.isArray(val) ? val.join(" | ") : val || "")}" placeholder="${ph || (kind === "img" ? "صورة: ارفعها أو اكتب رمزها" : "صوت: ارفعه أو اكتب رابطه")}" aria-label="${kind === "img" ? "الصورة" : "الصوت"}"><label class="chip qz-upl">${kind === "img" ? "رفع صورة" : "رفع صوت"}<input type="file" accept="${kind === "img" ? "image/*" : "audio/*"}" hidden></label><span class="qz-pv"></span></div>`;
+function bindMedia(root) {
+  $$("[data-mf]", root).forEach((w) => {
+    if (w.dataset.b) return; w.dataset.b = "1";
+    const inp = $("input[type=text]", w), fi = $("input[type=file]", w), pv = $(".qz-pv", w), kind = w.dataset.mf, lb = $(".qz-upl", w);
+    const show = () => {
+      const v = inp.value.trim();
+      pv.innerHTML = kind === "img" ? qImg(v) : v ? `<button type="button" class="chip" data-play>تشغيل</button>` : "";
+      const pb = $("[data-play]", pv); if (pb) pb.onclick = () => { try { new Audio(v).play().catch(() => toast("تعذّر تشغيل الصوت")); } catch (e) { toast("تعذّر تشغيل الصوت"); } };
+    };
+    inp.oninput = show; show();
+    fi.onchange = async () => {
+      const f = fi.files[0]; if (!f) return;
+      lb.classList.add("busy"); lb.firstChild.textContent = "جاري الرفع…";
+      try { inp.value = await qUpload(f, kind); show(); toast("تم رفع الملف"); }
+      catch (e) { console.error(e); toast(e.message === "type" ? (kind === "img" ? "اختر ملف صورة" : "اختر ملفًا صوتيًا (mp3 أو m4a)") : e.message === "size" ? "الملف أكبر من 10 ميغابايت" : "تعذّر الرفع، حاول مرة أخرى"); }
+      lb.classList.remove("busy"); lb.firstChild.textContent = kind === "img" ? "رفع صورة" : "رفع صوت"; fi.value = "";
+    };
+  });
+}
+const mfVal = (w) => { const v = $("input[type=text]", w).value.trim(); return v.includes("|") ? v.split("|").map((x) => x.trim()).filter(Boolean) : v; };
+/* عنصر: نص و/أو صورة */
+const itemRow = (v, pre, post) => { const o = v && typeof v === "object" ? v : { x: v }; return `<div class="qz-it"><div class="qz-r1">${pre || ""}<input type="text" class="qx" value="${esc(o.x ?? "")}" placeholder="النص (اختياري إذا وضعت صورة)" aria-label="النص"><button type="button" class="chip qz-rm" aria-label="حذف هذا العنصر">حذف</button></div>${mediaField("img", o.i || "")}${post || ""}</div>`; };
+const readItem = (box) => { const x = $(".qx", box).value.trim(), i = mfVal($("[data-mf]", box)); return i ? (x ? { i, x } : { i }) : x; };
+function qCheck(q, data) {
+  if (!QT[q.t]) return "نوع السؤال غير معروف";
+  if (!String(q.q || "").trim()) return "اكتب نص السؤال";
+  if (q.listen && !q.say && !q.snd) return "سؤال الاستماع يحتاج نصًا يقرؤه زوزو أو ملفًا صوتيًا";
+  if (q.t === "mc" || q.t === "fill") {
+    if (!Array.isArray(q.o) || q.o.length < 2) return "أضف خيارين على الأقل";
+    if (q.o.some((v) => !qHas(v))) return "يوجد خيار فارغ";
+    if (new Set(q.o.map((v) => JSON.stringify(v))).size !== q.o.length) return "يوجد خياران متطابقان";
+    if (!(Number.isInteger(q.a) && q.a >= 0 && q.a < q.o.length)) return "اختر الإجابة الصحيحة";
+  }
+  if (q.t === "fill" && !String(q.q).includes("__")) return "ضع __ (شرطتين) مكان الفراغ في نص السؤال";
+  if (q.t === "tf" && typeof q.a !== "boolean") return "اختر صح أو خطأ";
+  if (q.t === "num" && !(Number.isInteger(q.a) && q.a >= 0 && q.a < 1e7)) return "الإجابة يجب أن تكون عددًا صحيحًا موجبًا (بدون فواصل)";
+  if (q.t === "order") { if (!Array.isArray(q.o) || q.o.length < 2) return "أضف عنصرين على الأقل"; if (q.o.some((v) => !qHas(v))) return "يوجد عنصر فارغ"; }
+  if (q.t === "sort") {
+    if (!Array.isArray(q.b) || q.b.length < 2) return "أضف مجموعتين على الأقل"; if (q.b.some((v) => !qHas(v))) return "اكتب اسم كل مجموعة أو ضع صورتها";
+    if (!Array.isArray(q.o) || q.o.length < 2) return "أضف عنصرين على الأقل للتصنيف"; if (q.o.some((v) => !qHas(v) || !(v.b >= 0 && v.b < q.b.length))) return "كل عنصر يحتاج نصًا أو صورة ومجموعة";
+  }
+  if (q.t === "match") { if (!Array.isArray(q.p) || q.p.length < 2) return "أضف زوجين على الأقل"; if (q.p.some((r) => !Array.isArray(r) || !qHas(r[0]) || !qHas(r[1]))) return "أكمل طرفي كل زوج"; if (new Set(q.p.map((r) => JSON.stringify(r[1]))).size !== q.p.length) return "يوجد طرفان متطابقان في العمود الثاني"; }
+  if (q.psg && !(data.psg && data.psg[q.psg])) return "نص القراءة المرتبط غير موجود";
+  return "";
+}
+let qzDirty = false;
+addEventListener("beforeunload", (e) => { if (qzDirty) { e.preventDefault(); e.returnValue = ""; } });
+
+SUB.quizzes = { title: "الاختبارات والتقييمات", fn: async (m) => {
+  const [r, s] = await Promise.all([sb.from("quizzes").select("id,slug,lv,subj,kind,title,skill,diff,n,is_published,sort_order,updated_at").order("sort_order", { ascending: true }), sb.from("quiz_stats").select("*")]);
+  if (r.error) throw r.error;
+  const all = r.data || [], S = {}; (s.data || []).forEach((x) => S[x.quiz_id] = x);
+  const att = Object.values(S).reduce((t, x) => t + (+x.attempts || 0), 0), avg = att ? Math.round(Object.values(S).reduce((t, x) => t + (+x.avg_pct || 0) * (+x.attempts || 0), 0) / att) : null, pub = all.filter((x) => x.is_published).length;
+  const chip = (g, v, l) => `<button class="chip${qzF[g] === v ? " on" : ""}" data-f="${g}" data-v="${v}">${l}</button>`;
+  m.innerHTML = `${back()}<div class="grid2 qz-kp"><div class="stat"><b>${all.length}</b><span>اختبار</span></div><div class="stat"><b>${pub}</b><span>منشور للأطفال</span></div><div class="stat"><b>${att}</b><span>محاولة مكتملة</span></div><div class="stat"><b>${avg == null ? "—" : avg + "%"}</b><span>متوسط النتائج</span></div></div>
+  <p class="mut qz-pr">المحاولات تُحسب بدون أسماء أو بيانات أطفال. نتيجة كل طفل تبقى على جهازه وفي لوحة ولي الأمر فقط.</p>
+  <input type="search" id="qzs" placeholder="ابحث بعنوان الاختبار أو المهارة" value="${esc(qzF.q)}">
+  <div class="chips">${chip("lv", "all", "كل الأعمار")}${LIBLV.map((l) => chip("lv", l[0], l[1])).join("")}</div>
+  <div class="chips">${chip("sj", "all", "كل المواد")}${Object.keys(QSUBJ).map((k) => chip("sj", k, QSUBJ[k][0])).join("")}${chip("st", "all", "الكل")}${chip("st", "pub", "المنشورة")}${chip("st", "hid", "المخفية")}</div>
+  <div id="qzl"></div><button class="btn fab" id="add">+ اختبار جديد</button>`;
+  const list = () => {
+    const q = qzF.q.trim(), L = all.filter((x) => (qzF.lv === "all" || x.lv === qzF.lv) && (qzF.sj === "all" || x.subj === qzF.sj) && (qzF.st === "all" || (qzF.st === "pub") === !!x.is_published) && (!q || (x.title + " " + (x.skill || "")).includes(q)));
+    $("#qzl", m).innerHTML = L.length ? `<p class="mut" style="margin:4px 0">${L.length} اختبار</p>` + L.map((x) => { const st = S[x.id]; return `<div class="item" data-q="${x.id}"><img src="${qIcon(x.subj)}" alt="" style="object-fit:contain;padding:6px"><div class="tx"><b>${esc(x.title)}</b><small>${esc(qLv(x.lv))} · ${esc((QSUBJ[x.subj] || [""])[0])} · ${QKIND[x.kind] || ""} · ${x.n} سؤال${st && st.attempts ? ` · ${st.attempts} محاولة · ${Math.round(st.avg_pct)}%` : ""}</small></div><button class="tag ${x.is_published ? "done" : "off"} qz-pb" data-pub="${x.id}" aria-label="${x.is_published ? "منشور، اضغط للإخفاء" : "مخفي، اضغط للنشر"}">${x.is_published ? "منشور" : "مخفي"}</button></div>`; }).join("") : `<div class="empty">لا توجد اختبارات بهذا التصفية</div>`;
+    $$("[data-q]", m).forEach((e) => e.onclick = () => quizEdit(m, e.dataset.q));
+    $$("[data-pub]", m).forEach((b) => b.onclick = async (e) => {
+      e.stopPropagation(); const x = all.find((y) => y.id === b.dataset.pub); if (!x) return;
+      if (!x.is_published && !x.n) return toast("أضف أسئلة قبل النشر");
+      const { error } = await sb.from("quizzes").update({ is_published: !x.is_published }).eq("id", x.id); if (error) return fail(error);
+      x.is_published = !x.is_published; toast(x.is_published ? "نُشر الاختبار للأطفال" : "أُخفي الاختبار"); list();
+    });
+  };
+  $$("[data-f]", m).forEach((b) => b.onclick = () => { qzF[b.dataset.f] = b.dataset.v; SUB.quizzes.fn(m); });
+  $("#qzs", m).oninput = (e) => { qzF.q = e.target.value; list(); };
+  $("#add", m).onclick = () => quizEdit(m, null);
+  list();
+} };
+
+async function quizEdit(m, id) {
+  qzDirty = false;
+  m.innerHTML = `<div class="spin">جاري التحميل…</div>`; scrollTo(0, 0);
+  let Z, ST = null; const QS = {};
+  if (id) {
+    const [r, s1, s2] = await Promise.all([sb.from("quizzes").select("*").eq("id", id).single(), sb.from("quiz_stats").select("*").eq("quiz_id", id), sb.from("quiz_qstats").select("*").eq("quiz_id", id)]);
+    if (r.error) { fail(r.error); return SUB.quizzes.fn(m); }
+    Z = r.data; ST = (s1.data || [])[0] || null; (s2.data || []).forEach((x) => QS[x.qid] = x);
+  } else Z = { id: null, slug: "", lv: qzF.lv !== "all" ? qzF.lv : "a5", subj: qzF.sj !== "all" ? qzF.sj : "ar", kind: "basic", title: "", skill: "", diff: 1, intro: "", data: { qs: [] }, is_published: false, sort_order: 0 };
+  Z.data = Z.data && typeof Z.data === "object" ? JSON.parse(JSON.stringify(Z.data)) : { qs: [] };
+  if (!Array.isArray(Z.data.qs)) Z.data.qs = [];
+  const D = Z.data, sel = (id, o, v) => `<select id="${id}">${Object.entries(o).map(([k, l]) => `<option value="${k}"${String(v) === String(k) ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
+  const touch = () => { qzDirty = true; const b = $("#qzbar", m); b && b.classList.add("on"); };
+  const syncMeta = () => {
+    if (!$("#qtt", m)) return;
+    Z.title = $("#qtt", m).value.trim(); Z.lv = $("#qlv", m).value; Z.subj = $("#qsj", m).value; Z.kind = $("#qkd", m).value; Z.skill = $("#qsk", m).value.trim(); Z.diff = +$("#qdf", m).value || 1; Z.intro = $("#qin", m).value.trim(); Z.sort_order = parseInt($("#qso", m).value, 10) || 0; Z.is_published = $("#qpub", m).checked;
+    if ($("#qtm", m).checked) D.timer = true; else delete D.timer;
+  };
+  const draw = () => {
+    const ps = D.psg && typeof D.psg === "object" ? D.psg : {};
+    m.innerHTML = `<button class="chip" id="qback">→ كل الاختبارات</button>
+    <div class="card"><h3>بيانات الاختبار</h3>
+      <label class="f"><span>العنوان</span><input type="text" id="qtt" value="${esc(Z.title)}" placeholder="مثال: الحروف من أ إلى ث"></label>
+      <div class="grid2"><label class="f"><span>العمر أو الصف</span>${sel("qlv", Object.fromEntries(LIBLV), Z.lv)}</label><label class="f"><span>المادة</span>${sel("qsj", Object.fromEntries(Object.entries(QSUBJ).map(([k, v]) => [k, v[0]])), Z.subj)}</label>
+      <label class="f"><span>نوع التقييم</span>${sel("qkd", QKIND, Z.kind)}</label><label class="f"><span>الصعوبة</span>${sel("qdf", QDIFF, Z.diff || 1)}</label></div>
+      <label class="f"><span>المهارة الأساسية</span><input type="text" id="qsk" value="${esc(Z.skill || "")}" placeholder="مثال: الجمع ضمن 10"></label>
+      <label class="f"><span>وصف قصير يظهر قبل البدء</span><textarea id="qin" style="min-height:64px">${esc(Z.intro || "")}</textarea></label>
+      <label class="f"><span>الترتيب في القائمة</span><input type="number" id="qso" value="${Z.sort_order || 0}" inputmode="numeric"><small>الأصغر يظهر أولًا داخل نفس المستوى.</small></label>
+      <div class="sw"><span>منشور للأطفال<br><small class="mut">المخفي لا يظهر في صفحة الاختبارات.</small></span><input type="checkbox" id="qpub"${Z.is_published ? " checked" : ""}></div>
+      <div class="sw"><span>خيار قياس الوقت<br><small class="mut">اختياري للطفل، بدون عدّ تنازلي (للصفوف فقط).</small></span><input type="checkbox" id="qtm"${D.timer ? " checked" : ""}></div>
+    </div>
+    ${Z.id ? `<div class="card"><h3>إحصائيات عامة</h3>${ST && ST.attempts ? `<p style="margin:0">${ST.attempts} محاولة مكتملة · متوسط النتيجة ${Math.round(ST.avg_pct)}% · آخر محاولة ${ago(ST.last_at)}</p>` : `<p class="mut" style="margin:0">لا توجد محاولات بعد.</p>`}<small class="mut">بدون أسماء أو بيانات أطفال. نسبة الإجابة الصحيحة لكل سؤال تظهر تحته.</small></div>` : ""}
+    <div class="card"><h3>نصوص القراءة <small class="mut">(اختياري)</small></h3>${Object.keys(ps).length ? Object.entries(ps).map(([k, g]) => `<div class="item" data-ps="${esc(k)}"><div class="ph qz-n">نص</div><div class="tx"><b>${esc(g.t || "بدون عنوان")}</b><small>${esc(String(g.x || "").slice(0, 60))}…</small></div></div>`).join("") : `<p class="mut" style="margin:0 0 8px">أضف نصًا قصيرًا إذا كانت الأسئلة عن فهم المقروء.</p>`}<button class="btn sm g" id="qaddp">+ نص قراءة</button></div>
+    <div class="card"><h3>الأسئلة (${D.qs.length})</h3>${D.qs.length ? D.qs.map((q, k) => { const t = QS[q.id]; return `<div class="item qz-q" data-qi="${k}"><div class="ph qz-n">${k + 1}</div><div class="tx"><b>${esc(qClean(q.q)) || "بدون نص"}</b><small>${QT[q.t] || q.t}${q.sk ? " · " + esc(q.sk) : ""}${t && t.answered ? ` · أجاب ${t.answered}، صحيح ${qPct(t.correct, t.answered)}%` : ""}</small></div><button class="chip" data-up="${k}" aria-label="تحريك لأعلى">▲</button><button class="chip" data-dn="${k}" aria-label="تحريك لأسفل">▼</button></div>`; }).join("") : `<p class="mut">لا توجد أسئلة بعد.</p>`}<button class="btn sm" id="qaddq" style="margin-top:6px">+ إضافة سؤال</button></div>
+    <div class="row" style="margin:10px 0"><button class="btn g" id="qprev">معاينة كما يراها الطفل</button></div>
+    ${Z.id ? `<button class="btn red" id="qdel">حذف الاختبار نهائيًا</button>` : ""}
+    <div class="qz-bar${qzDirty ? " on" : ""}" id="qzbar"><span>تغييرات غير محفوظة</span><button class="btn ok" id="qsave">حفظ الاختبار</button></div>`;
+    $$("#qtt,#qlv,#qsj,#qkd,#qsk,#qdf,#qin,#qso,#qpub,#qtm", m).forEach((e) => e.addEventListener(e.tagName === "SELECT" || e.type === "checkbox" ? "change" : "input", touch));
+    $("#qback", m).onclick = () => go("quizzes");
+    $$("[data-qi]", m).forEach((e) => e.onclick = () => { syncMeta(); qSheet(D.qs[+e.dataset.qi], +e.dataset.qi); });
+    const mv = (i, j) => { if (j < 0 || j >= D.qs.length) return; syncMeta(); [D.qs[i], D.qs[j]] = [D.qs[j], D.qs[i]]; qzDirty = true; draw(); };
+    $$("[data-up]", m).forEach((b) => b.onclick = (e) => { e.stopPropagation(); mv(+b.dataset.up, +b.dataset.up - 1); });
+    $$("[data-dn]", m).forEach((b) => b.onclick = (e) => { e.stopPropagation(); mv(+b.dataset.dn, +b.dataset.dn + 1); });
+    $("#qaddq", m).onclick = () => { syncMeta(); typeSheet(); };
+    $("#qaddp", m).onclick = () => { syncMeta(); pSheet(null); };
+    $$("[data-ps]", m).forEach((e) => e.onclick = () => { syncMeta(); pSheet(e.dataset.ps); });
+    $("#qsave", m).onclick = save;
+    $("#qprev", m).onclick = () => {
+      syncMeta(); if (!D.qs.length) return toast("أضف سؤالًا أولًا");
+      for (let k = 0; k < D.qs.length; k++) { const e = qCheck(D.qs[k], D); if (e) return toast(`السؤال ${k + 1}: ${e}`); }
+      try { localStorage.setItem("zad.qz.preview", JSON.stringify({ lv: Z.lv, subj: Z.subj, kind: Z.kind, title: Z.title || "معاينة", skill: Z.skill, diff: Z.diff, intro: Z.intro, data: D })); } catch (e) { return toast("تعذّر تجهيز المعاينة"); }
+      window.open(SITE + "tests/#q=__preview", "_blank");
+    };
+    const dl = $("#qdel", m); if (dl) dl.onclick = async () => { if (!(await ask(`حذف «${Z.title}» وكل إحصائياته؟`))) return; const { error } = await sb.from("quizzes").delete().eq("id", Z.id); if (error) return fail(error); qzDirty = false; toast("حُذف الاختبار"); go("quizzes"); };
+  };
+  const save = async () => {
+    syncMeta();
+    if (!Z.title) return toast("اكتب عنوان الاختبار");
+    for (let k = 0; k < D.qs.length; k++) { const e = qCheck(D.qs[k], D); if (e) return toast(`السؤال ${k + 1}: ${e}`); }
+    if (Z.is_published && !D.qs.length) return toast("أضف سؤالًا واحدًا على الأقل قبل النشر");
+    if (!Z.slug) Z.slug = `${Z.lv}-${Z.subj}-${Z.kind}-${Date.now().toString(36).slice(-4)}${Math.random().toString(36).slice(2, 4)}`;
+    const row = { slug: Z.slug, lv: Z.lv, subj: Z.subj, kind: Z.kind, title: Z.title, skill: Z.skill || null, diff: Z.diff || 1, intro: Z.intro || null, data: D, is_published: Z.is_published, sort_order: Z.sort_order || 0 };
+    const b = $("#qsave", m); b.disabled = true; b.textContent = "جاري الحفظ…";
+    const { data, error } = Z.id ? await sb.from("quizzes").update(row).eq("id", Z.id).select("id").single() : await sb.from("quizzes").insert(row).select("id").single();
+    b.disabled = false; b.textContent = "حفظ الاختبار";
+    if (error) return fail(error);
+    Z.id = data.id; qzDirty = false; $("#qzbar", m).classList.remove("on"); toast("تم حفظ الاختبار ✓"); draw();
+  };
+  const newId = () => { let k = D.qs.length + 1; while (D.qs.some((q) => q.id === "q" + k)) k++; return "q" + k; };
+  const typeSheet = () => {
+    const s = sheet(`<h2>نوع السؤال</h2><div class="qz-types">${Object.keys(QT).map((t) => `<button data-t="${t}"><b>${QT[t]}</b><small>${QTD[t]}</small></button>`).join("")}</div>`);
+    $$("[data-t]", s).forEach((b) => b.onclick = () => {
+      const t = b.dataset.t, base = { t, q: "", sk: Z.skill || "", id: newId() };
+      const def = { mc: { o: ["", ""], a: 0 }, tf: { a: true }, num: { a: 0 }, order: { o: ["", ""] }, fill: { o: ["", ""], a: 0 }, sort: { b: ["", ""], o: [{ x: "", b: 0 }, { x: "", b: 1 }] }, match: { p: [["", ""], ["", ""]] } }[t];
+      qSheet(Object.assign(base, def), -1);
+    });
+  };
+  const pSheet = (key) => {
+    D.psg = D.psg && typeof D.psg === "object" ? D.psg : {};
+    const g = key ? D.psg[key] : { t: "", x: "" };
+    const s = sheet(`<h2>${key ? "تعديل نص القراءة" : "نص قراءة جديد"}</h2><label class="f"><span>العنوان</span><input type="text" id="pt" value="${esc(g.t || "")}"></label><label class="f"><span>النص</span><textarea id="px" style="min-height:140px">${esc(g.x || "")}</textarea><small>اجعله قصيرًا وواضحًا. يظهر فوق كل سؤال مرتبط به.</small></label><label class="f"><span>تسجيل صوتي للنص (اختياري)</span>${mediaField("snd", g.snd || "")}<small>إن لم تضف صوتًا يقرأ زوزو النص.</small></label><button class="btn" id="psv">حفظ النص</button>${key ? `<button class="btn red" id="pdl" style="margin-top:10px">حذف النص</button>` : ""}`);
+    bindMedia(s);
+    $("#psv", s).onclick = () => {
+      const t = $("#pt", s).value.trim(), x = $("#px", s).value.trim(), snd = mfVal($("[data-mf]", s)); if (!x) return toast("اكتب النص");
+      let k = key; if (!k) { let n = 1; while (D.psg["p" + n]) n++; k = "p" + n; }
+      D.psg[k] = Object.assign({ t, x }, snd ? { snd: String(snd) } : {}); qzDirty = true; closeSheet(); draw();
+    };
+    const d = $("#pdl", s); if (d) d.onclick = () => { if (D.qs.some((q) => q.psg === key)) return toast("انقل الأسئلة المرتبطة بهذا النص أولًا"); delete D.psg[key]; if (!Object.keys(D.psg).length) delete D.psg; qzDirty = true; closeSheet(); draw(); };
+  };
+  const qSheet = (orig, idx) => {
+    const E = JSON.parse(JSON.stringify(orig)), ps = D.psg && typeof D.psg === "object" ? D.psg : {};
+    const s = sheet(`<h2>${idx < 0 ? "سؤال جديد" : "السؤال " + (idx + 1)}: ${QT[E.t]}</h2>
+      <label class="f"><span>نص السؤال</span><textarea id="eq1" style="min-height:70px">${esc(E.q || "")}</textarea><small>${E.t === "fill" ? "ضع __ (شرطتين) مكان الفراغ. " : ""}للمعادلات الرياضية اكتبها كما هي، مثل 5 + 3 = ؟</small></label>
+      <label class="f"><span>صورة السؤال (اختياري)</span>${mediaField("img", E.img || "")}</label>
+      <div id="etype"></div>
+      <label class="f"><span>الشرح بعد الإجابة</span><textarea id="eex" style="min-height:60px">${esc(qClean(E.ex || ""))}</textarea><small>جملة بسيطة تشرح الإجابة الصحيحة بلطف.</small></label>
+      <label class="f"><span>المهارة</span><input type="text" id="esk" value="${esc(E.sk || "")}"></label>
+      <details class="qz-adv"><summary>الصوت وخيارات إضافية</summary>
+        <label class="f"><span>ما يقوله زوزو (اختياري)</span><input type="text" id="esay" value="${esc(E.say || "")}"><small>إن تركته فارغًا يقرأ زوزو نص السؤال.</small></label>
+        <label class="f"><span>تسجيل صوتي للسؤال (اختياري)</span>${mediaField("snd", E.snd || "")}</label>
+        <div class="sw"><span>سؤال استماع<br><small class="mut">يسمع الطفل السؤال ويختار، مناسب للصغار.</small></span><input type="checkbox" id="elis"${E.listen ? " checked" : ""}></div>
+        <label class="f"><span>تلميح (اختياري)</span><input type="text" id="ehint" value="${esc(E.hint || "")}"></label>
+        ${Object.keys(ps).length ? `<label class="f"><span>نص القراءة المرتبط</span><select id="epsg"><option value="">بدون</option>${Object.entries(ps).map(([k, g]) => `<option value="${esc(k)}"${E.psg === k ? " selected" : ""}>${esc(g.t || k)}</option>`).join("")}</select></label>` : ""}
+        <label class="f"><span>صور للحفظ ثم الإخفاء (اختياري)</span><input type="text" id="ememo" dir="ltr" value="${esc(Array.isArray(E.memo) ? E.memo.join(" | ") : "")}" placeholder="رموز صور مفصولة بـ |"><small>لأسئلة الذاكرة: تظهر الصور ثم تختفي قبل السؤال.</small></label>
+      </details>
+      <p class="qz-err" id="eerr" role="alert"></p>
+      <button class="btn" id="esv">حفظ السؤال</button>${idx >= 0 ? `<button class="btn red" id="edl" style="margin-top:10px">حذف السؤال</button>` : ""}`);
+    const T = $("#etype", s);
+    const radio = (k, on) => `<label class="qz-ok"><input type="radio" name="ea" value="${k}"${on ? " checked" : ""}><span>صحيح</span></label>`;
+    const syncT = () => {
+      if (E.t === "mc" || E.t === "fill") { const rows = $$("[data-l=o] > .qz-it", T); E.o = rows.map(readItem); const c = $("input[name=ea]:checked", T); E.a = c ? rows.indexOf(c.closest(".qz-it")) : -1; }
+      else if (E.t === "tf") { E.a = $("input[name=ea]:checked", T)?.value === "1"; }
+      else if (E.t === "num") { const v = $("#ena", T).value.trim(); E.a = /^\d+$/.test(v) ? parseInt(v, 10) : NaN; const q2 = $("#eeqn", T).value.trim(); if (q2) E.eq = q2; else delete E.eq; }
+      else if (E.t === "order") { E.o = $$("[data-l=o] > .qz-it", T).map(readItem); if ($("#edir", T).checked) E.dir = "ltr"; else delete E.dir; }
+      else if (E.t === "sort") { E.b = $$("[data-l=b] > .qz-it", T).map(readItem); E.o = $$("[data-l=o] > .qz-it", T).map((r) => { const v = readItem(r), o = typeof v === "object" ? v : { x: v }; o.b = +$("select", r).value; return o; }); }
+      else if (E.t === "match") { E.p = $$("[data-l=p] > .qz-it", T).map((r) => $$(".qz-side", r).map(readItem)); }
+    };
+    const drawT = () => {
+      let h = "";
+      if (E.t === "mc" || E.t === "fill") h = `<h4>الخيارات <small class="mut">اختر الصحيح بالدائرة</small></h4><div data-l="o">${E.o.map((v, k) => itemRow(v, radio(k, E.a === k))).join("")}</div>${E.o.length < QMAX.o ? `<button class="btn sm g" data-add="o">+ خيار</button>` : ""}`;
+      else if (E.t === "tf") h = `<h4>الإجابة الصحيحة</h4><div class="row"><label class="qz-ok big"><input type="radio" name="ea" value="1"${E.a === true ? " checked" : ""}><span>صح</span></label><label class="qz-ok big"><input type="radio" name="ea" value="0"${E.a === false ? " checked" : ""}><span>خطأ</span></label></div>`;
+      else if (E.t === "num") h = `<label class="f"><span>الإجابة الصحيحة (عدد)</span><input type="text" id="ena" inputmode="numeric" dir="ltr" value="${Number.isInteger(E.a) ? E.a : ""}"></label><label class="f"><span>المعادلة الظاهرة (اختياري)</span><input type="text" id="eeqn" dir="ltr" value="${esc(qClean(E.eq || ""))}" placeholder="5 + 1 = ؟"></label>`;
+      else if (E.t === "order") h = `<h4>العناصر بالترتيب الصحيح <small class="mut">تُخلط للطفل تلقائيًا</small></h4><div data-l="o">${E.o.map((v) => itemRow(v)).join("")}</div>${E.o.length < QMAX.order ? `<button class="btn sm g" data-add="o">+ عنصر</button>` : ""}<div class="sw"><span>ترتيب من اليسار إلى اليمين<br><small class="mut">للأعداد والمعادلات</small></span><input type="checkbox" id="edir"${E.dir === "ltr" ? " checked" : ""}></div>`;
+      else if (E.t === "sort") h = `<h4>المجموعات</h4><div data-l="b">${E.b.map((v) => itemRow(v)).join("")}</div>${E.b.length < QMAX.b ? `<button class="btn sm g" data-add="b">+ مجموعة</button>` : ""}<h4>العناصر ومجموعة كل عنصر</h4><div data-l="o">${E.o.map((v) => itemRow(v, "", `<label class="qz-bin"><span>المجموعة:</span><select>${E.b.map((g, k) => `<option value="${k}"${v.b === k ? " selected" : ""}>${esc(qHas(g) ? (typeof g === "object" ? g.x || "مجموعة " + (k + 1) : g) : "مجموعة " + (k + 1))}</option>`).join("")}</select></label>`)).join("")}</div>${E.o.length < QMAX.sort ? `<button class="btn sm g" data-add="o">+ عنصر</button>` : ""}`;
+      else if (E.t === "match") h = `<h4>الأزواج <small class="mut">يوصل الطفل الطرف الأول بالثاني</small></h4><div data-l="p">${E.p.map((r) => `<div class="qz-it qz-pair"><div class="qz-r1"><b class="mut">زوج</b><button type="button" class="chip qz-rm">حذف</button></div><div class="qz-side"><input type="text" class="qx" value="${esc(r[0] && typeof r[0] === "object" ? r[0].x ?? "" : r[0] ?? "")}" placeholder="الطرف الأول">${mediaField("img", r[0] && r[0].i || "")}</div><div class="qz-side"><input type="text" class="qx" value="${esc(r[1] && typeof r[1] === "object" ? r[1].x ?? "" : r[1] ?? "")}" placeholder="الطرف الثاني">${mediaField("img", r[1] && r[1].i || "")}</div></div>`).join("")}</div>${E.p.length < QMAX.p ? `<button class="btn sm g" data-add="p">+ زوج</button>` : ""}`;
+      T.innerHTML = h; bindMedia(T);
+      $$("[data-add]", T).forEach((b) => b.onclick = () => { syncT(); const l = b.dataset.add; if (E.t === "sort" && l === "o") E.o.push({ x: "", b: 0 }); else if (l === "p") E.p.push(["", ""]); else E[l].push(""); drawT(); });
+      $$(".qz-rm", T).forEach((b) => b.onclick = () => {
+        syncT(); const row = b.closest(".qz-it"), box = row.parentNode, l = box.dataset.l, i = $$(":scope > .qz-it", box).indexOf(row), arr = E[l];
+        if (arr.length <= 2) return toast("يلزم عنصران على الأقل");
+        arr.splice(i, 1);
+        if ((E.t === "mc" || E.t === "fill") && l === "o") E.a = E.a === i ? -1 : E.a > i ? E.a - 1 : E.a;
+        if (E.t === "sort" && l === "b") E.o.forEach((o) => { if (o.b === i) o.b = 0; else if (o.b > i) o.b--; });
+        drawT();
+      });
+    };
+    drawT(); bindMedia(s);
+    $("#esv", s).onclick = () => {
+      syncT();
+      const set = (k, v) => { if (v === "" || v == null || (Array.isArray(v) && !v.length)) delete E[k]; else E[k] = v; };
+      E.q = $("#eq1", s).value.trim(); set("img", mfVal($("label.f [data-mf]", s))); set("ex", $("#eex", s).value.trim()); set("sk", $("#esk", s).value.trim());
+      set("say", $("#esay", s).value.trim()); set("snd", String(mfVal($(".qz-adv [data-mf]", s)) || "")); set("hint", $("#ehint", s).value.trim());
+      if ($("#elis", s).checked) E.listen = 1; else delete E.listen;
+      const pg = $("#epsg", s); if (pg) set("psg", pg.value);
+      const mm = $("#ememo", s).value.split("|").map((x) => x.trim()).filter(Boolean); set("memo", mm);
+      if (!E.memo) delete E.memoTx;
+      const err = qCheck(E, D); if (err) { $("#eerr", s).textContent = err; return; }
+      if (idx < 0) D.qs.push(E); else D.qs[idx] = E;
+      qzDirty = true; closeSheet(); draw(); toast("تم. لا تنسَ حفظ الاختبار");
+    };
+    const d = $("#edl", s); if (d) d.onclick = async () => { if (!(await ask("حذف هذا السؤال؟", "نعم، احذف"))) return; D.qs.splice(idx, 1); qzDirty = true; draw(); toast("حُذف السؤال. احفظ الاختبار لتثبيت الحذف"); };
+  };
+  draw();
+}
 
 const VIEWS = { home, orders, products, learn, more };
 boot().catch((e) => { console.error(e); app.innerHTML = `<div class="empty">تعذّر فتح اللوحة 😕<br><button class="btn sm" onclick="location.reload()">إعادة المحاولة</button></div>`; });
