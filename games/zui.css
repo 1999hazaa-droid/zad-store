@@ -1438,3 +1438,11 @@
 .dd-zone.dd-over{outline:4px dashed #8B5CF6;outline-offset:3px;background:#F5F0FF}
 .dd-h{position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:11px;color:#8B5CF6;font-weight:700;pointer-events:none}
 .tg-ch,.tg,.sn-g,.sn-bank,.sn-ans{overflow:visible}
+.mu-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;padding:6px}
+.mu-row>.tgi{width:44px;height:44px;object-fit:contain}
+.mu-g{display:flex;gap:2px;border:3px dashed #C4B5FD;border-radius:14px;padding:5px;background:#FAF7FF}
+.mu-g .tgi{width:30px;height:30px;object-fit:contain}
+.tg .tg-top .mu-g .tgi{width:30px!important;height:30px!important;max-width:30px!important;max-height:30px!important}
+.tg .tg-top .mu-row>.tgi{width:44px!important;height:44px!important;max-width:44px!important}
+.tg-mul .tg-top,.tg-du .tg-top{width:auto!important;min-width:150px;height:auto!important;min-height:150px;padding:8px}
+.tg-mul .tg-top,.tg-du .tg-top{aspect-ratio:auto!important;width:100%!important;max-width:100%!important;min-height:130px!important;height:auto!important}
