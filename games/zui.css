@@ -1387,3 +1387,14 @@
 .lvhero .lvart{width:120px;height:120px;border-radius:30px;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#fff,#efe7ff);box-shadow:0 6px 0 #e3d8ff;overflow:hidden;font-size:60px}
 .lvhero .lvart .zgim{width:100%;height:100%;object-fit:contain;padding:6px}
 .lvhero b{font-size:20px;color:#2B1B4F}.lvhero small{font-size:14px;color:#6b5a8e;font-weight:700}
+.tg-lk .lk-h{font-size:18px;font-weight:800;color:#2B1B4F;text-align:center;margin-bottom:10px}
+.lk-bd{position:relative;display:flex;justify-content:space-between;gap:70px;padding:6px 4px}
+.lk-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.lk-col{display:flex;flex-direction:column;gap:12px;flex:1;min-width:0}
+.lk-it{min-height:84px;border-radius:20px;border:3px solid #e3d8ff;background:#fff;display:grid;place-items:center;font-weight:800;font-size:22px;color:#2B1B4F;box-shadow:0 4px 0 #e3d8ff;position:relative;z-index:1;padding:4px}
+.lk-it img{max-height:72px;width:auto;max-width:100%;object-fit:contain}
+.lk-it.sel{border-color:#8B5CF6;box-shadow:0 0 0 4px #d9c9ff}
+.lk-it.ok{border-color:#22C55E;background:#effcf3}
+.lk-it.hint{border-color:#F59E0B;animation:lkh 1s infinite}
+@keyframes lkh{50%{box-shadow:0 0 0 6px #fde7b0}}
+.tg .tg-top.lk-h{all:unset;display:block;text-align:center;font-size:18px;font-weight:800;color:#2B1B4F;margin:6px 0 14px}
