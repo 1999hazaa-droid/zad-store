@@ -1398,3 +1398,9 @@
 .lk-it.hint{border-color:#F59E0B;animation:lkh 1s infinite}
 @keyframes lkh{50%{box-shadow:0 0 0 6px #fde7b0}}
 .tg .tg-top.lk-h{all:unset;display:block;text-align:center;font-size:18px;font-weight:800;color:#2B1B4F;margin:6px 0 14px}
+.tg-st .st-im{margin:0 auto}.st-tx{font-size:20px;font-weight:800;color:#2B1B4F;text-align:center;margin:12px 6px;line-height:1.7}
+.st-ch{display:flex;flex-direction:column;gap:10px;padding:0 6px}
+.st-op{min-height:62px;border-radius:20px;border:3px solid #e3d8ff;background:#fff;font-size:20px;font-weight:800;color:#2B1B4F;box-shadow:0 4px 0 #e3d8ff;padding:8px 12px}
+.st-op.ok{border-color:#22C55E;background:#effcf3}.st-op.dim{opacity:.45}
+.st-why{min-height:48px;margin:12px 8px 0;text-align:center;font-size:16px;font-weight:700;color:#7a4b00;background:#fff7e6;border-radius:16px;padding:8px 10px}
+.st-why:empty{visibility:hidden}.st-why.g{color:#166534;background:#effcf3}
