@@ -1,4 +1,5 @@
 /* المكتبة التعليمية — زاد التعليمية (تعتمد على zad-tokens.css و zad-ui.css) */
+.lib [hidden]{display:none!important}
 .lib{--l-r:18px;--l-ok:#15803d;--l-okbg:#E7F8EE}
 .lib main.zw{padding-top:var(--z-sp-3)}
 .lib .zph img.lpose{height:150px}
