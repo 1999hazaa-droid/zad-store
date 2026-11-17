@@ -1411,3 +1411,20 @@
 .tr-cv{border-radius:24px;background:#fff;box-shadow:inset 0 0 0 3px #e3d8ff;max-width:100%}
 .tr-bt{display:flex;justify-content:center;margin-top:10px}
 .tr-clear{min-height:56px;min-width:140px;border-radius:18px;border:3px solid #e3d8ff;background:#fff;font-size:18px;font-weight:800;color:#5b21b6;padding:6px 18px}
+/* ٦ سنوات: ألعاب جديدة */
+.dc-snd{width:96px;height:96px;border-radius:50%;background:#F3EBFF;border:3px solid #C4B5FD;display:grid;place-items:center;margin:0 auto 6px}
+.sn-g{display:flex;flex-direction:column;align-items:center;gap:10px}.sn-im{max-height:120px}.sn-im .tgi{max-height:110px}
+.sn-h{font-weight:800;color:#2B1B4F;font-size:19px;margin:0;text-align:center}
+.sn-ans,.sn-bank{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;width:100%;max-width:520px;direction:rtl}
+.sn-ans{min-height:66px;border:3px dashed #C4B5FD;border-radius:18px;padding:8px;background:#FAF7FF;align-content:center}
+.sn-ans.ok{border-color:#22C55E;background:#ECFDF3}
+.sn-w{min-width:64px;min-height:56px;padding:8px 14px;border-radius:16px;background:#fff;border:3px solid #DDD6FE;font-size:22px;font-weight:800;color:#2B1B4F;font-family:inherit}
+.sn-w.on{background:#EDE9FE;border-color:#8B5CF6}
+.fl-g{display:flex;flex-direction:column;align-items:center;gap:12px}
+.fl-h{font-size:21px;color:#2B1B4F;text-align:center;margin:0;font-weight:700}.fl-h b{color:#6D28D9}
+.fl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:420px}
+.fl-it{aspect-ratio:1;border-radius:20px;background:#fff;border:3px solid #E9D5FF;padding:8px;display:grid;place-items:center}
+.fl-it .tgi{max-width:100%;max-height:100%;object-fit:contain}
+.fl-it.ok{border-color:#22C55E;background:#ECFDF3;opacity:.75}
+.tg .sn-w{background:#fff!important;border:3px solid #C4B5FD!important;box-shadow:0 3px 0 #DDD6FE!important;font-size:24px;color:#2B1B4F!important}
+.tg .sn-w.on{background:#EDE9FE!important;border-color:#8B5CF6!important}
