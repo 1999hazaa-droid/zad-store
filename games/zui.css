@@ -1446,3 +1446,6 @@
 .tg .tg-top .mu-row>.tgi{width:44px!important;height:44px!important;max-width:44px!important}
 .tg-mul .tg-top,.tg-du .tg-top{width:auto!important;min-width:150px;height:auto!important;min-height:150px;padding:8px}
 .tg-mul .tg-top,.tg-du .tg-top{aspect-ratio:auto!important;width:100%!important;max-width:100%!important;min-height:130px!important;height:auto!important}
+.sn-v .sn-ans,.sn-v .sn-bank{flex-direction:column;align-items:stretch;flex-wrap:nowrap}
+.tg .sn-v .sn-w,.sn-v .tg .sn-w{font-size:17px!important;line-height:1.5!important;text-align:center;padding:10px 12px}
+.sn-v .sn-im{max-height:100px}.sn-n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#8B5CF6;color:#fff;font-size:14px;margin-left:6px}
