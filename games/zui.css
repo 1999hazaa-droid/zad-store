@@ -1447,10 +1447,33 @@
 .tg-mul .tg-top,.tg-du .tg-top{width:auto!important;min-width:150px;height:auto!important;min-height:150px;padding:8px}
 .tg-mul .tg-top,.tg-du .tg-top{aspect-ratio:auto!important;width:100%!important;max-width:100%!important;min-height:130px!important;height:auto!important}
 .sn-v .sn-ans,.sn-v .sn-bank{flex-direction:column;align-items:stretch;flex-wrap:nowrap}
-.tg .sn-v .sn-w,.sn-v .tg .sn-w{font-size:17px!important;line-height:1.5!important;text-align:center;padding:10px 12px}
+.tg.sn-v .sn-w{font-size:17px!important;line-height:1.5!important;text-align:center;padding:10px 12px}
 .sn-v .sn-im{max-height:100px}.sn-n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#8B5CF6;color:#fff;font-size:14px;margin-left:6px}
 .tg-bc .tg-top,.tg-kd .tg-top,.tg-op .tg-top{aspect-ratio:auto!important;width:100%!important;max-width:100%!important;height:auto!important;min-height:110px!important}
 .bc{width:100%;display:flex;flex-direction:column;gap:8px;padding:8px 10px;direction:rtl}
 .bc-r{display:flex;align-items:center;gap:8px}.bc-ic .tgi{width:34px!important;height:34px!important;max-width:34px!important;max-height:34px!important}
 .bc-t{flex:1;height:22px;background:#EDE9FE;border-radius:11px;overflow:hidden}.bc-b{display:block;height:100%;background:linear-gradient(90deg,#8B5CF6,#6D28D9);border-radius:11px}
 .bc-v{min-width:22px;text-align:center;color:#2B1B4F;font-size:18px}
+
+/* مراجعة شاملة: إصلاحات العرض واللمس */
+.qm{unicode-bidi:isolate}
+.tg .tg-clr{min-width:44px!important;min-height:44px!important;width:44px;height:44px}
+.tg .tg-dot{min-width:46px!important;min-height:46px!important}
+.zrp{min-height:44px!important}
+.be-sel{box-shadow:0 0 0 4px #8B5CF6,0 8px 18px rgba(91,33,182,.25)!important;border-radius:16px}
+/* مراجعة شاملة: إبقاء أزرار التحكم ظاهرة على شاشات الهاتف */
+:root body .tg-ctsc,:root body .tg-lnsc{height:clamp(220px,calc(100vh - 430px),470px);height:clamp(220px,calc(100svh - 430px),470px)}
+:root body .tg-cbd{max-width:min(360px,calc(100vh - 470px));max-width:min(360px,calc(100svh - 470px));min-width:200px;margin-inline:auto}
+:root body .tg-am{max-width:min(460px,calc(100vh - 470px));max-width:min(460px,calc(100svh - 470px));min-width:210px;margin-inline:auto}
+:root body .tg-cpad:not(.am){grid-template-columns:repeat(4,60px);grid-template-areas:"x u . g" "l d r g";grid-template-rows:60px 60px}
+:root body .tg-cpad:not(.am) .tg-cgo{height:auto;align-self:stretch;writing-mode:horizontal-tb}
+@media (max-height:760px){
+ :root body .buddy{min-height:38px;margin-bottom:6px}
+ :root body .buddy .zp.mas{--zh:38px;height:38px}
+ :root body .buddy .bb{font-size:13px;padding:5px 10px}
+ :root body .stage:has(.zrp){padding-top:50px}
+ :root body .zrp{height:36px;top:8px}
+ :root body .stage>.rep{width:50px!important;height:50px!important;font-size:24px;margin:0 auto 4px}
+}
+:root body .tg-shp2 .tg-canv,:root body .tg-gdn .tg-gscene{height:clamp(200px,calc(100vh - 500px),420px);height:clamp(200px,calc(100svh - 500px),420px)}
+:root body .tg-gdn .tg-stk{flex-wrap:wrap;justify-content:center;overflow:visible}
