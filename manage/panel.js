@@ -9,6 +9,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const app = $("#app");
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const imgU = (u) => !u ? "" : /^(https?:|data:|blob:)/i.test(u) ? u : SITE + String(u).replace(/^\/+/, "");
 const money = (n) => (Number(n) || 0).toFixed(3).replace(/\.?0+$/, "") + " ر.ع";
 const ago = (d) => { const m = (Date.now() - Date.parse(d)) / 6e4; if (m < 1) return "الآن"; if (m < 60) return `قبل ${m | 0} دقيقة`; if (m < 1440) return `قبل ${(m / 60) | 0} ساعة`; return `قبل ${(m / 1440) | 0} يوم`; };
 const digits = (s) => String(s || "").replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/\D/g, "");
@@ -168,16 +169,16 @@ async function orderSheet(id, reload, cache) {
 let CATS = [], pFilter = "all", pQ = "";
 async function products(m) {
   const [p, c] = await Promise.all([
-    sb.from("products").select("id,name,price,old_price,category_id,image_url,thumb_url,is_visible,is_available,is_best_seller,is_new_arrival,stock,description,file_url,slug,sort_order").order("sort_order", { ascending: true }),
+    sb.from("products").select("id,name,price,old_price,category_id,image_url,thumb_url,is_visible,is_available,is_best_seller,is_new_arrival,stock,description,file_url,slug,sort_order,lib_section,lib_levels,lib_subject,lib_skill,pages,bw_url,file_type").order("sort_order", { ascending: true }),
     sb.from("categories").select("id,name,sort_order").order("sort_order", { ascending: true })
   ]);
   if (p.error) throw p.error; CATS = c.data || []; const all = p.data || [];
   m.innerHTML = `<input type="search" id="q" placeholder="🔍 ابحث عن منتج" value="${esc(pQ)}"><div class="chips" id="ch"></div><div id="ls"></div><button class="btn fab" id="add">➕ منتج</button>`;
   const draw = () => {
-    $("#ch").innerHTML = [["all", `الكل (${all.length})`], ["off", "🙈 مخفي"], ["out", "🚫 نفد"], ...CATS.map((x) => [x.id, x.name])].map(([k, l]) => `<button class="chip ${pFilter === k ? "on" : ""}" data-f="${k}">${esc(l)}</button>`).join("");
+    $("#ch").innerHTML = [["all", `الكل (${all.length})`], ["lib", `المكتبة (${all.filter((x) => x.lib_section).length})`], ["off", "🙈 مخفي"], ["out", "🚫 نفد"], ...CATS.map((x) => [x.id, x.name])].map(([k, l]) => `<button class="chip ${pFilter === k ? "on" : ""}" data-f="${k}">${esc(l)}</button>`).join("");
     const q = pQ.trim();
-    const list = all.filter((x) => (pFilter === "all" || (pFilter === "off" ? !x.is_visible : pFilter === "out" ? (!x.is_available || x.stock === 0) : x.category_id === pFilter)) && (!q || (x.name || "").includes(q)));
-    $("#ls").innerHTML = list.slice(0, 120).map((x) => `<div class="item" data-p="${x.id}">${x.thumb_url || x.image_url ? `<img loading="lazy" src="${esc(x.thumb_url || x.image_url)}" alt="">` : `<div class="ph">🖼️</div>`}<div class="tx"><b>${esc(x.name)}</b><small>${money(x.price)}${x.old_price ? ` <s>${money(x.old_price)}</s>` : ""}</small></div>${!x.is_visible ? `<span class="tag off">مخفي</span>` : !x.is_available || x.stock === 0 ? `<span class="tag off">نفد</span>` : ""}</div>`).join("") || `<div class="empty">لا توجد منتجات</div>` + (list.length > 120 ? `<p class="c mut">يظهر أول 120، استخدم البحث</p>` : "");
+    const list = all.filter((x) => (pFilter === "all" || (pFilter === "lib" ? !!x.lib_section : pFilter === "off" ? !x.is_visible : pFilter === "out" ? (!x.is_available || x.stock === 0) : x.category_id === pFilter)) && (!q || (x.name || "").includes(q)));
+    $("#ls").innerHTML = list.slice(0, 120).map((x) => `<div class="item" data-p="${x.id}">${x.thumb_url || x.image_url ? `<img loading="lazy" src="${esc(imgU(x.thumb_url || x.image_url))}" alt="">` : `<div class="ph">🖼️</div>`}<div class="tx"><b>${esc(x.name)}</b><small>${Number(x.price) === 0 ? "مجاني" : money(x.price)}${x.old_price ? ` <s>${money(x.old_price)}</s>` : ""}${x.lib_section ? ` · <span class="tag">${esc(LIBSEC[x.lib_section] || "المكتبة")}</span>` : ""}</small></div>${!x.is_visible ? `<span class="tag off">مخفي</span>` : !x.is_available || x.stock === 0 ? `<span class="tag off">نفد</span>` : ""}</div>`).join("") || `<div class="empty">لا توجد منتجات</div>` + (list.length > 120 ? `<p class="c mut">يظهر أول 120، استخدم البحث</p>` : "");
     $$("#ch [data-f]").forEach((b) => b.onclick = () => { pFilter = b.dataset.f; draw(); });
     $$("#ls [data-p]").forEach((r) => r.onclick = () => productSheet(all.find((x) => x.id === r.dataset.p), () => products(m)));
   };
@@ -192,11 +193,48 @@ function resizeImg(file, max = 1100) {
     im.onerror = rej; im.src = u;
   });
 }
+/* ---------- المكتبة التعليمية ---------- */
+const LIBSEC = { ws: "أوراق العمل", letters: "الحروف العربية", math: "الأرقام والرياضيات", color: "أنشطة التلوين", cards: "بطاقات تعليمية", stories: "القصص المصوّرة", home: "الأنشطة المنزلية", think: "التفكير والذكاء", review: "الاختبارات والمراجعات", extra: "الملفات الإثرائية", teacher: "أدوات المعلّمة" };
+const LIBLV = [["a2", "سنة إلى سنتين"], ["a3", "3 سنوات"], ["a4", "4 سنوات"], ["a5", "5 سنوات"], ["a6", "6 سنوات"], ["g1", "الصف الأول"], ["g2", "الصف الثاني"], ["g3", "الصف الثالث"], ["g4", "الصف الرابع"]];
+const LIBSUBJ = ["اللغة العربية", "الرياضيات", "اللغة الإنجليزية", "العلوم", "التربية الإسلامية", "الهوية والمواطنة", "التفكير", "التلوين", "المهارات الحياتية", "المواد المصاحبة", "أدوات المعلّمة", "متنوع"];
+const isPub = (u) => !!u && !String(u).startsWith("private:");
+let pdfjsP = null;
+function loadPdfjs() {
+  if (pdfjsP) return pdfjsP;
+  pdfjsP = new Promise((res, rej) => {
+    const sc = document.createElement("script"); sc.src = "../js/vendor/pdfjs/pdf.min.js";
+    sc.onload = () => { try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("../js/vendor/pdfjs/pdf.worker.min.js", location.href).href; res(window.pdfjsLib); } catch (e) { rej(e); } };
+    sc.onerror = () => { pdfjsP = null; rej(new Error("pdfjs")); }; document.head.appendChild(sc);
+  });
+  return pdfjsP;
+}
+/* يقرأ ملف PDF من الجهاز ويحوّل أول (max) صفحات إلى صور للمعاينة */
+async function pdfPages(file, max, onStep) {
+  const lib = await loadPdfjs();
+  const doc = await lib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const n = Math.min(doc.numPages, max), out = [];
+  for (let i = 1; i <= n; i++) {
+    onStep && onStep(i, n);
+    const pg = await doc.getPage(i), v0 = pg.getViewport({ scale: 1 }), v = pg.getViewport({ scale: 1000 / v0.width });
+    const c = document.createElement("canvas"); c.width = Math.round(v.width); c.height = Math.round(v.height);
+    const cx = c.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, c.width, c.height);
+    await pg.render({ canvasContext: cx, viewport: v }).promise;
+    out.push(await new Promise((r, j) => c.toBlob((b) => b ? r(b) : j(new Error("img")), "image/jpeg", .85)));
+    if (pg.cleanup) pg.cleanup();
+  }
+  const total = doc.numPages; if (doc.destroy) doc.destroy();
+  return { total, blobs: out };
+}
+async function libUpload(path, body, type) {
+  const { error } = await sb.storage.from("library").upload(path, body, { contentType: type, cacheControl: "31536000", upsert: false });
+  if (error) throw error;
+  return sb.storage.from("library").getPublicUrl(path).data.publicUrl;
+}
 function productSheet(p, reload) {
   const isNew = !p;
   const d = p || { id: crypto.randomUUID(), name: "", price: "", old_price: null, category_id: CATS[0]?.id || null, image_url: "", is_visible: true, is_available: true, is_best_seller: false, is_new_arrival: false, stock: null, description: "", file_url: "" };
   const s = sheet(`<h2>${isNew ? "منتج جديد" : "تعديل المنتج"}</h2>
-  ${d.image_url ? `<img class="thumb" id="pv" src="${esc(d.image_url)}">` : `<div class="thumb c" id="pv" style="padding:40px 0;font-size:40px">🖼️</div>`}
+  ${d.image_url ? `<img class="thumb" id="pv" src="${esc(imgU(d.image_url))}">` : `<div class="thumb c" id="pv" style="padding:40px 0;font-size:40px">🖼️</div>`}
   <input type="file" id="fi" accept="image/*" hidden><button class="btn g" id="pi">📷 ${d.image_url ? "تغيير الصورة" : "اختر صورة"}</button>
   <label class="f"><span>اسم المنتج</span><input type="text" id="nm" value="${esc(d.name)}"></label>
   <div class="row"><label class="f"><span>السعر (ر.ع)</span><input type="number" id="pr" inputmode="decimal" step="0.001" value="${d.price ?? ""}"></label>
@@ -208,7 +246,24 @@ function productSheet(p, reload) {
   <label class="sw"><span>متاح للشراء</span><input type="checkbox" id="av" ${d.is_available ? "checked" : ""}></label>
   <label class="sw"><span>⭐ الأكثر طلباً</span><input type="checkbox" id="bs" ${d.is_best_seller ? "checked" : ""}></label>
   <label class="sw"><span>🆕 جديد</span><input type="checkbox" id="na" ${d.is_new_arrival ? "checked" : ""}></label></div>
-  <div class="card"><b>📄 الملف بعد الشراء (PDF)</b><p class="mut" id="fs" style="margin:4px 0 8px">${d.file_url ? "✅ مرفوع" : "لم يُرفع ملف"}</p><input type="file" id="ff" accept="application/pdf" hidden><button class="btn g" id="pf">رفع ملف PDF</button></div>
+  <div class="card"><b>📄 الملف بعد الشراء (للملفات المدفوعة)</b><p class="mut" id="fs" style="margin:4px 0 8px">${d.file_url && !isPub(d.file_url) ? "✅ مرفوع" : "لم يُرفع ملف"}</p><input type="file" id="ff" accept="application/pdf" hidden><button class="btn g" id="pf">رفع ملف PDF</button></div>
+  <div class="card" id="libc"><h3>📚 المكتبة التعليمية</h3>
+  <p class="mut" style="margin:0;font-size:13px">اختر القسم ليظهر الملف في صفحة المكتبة. السعر 0 يعني ملفًا مجانيًا يُحمَّل ويُطبع مباشرة، وغير ذلك يظهر بزر «اطلب الملف».</p>
+  <label class="f"><span>القسم في المكتبة</span><select id="lsec"><option value="">لا يظهر في المكتبة</option>${Object.entries(LIBSEC).map(([k, v]) => `<option value="${k}" ${d.lib_section === k ? "selected" : ""}>${v}</option>`).join("")}</select></label>
+  <div class="f"><span style="display:block;font-weight:700;margin-bottom:5px;font-size:14px">العمر أو الصف (واحد أو أكثر)</span><div class="chips" style="flex-wrap:wrap" id="llv">${LIBLV.map(([k, v]) => `<button type="button" class="chip ${(d.lib_levels || []).includes(k) ? "on" : ""}" data-lv="${k}" aria-pressed="${(d.lib_levels || []).includes(k)}">${v}</button>`).join("")}</div></div>
+  <div class="row"><label class="f"><span>المادة</span><input type="text" id="lsub" list="lsubs" value="${esc(d.lib_subject || "")}" placeholder="مثال: الرياضيات"></label><label class="f"><span>المهارة أو الموضوع</span><input type="text" id="lskl" value="${esc(d.lib_skill || "")}" placeholder="مثال: الجمع ضمن 20"></label></div>
+  <datalist id="lsubs">${LIBSUBJ.map((x) => `<option value="${x}">`).join("")}</datalist>
+  <label class="f"><span>عدد الصفحات</span><input type="number" id="lpgs" inputmode="numeric" min="1" max="999" value="${d.pages ?? ""}" placeholder="يُملأ تلقائيًا عند رفع الملف"></label>
+  <div style="border-top:1px solid #f0ecfb;padding-top:10px;margin-top:4px"><b>الملف المجاني (النسخة الملوّنة)</b><p class="mut" id="lfs" style="margin:2px 0 8px;font-size:14px">${isPub(d.file_url) ? "✅ مرفوع" : "لم يُرفع ملف مجاني"}</p>
+  <input type="file" id="lff" accept="application/pdf" hidden><button type="button" class="btn g" id="lfb">${isPub(d.file_url) ? "استبدال الملف المجاني" : "رفع الملف المجاني (PDF)"}</button></div>
+  <div style="border-top:1px solid #f0ecfb;padding-top:10px;margin-top:12px"><b>نسخة الأبيض والأسود (اختياري)</b><p class="mut" id="lbs" style="margin:2px 0 8px;font-size:14px">${d.bw_url ? "✅ مرفوعة" : "لا توجد"}</p>
+  <input type="file" id="lbf" accept="application/pdf" hidden><div class="row"><button type="button" class="btn g" id="lbb">${d.bw_url ? "استبدال" : "رفع نسخة أبيض وأسود"}</button>${d.bw_url ? `<button type="button" class="btn red" id="lbx">إزالة النسخة</button>` : ""}</div></div>
+  <div style="border-top:1px solid #f0ecfb;padding-top:10px;margin-top:12px"><b>صور صفحات المعاينة</b><p class="mut" id="lps" style="margin:2px 0 8px;font-size:14px">جاري التحقق…</p>
+  <input type="file" id="lpf" accept="image/*" multiple hidden><input type="file" id="lpd" accept="application/pdf" hidden>
+  <div class="row"><button type="button" class="btn g" id="lpg">توليد من ملف PDF</button><button type="button" class="btn g" id="lpi">رفع صور</button></div>
+  <p class="mut" style="margin:6px 0 0;font-size:12px">الملف المجاني: تُولَّد صور كل صفحاته تلقائيًا عند رفعه. الملف المدفوع: تُولَّد أول 3 صفحات فقط حتى لا يظهر الملف كاملًا.</p></div>
+  </div>
+  <p class="mut" style="font-size:12px;margin:4px 4px 10px">لإيقاف عرض ملف قديم دون فقدان بياناته: أطفئ «ظاهر في المنصة» بدل الحذف.</p>
   <button class="btn" id="sv">💾 حفظ</button>
   ${isNew ? "" : `<button class="btn red" id="dl" style="margin-top:10px">🗑️ حذف المنتج</button>`}`);
   $("#pi", s).onclick = () => $("#fi", s).click();
@@ -227,15 +282,74 @@ function productSheet(p, reload) {
     const f = e.target.files[0]; if (!f) return; toast("جاري رفع الملف…");
     const { error } = await sb.storage.from("paid-files").upload(`${d.id}.pdf`, f, { upsert: true, contentType: "application/pdf", cacheControl: "0" });
     if (error) return fail(error); d.file_url = `private:${d.id}.pdf`; $("#fs", s).textContent = "✅ رُفع، اضغط حفظ"; };
+  /* المكتبة */
+  const priceNow = () => Number($("#pr", s).value || 0);
+  const setPages = (urls, note) => { d._pages = urls; $("#lps", s).textContent = `✅ ${urls.length} صورة جاهزة${note ? " " + note : ""} — اضغط حفظ`; };
+  $$("#llv [data-lv]", s).forEach((b) => b.onclick = () => { const on = !b.classList.contains("on"); b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
+  if (isNew) $("#lps", s).textContent = "لا توجد صور معاينة";
+  else sb.from("product_media").select("id", { count: "exact", head: true }).eq("product_id", d.id).eq("media_type", "page").then(({ count }) => { if (!d._pages) $("#lps", s).textContent = count ? `✅ ${count} صفحة معاينة` : "لا توجد صور معاينة"; });
+  const genFrom = async (file, max) => {
+    const { total, blobs } = await pdfPages(file, max, (i, n) => { $("#lps", s).textContent = `جاري تجهيز صور المعاينة ${i} من ${n}…`; });
+    const ts = Date.now(), urls = [];
+    for (let i = 0; i < blobs.length; i++) { $("#lps", s).textContent = `جاري رفع صور المعاينة ${i + 1} من ${blobs.length}…`; urls.push(await libUpload(`pages/${d.id}/${ts}-${String(i + 1).padStart(2, "0")}.jpg`, blobs[i], "image/jpeg")); }
+    if (!$("#lpgs", s).value) $("#lpgs", s).value = total;
+    setPages(urls, total > blobs.length ? `(من ${total} صفحة)` : "");
+    return total;
+  };
+  $("#lfb", s).onclick = () => { if (priceNow() > 0) return toast("الملف المجاني للمنتجات بسعر 0. للمدفوع استخدم «الملف بعد الشراء»"); $("#lff", s).click(); };
+  $("#lff", s).onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    if (f.type && f.type !== "application/pdf") return toast("اختر ملف PDF");
+    try {
+      $("#lfs", s).textContent = "جاري رفع الملف…";
+      d.file_url = await libUpload(`files/${d.id}-${Date.now()}.pdf`, f, "application/pdf");
+      $("#lfs", s).textContent = "✅ رُفع الملف، جاري تجهيز المعاينة…";
+      try { const n = await genFrom(f, 30); $("#lpgs", s).value = n; $("#lfs", s).textContent = `✅ رُفع الملف (${n} صفحة) — اضغط حفظ`; }
+      catch (er) { console.warn(er); $("#lfs", s).textContent = "✅ رُفع الملف — اضغط حفظ"; $("#lps", s).textContent = "تعذّر توليد صور المعاينة، ارفعها كصور"; }
+    } catch (er) { $("#lfs", s).textContent = "لم يُرفع"; fail(er); }
+  };
+  $("#lbb", s).onclick = () => $("#lbf", s).click();
+  $("#lbf", s).onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    try { $("#lbs", s).textContent = "جاري الرفع…"; d.bw_url = await libUpload(`files/${d.id}-bw-${Date.now()}.pdf`, f, "application/pdf"); $("#lbs", s).textContent = "✅ رُفعت، اضغط حفظ"; }
+    catch (er) { $("#lbs", s).textContent = "لم تُرفع"; fail(er); }
+  };
+  const lbx = $("#lbx", s); if (lbx) lbx.onclick = () => { d.bw_url = null; $("#lbs", s).textContent = "ستُزال النسخة من المكتبة بعد الحفظ (الملف نفسه يبقى محفوظًا)"; lbx.remove(); };
+  $("#lpg", s).onclick = () => $("#lpd", s).click();
+  $("#lpd", s).onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    try { await genFrom(f, priceNow() > 0 ? 3 : 30); } catch (er) { $("#lps", s).textContent = "تعذّر توليد الصور"; fail(er); }
+  };
+  $("#lpi", s).onclick = () => $("#lpf", s).click();
+  $("#lpf", s).onchange = async (e) => {
+    const fs = Array.from(e.target.files || []); e.target.value = ""; if (!fs.length) return;
+    try {
+      const ts = Date.now(), urls = [];
+      for (let i = 0; i < fs.length; i++) { $("#lps", s).textContent = `جاري رفع الصورة ${i + 1} من ${fs.length}…`; urls.push(await libUpload(`pages/${d.id}/${ts}-${String(i + 1).padStart(2, "0")}.jpg`, await resizeImg(fs[i], 1100), "image/jpeg")); }
+      setPages(urls);
+    } catch (er) { $("#lps", s).textContent = "لم تُرفع"; fail(er); }
+  };
   $("#sv", s).onclick = async () => {
     const name = $("#nm", s).value.trim(), price = Number($("#pr", s).value);
     if (!name) return toast("اكتب اسم المنتج"); if (!(price >= 0) || $("#pr", s).value === "") return toast("اكتب السعر");
     const op = $("#op", s).value === "" ? null : Number($("#op", s).value), sk = $("#sk", s).value === "" ? null : Number($("#sk", s).value);
     const row = { id: d.id, name, price, old_price: op && op > price ? op : null, category_id: $("#ct", s).value || null, image_url: d.image_url || null, thumb_url: d.thumb_url === null ? null : (d.thumb_url || null), description: $("#ds", s).value.trim(), stock: sk,
       is_visible: $("#vi", s).checked, is_available: $("#av", s).checked, is_best_seller: $("#bs", s).checked, is_new_arrival: $("#na", s).checked, file_url: d.file_url || null };
+    const lsec = $("#lsec", s).value || null, llv = $$("#llv .chip.on", s).map((b) => b.dataset.lv), lpg = $("#lpgs", s).value === "" ? null : Math.round(Number($("#lpgs", s).value));
+    if (lsec && !llv.length) return toast("اختر العمر أو الصف للمكتبة");
+    if (lsec && price === 0 && !isPub(row.file_url)) return toast("ارفع الملف المجاني (PDF) أو ضع سعرًا للملف");
+    if (lpg !== null && !(lpg >= 1 && lpg <= 999)) return toast("عدد الصفحات غير صحيح");
+    Object.assign(row, { lib_section: lsec, lib_levels: llv, lib_subject: $("#lsub", s).value.trim() || null, lib_skill: $("#lskl", s).value.trim() || null, pages: lpg, bw_url: d.bw_url || null, file_type: "PDF" });
+    if (!row.image_url && d._pages && d._pages.length) row.image_url = d._pages[0];
     if (isNew) { row.slug = "p-" + Math.random().toString(36).slice(2, 8); row.sort_order = -Math.floor(Date.now() / 1000); }
     const { error } = isNew ? await sb.from("products").insert(row) : await sb.from("products").update(row).eq("id", d.id);
-    if (error) return fail(error); closeSheet(); toast("تم الحفظ ✓ يظهر في المنصة الآن"); reload ? reload() : go(tab);
+    if (error) return fail(error);
+    if (d._pages) {
+      const del = await sb.from("product_media").delete().eq("product_id", d.id).eq("media_type", "page");
+      if (del.error) return fail(del.error);
+      if (d._pages.length) { const ins = await sb.from("product_media").insert(d._pages.map((u, i) => ({ product_id: d.id, media_type: "page", media_url: u, sort_order: i + 1 }))); if (ins.error) return fail(ins.error); }
+    }
+    closeSheet(); toast("تم الحفظ ✓ يظهر في المنصة الآن"); reload ? reload() : go(tab);
   };
   const dl = $("#dl", s);
   if (dl) dl.onclick = async () => { if (!(await ask(`حذف «${d.name}» نهائياً؟`))) return; const { error } = await sb.from("products").delete().eq("id", d.id); if (error) return fail(error); toast("حُذف"); reload && reload(); };
