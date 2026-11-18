@@ -34,7 +34,7 @@ def num(n):
     disk(d, c, c-10*S, 215*S, PUR)
     t = AD(n); sz = 270 if len(t)==1 else (230 if len(t)==2 else 170)
     center_text(d, (c, c-30*S), t, font(sz), "white", shade(PUR,0.6), 5)
-    center_text(d, (c, c+155*S), str(n), font(52), (255,255,255,230))
+    center_text(d, (c, c+150*S), str(n), font(78), (255,255,255,235), shade(PUR,0.6), 3)
     save(im, f"num/{n}.webp")
 
 def dots(d, n, x0, y0, x1, y1, col, cross=0, r=None):
@@ -55,7 +55,7 @@ def panel(d):
 def mathimg(op, a, b):
     im = canvas(); d = ImageDraw.Draw(im); panel(d)
     if op == "add":
-        dots(d, a, 40*S, 70*S, 250*S, 300*S, "#ff7043"); dots(d, b, 270*S, 70*S, 480*S, 300*S, "#29b6f6")
+        dots(d, a, 28*S, 70*S, 224*S, 300*S, "#ff7043"); dots(d, b, 296*S, 70*S, 492*S, 300*S, "#29b6f6")
         center_text(d, (260*S, 180*S), "+", font(60), PUR)
         sym = "+"; res = a+b
     else:
@@ -65,8 +65,8 @@ def mathimg(op, a, b):
 
 def cmp(a, b):
     im = canvas(); d = ImageDraw.Draw(im); panel(d)
-    dots(d, a, 36*S, 70*S, 236*S, 330*S, "#ff7043", r=22*S); dots(d, b, 276*S, 70*S, 476*S, 330*S, "#29b6f6", r=22*S)
-    center_text(d, (256*S, 200*S), "؟", font(70), PUR)
+    dots(d, a, 30*S, 70*S, 226*S, 330*S, "#ff7043", r=18*S); dots(d, b, 296*S, 70*S, 492*S, 330*S, "#29b6f6", r=18*S)
+    center_text(d, (260*S, 200*S), "؟", font(60), PUR)
     center_text(d, (136*S, 410*S), AD(a), font(90), "#ff7043", shade("#ff7043",0.6), 3)
     center_text(d, (376*S, 410*S), AD(b), font(90), "#29b6f6", shade("#29b6f6",0.6), 3)
     save(im, f"math/cmp-{a}-{b}.webp")
@@ -114,6 +114,7 @@ if __name__ == "__main__":
     import data
     for c in data.cards:
         k = c["extra"].get("kind")
+        if k in ("sub",): continue
         if k == "num": num(c["extra"]["val"])
         elif k in ("add","sub"): mathimg(k, c["extra"]["a"], c["extra"]["b"])
         elif k == "cmp": cmp(c["extra"]["a"], c["extra"]["b"])

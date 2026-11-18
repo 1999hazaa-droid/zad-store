@@ -276,9 +276,9 @@ for c in [x for x in by("num-") if x["key"] in [f"num-{n}" for n in range(1,11)]
     add("english","الأرقام",c["ar"],c["en"],c["img"],f"This is number {c['en'].lower()}.",[5,6],[1,2,3],"الإنجليزية: الأرقام","إنجليزي",
         extra=dict(val=c["extra"]["val"]),key="en-"+c["key"])
 for c in by("ani-")[:16]:
-    add("english","الحيوانات",c["ar"],c["en"],c["img"],f"I see a {c['en'].lower()}.",[4,5,6],[1,2,3],"الإنجليزية: الحيوانات","إنجليزي",key="en-"+c["key"])
+    add("english","الحيوانات",c["ar"],c["en"],c["img"],f"I see {'an' if c['en'][0] in 'AEIOU' else 'a'} {c['en'].lower()}.",[4,5,6],[1,2,3],"الإنجليزية: الحيوانات","إنجليزي",key="en-"+c["key"])
 for c in by("food-")[:12]:
-    add("english","الفواكه والخضروات",c["ar"],c["en"],c["img"],f"I like {c['en'].lower()}.",[4,5,6],[1,2,3],"الإنجليزية: الفواكه","إنجليزي",key="en-"+c["key"])
+    add("english","الفواكه والخضروات",c["ar"],c["en"],c["img"],f"This is {'an' if c['en'][0] in 'AEIOU' else 'a'} {c['en'].lower()}." if c['en'] not in ("Grapes","Cherries","Blueberries") else f"These are {c['en'].lower()}.",[4,5,6],[1,2,3],"الإنجليزية: الفواكه","إنجليزي",key="en-"+c["key"])
 for k in ["voc-x_eye","voc-x_ear","voc-x_nose","voc-x_mouth","voc-x_hand","voc-x_foot","voc-1f3e0","voc-1f697","voc-2708","voc-1f68c","voc-1f4d6",
           "voc-270f","voc-1f392","voc-26bd","voc-1f6aa","voc-x_bed","voc-2600","voc-1f319","voc-1f333"]:
     c = [x for x in cards if x["key"]==k][0]
