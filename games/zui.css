@@ -1843,3 +1843,6 @@ html.zv-mute body .rep .zx,html.zv-mute body .zrp .zx{display:inline}
 :root body .zpd-sc .zpd-an{font-weight:800;font-size:14px;white-space:nowrap}
 :root body .zpd-sc .zpd-bar{height:8px;margin:0}
 :root body .zpd-sc .zpd-tag{white-space:nowrap;min-width:64px;text-align:center}
+:root body .zpd-cl{background:#F1EBFF;border-color:#DCCCFF}
+:root body .zpd-cl h2{display:flex;align-items:center;gap:8px}
+:root body .zhacc{display:block;margin:10px auto 0;background:none;border:0;color:#5427D5;font:800 14px Cairo,Tajawal,system-ui,sans-serif;text-decoration:underline;padding:10px;min-height:44px}
