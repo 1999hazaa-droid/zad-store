@@ -201,10 +201,14 @@ for ar,en,im,sub,col,ex,ai in FD:
 # ---------- المفردات ----------
 V = []
 def voc(sub,ar,en,im,ex,ai=None,ag=None):
-    img = Z+im+".webp"
+    img = im[1:] if im.startswith("@") else Z+im+".webp"
     add("vocab",sub,ar,en,img,ex,ag or [2,3,4,5,6],[1],"المفردات","لغتي",audio=(A+ai) if ai else None,key="voc-"+im)
 voc("الأسرة","أسرة","Family","1f468-1f469-1f467","أنا أحبّ أسرتي.")
 voc("الأسرة","طفل","Child","1f9d2","الطفل يلعب في الحديقة.")
+for ar,en,im,ex in [("أمّ","Mother","mom","أمّي تحبّني كثيرًا."),("أب","Father","dad","أبي يأخذني إلى الحديقة."),
+    ("جدّة","Grandmother","grandma","جدّتي تحكي لي قصة جميلة."),("جدّ","Grandfather","grandpa","جدّي يلعب معي."),
+    ("أخ","Brother","brother","أخي يلعب معي بالكرة."),("أخت","Sister","sister","أختي ترسم معي.")]:
+    voc("الأسرة",ar,en,"@images/cards/obj/"+im+".webp",ex)
 for ar,en,im,ex in [("معلّمة","Teacher","x_teacher","المعلّمة تشرح الدرس."),("طبيب","Doctor","x_doctor","الطبيب يعالج المرضى."),
     ("مزارع","Farmer","x_farmer","المزارع يزرع الأرض."),("شرطي","Police officer","x_police","الشرطي يحمي الناس."),
     ("رجل إطفاء","Firefighter","x_firefighter","رجل الإطفاء يطفئ النار."),("طيّار","Pilot","x_pilot","الطيّار يقود الطائرة."),

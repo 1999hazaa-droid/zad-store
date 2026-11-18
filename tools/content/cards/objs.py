@@ -131,3 +131,44 @@ def peach():
     L(d,[(256,100),(240,200),(256,300),(240,440)],"#e6785a",5)
     E(d,(130,130,210,200),(255,255,255,110)); face(d,200,290,34,11); E(d,(130,330,172,360),"#ff7a8c")
     save(im,"obj/peach.webp")
+
+def person(name, skin, hair, shirt, kind):
+    im=canvas(); d=ImageDraw.Draw(im); sh(d,(110*S,462*S,402*S,500*S))
+    big = kind in ("mom","dad","grandma","grandpa")
+    top = 190 if big else 250
+    # الجسم
+    R(d,(150 if big else 180,top+130,362 if big else 332,500),shirt,60)
+    R(d,(226,top+110,286,top+160),skin)
+    # شعر خلفي
+    if kind in("mom","sister","grandma"): R(d,(150,90,362,top+120),hair,70)
+    hx,hy=256,(top+30 if big else top+10)
+    rr=118 if big else 104
+    E(d,(hx-rr,hy-rr,hx+rr,hy+rr),skin,shade(skin_hex(skin),0.8),5)
+    # شعر أمامي
+    if kind=="dad": E(d,(hx-rr,hy-rr,hx+rr,hy-10),hair)
+    if kind=="brother": E(d,(hx-rr,hy-rr-6,hx+rr,hy-14),hair); 
+    if kind in("mom","sister","grandma"): E(d,(hx-rr,hy-rr,hx+rr,hy-30),hair)
+    if kind=="grandpa": E(d,(hx-rr+10,hy-rr+4,hx-rr+50,hy-30),"#e0e0e0"); E(d,(hx+rr-50,hy-rr+4,hx+rr-10,hy-30),"#e0e0e0")
+    if kind=="grandma": E(d,(hx-45,hy-rr-30,hx+45,hy-rr+40),"#e0e0e0")
+    if kind=="mom": E(d,(hx-40,hy-rr-34,hx+40,hy-rr+34),hair)
+    if kind=="sister":
+        E(d,(hx-rr-12,hy-rr-8,hx-rr+40,hy-rr+44),"#e53935"); E(d,(hx+rr-40,hy-rr-8,hx+rr+12,hy-rr+44),"#e53935")
+    # وجه
+    eyes(d,hx,hy+4,38 if big else 34,11); 
+    E(d,(hx-rr+22,hy+30,hx-rr+60,hy+58),"#ff9db0"); E(d,(hx+rr-60,hy+30,hx+rr-22,hy+58),"#ff9db0")
+    L(d,[(hx-18,hy+46),(hx,hy+62),(hx+18,hy+46)],"#3b2a50",6)
+    if kind in("dad","grandpa"):
+        c="#5d4037" if kind=="dad" else "#eeeeee"
+        P(d,[(hx-80,hy+68),(hx,hy+84),(hx+80,hy+68),(hx+62,hy+124),(hx,hy+142),(hx-62,hy+124)],c)
+    if kind in("grandma","grandpa"):
+        for dx in(-38,38): E(d,(hx+dx-26,hy-20,hx+dx+26,hy+32),None,"#5d4037",5)
+        L(d,[(hx-12,hy+4),(hx+12,hy+4)],"#5d4037",5)
+    save(im,f"obj/{name}.webp")
+
+def skin_hex(c): return c
+def family():
+    sk="#ffd9b8"
+    person("mom",sk,"#5d3a1a","#e91e63","mom"); person("dad",sk,"#3e2723","#1e88e5","dad")
+    person("grandma",sk,"#9e9e9e","#8e24aa","grandma"); person("grandpa",sk,"#9e9e9e","#43a047","grandpa")
+    person("brother",sk,"#3e2723","#fb8c00","brother"); person("sister",sk,"#5d3a1a","#26a69a","sister")
+if __name__=="__main__" and False: pass
