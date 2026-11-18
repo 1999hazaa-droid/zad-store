@@ -108,7 +108,9 @@ function vurl(t) {
   VC.set(t, pr); pr.then((v) => { if (!v) VC.delete(t); });
   return pr;
 }
-function playUrl(u) { return new Promise((res) => { try { AU.onended = AU.onerror = () => res(); AU.src = u; AU.currentTime = 0; const p = AU.play(); if (p && p.catch) p.catch(() => res()); } catch (e) { res(); } }); }
+const VRATE = (() => { try { let v = +localStorage.getItem("hg_vrate"); if (v === 0.9) v = 0.85; return v >= 0.6 && v <= 1.2 ? v : 0.85; } catch (e) { return 0.85; } })();
+function vrate(a) { try { a.defaultPlaybackRate = a.playbackRate = VRATE; a.preservesPitch = a.webkitPreservesPitch = a.mozPreservesPitch = true; } catch (e) { /* */ } }
+function playUrl(u) { return new Promise((res) => { try { AU.onended = AU.onerror = () => res(); AU.src = u; vrate(AU); AU.currentTime = 0; const p = AU.play(); if (p && p.catch) p.catch(() => res()); } catch (e) { res(); } }); }
 async function say(raw, btn) {
   const tok = ++vtok; stopSay(true);
   if (MUTE) return;

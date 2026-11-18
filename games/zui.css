@@ -1772,3 +1772,45 @@ html.zv-mute body .rep .zx,html.zv-mute body .zrp .zx{display:inline}
 :root body .zpd-c>small.zpd-n{font-size:12px;color:var(--zmut);display:block}
 /* الهاتف: الشعار يأخذ المساحة الفارغة بين «رجوع» والأزرار حتى لا يتداخل مع زر «بلا إنترنت» */
 @media (max-width:430px){:root body .top:has(#zo-pill)::after{position:static;transform:none;order:1;flex:0 1 96px;min-width:0;width:auto;height:42px;aspect-ratio:auto;margin-inline:auto}:root body .top:has(#zo-pill) #back{order:0}:root body .top:has(#zo-pill) #zo-pill{order:2;margin-inline-start:0}:root body .top:has(#zo-pill) .zdock{order:3}}
+/* أزرار الصوت والموسيقى: أيقونة موحّدة صغيرة بنفسجية مع حالة إيقاف واضحة */
+:root body #vmute,:root body #mute{width:44px;height:44px;min-width:44px!important;min-height:44px!important;padding:0!important;border-radius:50%!important;background:#fff!important;border:1.5px solid #E4D9FF!important;color:var(--z-pri,#6D28D9)!important;display:grid!important;place-items:center!important;box-shadow:0 2px 8px rgba(53,16,120,.18)!important}
+:root body .zic.zsv{font-size:0;line-height:0;display:grid;place-items:center;color:inherit;opacity:1}
+:root body .zic.zsv .zsi{width:22px;height:22px;display:block}
+:root body .zic.zsv.off{color:#A19BB8}
+:root body .zic.zsv.off .zw{display:none}
+:root body .zic.zsv.off:after{left:0;right:0;height:2.5px;background:#E0457B;transform:rotate(-40deg)}
+:root body #vmute svg.zsi,:root body #mute svg.zsi{width:22px!important;height:22px!important;min-width:0!important;min-height:0!important;max-width:none!important;padding:0!important;margin:0!important;border:0!important;background:none!important;box-shadow:none!important;box-sizing:content-box!important;transform:none!important;display:block!important;color:inherit!important}
+:root body #vmute .zic.zsv,:root body #mute .zic.zsv{width:22px;height:22px}
+/* شاشة البداية الموحّدة */
+:root body .zstart .lvhero{padding-bottom:6px}
+:root body .zst-how{display:flex;gap:10px;align-items:center;background:#F6F1FF;border:1.5px solid #E7DDFF;border-radius:18px;padding:10px 14px;margin:14px 0 6px;text-align:start}
+:root body .zst-how img{width:52px;height:52px;flex:none;object-fit:contain}
+:root body .zst-how p{margin:0;font-weight:800;color:#3B1F7A;font-size:16px;line-height:1.6}
+:root body .zst-go{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:360px;margin:14px auto 4px;min-height:60px;padding:0 22px;border:0;border-radius:20px;background:linear-gradient(180deg,#FFD84F,#F5B400);color:#3A2300;font:inherit;font-size:20px;font-weight:800;box-shadow:0 5px 0 #C99000,0 10px 22px rgba(201,144,0,.28);cursor:pointer;transition:transform .12s,box-shadow .12s}
+:root body .zst-go svg{width:26px;height:26px;flex:none}
+:root body .zst-go:active{transform:translateY(3px);box-shadow:0 2px 0 #C99000}
+:root body .zstart.yg .zst-go{min-height:72px;font-size:22px;animation:zstp 1.8s ease-in-out infinite}
+@keyframes zstp{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@media (prefers-reduced-motion:reduce){:root body .zstart.yg .zst-go{animation:none}}
+/* سؤال الاستماع: بطاقة واضحة بدل صندوق فارغ */
+:root body .emo.big:has(> .rep:only-child){display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:linear-gradient(180deg,#F7F2FF,#EDE4FF)!important;border:2px dashed #CDB8FF!important}
+:root body .emo.big > .rep:only-child{position:static!important;inset:auto!important;width:58px!important;height:58px!important;margin:0!important}
+:root body .emo.big > .rep:only-child .zsi{width:28px!important;height:28px!important}
+:root body .emo.big:has(> .rep:only-child)::after{content:"استمع ثم اختر";font-size:13px!important;line-height:1.3;font-weight:800;color:#5B34D6;font-family:inherit}
+:root body .tg-plq{text-align:center;font-size:18px;font-weight:800;color:#3B1F7A;margin:0 0 8px}
+:root body .tg-plq b{color:#7C3AED;background:#F3ECFF;border-radius:12px;padding:2px 12px}
+:root body .tg-numw .tg-top{width:auto!important;min-width:min(70%,260px);max-width:100%;aspect-ratio:auto!important;height:auto!important;padding:6px 14px}
+/* المجموعة الصحيحة: عناصر أكبر يسهل عدّها */
+:root body .tg-grp6 .tg-opt{border-radius:26px!important;padding:7%!important;width:min(40vw,168px)!important;height:auto!important;aspect-ratio:1;background:#fff!important}
+:root body .tg-grp6 .tg-grp.many{gap:3%}
+:root body .tg-grp6 .tg-grp.g4 .tgi,:root body .tg-grp6 .tg-grp.g5 .tgi,:root body .tg-grp6 .tg-grp.g6 .tgi{width:30%}
+:root body .tg-grp6 .tg-grp.g7 .tgi,:root body .tg-grp6 .tg-grp.g8 .tgi,:root body .tg-grp6 .tg-grp.g9 .tgi,:root body .tg-grp6 .tg-grp.g10 .tgi{width:22%}
+/* معادلة الجمع المصوّر في سطر واحد */
+:root body .tg-add6 .tg-eqn{flex-wrap:nowrap;gap:4px;padding:10px 8px}
+:root body .tg-add6 .tg-eqn .tg-eqt{min-width:0}
+/* بطاقة السؤال النصي: عرض مناسب للنص بدل المربع الضيق */
+:root body .tg-top:has(> .lk-h){width:auto!important;min-width:min(78%,300px);max-width:100%;aspect-ratio:auto!important;height:auto!important;display:flex;align-items:center;justify-content:center;padding:8px 16px;animation:none}
+:root body .g1blank.g2pb{display:inline-block;min-width:34px;height:1.15em;vertical-align:middle}
+/* المفرد والمثنى والجمع: صور أوضح */
+:root body .tg-du .tg-top .mu-row>.tgi{width:62px!important;height:62px!important;max-width:62px!important}
+:root body .tg-du .tg-top .mu-row>.tgi:only-child,:root body .tg-du .tg-top .mu-row>.tgi:first-child:nth-last-child(2),:root body .tg-du .tg-top .mu-row>.tgi:last-child:nth-child(2){width:88px!important;height:88px!important;max-width:88px!important}
