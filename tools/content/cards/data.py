@@ -28,7 +28,7 @@ LET = [  # id, حرف, اسم, متصل, كلمة، صورة، صوت الكلم
  ("ha","ح","حاء",1,"حصان","1f434","w1","الحصان يركض بسرعة."),
  ("kha","خ","خاء",1,"خروف","1f411","w1","الخروف له صوف ناعم."),
  ("dal","د","دال",0,"دُبّ","1f43b","w1","الدُّبّ يحبّ العسل."),
- ("dhal","ذ","ذال",0,"ذُرة",None,"w1","الذُّرة صفراء."),
+ ("dhal","ذ","ذال",0,"ذُرة","@images/cards/obj/corn.webp","w1","الذُّرة صفراء."),
  ("ra","ر","راء",0,"رجل","1f6b6","w2","الرجل يمشي في الطريق."),
  ("zay","ز","زاي",0,"زرافة","1f992","w1","الزرافة لها رقبة طويلة."),
  ("sin","س","سين",1,"سمكة","1f41f","w1","السمكة تسبح في البحر."),
@@ -50,7 +50,7 @@ LET = [  # id, حرف, اسم, متصل, كلمة، صورة، صوت الكلم
  ("ya","ي","ياء",1,"يد","x_hand","w1","أغسل يدي قبل الأكل."),
 ]
 for i,(id,ch,nm,con,w,im,aw,ex) in enumerate(LET):
-    img = None if im is None else (Z+im+".webp" if not im.startswith("x_") else Z+im+".webp")
+    img = None if im is None else (im[1:] if im.startswith("@") else Z+im+".webp")
     add("letters","الحروف",w,"",img,ex,[4,5,6],[1],"التعرّف على الحروف","لغتي",
         audio=(A+f"{id}.{aw}.mp3") if aw else None,
         extra=dict(ch=ch,name=nm,con=con,order=i+1,name_audio=A+f"{id}.name.mp3"),key="letter-"+id)
@@ -257,15 +257,15 @@ ENL = {  # حرف: (كلمة, صورة)
  "A":("Apple","1f34e"),"B":("Ball","26bd"),"C":("Cat","1f431"),"D":("Dog","1f436"),"E":("Elephant","1f418"),"F":("Fish","1f41f"),
  "G":("Giraffe","1f992"),"H":("House","1f3e0"),"I":("Ice cream","x_icecream"),"J":("Jar","x_jar"),"K":("Key","1f511"),
  "L":("Lion","1f981"),"M":("Moon","1f319"),"N":("Nose","x_nose"),"O":("Orange","1f34a"),"P":("Pencil","270f"),
- "Q":("Queen",None),"R":("Rabbit","1f430"),"S":("Sun","2600"),"T":("Tree","1f333"),"U":("Umbrella","x_umbrella"),
- "V":("Van",None),"W":("Watermelon","1f349"),"X":("Xylophone",None),"Y":("Yo-yo",None),"Z":("Zebra","1f993"),
+ "Q":("Queen","@images/cards/obj/queen.webp"),"R":("Rabbit","1f430"),"S":("Sun","2600"),"T":("Tree","1f333"),"U":("Umbrella","x_umbrella"),
+ "V":("Van","@images/cards/obj/van.webp"),"W":("Watermelon","1f349"),"X":("Xylophone","@images/cards/obj/xylophone.webp"),"Y":("Yo-yo","@images/cards/obj/yoyo.webp"),"Z":("Zebra","1f993"),
 }
 AR_OF = {"Apple":"تفاحة","Ball":"كرة","Cat":"قطة","Dog":"كلب","Elephant":"فيل","Fish":"سمكة","Giraffe":"زرافة","House":"بيت",
  "Ice cream":"آيس كريم","Jar":"برطمان","Key":"مفتاح","Lion":"أسد","Moon":"قمر","Nose":"أنف","Orange":"برتقالة","Pencil":"قلم",
  "Queen":"ملكة","Rabbit":"أرنب","Sun":"شمس","Tree":"شجرة","Umbrella":"مظلّة","Van":"شاحنة صغيرة","Watermelon":"بطيخ",
  "Xylophone":"إكسيلوفون","Yo-yo":"يويو","Zebra":"حمار وحشي"}
 for i,(L,(w,im)) in enumerate(ENL.items()):
-    add("english","الحروف الإنجليزية",AR_OF[w],f"{w}",None if im is None else Z+im+".webp",f"{L} is for {w}.",
+    add("english","الحروف الإنجليزية",AR_OF[w],f"{w}",None if im is None else (im[1:] if im.startswith("@") else Z+im+".webp"),f"{L} is for {w}.",
         [5,6],[1,2,3],"الحروف الإنجليزية","إنجليزي",extra=dict(ch=L,order=i+1,word=w),key="en-letter-"+L.lower())
 # كلمات إنجليزية مشتقة من بطاقات موجودة (الصورة نفسها)
 def by(prefix): return [c for c in cards if c["key"] and c["key"].startswith(prefix)]
