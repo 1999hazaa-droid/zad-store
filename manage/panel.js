@@ -171,7 +171,7 @@ async function orderSheet(id, reload, cache) {
 let CATS = [], pFilter = "all", pQ = "";
 async function products(m) {
   const [p, c] = await Promise.all([
-    sb.from("products").select("id,name,price,old_price,category_id,image_url,thumb_url,is_visible,is_available,is_best_seller,is_new_arrival,stock,description,file_url,slug,sort_order,lib_section,lib_levels,lib_subject,lib_skill,pages,bw_url,file_type,lib_type,lib_unit,lib_keywords,lib_status,lib_order,created_at").order("sort_order", { ascending: true }),
+    sb.from("products").select("id,name,price,old_price,category_id,image_url,thumb_url,is_visible,is_available,is_best_seller,is_new_arrival,stock,description,file_url,slug,sort_order,lib_section,lib_levels,lib_subject,lib_skill,pages,bw_url,file_type,lib_type,lib_unit,lib_keywords,lib_difficulty,lib_status,lib_order,created_at").order("sort_order", { ascending: true }),
     sb.from("categories").select("id,name,sort_order").order("sort_order", { ascending: true })
   ]);
   if (p.error) throw p.error; CATS = c.data || []; const all = p.data || [];
@@ -197,7 +197,7 @@ function resizeImg(file, max = 1100) {
 }
 /* ---------- المكتبة التعليمية ---------- */
 const LIBSEC = { ws: "أوراق العمل", letters: "الحروف العربية", math: "الأرقام والرياضيات", color: "أنشطة التلوين", cards: "بطاقات تعليمية", stories: "القصص المصوّرة", home: "الأنشطة المنزلية", think: "التفكير والذكاء", review: "الاختبارات والمراجعات", extra: "الملفات الإثرائية", teacher: "أدوات المعلّمة" };
-const LIBLV = [["a2", "سنة إلى سنتين"], ["a3", "3 سنوات"], ["a4", "4 سنوات"], ["a5", "5 سنوات"], ["a6", "6 سنوات"], ["g1", "الصف الأول"], ["g2", "الصف الثاني"], ["g3", "الصف الثالث"], ["g4", "الصف الرابع"]];
+const LIBLV = [["a2", "سنة إلى سنتين"], ["a3", "3 سنوات"], ["a4", "4 سنوات"], ["a5", "5 سنوات"], ["a6", "6 سنوات"], ["g1", "الصف الأول"], ["g2", "الصف الثاني"], ["g3", "الصف الثالث"], ["g4", "الصف الرابع"], ["g5", "الصف الخامس"], ["g6", "الصف السادس"]];
 const LIBSUBJ = ["اللغة العربية", "الرياضيات", "اللغة الإنجليزية", "العلوم", "التربية الإسلامية", "الهوية والمواطنة", "التفكير", "التلوين", "المهارات الحياتية", "المواد المصاحبة", "أدوات المعلّمة", "متنوع"];
 const LIBSTATUS = [["draft", "مسودة"], ["review", "قيد المراجعة"], ["published", "منشور"], ["unpublished", "غير منشور"]];
 const LIBTYPES = [["worksheet", "ورقة عمل"], ["pdf", "ملف PDF"], ["story", "قصة تعليمية"], ["cards", "بطاقات تعليمية"], ["home_activity", "نشاط منزلي"], ["exercises", "تدريبات"], ["review", "مراجعة دراسية"], ["summary", "ملخص"], ["teaching_aid", "وسيلة تعليمية"], ["printable_activity", "نشاط قابل للطباعة"]];
@@ -277,7 +277,7 @@ function productSheet(p, reload, preset) {
   <div class="row"><label class="f"><span>المادة</span><input type="text" id="lsub" list="lsubs" value="${esc(d.lib_subject || "")}" placeholder="مثال: الرياضيات"></label><label class="f"><span>المهارة أو الموضوع</span><input type="text" id="lskl" value="${esc(d.lib_skill || "")}" placeholder="مثال: الجمع ضمن 20"></label></div>
   <datalist id="lsubs">${SUBJ_.map((x) => `<option value="${esc(x)}">`).join("")}</datalist>
   <label class="f"><span>عدد الصفحات</span><input type="number" id="lpgs" inputmode="numeric" min="1" max="999" value="${d.pages ?? ""}" placeholder="يُملأ تلقائيًا عند رفع الملف"></label>
-  <div class="row"><label class="f"><span>نوع المحتوى</span><select id="ltyp"><option value="">غير محدد</option>${TYPES_.map(([k, v]) => `<option value="${k}" ${d.lib_type === k ? "selected" : ""}>${esc(v)}</option>`).join("")}</select></label><label class="f"><span>الوحدة أو الدرس</span><input type="text" id="lunit" value="${esc(d.lib_unit || "")}" placeholder="مثال: الوحدة 3"></label></div>
+  <div class="row"><label class="f"><span>نوع المحتوى</span><select id="ltyp"><option value="">غير محدد</option>${TYPES_.map(([k, v]) => `<option value="${k}" ${d.lib_type === k ? "selected" : ""}>${esc(v)}</option>`).join("")}</select></label><label class="f"><span>مستوى الصعوبة</span><select id="ldif"><option value="">غير محدد</option>${[["easy","سهل"],["medium","متوسط"],["hard","متقدّم"]].map(([k, v]) => `<option value="${k}" ${d.lib_difficulty === k ? "selected" : ""}>${v}</option>`).join("")}</select></label><label class="f"><span>الوحدة أو الدرس</span><input type="text" id="lunit" value="${esc(d.lib_unit || "")}" placeholder="مثال: الوحدة 3"></label></div>
   <label class="f"><span>الكلمات المفتاحية (افصل بينها بفاصلة)</span><input type="text" id="lkw" value="${esc(d.lib_keywords || "")}" placeholder="مثال: جمع، أعداد، تمارين"></label>
   <label class="f"><span>حالة النشر</span><select id="lst">${LIBSTATUS.map(([k, v]) => `<option value="${k}" ${(d.lib_status || (d.is_visible === false ? "unpublished" : "published")) === k ? "selected" : ""}>${v}</option>`).join("")}</select><small>لا يراه الزوار إلا إذا كانت الحالة «منشور».</small></label>
   <button type="button" class="btn g" id="lprev" style="margin-top:6px">👁️ معاينة قبل النشر</button>
@@ -398,7 +398,7 @@ function productSheet(p, reload, preset) {
     if (lsec) { const dup = (await sb.from("products").select("id,name").eq("name", name).not("lib_section", "is", null).neq("id", d.id).limit(1)).data; if (dup && dup.length && !(await ask(`يوجد ملف آخر بنفس العنوان «${name}». هل تحفظ رغم ذلك؟`, "نعم، احفظ"))) return; }
     if (lsec && price === 0 && !isPub(row.file_url)) return toast("ارفع الملف المجاني (PDF) أو ضع سعرًا للملف");
     if (lpg !== null && !(lpg >= 1 && lpg <= 999)) return toast("عدد الصفحات غير صحيح");
-    Object.assign(row, { lib_section: lsec, lib_levels: llv, lib_subject: $("#lsub", s).value.trim() || null, lib_skill: $("#lskl", s).value.trim() || null, pages: lpg, bw_url: d.bw_url || null, file_type: "PDF", lib_type: lsec ? ($("#ltyp", s).value || null) : null, lib_unit: lsec ? ($("#lunit", s).value.trim() || null) : null, lib_keywords: lsec ? ($("#lkw", s).value.split(/[,،]/).map((x) => x.trim()).filter(Boolean).join("، ") || null) : null, lib_status: lst });
+    Object.assign(row, { lib_section: lsec, lib_levels: llv, lib_subject: $("#lsub", s).value.trim() || null, lib_skill: $("#lskl", s).value.trim() || null, pages: lpg, bw_url: d.bw_url || null, file_type: "PDF", lib_type: lsec ? ($("#ltyp", s).value || null) : null, lib_difficulty: lsec ? ($("#ldif", s).value || null) : null, lib_unit: lsec ? ($("#lunit", s).value.trim() || null) : null, lib_keywords: lsec ? ($("#lkw", s).value.split(/[,،]/).map((x) => x.trim()).filter(Boolean).join("، ") || null) : null, lib_status: lst });
     if (lsec) row.is_visible = lst === "published";
     if (!row.image_url && d._pages && d._pages.length) row.image_url = d._pages[0];
     if (isNew) { row.slug = "p-" + Math.random().toString(36).slice(2, 8); row.sort_order = -Math.floor(Date.now() / 1000); }

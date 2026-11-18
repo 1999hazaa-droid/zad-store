@@ -15,7 +15,7 @@ const IMG = (n) => ROOT + "images/zad/" + n + ".webp";
 const LV = [
   ["a2", "سنة إلى سنتين", "i_bottle", "سنة"], ["a3", "3 سنوات", "i_teddy", "3"], ["a4", "4 سنوات", "i_balloon", "4"],
   ["a5", "5 سنوات", "i_pencil", "5"], ["a6", "6 سنوات", "i_bag", "6"],
-  ["g1", "الصف الأول", "i_n1", "الأول"], ["g2", "الصف الثاني", "i_n2", "الثاني"], ["g3", "الصف الثالث", "i_n3", "الثالث"], ["g4", "الصف الرابع", "i_n4", "الرابع"]
+  ["g1", "الصف الأول", "i_n1", "الأول"], ["g2", "الصف الثاني", "i_n2", "الثاني"], ["g3", "الصف الثالث", "i_n3", "الثالث"], ["g4", "الصف الرابع", "i_n4", "الرابع"], ["g5", "الصف الخامس", "i_n5", "الخامس"], ["g6", "الصف السادس", "i_n6", "السادس"]
 ];
 const LVI = Object.fromEntries(LV.map((l, i) => [l[0], i]));
 const SEC = [
@@ -42,6 +42,7 @@ const store = {
 let FAV = store.get("fav", []), REC = store.get("recent", []);
 if (!Array.isArray(FAV)) FAV = []; if (!Array.isArray(REC)) REC = [];
 
+const DIFF = { easy: "سهل", medium: "متوسط", hard: "متقدّم" };
 const TYPES = { worksheet: "ورقة عمل", pdf: "ملف PDF", story: "قصة تعليمية", cards: "بطاقات تعليمية", home_activity: "نشاط منزلي", exercises: "تدريبات", review: "مراجعة دراسية", summary: "ملخص", teaching_aid: "وسيلة تعليمية", printable_activity: "نشاط قابل للطباعة" };
 /* التصنيفات التي يديرها المسؤول: تعدّل الأسماء وتضيف أعمارًا وصفوفًا وأقسامًا جديدة، وتبقى الأساسية كما هي إن تعذّر التحميل */
 function applyTax(rows) {
@@ -72,7 +73,7 @@ function api(path, opt) {
     .then((r) => { if (t) clearTimeout(t); if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
     .then((x) => (x ? JSON.parse(x) : null));
 }
-const SEL = "id,name,slug,price,old_price,image_url,thumb_url,description,file_url,bw_url,lib_section,lib_levels,lib_subject,lib_skill,pages,file_type,created_at,is_available,lib_type,lib_unit,lib_keywords,lib_order";
+const SEL = "id,name,slug,price,old_price,image_url,thumb_url,description,file_url,bw_url,lib_section,lib_levels,lib_subject,lib_skill,pages,file_type,created_at,is_available,lib_type,lib_unit,lib_keywords,lib_order,lib_difficulty";
 
 /* ---------- أدوات ---------- */
 function abs(u) { u = String(u || ""); return /^(https?:|data:)/i.test(u) ? u : ROOT + u.replace(/^\/+/, ""); }
@@ -121,7 +122,7 @@ function searchText(p) {
   if (p._s) return p._s;
   const sec = SECI[p.lib_section];
   const lv = lvSorted(p).map((x) => LV[LVI[x]][1] + " " + LV[LVI[x]][3]).join(" ");
-  p._s = norm([p.name, p.description, p.lib_subject, p.lib_skill, p.lib_unit, p.lib_keywords, TYPES[p.lib_type] || "", sec ? sec[1] + " " + sec[2] : "", lv, isFree(p) ? "مجاني مجانا" : "مدفوع", p.file_type || "PDF"].join(" "));
+  p._s = norm([p.name, p.description, p.lib_subject, p.lib_skill, p.lib_unit, p.lib_keywords, TYPES[p.lib_type] || "", DIFF[p.lib_difficulty] || "", sec ? sec[1] + " " + sec[2] : "", lv, isFree(p) ? "مجاني مجانا" : "مدفوع", p.file_type || "PDF"].join(" "));
   return p._s;
 }
 function matches(p, o) {
@@ -178,7 +179,7 @@ function card(p, o) {
 <button type="button" class="lfav" data-a="fav" aria-pressed="${fav}" aria-label="${fav ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}: ${esc(p.name)}">${ICON.heart}</button>
 <div class="lbd"><h3>${esc(p.name)}</h3>${p.description ? `<p class="lds">${esc(String(p.description).split("\n")[0])}</p>` : ""}
 <div class="lmeta">${lv ? `<span>${esc(lv)}</span>` : ""}${o.skill && p.lib_skill ? `<span class="ls">${esc(p.lib_skill)}</span>` : p.lib_subject ? `<span class="ls" title="${esc(subj)}">${esc(p.lib_subject)}</span>` : sec ? `<span class="ls">${esc(sec[1])}</span>` : ""}</div>
-<div class="lft"><b>${esc(p.file_type || "PDF")}</b>${pg ? `<span>${esc(pg)}</span>` : ""}${free && p.bw_url ? "<span>ملوّن وأبيض وأسود</span>" : ""}</div>
+<div class="lft"><b>${esc(p.file_type || "PDF")}</b>${DIFF[p.lib_difficulty] ? `<span class="ldf">${esc(DIFF[p.lib_difficulty])}</span>` : ""}${pg ? `<span>${esc(pg)}</span>` : ""}${free && p.bw_url ? "<span>ملوّن وأبيض وأسود</span>" : ""}</div>
 </div>${act}</article>`;
 }
 const grid = (list, o) => `<div class="lgrid">${list.map((p) => card(p, o)).join("")}</div>`;
