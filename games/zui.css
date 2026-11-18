@@ -1868,3 +1868,15 @@ html.zv-mute body .rep .zx,html.zv-mute body .zrp .zx{display:inline}
 .zpt small{font-size:.74rem;color:#6B7280}.zpt .zpbar{width:90%;display:block}.zpt-s{display:flex;gap:2px}
 .zpd-pt{border-top:1px solid #EDE9FE;padding:10px 0}.zpd-pth1{display:flex;align-items:center;gap:8px;margin-bottom:6px}.zpd-pth1 b{flex:1}
 .zpd-st{display:flex;gap:2px}.zpd-pl{margin:6px 0 0;font-size:.88rem;line-height:1.7}.zpd-mini{padding:4px 10px;font-size:.82rem;min-height:0;display:inline-flex}
+
+/* شارات المهارات والإنجازات القادمة */
+.ach-up{display:grid;gap:8px}.ach-up>div{display:flex;align-items:center;gap:10px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:16px;padding:8px 10px}
+.ach-up>div>span{flex:none;display:grid;place-items:center;width:44px;height:44px;opacity:.55;filter:grayscale(.3)}.ach-up b{display:block}.ach-up small{display:block;color:#6b7280;font-size:.8rem}
+.ach-up .zpbar{display:block;margin:4px 0 2px}.ach-up em{font-style:normal;font-size:.76rem;color:#7c3aed;font-weight:700}
+.zpd-h3{margin:12px 0 4px;font-size:.95rem;color:#6d28d9}
+
+/* شارات المهارات والإنجازات القادمة */
+.ach-up{display:grid;gap:8px}.ach-up>div{display:flex;align-items:center;gap:10px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:16px;padding:8px 10px}
+.ach-up>div>span{flex:none;display:grid;place-items:center;width:44px;height:44px;opacity:.55}.ach-up b{display:block}.ach-up small{display:block;color:#6b7280;font-size:.8rem}
+.ach-up .zpbar{display:block;margin:4px 0 2px}.ach-up em{font-style:normal;font-size:.76rem;color:#7c3aed;font-weight:700}
+.zpd-h3{margin:12px 0 4px;font-size:.95rem;color:#6d28d9}
