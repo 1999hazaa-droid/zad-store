@@ -185,13 +185,17 @@ FD = [  # ar,en,img,sub,color,ex,audio idx
  ("فراولة","Strawberry","1f353","فواكه","أحمر","الفراولة صغيرة وحمراء.",5),
  ("بطيخ","Watermelon","1f349","فواكه","أخضر وأحمر","البطيخ ممتلئ بالماء ونأكله في الصيف.",6),
  ("جزرة","Carrot","1f955","خضروات","برتقالي","الجزرة خضار برتقالي مفيد لعيوننا.",11),
+ ("مانجو","Mango","@images/cards/obj/mango.webp","فواكه","أصفر","المانجو فاكهة صفراء وحلوة.",7),
+ ("أناناس","Pineapple","@images/cards/obj/pineapple.webp","فواكه","أصفر","الأناناس له تاج أخضر وقشرة خشنة.",8),
+ ("كمثرى","Pear","@images/cards/obj/pear.webp","فواكه","أخضر","الكمثرى خضراء وعصيرية.",9),
+ ("خوخ","Peach","@images/cards/obj/peach.webp","فواكه","وردي","الخوخ ناعم وطعمه حلو.",10),
  ("كرز","Cherries","1f352","فواكه","أحمر","الكرز صغير وحلو.",None),
  ("توت أزرق","Blueberries","1fad0","فواكه","أزرق","التوت الأزرق صغير وطعمه لذيذ.",None),
  ("خيار","Cucumber","1f952","خضروات","أخضر","الخيار خضار أخضر منعش.",None),
  ("باذنجان","Eggplant","1f346","خضروات","بنفسجي","الباذنجان خضار بنفسجي.",None),
 ]
 for ar,en,im,sub,col,ex,ai in FD:
-    add("food",sub,ar,en,Z+im+".webp",ex,[1,2,3,4,5,6] if ai is not None else [3,4,5,6],[1],"الفواكه والخضروات","علوم",
+    add("food",sub,ar,en,(im[1:] if im.startswith("@") else Z+im+".webp"),ex,[1,2,3,4,5,6] if ai is not None else [3,4,5,6],[1],"الفواكه والخضروات","علوم",
         audio=(A+f"c.fru.{ai}.mp3") if ai is not None else None,extra=dict(color=col),key="food-"+im)
 
 # ---------- المفردات ----------
