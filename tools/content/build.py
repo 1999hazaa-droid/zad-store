@@ -3,6 +3,9 @@ import sys, os, subprocess, glob, json
 sys.path.insert(0, os.path.dirname(__file__))
 from libgen import *
 from libspecs import ALL
+try:
+    import libspecs3
+except ImportError: pass
 from playwright.sync_api import sync_playwright
 from PIL import Image
 TMP = '/tmp/claude-0/-home-claude/f8f16bbd-fb86-5b0f-ab89-39a21cbeece6/scratchpad/gen'
