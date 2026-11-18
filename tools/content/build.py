@@ -13,6 +13,7 @@ try:
     import libspecs9
     import libspecs10
     import libspecs11
+    import libspecs12
 except ImportError: pass
 from playwright.sync_api import sync_playwright
 from PIL import Image

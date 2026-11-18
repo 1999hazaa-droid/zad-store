@@ -1,0 +1,44 @@
+/* الأنشطة التعليمية - زاد */
+.ad .zbc{font:600 13px var(--z-font);color:var(--z-ink2);margin-bottom:6px}
+.ad .zbc a{color:var(--z-pri)}
+.agrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));margin:10px 0}
+.ac{background:#fff;border:1px solid var(--z-line);border-radius:18px;box-shadow:var(--z-sh-1);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.ac .im{aspect-ratio:16/10;background:var(--z-tint);display:grid;place-items:center;padding:8px;position:relative}
+.ac .im img{height:100%;max-width:100%;object-fit:contain}
+.ac .dn{position:absolute;top:8px;inset-inline-start:8px;background:#2e7d32;color:#fff;border-radius:99px;font:800 12px var(--z-font);padding:3px 10px}
+.ac .dn.p{background:#ffb300;color:#3a2a00}
+.ac .bd{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.ac h3{font:800 16px/1.4 var(--z-font);margin:0}
+.ac p{font:500 13.5px/1.6 var(--z-font);color:var(--z-ink2);margin:0}
+.ac .mt{display:flex;flex-wrap:wrap;gap:6px}
+.ac .mt span,.avw .mt span{font:700 12px var(--z-font);background:var(--z-tint);color:var(--z-pri);border-radius:99px;padding:3px 10px}
+.ac .mt span.d1{background:#e8f5e9;color:#1b5e20}.ac .mt span.d2{background:#fff3e0;color:#8a4b00}.ac .mt span.d3{background:#fde7ea;color:#9c1c2e}
+.ac .bt{display:flex;gap:8px;margin-top:auto;padding-top:6px}
+.abtn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border-radius:14px;border:2px solid var(--z-pri);background:#fff;color:var(--z-pri);font:800 14px var(--z-font);text-decoration:none;cursor:pointer;padding:0 12px}
+.abtn.go{background:var(--z-pri);color:#fff;box-shadow:0 3px 0 var(--z-pri-d)}
+.abtn:focus-visible{outline:3px solid var(--z-sun);outline-offset:2px}
+.abtn[disabled]{opacity:.5;cursor:default}
+.avw .hd{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center;background:#fff;border:1px solid var(--z-line);border-radius:20px;padding:14px;box-shadow:var(--z-sh-1)}
+.avw .hd img{width:100%;aspect-ratio:1;object-fit:contain;background:var(--z-tint);border-radius:16px;padding:8px}
+.avw h1{font:800 22px/1.4 var(--z-font);margin:0 0 6px}
+.avw .mt{display:flex;flex-wrap:wrap;gap:6px}
+.avw .sec{background:#fff;border:1px solid var(--z-line);border-radius:18px;padding:12px 14px;margin-top:12px}
+.avw .sec h2{font:800 17px var(--z-font);margin:0 0 6px;color:var(--z-pri)}
+.avw .sec p,.avw .sec li{font:500 15px/1.8 var(--z-font);margin:0}
+.avw .sec ul,.avw .sec ol{margin:0;padding-inline-start:22px}
+.avw .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.avw .acts .abtn{flex:1 1 150px}
+.avw .pvs{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.avw .pvs button{border:1px solid var(--z-line);border-radius:12px;background:#fff;padding:4px;cursor:pointer}
+.avw .pvs img{width:100%;display:block;border-radius:8px}
+.avw .st{border-radius:14px;padding:10px 12px;font:700 14px/1.7 var(--z-font);background:var(--z-tint);color:var(--z-ink)}
+.avw .st.ok{background:#e8f5e9;color:#1b5e20}
+#apv{position:fixed;inset:0;z-index:90;background:#000b;display:flex;flex-direction:column;align-items:center;padding:12px;gap:8px}
+#apv[hidden]{display:none}
+#apv .pg{flex:1;min-height:0;overflow:auto;width:100%;max-width:620px;text-align:center}
+#apv .pg img{max-width:100%;background:#fff;border-radius:8px}
+#apv .nv{display:flex;gap:8px;align-items:center;color:#fff;font:700 14px var(--z-font)}
+#apv button{min-height:44px;border-radius:12px;border:0;background:#fff;font:800 14px var(--z-font);padding:0 16px;cursor:pointer}
+#aprint{display:none}
+@media(max-width:560px){.avw .hd{grid-template-columns:90px 1fr}.avw h1{font-size:19px}.agrid{grid-template-columns:1fr}.ac{display:grid;grid-template-columns:96px 1fr}.ac .im{aspect-ratio:auto;height:100%;min-height:96px;padding:6px}.ac .im img{width:100%;height:auto;max-height:96px}.ac .dn{font-size:11px;padding:2px 7px;top:4px;inset-inline-start:4px}.ac .bt{flex-wrap:wrap}.ac .abtn{min-height:40px;font-size:13px;flex:1 1 auto}}
+@media print{body>*{display:none!important}body>#aprint{display:block!important}#aprint img{width:100%;page-break-after:always;display:block}}

@@ -63,6 +63,15 @@ function checkBadges() {
   let n = 0; BADGES().forEach(([id, e, t, f]) => { if (!S.cards.bd.includes(id) && f()) { S.cards.bd.push(id); n++; toast("🏅 شارة جديدة: " + t); } });
   if (n) save();
 }
+/* ===== ربط الأنشطة: جولة مفتوحة من نشاط تُسجَّل إنجازاً فقط عند نجاح فعلي (نصف الإجابات على الأقل) ===== */
+const ACT = new URLSearchParams(location.search).get("act") || "";
+function actDone(acc) {
+  if (!ACT || acc < 0.5) return;
+  S.acts = S.acts || {}; const r = S.acts[ACT];
+  if (!r || !r.d) { S.acts[ACT] = { d: new Date().toISOString().slice(0, 10), how: "platform", s: Math.round(acc * 100), n: 1 }; toast("✅ سُجّل إكمال النشاط"); }
+  else { r.n = (r.n || 1) + 1; r.s = Math.max(r.s || 0, Math.round(acc * 100)); }
+  S.acts[ACT].t = Date.now(); save();
+}
 let toastT = 0;
 function toast(t) { let e = $("#ctoast"); if (!e) { e = D.createElement("div"); e.id = "ctoast"; e.setAttribute("role", "status"); e.style.cssText = "position:fixed;bottom:90px;inset-inline:12px;margin:auto;max-width:360px;background:#351078;color:#fff;border-radius:14px;padding:10px 14px;font:800 15px Cairo,sans-serif;text-align:center;z-index:99"; D.body.appendChild(e); } e.textContent = t; e.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (e.hidden = true), 3200); }
 
@@ -234,7 +243,7 @@ function pickOpt(k) {
 }
 function result() {
   Snd.stop(); const n = vs.qs.length, acc = n ? vs.ok / n : 0, stars = acc >= 0.8 ? 2 : acc >= 0.5 ? 1 : 0;
-  S.cards.rounds++; addStars(stars); checkBadges(); save();
+  S.cards.rounds++; addStars(stars); checkBadges(); save(); actDone(acc);
   const mode = vs.mode, title = vs.title;
   openV(hd(title) + `<div class="cvb"><div class="res"><div class="st" aria-label="${stars} نجوم">${"⭐".repeat(stars) || "🌱"}</div><h3>${acc >= 0.8 ? "ممتاز!" : acc >= 0.5 ? "جيّد، واصل التدرّب" : "لا بأس، أعد المحاولة"}</h3><p>أجبت صحيحاً عن ${AD(vs.ok)} من ${AD(n)}</p><p>${stars ? "ربحت " + AD(stars) + (stars === 1 ? " نجمة" : " نجمتين") + " وأُضيفت إلى نجوم «تعلّم والعب»" : "النجوم تُمنح عند الإجابة الصحيحة عن نصف الأسئلة على الأقل"}</p></div></div><div class="cvf"><button type="button" class="sec" data-close>رجوع</button><button type="button" data-again="${mode}">جولة جديدة</button></div>`);
 }
@@ -284,7 +293,7 @@ function orderAsk() {
   openV(hd("ترتيب") + `<div class="cvb"><div class="cbar"><i style="width:${(vs.oi / vs.oq.length) * 100}%"></i></div><div class="sub2" style="font-weight:800">رتّب من الأول إلى الأخير: ${AD(vs.oi + 1)} من ${AD(vs.oq.length)}</div><div class="slots" id="slots">${seq.map(() => "<span></span>").join("")}</div><div class="ord" id="ord">${shuffle(seq).map((x) => `<button type="button" data-og="${x.v}" style="${/[A-Za-z0-9]/.test(x.g) ? "direction:ltr" : ""}">${esc(x.g)}</button>`).join("")}</div><div class="cfb" id="cfb" aria-live="polite"></div></div><div class="cvf"><button type="button" class="sec" data-close>رجوع</button></div>`);
 }
 function orderResult() {
-  const n = vs.oq.length, acc = vs.ok / n, stars = acc >= 0.8 ? 2 : acc >= 0.5 ? 1 : 0; S.cards.rounds++; addStars(stars); checkBadges(); save();
+  const n = vs.oq.length, acc = vs.ok / n, stars = acc >= 0.8 ? 2 : acc >= 0.5 ? 1 : 0; S.cards.rounds++; addStars(stars); checkBadges(); save(); actDone(acc);
   openV(hd("ترتيب") + `<div class="cvb"><div class="res"><div class="st">${"⭐".repeat(stars) || "🌱"}</div><h3>${acc >= 0.8 ? "ممتاز!" : "واصل التدرّب"}</h3><p>رتّبت ${AD(vs.ok)} من ${AD(n)} دون أخطاء</p></div></div><div class="cvf"><button type="button" class="sec" data-close>رجوع</button><button type="button" data-again="order">جولة جديدة</button></div>`);
 }
 function progress() {
@@ -328,7 +337,7 @@ D.addEventListener("click", (e) => {
   }
 });
 function matchResult() {
-  const n = vs.pairs.length, stars = vs.wrong === 0 ? 2 : vs.wrong <= 2 ? 1 : 0; S.cards.rounds++; addStars(stars); checkBadges(); save();
+  const n = vs.pairs.length, stars = vs.wrong === 0 ? 2 : vs.wrong <= 2 ? 1 : 0; S.cards.rounds++; addStars(stars); checkBadges(); save(); actDone(stars ? 1 : 0);
   openV(hd("مطابقة") + `<div class="cvb"><div class="res"><div class="st">${"⭐".repeat(stars) || "🌱"}</div><h3>${stars === 2 ? "ممتاز!" : "أحسنت، أكملت المطابقة"}</h3><p>وصلت ${AD(n)} بطاقات مع ${AD(vs.wrong)} محاولات خاطئة</p></div></div><div class="cvf"><button type="button" class="sec" data-close>رجوع</button><button type="button" data-again="match">جولة جديدة</button></div>`);
 }
 D.addEventListener("change", (e) => {
@@ -341,7 +350,10 @@ let qt = 0; D.addEventListener("input", (e) => { if (e.target.id !== "cq") retur
 (async function init() {
   loadDB(); await load(); render();
   const p = new URLSearchParams(location.search);
-  if (p.get("cat") && CATS[p.get("cat")]) { st.cat = p.get("cat"); render(); }
+  if (p.get("cat") && CATS[p.get("cat")]) st.cat = p.get("cat");
+  const ag = +p.get("age"), gr = +p.get("gr"); if (AGES.includes(ag)) st.age = ag; if (gr >= 1 && gr <= 6) st.gr = gr;
+  if (p.get("cat") || ag || gr) render();
+  const md = p.get("mode"); if (["learn", "review", "choice", "match", "recall", "order"].includes(md) && filtered().length) startMode(md);
   const sl = p.get("c"); if (sl) { const list = filtered(), i = list.findIndex((c) => c.slug === sl); if (i >= 0) learnView(list, i, "تعلّم"); }
 })();
 W.ZC = { st, filtered, status, counts, Snd, orderSets, spoken, vs: () => vs };
