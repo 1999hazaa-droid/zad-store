@@ -243,3 +243,51 @@ def g6_punct():
     return spec(slug='g6-punctuation-marks', title='علامات الترقيم', subtitle='النقطة والفاصلة والاستفهام والتعجب والنقطتان والتنصيص', chips=['الصف السادس', 'اللغة العربية', 'الإملاء والكتابة', 'مع الحلول'], color='#4f46e5', tint='#e6e7ff', note='اطبع الصفحات وأجب في المساحات المخصصة، ثم راجع الإجابات في الصفحة الأخيرة.'), P
 
 ALL = dict(g5_fractions=g5_fractions, g5_decimals=g5_decimals, g6_percent=g6_percent, g6_ratio=g6_ratio, g6_area=g6_area, g5_sentences=g5_sentences, g6_punct=g6_punct)
+
+# ================= المرحلة 2: عمر سنة إلى سنتين =================
+IMGS = 'file://' + ROOT + '/images/zad/'
+def bigcard(img, word, sub, color, tint, cut=True):
+    return (f'<div style="flex:1;border:1.2mm {"dashed" if cut else "solid"} {color};border-radius:9mm;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1mm;padding:3mm;position:relative;min-height:0;overflow:hidden">'
+            f'<img src="{IMGS}{img}.webp" style="height:56mm;max-width:100%;object-fit:contain">'
+            f'<div style="font-size:32pt;font-weight:700;color:{color};line-height:1.1">{word}</div>'
+            f'{sub}</div>')
+def cardpage(cards): return '<div style="display:flex;flex-direction:column;gap:6mm;flex:1;min-height:0">' + ''.join(cards) + '</div>'
+TIPS = lambda items: '<div class="bx" style="font-size:13.5pt;line-height:2.1"><ol style="margin:0;padding-inline-start:7mm">' + ''.join(f'<li>{x}</li>' for x in items) + '</ol></div>'
+
+def a2_animals():
+    C, T = '#ea580c', '#ffeadb'
+    A = [('1f431', 'القطة', 'مياو'), ('1f436', 'الكلب', 'هاو هاو'), ('1f404', 'البقرة', 'موووو'), ('1f411', 'الخروف', 'مااع'),
+         ('1f413', 'الديك', 'كوكو كوكو'), ('1f986', 'البطة', 'بطّ بطّ'), ('1f438', 'الضفدع', 'نقّ نقّ'), ('1f981', 'الأسد', 'غررررر')]
+    sub = lambda s: f'<div style="background:{C};color:#fff;border-radius:7mm;padding:.5mm 8mm;font-size:20pt;font-weight:700">يقول «{s}»</div>'
+    P = [('كيف نستعمل البطاقات؟', 'للأم والأب: نصف ساعة ممتعة مع طفلك.', TIPS([
+        'اطبع الصفحات وقصّ البطاقات على الخط المتقطع، ويفضّل تغليفها أو طباعتها على ورق سميك.',
+        'أرِ الطفل بطاقة واحدة فقط في كل مرة، وقل الاسم بوضوح: «هذه القطة».',
+        'قلّد صوت الحيوان بحماس: «القطة تقول مياو!» ودع الطفل يحاول معك دون إجبار.',
+        'اسأله: «أين القطة؟» ليشير إليها بين بطاقتين، ثم بين ثلاث.',
+        'كرّر اللعبة في أيام مختلفة؛ التكرار الممتع هو سرّ التعلّم في هذا العمر.',
+        'ابتعد عن البطاقات الصغيرة التي يمكن أن يضعها الطفل في فمه، وابقَ بجانبه دائمًا.'
+    ]), 'tip')]
+    for i in range(0, 8, 2):
+        P.append(('حيوانات وأصواتها', 'بطاقتان في الصفحة: قصّهما على الخط المتقطع.', cardpage([bigcard(a, w, sub(s), C, T) for a, w, s in A[i:i + 2]]), 'card'))
+    return spec(slug='a2-animals-and-sounds-cards', title='حيوانات وأصواتها', subtitle='ثماني بطاقات كبيرة للتعرّف على الحيوان وصوته', chips=['سنة إلى سنتين', 'بطاقات', 'الحيوانات', 'الأصوات'], color=C, tint=T, note='قصّ البطاقات وأرِها لطفلك واحدة واحدة، وقلّد صوت كل حيوان معه.'), P
+
+def a2_colors():
+    C, T = '#7c3aed', '#efe6ff'
+    A = [('1f34e', 'أحمر', 'التفاحة حمراء', '#dc2626'), ('1f34c', 'أصفر', 'الموزة صفراء', '#ca8a04'), ('1f4a7', 'أزرق', 'قطرة الماء زرقاء', '#2563eb'),
+         ('1f34f', 'أخضر', 'التفاحة خضراء', '#16a34a'), ('1f34a', 'برتقالي', 'البرتقالة برتقالية', '#ea580c'), ('1f347', 'بنفسجي', 'العنب بنفسجي', '#7e22ce')]
+    def card(a, w, s, c):
+        return (f'<div style="flex:1;border:1.2mm dashed {c};border-radius:9mm;background:#fff;display:flex;overflow:hidden">'
+                f'<div style="width:38%;background:{c};display:grid;place-items:center;color:#fff;font-size:34pt;font-weight:700">{w}</div>'
+                f'<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2mm;padding:3mm 0"><img src="{IMGS}{a}.webp" style="height:38mm"><div style="font-size:20pt;font-weight:700;color:{c}">{s}</div></div></div>')
+    P = [('كيف نستعمل البطاقات؟', 'للأم والأب: ألوان بسيطة تُعرَّف بالأشياء الحقيقية.', TIPS([
+        'قصّ البطاقات الست على الخط المتقطع.',
+        'أرِ الطفل بطاقة اللون وقل: «هذا اللون أحمر» ثم أرِه تفاحة حقيقية أو شيئًا أحمر من البيت.',
+        'ابدأ بلونين فقط (أحمر وأزرق)، وأضف لونًا جديدًا كل بضعة أيام.',
+        'اسأله: «أين الأحمر؟» وشجّعه عند الإشارة حتى لو أخطأ.',
+        'لا تتوقع أن يسمّي الألوان بنفسه قبل أن يسمعها كثيرًا؛ الفهم يسبق الكلام.'
+    ]), 'tip')]
+    for i in range(0, 6, 3):
+        P.append(('الألوان الأساسية', 'ثلاث بطاقات في الصفحة: قصّها على الخط المتقطع.', cardpage([card(*x) for x in A[i:i + 3]]), 'card'))
+    return spec(slug='a2-basic-colors-cards', title='ألواني الأولى', subtitle='ست بطاقات للألوان الأساسية مع أشياء مألوفة', chips=['سنة إلى سنتين', 'بطاقات', 'الألوان'], color=C, tint=T, note='قصّ البطاقات وطابق كل لون بشيء حقيقي في البيت.'), P
+
+ALL.update(a2_animals=a2_animals, a2_colors=a2_colors)
