@@ -172,14 +172,25 @@ function landing() {
   const items = S.items;
   const lvCount = (id) => items.filter((p) => (p.lib_levels || []).includes(id)).length;
   const secCount = (id) => items.filter((p) => p.lib_section === id).length;
-  const fresh = sorted(items.filter(isNew)).slice(0, 8);
-  const free = sorted(items.filter(isFree)).slice(0, 8);
+  const fresh = sorted(items.filter(isNew)).slice(0, 6);
+  const free = sorted(items.filter(isFree)).slice(0, 6);
   let h = `<section class="lsec"><h2>اختر العمر أو الصف</h2><p>داخل كل فئة تجد الملفات مرتّبة حسب المادة والمهارة.</p><div class="ltiles">`;
   LV.forEach((l) => { const n = lvCount(l[0]); if (n) h += `<button type="button" class="ltile" data-lv="${l[0]}"><img src="${IMG(l[2])}" alt="">${esc(l[1])}<small>${countTxt(n)}</small></button>`; });
   h += `</div></section><section class="lsec"><h2>أقسام المكتبة</h2><div class="ltiles w">`;
   SEC.forEach((s) => { const n = secCount(s[0]); if (n) h += `<button type="button" class="ltile" data-sec="${s[0]}"><img src="${IMG(s[3])}" alt=""><span>${esc(s[1])}</span><small>${esc(s[2])}</small><em>${countTxt(n)}</em></button>`; });
   h += `</div></section>`;
-  if (fresh.length) h += `<section class="lsec"><h2><span>جديد في المكتبة</span><button type="button" data-more="new">عرض الكل</button></h2>${grid(fresh)}</section>`;
+  const subs = new Map(); items.forEach((p) => { if (p.lib_subject && p.lib_subject !== "متنوع") subs.set(p.lib_subject, (subs.get(p.lib_subject) || 0) + 1); });
+  if (subs.size) { h += `<section class="lsec"><h2>تصفّح حسب المادة</h2><div class="lsubs">`; Array.from(subs.entries()).sort((a, b) => b[1] - a[1]).forEach(([k, n]) => { h += `<button type="button" class="zpill" data-subj="${esc(k)}">${esc(k)} <small>${n}</small></button>`; }); h += `</div></section>`; }
+  const seen = new Set(FAV.concat(REC)), byId = S.byId;
+  const lastP = REC.map((id) => byId.get(id)).find((p) => p && (p.lib_levels || []).length);
+  if (lastP) {
+    const lv0 = lastP.lib_levels[0];
+    const sug = sorted(items.filter((p) => (p.lib_levels || []).includes(lv0) && !seen.has(p.id))).sort((a, b) => isFree(b) - isFree(a)).slice(0, 6);
+    if (sug.length) h += `<section class="lsec"><h2><span>مقترحة لك</span></h2><p>بناءً على آخر ملف فتحته (${esc(LV[LVI[lv0]][1])}).</p>${grid(sug)}</section>`;
+  }
+  const pop = items.filter((p) => (S.uses[p.id] || 0) > 0).sort((a, b) => (S.uses[b.id] || 0) - (S.uses[a.id] || 0)).slice(0, 6);
+  if (pop.length >= 3) h += `<section class="lsec"><h2><span>الأكثر استخدامًا</span><button type="button" data-more="pop">عرض الكل</button></h2>${grid(pop)}</section>`;
+  if (fresh.length) h += `<section class="lsec"><h2><span>أحدث الإضافات</span><button type="button" data-more="new">عرض الكل</button></h2>${grid(fresh)}</section>`;
   if (free.length) h += `<section class="lsec"><h2><span>ملفات مجانية للتحميل الآن</span><button type="button" data-more="free">عرض الكل</button></h2>${grid(free)}</section>`;
   return h;
 }
@@ -422,7 +433,8 @@ D.addEventListener("click", (e) => {
   let b;
   if ((b = t.closest("[data-lv]")) && !b.closest("#lpv")) return setF({ lv: b.dataset.lv, all: false, subj: "" });
   if ((b = t.closest("[data-sec]"))) return setF({ sec: b.dataset.sec, all: false });
-  if ((b = t.closest("[data-more]"))) return setF(b.dataset.more === "free" ? { price: "free", all: true } : { sort: "new", all: true });
+  if ((b = t.closest("[data-more]"))) return setF(b.dataset.more === "free" ? { price: "free", all: true } : b.dataset.more === "pop" ? { sort: "pop", all: true } : { sort: "new", all: true });
+  if ((b = t.closest("[data-subj]"))) return setF({ subj: b.dataset.subj, all: false });
   if ((b = t.closest("[data-clear]"))) { $("#lq").value = ""; $("#lqx").hidden = true; return setF({ lv: "", sec: "", subj: "", price: "", q: "", all: false }); }
   if ((b = t.closest("[data-clear-recent]"))) { REC = []; store.set("recent", REC); toast("مُسحت القائمة"); return render(); }
   if ((b = t.closest("[data-tab]"))) return setF({ tab: b.dataset.tab });

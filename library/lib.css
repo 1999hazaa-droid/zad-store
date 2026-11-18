@@ -195,3 +195,5 @@ html.lpv-on .ltoast{bottom:auto;top:72px}
 .lfoot a{color:var(--z-pri);font-weight:700}
 html.lpv-on,html.lpv-on body{overflow:hidden}
 @media(prefers-reduced-motion:reduce){.ltile,.lth img,.lsk{transition:none;animation:none}}
+
+.lsubs{display:flex;flex-wrap:wrap;gap:8px}.lsubs .zpill small{font-weight:400;color:var(--z-ink2);margin-inline-start:4px}
