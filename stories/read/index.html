@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#351078">
+<title>قراءة قصة | القصص التعليمية | زاد</title>
+<meta name="robots" content="noindex,follow">
+<link rel="icon" href="../../images/icons/favicon-64.png" type="image/png">
+<link rel="preconnect" href="https://zcnwzpevehudhnsuljdy.supabase.co" crossorigin>
+<link rel="stylesheet" href="../../css/zad-tokens.css">
+<link rel="stylesheet" href="../../css/zad-ui.css?v=4">
+<link rel="stylesheet" href="reader.css?v=1">
+</head>
+<body class="rd">
+<header class="rtop">
+<div class="row"><a class="rb" href="../" aria-label="العودة إلى مكتبة القصص"><svg class="rsvg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg><span>القصص</span></a><h1 id="rtitle">…</h1>
+<button type="button" class="rb" id="rzo" aria-label="تصغير النص">أ−</button><span id="rzv" style="font-weight:800;font-size:13px;min-width:38px;text-align:center">100%</span><button type="button" class="rb" id="rzi" aria-label="تكبير النص">أ+</button></div>
+<div class="rprog" role="progressbar" aria-label="تقدّم القراءة" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="rprog"></i></div>
+</header>
+<main class="rmain" id="rroot"><div class="rerr">جاري تحميل القصة…</div></main>
+<div class="rbar" id="rbar"><div class="in">
+<div class="raud" id="raud"><button type="button" class="rbt" id="rplay" aria-pressed="false">استمع</button>
+<label>الصوت<input type="range" id="rvol" min="0" max="1" step="0.1" value="1" aria-label="مستوى الصوت"></label>
+<label>السرعة<select id="rrate" aria-label="سرعة القراءة"><option value="0.7">بطيئة</option><option value="0.85" selected>مناسبة للأطفال</option><option value="1">عادية</option><option value="1.15">سريعة</option></select></label></div>
+<p class="rnote" id="rnote" hidden role="status"></p>
+<div class="rnav"><button type="button" class="rbt" id="rprev"><svg class="rsvg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>السابقة</button><span class="rpn" id="rpn" aria-live="polite"></span><button type="button" class="rbt pri" id="rnext">التالية<svg class="rsvg" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button></div>
+</div></div>
+<div id="prt" aria-hidden="true"></div>
+<script src="../../js/supabase-config.js?v=beb96d8866"></script>
+<script src="reader.js?v=1" defer></script>
+</body>
+</html>

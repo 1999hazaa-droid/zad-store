@@ -1,0 +1,31 @@
+/* قصص زاد التعليمية */
+.st [hidden]{display:none!important}
+.st main.zw{padding-top:var(--z-sp-3);padding-bottom:90px}
+.st .zph h1 img{width:44px;height:44px;vertical-align:-8px;margin-inline-end:6px}
+.st .zsrch .zw>div{gap:10px}
+.st .zsrch label{display:flex;align-items:center}
+.st .zsrch button{min-width:40px;min-height:40px;display:grid;place-items:center;border-radius:50%}
+.sic{width:22px;height:22px;object-fit:contain}
+.ssvg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.sfl{display:grid;gap:10px;margin-bottom:6px}
+.sfl .zrow b{min-width:52px}
+.sclr{border:0;background:var(--z-tint);color:var(--z-pri);font:700 14px var(--z-font);border-radius:99px;padding:8px 16px;cursor:pointer;min-height:40px}
+.ssec{margin-top:22px}
+.ssec h2{margin:0 0 10px;font-size:var(--z-fs-lg)}
+.sgrid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.sc{display:flex;flex-direction:column;background:#fff;border:1px solid var(--z-line);border-radius:18px;box-shadow:var(--z-sh-1);overflow:hidden;text-decoration:none;color:var(--z-ink);min-width:0}
+.sc .cv{aspect-ratio:3/4;background:var(--z-tint);display:block;overflow:hidden}
+.sc .cv img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s}
+.sc:hover .cv img{transform:scale(1.03)}
+.sc .bd{padding:10px 12px 12px;display:grid;gap:6px}
+.sc h3{margin:0;font-size:15.5px;line-height:1.4}
+.sc .ag{font-size:12.5px;color:var(--z-ink2);font-weight:700}
+.sc .rd{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border-radius:12px;background:var(--z-pri);color:#fff;font:700 14px var(--z-font);box-shadow:0 3px 0 var(--z-pri-d)}
+.sc:focus-visible,.sclr:focus-visible,.zpill:focus-visible{outline:3px solid var(--z-sun);outline-offset:2px}
+.sempty{text-align:center;padding:32px 12px;color:var(--z-ink2)}
+.sfoot{text-align:center;color:var(--z-ink2);font-size:13px;margin-top:30px}
+.sbadge{display:inline-block;font:700 12px var(--z-font);border-radius:99px;padding:3px 10px;background:var(--z-tint);color:var(--z-pri)}
+.slink{display:flex;gap:10px;align-items:center;background:#fff;border:1px solid var(--z-line);border-radius:18px;padding:12px 14px;margin:10px 0;text-decoration:none;color:var(--z-ink);font-weight:700;box-shadow:var(--z-sh-1)}
+.slink img{width:48px;height:48px}.slink small{display:block;font-weight:400;color:var(--z-ink2);font-size:13px}
+@media(max-width:560px){.sgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+.st .ztop nav a img{width:20px;height:20px;vertical-align:-4px;margin-inline-end:4px}
