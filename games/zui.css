@@ -1849,3 +1849,22 @@ html.zv-mute body .rep .zx,html.zv-mute body .zrp .zx{display:inline}
 :root body .zwlv2{margin:4px 0;font:700 14px/1.5 Cairo,Tajawal,system-ui,sans-serif;color:#4A22B8;text-align:center}
 :root body .zwhy{margin:6px 0 2px;text-align:center;font:700 13.5px/1.5 Cairo,Tajawal,system-ui,sans-serif;color:#5b4d85}
 :root body .zpd-sks{color:#4A22B8}
+
+/* ماذا ألعب الآن + مسارات التعلّم */
+.zrec{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#7C3AED,#A855F7);color:#fff;border-radius:22px;padding:14px 16px;margin:10px 0 14px;box-shadow:0 8px 22px rgba(124,58,237,.28)}
+.zrec-z{flex:none;width:84px;height:84px;object-fit:contain}
+.zrec-b{flex:1;min-width:0}.zrec-b small{display:block;opacity:.9;font-size:.82rem;font-weight:700}
+.zrec-b h2{margin:2px 0 4px;font-size:1.15rem;line-height:1.35;color:#fff}.zrec-b p{margin:0 0 6px;font-size:.9rem;line-height:1.5;opacity:.95}
+.zrec-g{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.18);border-radius:14px;padding:4px 8px;width:fit-content;max-width:100%}
+.zrec-ic{width:34px;height:34px;display:grid;place-items:center;flex:none}.zrec-ic img{width:34px;height:34px;object-fit:contain}
+.zrec-g b{font-size:.95rem}.zrec-tg{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.zrec-tg i{font-style:normal;background:#fff;color:#6D28D9;border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:700}
+.zrec-go{flex:none;display:flex;align-items:center;gap:6px;background:#FBBF24;color:#3B0764;border:0;border-radius:999px;padding:12px 18px;font:inherit;font-weight:800;font-size:1rem;cursor:pointer;min-height:48px}
+.zrec-go:hover{filter:brightness(1.05)}
+@media(max-width:560px){.zrec{flex-wrap:wrap}.zrec-z{width:64px;height:64px}.zrec-go{width:100%;justify-content:center}}
+.zpth{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 16px}
+.zpt{display:flex;flex-direction:column;align-items:center;gap:4px;background:#fff;border:2px solid #E9D5FF;border-radius:18px;padding:12px 8px;font:inherit;cursor:pointer;color:#3B0764;text-align:center}
+.zpt:hover{border-color:#A855F7}.zpt b{font-size:.92rem}.zpt em{font-style:normal;font-size:.8rem;font-weight:700;color:#7C3AED}
+.zpt small{font-size:.74rem;color:#6B7280}.zpt .zpbar{width:90%;display:block}.zpt-s{display:flex;gap:2px}
+.zpd-pt{border-top:1px solid #EDE9FE;padding:10px 0}.zpd-pth1{display:flex;align-items:center;gap:8px;margin-bottom:6px}.zpd-pth1 b{flex:1}
+.zpd-st{display:flex;gap:2px}.zpd-pl{margin:6px 0 0;font-size:.88rem;line-height:1.7}.zpd-mini{padding:4px 10px;font-size:.82rem;min-height:0;display:inline-flex}
