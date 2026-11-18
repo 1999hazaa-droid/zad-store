@@ -1886,3 +1886,5 @@ html.zv-mute body .rep .zx,html.zv-mute body .zrp .zx{display:inline}
 .zchal-l{display:grid;gap:8px;margin-top:8px}.zchal-l>div{display:flex;gap:10px;align-items:center;background:#faf5ff;border-radius:14px;padding:8px 10px}
 .zchal-l>div.on{background:#ecfdf5}.zchal-l b{display:block}.zchal-l small{display:block;color:#6b7280;font-size:.8rem}.zchal-l .zpbar{display:block;margin-top:4px}
 .zchal-w{margin:8px 0 0;font-weight:700;color:#047857;display:flex;gap:6px;align-items:center}
+
+.zerr{display:grid;place-items:center;gap:8px;text-align:center;padding:24px 16px}.zerr h2{margin:0;color:#6d28d9}.zerr p{margin:0;color:#4b5563}
