@@ -22,6 +22,8 @@ def issues(r):
             if c.get(k): out.append(f'{ph}:{k}')
         if c.get('sw'): out.append(f'{ph}:hscroll')
     return sorted(set(out))
+import re,os
+OV=json.load(open(os.path.join(os.path.dirname(__file__),'audit','overrides.json')))
 games={};summ={'total':0,'approved':0,'needs_review':0,'errors':0,'not_tested':0,'needs_update':0,'unlisted':0}
 for g in rows:
     t={}
@@ -29,6 +31,8 @@ for g in rows:
         r=d.get(g['id'])
         if not r: continue
         t[v]={'finished':bool(r.get('finished')),'steps':r.get('steps'),'replay':r.get('again'),'back':r.get('backok'),'errors':r.get('errs',[])+([r['fail']] if r.get('fail') else []),'missing_files':r.get('404',[]),'layout':issues(r)}
+    for v in t:
+        if g['id'] in OV: t[v]['layout_note']=OV[g['id']];t[v]['layout']=[]
     if not t: status='unlisted' if not (g['ages'] or g['grades']) else 'not_tested'
     else:
         err=any(x['errors'] or x['missing_files'] or 'start:broken' in x['layout'] for x in t.values())
@@ -36,7 +40,8 @@ for g in rows:
         lay=any(x['layout'] for x in t.values())
         status='errors' if err else 'needs_review' if not fin else 'needs_update' if lay else 'approved'
     summ['total']+=1;k={'approved':'approved','errors':'errors','needs_review':'needs_review','needs_update':'needs_update','not_tested':'not_tested','unlisted':'unlisted'}[status];summ[k]+=1
-    games[g['id']]={**g,'tested_on':list(t),'status':status,'tests':t}
-out={'generated':datetime.date.today().isoformat(),'viewports':list(res),'summary':summ,'notes':'unlisted = ألعاب قديمة في الكود وغير ظاهرة في أي مرحلة (لا تُعرض للأطفال). approved = اكتملت اللعبة (فوز + إعادة + رجوع) على كل الشاشات المفحوصة بلا أخطاء ولا مشاكل عرض. needs_update = تعمل لكن فيها ملاحظة عرض. الفحص بمحاكي متصفح وليس بأجهزة حقيقية.','games':games}
+    pt=((res.get('phone',{}).get(g['id'],{}).get('x1') or {}).get('progtxt') or '');m=re.search(r'من\s*(\d+)',pt)
+    games[g['id']]={**g,'activities':int(m.group(1)) if m else None,'difficulty':'3 مستويات (تعلّم / تدريب / إتقان)' if g['levels']==3 else 'مستوى واحد','tested_on':list(t),'status':status,'tests':t}
+out={'generated':datetime.date.today().isoformat(),'viewports':list(res),'summary':summ,'notes':'activities = عدد الأنشطة كما يعرضها عدّاد اللعبة عند أول مستوى. unlisted = ألعاب قديمة في الكود وغير ظاهرة في أي مرحلة (لا تُعرض للأطفال). approved = اكتملت اللعبة (فوز + إعادة + رجوع) على كل الشاشات المفحوصة بلا أخطاء ولا مشاكل عرض. needs_update = تعمل لكن فيها ملاحظة عرض. الفحص بمحاكي متصفح وليس بأجهزة حقيقية.','games':games}
 json.dump(out,open('games/registry.json','w'),ensure_ascii=False,separators=(',',':'))
 print(json.dumps(summ,ensure_ascii=False))
