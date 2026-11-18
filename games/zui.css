@@ -1829,3 +1829,7 @@ html.zv-mute body .rep .zx,html.zv-mute body .zrp .zx{display:inline}
 :root body .tg-road{overflow:hidden}
 @media (min-width:1000px) and (max-height:860px){:root body .tg-canv{max-height:calc(100vh - 470px)}}
 @media (min-width:1000px) and (max-height:860px){:root body .tg-shp2 .tg-pal2{max-width:520px;flex-wrap:nowrap}}
+:root body .zv2 .zkg .gcard .zgtg{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-top:4px}
+:root body .zv2 .zkg .gcard .zgtg i{font-style:normal;font:800 10.5px/1 Cairo,Tajawal,system-ui,sans-serif;padding:3px 8px;border-radius:99px;background:#EAFBF1;color:#157A3C;border:1px solid #BDEBCF}
+:root body .zv2 .zkg .gcard .zgtg i+i{background:#F1EBFF;color:#5B2DC9;border-color:#DCCCFF}
+:root body .zv2 .zkg .gcard{padding-bottom:58px}
