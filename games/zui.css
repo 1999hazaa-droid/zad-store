@@ -1783,9 +1783,6 @@ html.zv-mute body .rep .zx,html.zv-mute body .zrp .zx{display:inline}
 :root body #vmute .zic.zsv,:root body #mute .zic.zsv{width:22px;height:22px}
 /* شاشة البداية الموحّدة */
 :root body .zstart .lvhero{padding-bottom:6px}
-:root body .zst-how{display:flex;gap:10px;align-items:center;background:#F6F1FF;border:1.5px solid #E7DDFF;border-radius:18px;padding:10px 14px;margin:14px 0 6px;text-align:start}
-:root body .zst-how img{width:52px;height:52px;flex:none;object-fit:contain}
-:root body .zst-how p{margin:0;font-weight:800;color:#3B1F7A;font-size:16px;line-height:1.6}
 :root body .zst-go{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:360px;margin:14px auto 4px;min-height:60px;padding:0 22px;border:0;border-radius:20px;background:linear-gradient(180deg,#FFD84F,#F5B400);color:#3A2300;font:inherit;font-size:20px;font-weight:800;box-shadow:0 5px 0 #C99000,0 10px 22px rgba(201,144,0,.28);cursor:pointer;transition:transform .12s,box-shadow .12s}
 :root body .zst-go svg{width:26px;height:26px;flex:none}
 :root body .zst-go:active{transform:translateY(3px);box-shadow:0 2px 0 #C99000}
@@ -1826,3 +1823,4 @@ html.zv-mute body .rep .zx,html.zv-mute body .zrp .zx{display:inline}
 :root body .tg-st .st-why.g{color:#15803D}
 /* الكمبيوتر بشاشة قصيرة: مشاهد اللعب لا تتجاوز ارتفاع الشاشة قدر الإمكان */
 @media (min-width:1000px) and (max-height:860px){:root body .tg-scene{max-height:calc(100vh - 340px)}:root body .tg-pgrid{max-width:min(100%,calc(100vh - 450px))}}
+:root body .tg-pal .zp .zch{object-fit:contain}
