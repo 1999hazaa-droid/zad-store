@@ -42,6 +42,23 @@ const store = {
 let FAV = store.get("fav", []), REC = store.get("recent", []);
 if (!Array.isArray(FAV)) FAV = []; if (!Array.isArray(REC)) REC = [];
 
+const TYPES = { worksheet: "ورقة عمل", pdf: "ملف PDF", story: "قصة تعليمية", cards: "بطاقات تعليمية", home_activity: "نشاط منزلي", exercises: "تدريبات", review: "مراجعة دراسية", summary: "ملخص", teaching_aid: "وسيلة تعليمية", printable_activity: "نشاط قابل للطباعة" };
+/* التصنيفات التي يديرها المسؤول: تعدّل الأسماء وتضيف أعمارًا وصفوفًا وأقسامًا جديدة، وتبقى الأساسية كما هي إن تعذّر التحميل */
+function applyTax(rows) {
+  if (!Array.isArray(rows) || !rows.length) return;
+  const by = (k) => rows.filter((r) => r.kind === k).sort((a, b) => a.sort - b.sort);
+  try {
+    by("type").forEach((r) => { TYPES[r.key] = r.label; });
+    const lv = LV.slice();
+    [...by("age"), ...by("grade")].forEach((r) => { const i = lv.findIndex((x) => x[0] === r.key); if (i >= 0) lv[i] = [lv[i][0], r.label, lv[i][2], lv[i][3]]; else lv.push([r.key, r.label, "i_books", r.label.replace(/^الصف /, "")]); });
+    const ages = lv.filter((x) => x[0][0] === "a"), grades = lv.filter((x) => x[0][0] === "g"), rest = lv.filter((x) => x[0][0] !== "a" && x[0][0] !== "g");
+    const num = (x) => parseInt(x[0].slice(1), 10) || 0;
+    LV.length = 0; ages.sort((a, b) => num(a) - num(b)).concat(grades.sort((a, b) => num(a) - num(b)), rest).forEach((x) => LV.push(x));
+    Object.keys(LVI).forEach((k) => delete LVI[k]); LV.forEach((l, i) => { LVI[l[0]] = i; });
+    by("section").forEach((r) => { const i = SEC.findIndex((x) => x[0] === r.key); if (i >= 0) SEC[i] = [SEC[i][0], r.label, SEC[i][2], SEC[i][3]]; else SEC.push([r.key, r.label, "ملفات " + r.label, "i_books"]); });
+    Object.keys(SECI).forEach((k) => delete SECI[k]); SEC.forEach((x) => { SECI[x[0]] = x; });
+  } catch (e) { console.warn("taxonomy", e); }
+}
 /* ---------- الحالة ---------- */
 const S = { items: [], byId: new Map(), uses: {}, loaded: false, failed: false, lv: "", sec: "", subj: "", price: "", q: "", sort: "new", tab: "all", all: false };
 
@@ -55,7 +72,7 @@ function api(path, opt) {
     .then((r) => { if (t) clearTimeout(t); if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
     .then((x) => (x ? JSON.parse(x) : null));
 }
-const SEL = "id,name,slug,price,old_price,image_url,thumb_url,description,file_url,bw_url,lib_section,lib_levels,lib_subject,lib_skill,pages,file_type,created_at,is_available";
+const SEL = "id,name,slug,price,old_price,image_url,thumb_url,description,file_url,bw_url,lib_section,lib_levels,lib_subject,lib_skill,pages,file_type,created_at,is_available,lib_type,lib_unit,lib_keywords,lib_order";
 
 /* ---------- أدوات ---------- */
 function abs(u) { u = String(u || ""); return /^(https?:|data:)/i.test(u) ? u : ROOT + u.replace(/^\/+/, ""); }
@@ -104,7 +121,7 @@ function searchText(p) {
   if (p._s) return p._s;
   const sec = SECI[p.lib_section];
   const lv = lvSorted(p).map((x) => LV[LVI[x]][1] + " " + LV[LVI[x]][3]).join(" ");
-  p._s = norm([p.name, p.description, p.lib_subject, p.lib_skill, sec ? sec[1] + " " + sec[2] : "", lv, isFree(p) ? "مجاني مجانا" : "مدفوع", p.file_type || "PDF"].join(" "));
+  p._s = norm([p.name, p.description, p.lib_subject, p.lib_skill, p.lib_unit, p.lib_keywords, TYPES[p.lib_type] || "", sec ? sec[1] + " " + sec[2] : "", lv, isFree(p) ? "مجاني مجانا" : "مدفوع", p.file_type || "PDF"].join(" "));
   return p._s;
 }
 function matches(p, o) {
@@ -117,8 +134,10 @@ function matches(p, o) {
   if (o.q) { const t = searchText(p); if (!norm(o.q).split(" ").filter(Boolean).every((w) => t.includes(w))) return false; }
   return true;
 }
+const byDate = (a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0);
 function sorted(list) {
   const nt = (p) => Date.parse(p.created_at) || 0;
+  if (S.sort === "new") return list.slice().sort((a, b) => ((a.lib_order == null) - (b.lib_order == null)) * -1 || (a.lib_order == null ? 0 : a.lib_order - b.lib_order) || nt(b) - nt(a));
   if (S.sort === "pop") return list.slice().sort((a, b) => (S.uses[b.id] || 0) - (S.uses[a.id] || 0) || nt(b) - nt(a));
   return list.slice().sort((a, b) => nt(b) - nt(a));
 }
@@ -172,7 +191,7 @@ function landing() {
   const items = S.items;
   const lvCount = (id) => items.filter((p) => (p.lib_levels || []).includes(id)).length;
   const secCount = (id) => items.filter((p) => p.lib_section === id).length;
-  const fresh = sorted(items.filter(isNew)).slice(0, 6);
+  const fresh = items.filter(isNew).sort(byDate).slice(0, 6);
   const free = sorted(items.filter(isFree)).slice(0, 6);
   let h = `<section class="lsec"><h2>اختر العمر أو الصف</h2><p>داخل كل فئة تجد الملفات مرتّبة حسب المادة والمهارة.</p><div class="ltiles">`;
   LV.forEach((l) => { const n = lvCount(l[0]); if (n) h += `<button type="button" class="ltile" data-lv="${l[0]}"><img src="${IMG(l[2])}" alt="">${esc(l[1])}<small>${countTxt(n)}</small></button>`; });
@@ -496,12 +515,15 @@ function boot() {
   const f = readHash();
   $("#lq").value = S.q; $("#lqx").hidden = !S.q;
   const cache = store.get("cache", null);
+  applyTax(store.get("tax", null));
   if (cache && Array.isArray(cache.p) && Date.now() - (cache.t || 0) < 7 * 864e5) { setItems(cache.p, cache.u || {}); render(); }
   else renderTabs();
   Promise.all([
     api(`products?select=${SEL}&is_visible=eq.true&lib_section=not.is.null&order=created_at.desc`),
-    api("lib_stats?select=product_id,uses").catch(() => [])
-  ]).then(([rows, st]) => {
+    api("lib_stats?select=product_id,uses").catch(() => []),
+    api("lib_taxonomy?select=kind,key,label,sort&kind=in.(age,grade,section,type)&order=sort.asc").catch(() => [])
+  ]).then(([rows, st, tax]) => {
+    applyTax(tax); store.set("tax", tax);
     const uses = {}; (st || []).forEach((r) => { uses[r.product_id] = r.uses || 0; });
     const fresh = JSON.stringify(rows), old = cache && JSON.stringify(cache.p);
     store.set("cache", { t: Date.now(), p: rows, u: uses });
