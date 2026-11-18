@@ -5,6 +5,7 @@ from libgen import *
 from libspecs import ALL
 try:
     import libspecs3
+    import libspecs4
 except ImportError: pass
 from playwright.sync_api import sync_playwright
 from PIL import Image
