@@ -172,3 +172,28 @@ def family():
     person("grandma",sk,"#9e9e9e","#8e24aa","grandma"); person("grandpa",sk,"#9e9e9e","#43a047","grandpa")
     person("brother",sk,"#3e2723","#fb8c00","brother"); person("sister",sk,"#5d3a1a","#26a69a","sister")
 if __name__=="__main__" and False: pass
+
+def worker(name, shirt, hat, prop, hair="#3e2723"):
+    im=canvas(); d=ImageDraw.Draw(im); sh(d,(110*S,462*S,402*S,500*S))
+    sk="#ffd9b8"; hx,hy,rr=256,230,112
+    R(d,(150,330,362,500),shirt,60); R(d,(226,320,286,370),sk)
+    E(d,(hx-rr,hy-rr,hx+rr,hy+rr),sk,"#d9aa80",5)
+    E(d,(hx-rr,hy-rr,hx+rr,hy-30),hair)
+    eyes(d,hx,hy+8,38,11); E(d,(hx-rr+20,hy+34,hx-rr+58,hy+62),"#ff9db0"); E(d,(hx+rr-58,hy+34,hx+rr-20,hy+62),"#ff9db0")
+    L(d,[(hx-18,hy+50),(hx,hy+66),(hx+18,hy+50)],"#3b2a50",6)
+    if hat=="baker":
+        R(d,(170,hy-rr-20,342,hy-rr+40),"white",10,"#cfcfcf",4); E(d,(150,hy-rr-110,262,hy-rr-10),"white","#cfcfcf",4); E(d,(250,hy-rr-110,362,hy-rr-10),"white","#cfcfcf",4); E(d,(200,hy-rr-135,312,hy-rr-30),"white","#cfcfcf",4)
+        R(d,(330,380,470,430),"#d4a373",30,"#a9743b",5)  # خبز
+    if hat=="cap":
+        E(d,(hx-rr,hy-rr-30,hx+rr,hy-30),"#37474f"); R(d,(hx-rr+10,hy-70,hx+rr+30,hy-45),"#263238",12)
+        E(d,(340,330,470,460),None,"#263238",14); L(d,[(405,330),(405,460)],"#263238",10); L(d,[(340,395),(470,395)],"#263238",10)
+    if hat=="nurse":
+        R(d,(170,hy-rr-30,342,hy-rr+40),"white",12,"#cfcfcf",4); R(d,(240,hy-rr-22,272,hy-rr+30),"#e53935"); R(d,(226,hy-rr-8,286,hy-rr+16),"#e53935")
+        R(d,(330,370,400,470),"white",14,"#cfcfcf",4); R(d,(357,395,373,445),"#e53935"); R(d,(340,412,390,428),"#e53935")
+    if hat=="beret":
+        E(d,(160,hy-rr-30,380,hy-rr+60),"#e53935"); E(d,(240,hy-rr-48,272,hy-rr-14),"#e53935")
+        L(d,[(400,300),(440,470)],"#8d6e63",14); P(d,[(388,270),(412,270),(404,320),(396,320)],"#29b6f6")
+        E(d,(130,345,200,400),"#ffc928","#d99a0b",4)
+    save(im,f"obj/{name}.webp")
+def jobs():
+    worker("baker","#ffffff","baker",None); worker("driver","#1e88e5","cap",None); worker("nurse","#26a69a","nurse",None); worker("painter","#8e24aa","beret",None)
