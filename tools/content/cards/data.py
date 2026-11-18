@@ -72,6 +72,10 @@ for n,w,e in [(30,"ثلاثون","Thirty"),(40,"أربعون","Forty"),(50,"خم
               (80,"ثمانون","Eighty"),(90,"تسعون","Ninety"),(100,"مئة","One hundred")]:
     add("numbers","العدّ بالعشرات",w,e,f"images/cards/num/{n}.webp",f"نعدّ بالعشرات: عشرة، عشرون، ثلاثون… حتى {w}.",
         [6],[1,2],"العدّ","رياضيات",extra=dict(val=n,kind="num"),key=f"num-{n}")
+for n,w,e in [(200,"مئتان","Two hundred"),(300,"ثلاثمئة","Three hundred"),(400,"أربعمئة","Four hundred"),(500,"خمسمئة","Five hundred"),
+              (600,"ستمئة","Six hundred"),(700,"سبعمئة","Seven hundred"),(800,"ثمانمئة","Eight hundred"),(900,"تسعمئة","Nine hundred"),(1000,"ألف","One thousand")]:
+    add("numbers","العدّ بالمئات",w,e,f"images/cards/num/{n}.webp",f"نعدّ بالمئات: مئة، مئتان، ثلاثمئة… حتى {w}.",
+        [6],[2,3],"العدّ","رياضيات",extra=dict(val=n,kind="num"),key=f"num-{n}")
 # جمع وطرح ومقارنة
 for a,b in [(2,3),(3,4),(5,2),(4,4),(6,3),(5,5)]:
     add("numbers","الجمع",f"{AD(a)} + {AD(b)} = {AD(a+b)}",f"{a} + {b} = {a+b}",f"images/cards/math/add-{a}-{b}.webp",

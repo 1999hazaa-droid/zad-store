@@ -32,7 +32,7 @@ def disk(d, cx, cy, r, base):
 def num(n):
     im = canvas(); d = ImageDraw.Draw(im); c = W*S//2
     disk(d, c, c-10*S, 215*S, PUR)
-    t = AD(n); sz = 270 if len(t)==1 else (230 if len(t)==2 else 170)
+    t = AD(n); sz = 270 if len(t)==1 else (230 if len(t)==2 else (170 if len(t)==3 else 130))
     center_text(d, (c, c-30*S), t, font(sz), "white", shade(PUR,0.6), 5)
     center_text(d, (c, c+150*S), str(n), font(78), (255,255,255,235), shade(PUR,0.6), 3)
     save(im, f"num/{n}.webp")
