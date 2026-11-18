@@ -1833,3 +1833,13 @@ html.zv-mute body .rep .zx,html.zv-mute body .zrp .zx{display:inline}
 :root body .zv2 .zkg .gcard .zgtg i{font-style:normal;font:800 10.5px/1 Cairo,Tajawal,system-ui,sans-serif;padding:3px 8px;border-radius:99px;background:#EAFBF1;color:#157A3C;border:1px solid #BDEBCF}
 :root body .zv2 .zkg .gcard .zgtg i+i{background:#F1EBFF;color:#5B2DC9;border-color:#DCCCFF}
 :root body .zv2 .zkg .gcard{padding-bottom:58px}
+:root body .zpd-sm{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+:root body .zpd-sm>div{background:#F5F0FF;border-radius:14px;padding:10px 12px;text-align:center}
+:root body .zpd-sm b{display:block;font:800 24px/1.1 Cairo,Tajawal,system-ui,sans-serif;color:#4A22B8}
+:root body .zpd-sm small{font-size:12px;color:#5b4d85}
+@media (min-width:700px){:root body .zpd-sm{grid-template-columns:repeat(4,1fr)}}
+:root body .zpd-gbar{margin-top:6px;height:6px}
+:root body .zpd-sc{display:grid;grid-template-columns:96px 1fr auto;align-items:center;gap:10px;padding:7px 0}
+:root body .zpd-sc .zpd-an{font-weight:800;font-size:14px;white-space:nowrap}
+:root body .zpd-sc .zpd-bar{height:8px;margin:0}
+:root body .zpd-sc .zpd-tag{white-space:nowrap;min-width:64px;text-align:center}
