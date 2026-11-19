@@ -430,7 +430,23 @@ prep(3, 'نموذج مراجعة الصف الثالث', [mcq('أي كلمة ت�
 prep(4, 'نموذج مراجعة الصف الرابع', [mcq('«يلعب» كلمة:', ['اسم', 'فعل', 'حرف'], 1), fill('2/7 + 3/7 = ____/7', 5), tf('تبدأ السلسلة الغذائية بنبات.', True), mcq('جمع box:', ['boxs', 'boxes'], 1), mcq('جمع child:', ['childs', 'children'], 1), tf('1/2 = 2/4.', True), short('ماذا يعني اتجاه السهم في السلسلة الغذائية؟', 'ينتقل الغذاء والطاقة إلى الآكل'), mcq('المنتِج في السلسلة:', ['العشب', 'الأرنب', 'الثعلب'], 0)], 'g4:gen')
 prep(5, 'نموذج مراجعة الصف الخامس', [mcq('«العلمُ نورٌ» جملة:', ['اسمية', 'فعلية'], 0), fill('2.5 + 1.75 = ____', '4.25'), tf('الشمس تسبّب تبخّر الماء.', True), mcq('She ___ to school.', ['go', 'goes'], 1), mcq('0.25 تساوي:', ['1/4', '1/2'], 0), fill('تحوّل البخار إلى قطرات ____.', 'تكاثف'), short('استخرج الفاعل: نزلَ المطرُ.', 'المطر'), tf('الجملة الفعلية تبدأ باسم.', False)], 'g5:gen')
 prep(6, 'نموذج مراجعة الصف السادس', [mcq('العلامة المناسبة: ما أجمل الربيع ___', ['.', '؟', '!'], 2), fill('25% من 80 = ____', 20), tf('الطاقة تفنى بعد استعمالها.', False), mcq('ماضي go:', ['goed', 'went'], 1), mcq('3/4 تساوي:', ['34%', '75%'], 1), fill('10% من 250 = ____', 25), short('اذكر مصدراً رئيسياً للطاقة على الأرض.', 'الشمس'), tf('نضع الكلام المنقول بين « ».', True)], 'g6:gen')
-assert len(items) == 44, len(items)
+
+# ===== نماذج مراجعة ثانية: أسئلة مأخوذة من دروس الدفعتين الثانية والثالثة (مراجَعة سابقاً) =====
+_NEW = {1: ['sum-g1-math-add10', 'sum-g1-life-road-safety'], 2: ['sum-g2-math-even-odd', 'sum-g2-en-days'], 3: ['sum-g3-ar-verb-tenses', 'sum-g3-math-division'],
+        4: ['sum-g4-math-perimeter-area', 'sum-g4-life-time'], 5: ['sum-g5-sci-light-shadow', 'sum-g5-math-angles'], 6: ['sum-g6-math-mean', 'sum-g6-sci-solar-system', 'sum-g6-life-saving']}
+_G = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"]
+for _g, _sl in _NEW.items():
+    _by = {i['slug']: i for i in items}
+    _per = [3, 3, 2] if len(_sl) == 3 else [4, 4]
+    _qs = []
+    for _s, _n in zip(_sl, _per):
+        _qs += _by[_s]['questions'][:_n]
+    _titles = '، '.join(_by[s]['lesson'] for s in _sl)
+    items.append(dict(slug=f'rev2-g{_g}-mixed', kind='exam_prep', grade=_g, subj='mix', unit='مراجعة شاملة', lesson='نموذج مراجعة إضافي', title=f'نموذج مراجعة إضافي للصف {_G[_g-1]}',
+        description=f'نموذج مراجعة إضافي بأسئلة متنوعة من دروس: {_titles}.', goals=[], concepts=[], explanation=[], examples=[],
+        points=[f'راجع ملخصات: {_titles} قبل حل النموذج.', 'ابدأ بالأسئلة السهلة ثم عُد إلى الصعبة.', 'راجع الإجابات في الصفحة الأخيرة بعد الانتهاء.'],
+        questions=_qs, links=L([], [], None, f'g{_g}:gen'), sort=110 + _g))
+assert len(items) == 50, len(items)
 if __name__ == '__main__':
     import json
     print(len(items)); json.dump(items, open('/tmp/sums.json', 'w'), ensure_ascii=False)
