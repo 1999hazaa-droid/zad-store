@@ -86,7 +86,7 @@ s = s[:i] + open('' + os.path.dirname(os.path.abspath(__file__)) + '/r_tail.js',
 OLD = '`<div class="spage"><img src="${icon(it.icon)}" alt="" width="150" height="150"><p class="stx">${esc(d.scene)}</p></div>`'
 NEW = '`<div class="spage"><img src="${ART[it.slug] ? ROOT + "images/ready/" + ART[it.slug] + ".webp" : icon(it.icon)}" alt="" width="150" height="150" style="border-radius:18px"><p class="stx">${esc(d.scene)}</p></div>`'
 assert OLD in s; s = s.replace(OLD, NEW)
-s = s.replace('const D8 = (a) => a;', 'const D8 = (a) => a;\nconst ART = { day_1: "scene_day_1", day_2: "scene_day_2" };', 1)
+s = s.replace('const D8 = (a) => a;', 'const D8 = (a) => a;\nconst ART = { day_1: "scene_day_1", day_2: "scene_day_2", day_3: "scene_day_3" };', 1)
 assert 'const ART' in s
 open(R + '/ready/ready.js', 'w', encoding='utf-8').write(s)
 print(len(s))
