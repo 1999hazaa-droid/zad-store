@@ -1,0 +1,45 @@
+/* عالم الإبداع والفنون - زاد (يكمل wiki.css) */
+.ar .safeband{background:#f3ecff;border:2px solid #c9b3f5;border-radius:16px;padding:10px 14px;font:600 14.5px/1.8 var(--z-font);margin:12px 0}
+.ar .tc .bd .mt{margin:0}
+.ar .ab{display:inline-block;font:700 12.5px var(--z-font);border-radius:10px;padding:3px 10px;align-self:flex-start}
+.ar .ab.ok{background:#e2f6e8;color:#1f6b3a}.ar .ab.mid{background:#fff0c9;color:#7a5200}.ar .ab.req{background:#fde0df;color:#a1262a}
+.ar .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+.ar .btns .abtn{flex:1 1 110px;min-height:40px;text-align:center}
+.ar .safe{border:3px solid #c9b3f5;background:#faf6ff;border-radius:18px;padding:12px 16px;margin:10px 0}
+.ar .safe h2{font:800 19px var(--z-font);margin:0 0 6px;color:var(--z-pri)}
+.ar .safe li{font:600 15px/1.9 var(--z-font)}
+.ar .lst{margin:0;padding-inline-start:22px}.ar .lst li{font:500 16px/1.9 var(--z-font)}
+.ar .tx{margin:0;font:500 16px/1.9 var(--z-font)}
+.ar .mats{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.ar .mats div{display:flex;gap:8px;align-items:center;background:#f6f2ff;border-radius:12px;padding:8px 10px}
+.ar .mats img{width:40px;height:40px;object-fit:contain;flex:none}
+.ar .mats span{font:700 14.5px/1.6 var(--z-font)}
+.ar .stp{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ar .stp li{display:flex;gap:10px;align-items:center;border:2px solid var(--z-line);border-radius:14px;padding:8px 10px;background:#fcfbff}
+.ar .stp .n{flex:none;width:34px;height:34px;border-radius:50%;background:var(--z-pri);color:#fff;font:800 16px/34px var(--z-font);text-align:center}
+.ar .stp img{width:56px;height:56px;object-fit:contain;flex:none}
+.ar .stp p{margin:0;font:600 16px/1.8 var(--z-font)}
+.ar .lib a{display:block;padding:8px 10px;border:1px solid var(--z-line);border-radius:12px;margin-top:6px;color:var(--z-pri);font:700 14.5px var(--z-font);text-decoration:none}
+/* الاستوديو */
+.ar .stud{display:grid;gap:10px;margin:8px 0}
+.ar .tpls{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;max-height:230px;overflow:auto;padding:4px;border:2px solid var(--z-line);border-radius:14px;background:#fff}
+.ar .tpl{border:2px solid var(--z-line);border-radius:12px;background:#fff;padding:2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;font:700 11.5px var(--z-font);color:var(--z-ink)}
+.ar .tpl svg{width:100%;height:auto;display:block}
+.ar .tpl.on{border-color:var(--z-pri);background:var(--z-tint)}
+.ar .acv{position:relative;width:100%;max-width:900px;margin-inline:auto;aspect-ratio:4/3;background:#fff;border:3px solid #c9b3f5;border-radius:16px;overflow:hidden;touch-action:none}
+.ar .acv canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ar #ol{pointer-events:none}
+.ar .tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ar .tb{min-height:44px;min-width:44px;border:2px solid var(--z-line);border-radius:12px;background:#fff;font:800 14px var(--z-font);color:var(--z-ink);cursor:pointer;padding:4px 10px}
+.ar .tb.on{border-color:var(--z-pri);background:var(--z-tint);color:var(--z-pri)}
+.ar .pal{display:flex;flex-wrap:wrap;gap:6px}
+.ar .sw{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--z-line);cursor:pointer;padding:0}
+.ar .sw.on{box-shadow:0 0 0 4px var(--z-pri)}
+.ar .gal{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+.ar .gal img{width:100%;border-radius:14px;border:2px solid var(--z-line);display:block;background:#fff}
+.ar .zdlg{position:fixed;inset:0;background:#0007;display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.ar .zdlg>div{background:#fff;border-radius:18px;padding:16px;max-width:460px;width:100%}
+.ar .zdlg label{display:flex;gap:8px;align-items:flex-start;font:600 14.5px/1.8 var(--z-font);margin:8px 0}
+.ar .zdlg input[type=checkbox]{width:22px;height:22px;flex:none;margin-top:4px}
+.ar .msg{font:700 14px/1.7 var(--z-font);min-height:20px}
+@media(max-width:560px){.ar .tpls{grid-template-columns:repeat(auto-fill,minmax(70px,1fr))}}

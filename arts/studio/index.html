@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#351078">
+<title>استوديو التلوين والرسم | منصة زاد التعليمية</title>
+<meta name="description" content="لوحة تلوين ورسم رقمية للأطفال: اختر قالبًا أو ارسم بحرية، وخذ ألوانًا وفرشاة وممحاة، ثم احفظ عملك أو حمّله.">
+<link rel="canonical" href="https://1999hazaa-droid.github.io/zad-store/arts/studio/">
+<meta property="og:site_name" content="منصة زاد التعليمية">
+<meta property="og:locale" content="ar_OM">
+<meta property="og:type" content="website">
+<meta property="og:title" content="استوديو التلوين والرسم | منصة زاد التعليمية">
+<meta property="og:description" content="لوحة تلوين ورسم رقمية للأطفال.">
+<meta property="og:url" content="https://1999hazaa-droid.github.io/zad-store/arts/studio/">
+<meta property="og:image" content="https://1999hazaa-droid.github.io/zad-store/images/og.jpg">
+<link rel="icon" href="../../images/icons/favicon-64.png" type="image/png">
+<link rel="apple-touch-icon" href="../../images/icons/apple-touch-icon.png">
+<link rel="preload" href="../../fonts/cairo-bold.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="../../css/zad-tokens.css">
+<link rel="stylesheet" href="../../css/zad-ui.css?v=4">
+<link rel="stylesheet" href="../../cards/cards.css?v=2">
+<link rel="stylesheet" href="../../activities/activities.css?v=1">
+<link rel="stylesheet" href="../../wiki/wiki.css?v=1">
+<link rel="stylesheet" href="../arts.css?v=1">
+</head>
+<body class="cd ad wk ar">
+<header class="ztop"><div class="zw"><a class="zlogo" href="../../">زاد التعليمية</a><nav aria-label="روابط المنصة"><a class="zn-main" href="../../"><img src="../../images/ill/home.svg" alt="">الرئيسية</a><a href="../../free/"><img src="../../images/ill/blocks.svg" alt="">الألعاب</a><a href="../../grades/"><img src="../../images/ill/books.svg" alt="">الصفوف</a><a href="../../tests/"><img src="../../images/ill/target.svg" alt="">الاختبارات</a><a href="../../learn/"><img src="../../images/ill/star.svg" alt="">تعلّم والعب</a></nav></div></header>
+<main class="zw">
+<div class="zbc"><a href="../../">الرئيسية</a> › <a href="../../library/">المكتبة التعليمية</a> › <a href="../">عالم الإبداع والفنون</a> › استوديو التلوين</div>
+<h1 style="font:800 24px var(--z-font);margin:8px 0">🎨 استوديو التلوين والرسم</h1>
+<p class="tx">اختر قالبًا أو ابدأ بلوحة بيضاء. اضغط على أي مساحة بأداة «التعبئة» لتلوينها، أو ارسم بالفرشاة. يعمل باللمس والماوس.</p>
+<div class="stud">
+<div class="zrow" id="tcats" role="group" aria-label="تصنيف القوالب"></div>
+<div class="tpls" id="tpls" role="listbox" aria-label="القوالب"></div>
+<div class="tools" id="tools">
+<button type="button" class="tb on" data-tool="fill">🪣 تعبئة</button>
+<button type="button" class="tb" data-tool="brush">🖌️ فرشاة</button>
+<button type="button" class="tb" data-tool="eraser">🧽 ممحاة</button>
+<button type="button" class="tb" data-size="6">رفيعة</button>
+<button type="button" class="tb on" data-size="14">متوسطة</button>
+<button type="button" class="tb" data-size="30">سميكة</button>
+<button type="button" class="tb" id="undo">↩ تراجع</button>
+<button type="button" class="tb" id="clear">🗑 مسح وإعادة البدء</button>
+</div>
+<div class="pal" id="pal" role="group" aria-label="الألوان"></div>
+<div class="acv" id="acv"><canvas id="pc" width="900" height="675" aria-label="لوحة الرسم"></canvas><canvas id="ol" width="900" height="675"></canvas></div>
+<div class="tools">
+<button type="button" class="tb" id="save">💾 احفظ عملي على هذا الجهاز</button>
+<button type="button" class="tb" id="dl">⬇ حمّل الصورة</button>
+<button type="button" class="tb" id="pub">🖼 اقترح عملي لمعرض زاد</button>
+</div>
+<p class="msg" id="msg" aria-live="polite"></p>
+<section class="art" id="mine" hidden><h2>أعمالي المحفوظة على هذا الجهاز</h2><div class="gal" id="minel"></div><p class="hint" style="font:600 12.5px var(--z-font);color:var(--z-ink2)">تُحفظ في متصفحك فقط ولا تُرسل إلى أي مكان. إن مسحت بيانات المتصفح تُحذف.</p></section>
+</div>
+<p><a class="abtn" href="../">العودة إلى عالم الإبداع والفنون</a></p>
+</main>
+<nav class="ztab" aria-label="التنقل السفلي"><a href="../../"><b><img src="../../images/ill/home.svg" alt=""></b>الرئيسية</a><a href="../../free/"><b><img src="../../images/ill/blocks.svg" alt=""></b>ألعاب</a><a class="on" href="../../library/" aria-current="page"><b><img src="../../images/ill/books.svg" alt=""></b>المكتبة</a><a href="../../tests/"><b><img src="../../images/ill/target.svg" alt=""></b>اختبارات</a><a href="../../learn/"><b><img src="../../images/ill/star.svg" alt=""></b>تعلّم</a></nav>
+<script src="../../js/supabase-config.js?v=beb96d8866"></script>
+<script src="studio.js?v=1" defer></script>
+</body>
+</html>
