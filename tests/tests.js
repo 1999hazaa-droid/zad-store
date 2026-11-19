@@ -14,16 +14,20 @@ const IMG = (n) => ROOT + "images/zad/" + n + ".webp";
 const app = $("#app");
 
 /* ---------- التصنيفات ---------- */
-const LV = [["a2", "سنة إلى سنتين", "i_bottle"], ["a3", "3 سنوات", "i_teddy"], ["a4", "4 سنوات", "i_balloon"], ["a5", "5 سنوات", "i_pencil"], ["a6", "6 سنوات", "i_bag"], ["g1", "الصف الأول", "i_n1"], ["g2", "الصف الثاني", "i_n2"], ["g3", "الصف الثالث", "i_n3"], ["g4", "الصف الرابع", "i_n4"]];
+const LV = [["a2", "سنة إلى سنتين", "i_bottle"], ["a3", "3 سنوات", "i_teddy"], ["a4", "4 سنوات", "i_balloon"], ["a5", "5 سنوات", "i_pencil"], ["a6", "6 سنوات", "i_bag"], ["g1", "الصف الأول", "i_n1"], ["g2", "الصف الثاني", "i_n2"], ["g3", "الصف الثالث", "i_n3"], ["g4", "الصف الرابع", "i_n4"], ["g5", "الصف الخامس", "i_n5"], ["g6", "الصف السادس", "i_n6"]];
 const LVI = Object.fromEntries(LV.map((l, i) => [l[0], i]));
-const SUBJ = { ar: ["اللغة العربية", "u_letters", "الحروف والكلمات والقراءة"], math: ["الرياضيات", "u_nums", "الأعداد والعمليات والأشكال"], sci: ["العلوم", "i_microscope", "الكائنات الحية والبيئة والمواد"], gen: ["المهارات العامة", "i_brain", "التفكير والذاكرة والتصنيف"] };
-const SUBJ_ORDER = ["ar", "math", "sci", "gen"];
+const SUBJ = { ar: ["اللغة العربية", "u_letters", "الحروف والكلمات والقراءة"], math: ["الرياضيات", "u_nums", "الأعداد والعمليات والأشكال"], sci: ["العلوم", "i_microscope", "الكائنات الحية والبيئة والمواد"], gen: ["المهارات العامة", "i_brain", "التفكير والذاكرة والتصنيف"], en: ["اللغة الإنجليزية", "u_abc", "المفردات والجمل والقراءة"], isl: ["التربية الإسلامية", "i_heart", "القيم والآداب والأحكام"], life: ["المهارات الحياتية", "i_brain", "الصحة والسلامة والمال والتواصل"] };
+const SUBJ_ORDER = ["ar", "math", "en", "sci", "isl", "life", "gen"];
+const SCOPE = { lesson: "درس", unit: "وحدة", semester: "فصل", subject: "شامل", practice: "تدريب قصير" };
+const SCOPE_ORDER = ["lesson", "unit", "semester", "subject", "practice"];
+const scopeOf = (q) => q.scope || { full: "subject", practice: "practice" }[q.kind] || "";
+const SEMN = { 1: "الفصل الأول", 2: "الفصل الثاني" };
 const KIND = { basic: ["تقييم بسيط", "i_star", "يتأكد من فهم المهارة الأساسية"], practice: ["تقييم تدريبي", "i_target", "لتطبيق ما تعلّمته"], full: ["تقييم شامل", "i_trophy", "يجمع عدة مهارات من المادة"] };
 const KIND_ORDER = ["basic", "practice", "full"];
 const young = (lv) => /^a/.test(lv || "");
-const LIBSUB = { ar: "اللغة العربية", math: "الرياضيات", sci: "العلوم", gen: "التفكير" };
+const LIBSUB = { ar: "اللغة العربية", math: "الرياضيات", sci: "العلوم", gen: "التفكير", en: "اللغة الإنجليزية", isl: "التربية الإسلامية", life: "المهارات الحياتية" };
 const GAMESUB = { ar: ["اللغة العربية", "القراءة والقرآن"], math: ["الرياضيات"], sci: ["العلوم والوقت"], gen: ["الأشكال والتفكير", "مهارات الصغار"] };
-const GAMEAGE = { a2: ["١–٤", "١–٢", "١–٣"], a3: ["١–٤", "١–٣", "٣–٤"], a4: ["١–٤", "٤–٦", "٣–٤", "٤–٥"], a5: ["٤–٦", "٥–٦", "٤–٥"], a6: ["٤–٦", "٥–٦", "٦–٧"], g1: ["الأول", "٥–٦", "٦–٧"], g2: ["الثاني"], g3: ["الثالث"], g4: ["الرابع"] };
+const GAMEAGE = { a2: ["١–٤", "١–٢", "١–٣"], a3: ["١–٤", "١–٣", "٣–٤"], a4: ["١–٤", "٤–٦", "٣–٤", "٤–٥"], a5: ["٤–٦", "٥–٦", "٤–٥"], a6: ["٤–٦", "٥–٦", "٦–٧"], g1: ["الأول", "٥–٦", "٦–٧"], g2: ["الثاني"], g3: ["الثالث"], g4: ["الرابع"], g5: ["الخامس"], g6: ["السادس"] };
 
 /* ---------- تخزين ---------- */
 const ls = {
@@ -37,8 +41,8 @@ function kidLoad(id) { const o = ls.get("hg_kid:" + id, null); return o && typeo
 function kidIds() { const a = ls.get("hg_profiles", []); return (Array.isArray(a) ? a : []).filter((id) => kidLoad(id)); }
 function kidStage(k) {
   if (!k) return "";
-  if (k.grade >= 1) return "g" + Math.min(4, k.grade);
-  const a = k.age || 5; return a <= 2 ? "a2" : a <= 6 ? "a" + a : "g" + Math.min(4, Math.max(1, a - 6));
+  if (k.grade >= 1) return "g" + Math.min(6, k.grade);
+  const a = k.age || 5; return a <= 2 ? "a2" : a <= 6 ? "a" + a : "g" + Math.min(6, Math.max(1, a - 6));
 }
 const KID = { id: "", k: null };
 function kidBoot() {
@@ -64,7 +68,7 @@ function api(path, opt) {
 }
 let SNAP = null;
 function snapshot() { if (!SNAP) SNAP = fetch("quizzes.json?v=1").then((r) => { if (!r.ok) throw new Error("snap"); return r.json(); }); return SNAP; }
-const META = "id,slug,lv,subj,kind,title,skill,diff,intro,n,sort_order,updated_at";
+const META = "id,slug,lv,subj,kind,title,skill,diff,intro,n,sort_order,updated_at,sem,unit,lesson,scope";
 let LIST = null;
 function loadList() {
   if (LIST) return Promise.resolve(LIST);
@@ -78,6 +82,7 @@ function loadList() {
 }
 const PREV = "__preview";
 function loadQuiz(slug) {
+  if (slug.startsWith("gen~")) return loadGen(slug).catch(() => null);
   if (slug === PREV) { const q = ls.get("zad.qz.preview", null); return Promise.resolve(q && q.data ? Object.assign({}, q, { slug: PREV, id: null }) : null); }
   return api(`quizzes?select=id,slug,lv,subj,kind,title,skill,diff,intro,data,updated_at&slug=eq.${encodeURIComponent(slug)}&is_published=eq.true`)
     .then((rows) => { if (!rows || !rows[0]) throw new Error("nf"); return rows[0]; })
@@ -231,44 +236,130 @@ function kidsBar() {
 function hero(h1, p, bc, pose, bubble) {
   return `<section class="qz-hero" style="background:linear-gradient(135deg,#351078,#5427D5 55%,#7045E8)"><div class="zw"><div>${bc ? `<div class="zbc">${bc}</div>` : ""}<h1>${h1}</h1><p>${p}</p></div><div class="qz-zz">${bubble ? `<span class="qz-say">${esc(bubble)}</span>` : ""}<img src="${IMG(pose || "zozo-welcome")}" alt="زوزو" width="110" height="115"></div></div></section>`;
 }
+/* ---------- بنك الأسئلة (بيانات تصنيف فقط، للمولّد) ---------- */
+let BANK = [];
+const gradeOf = (lv) => (/^g\d$/.test(lv || "") ? +lv.slice(1) : 0);
+function loadBank() {
+  return api("qbank?select=grade,subj,sem,unit,lesson,diff&status=eq.published&limit=5000").then((r) => { BANK = Array.isArray(r) ? r : []; }).catch(() => { BANK = []; });
+}
+const hq = (o) => "#" + Object.entries(o).filter(([, v]) => v !== "" && v != null).map(([k, v]) => k + "=" + encodeURIComponent(v)).join("&");
+const uniq = (a) => Array.from(new Set(a.filter((x) => x != null && x !== "")));
+const chipRow = (label, items, cur, mk, all) => `<div class="qz-fr"><b>${label}</b><div class="qz-chips">${all ? `<button type="button" class="qz-chip${cur ? "" : " on"}" data-go="${mk("")}">${all}</button>` : ""}${items.map(([v, l]) => `<button type="button" class="qz-chip${String(cur) === String(v) ? " on" : ""}" data-go="${mk(v)}">${esc(l)}</button>`).join("")}</div></div>`;
+
+/* ---------- الصفحة الرئيسية ---------- */
 function home() {
   setPlay(false);
   const me = kidStage(KID.k), list = LIST || [];
   const cnt = (lv) => list.filter((q) => q.lv === lv).length;
   const name = KID.k ? (KID.k.n || KID.id) : "";
-  let h = hero("الاختبارات والتقييمات", "اختبارات قصيرة وممتعة مع زوزو لتعرف ماذا تعلّمت، بدون وقت ضاغط.", `<a href="../">الرئيسية</a> › الاختبارات`, "zozo-welcome", name ? `أهلًا ${name}! هيا نختبر معلوماتنا` : "أهلًا! أنا زوزو، سأرافقك في الاختبار");
-  h += `<main class="zw">${kidsBar()}<section class="qz-sec" style="margin-top:6px"><h2>اختر العمر أو الصف</h2><p>داخل كل فئة: اللغة العربية والرياضيات والعلوم والمهارات العامة، ولكل مادة 3 مستويات.</p><div class="qz-lvs">`;
-  LV.forEach((l) => { const n = cnt(l[0]); if (n) h += `<button type="button" class="qz-lv${l[0] === me ? " me" : ""}" data-go="#lv=${l[0]}"><img src="${IMG(l[2])}" alt="">${esc(l[1])}<small>${n} اختبارًا</small></button>`; });
-  h += `</div></section><section class="qz-sec"><h2>المواد</h2><div class="qz-subs">${SUBJ_ORDER.map((s) => `<div class="qz-subi s-${s}"><img src="${IMG(SUBJ[s][1])}" alt=""><span>${SUBJ[s][0]}<small>${SUBJ[s][2]}</small></span></div>`).join("")}</div></section>`;
+  let h = hero("الاختبارات وبنوك الأسئلة", "اختبارات قصيرة وممتعة مع زوزو لتعرف ماذا تعلّمت، بدون وقت ضاغط.", `<a href="../">الرئيسية</a> › الاختبارات`, "zozo-welcome", name ? `أهلًا ${name}! هيا نختبر معلوماتنا` : "أهلًا! أنا زوزو، سأرافقك في الاختبار");
+  h += `<main class="zw">${kidsBar()}<section class="qz-sec" style="margin-top:6px"><h2>اختر العمر أو الصف</h2><p>داخل كل فئة: المواد الدراسية بمستوياتها، ويمكنك التصفية بالفصل والوحدة والدرس.</p><div class="qz-lvs">`;
+  LV.forEach((l) => { const n = cnt(l[0]), g = gradeOf(l[0]), b = g ? BANK.filter((x) => x.grade === g).length : 0; if (n || b) h += `<button type="button" class="qz-lv${l[0] === me ? " me" : ""}" data-go="#lv=${l[0]}"><img src="${IMG(l[2])}" alt="">${esc(l[1])}<small>${n ? n + " اختبارًا" : "تدريب مخصص"}</small></button>`; });
+  h += `</div></section>`;
+  h += `<section class="qz-sec"><h2>تصفّح بالنوع</h2><div class="qz-quick">
+    <button type="button" class="qz-qk" data-go="${hq({ sc: "subject" })}"><img src="${IMG("i_trophy")}" alt=""><span><b>الاختبارات الشاملة</b><small>تجمع مهارات المادة كلها</small></span></button>
+    <button type="button" class="qz-qk" data-go="${hq({ sc: "practice" })}"><img src="${IMG("i_target")}" alt=""><span><b>تدريبات قصيرة</b><small>خمس دقائق للتدرّب</small></span></button>
+    <button type="button" class="qz-qk" data-go="${hq({ sc: "lesson" })}"><img src="${IMG("i_star")}" alt=""><span><b>اختبارات الدروس</b><small>درس واحد في كل مرة</small></span></button>
+    <button type="button" class="qz-qk" data-go="${hq({ sc: "unit" })}"><img src="${IMG("i_books")}" alt=""><span><b>مراجعة الوحدات</b><small>وحدة كاملة</small></span></button>
+    <button type="button" class="qz-qk" data-go="${hq({ gen: 1 })}"><img src="${IMG("i_brain")}" alt=""><span><b>تدريب مخصص</b><small>تختار الصف والمادة وعدد الأسئلة</small></span></button></div></section>`;
+  h += `<section class="qz-sec"><h2>المواد</h2><div class="qz-subs">${SUBJ_ORDER.filter((s) => list.some((q) => q.subj === s) || BANK.some((b) => b.subj === s)).map((s) => `<button type="button" class="qz-subi s-${s}" data-go="${hq({ sj: s })}"><img src="${IMG(SUBJ[s][1])}" alt=""><span>${SUBJ[s][0]}<small>${SUBJ[s][2]}</small></span></button>`).join("")}</div></section>`;
+  const latest = list.slice().sort((a, b) => String(b.updated_at || "").localeCompare(String(a.updated_at || ""))).slice(0, 6);
+  if (latest.length) h += `<section class="qz-sec"><h2>أحدث الاختبارات المضافة</h2><div class="qz-list">${latest.map(cardHTML).join("")}</div></section>`;
   const rec = results().at.slice(-5).reverse();
-  if (rec.length) h += `<section class="qz-sec"><h2>آخر اختباراتك</h2><div class="qz-hist">${rec.map((r) => { const q = list.find((x) => x.slug === r.q); return `<a class="qz-hrow" href="#q=${encodeURIComponent(r.q)}"><img src="${IMG(SUBJ[r.sj] ? SUBJ[r.sj][1] : "i_star")}" alt="" width="32" height="32"><b>${esc(q ? q.title : r.q)}</b><small>${r.s} من ${r.n} · ${dayTxt(r.d)}</small></a>`; }).join("")}</div></section>`;
+  if (rec.length) h += `<section class="qz-sec"><h2>آخر اختباراتك</h2><div class="qz-hist">${rec.map((r) => { const q = list.find((x) => x.slug === r.q); return `<a class="qz-hrow" href="#q=${encodeURIComponent(r.q)}"><img src="${IMG(SUBJ[r.sj] ? SUBJ[r.sj][1] : "i_star")}" alt="" width="32" height="32"><b>${esc(q ? q.title : (r.tt || r.q))}</b><small>${r.s} من ${r.n} · ${dayTxt(r.d)}</small></a>`; }).join("")}</div></section>`;
   h += `<p class="qz-note">لا نطلب أي بيانات شخصية. نتائج الطفل لا تظهر لأحد غيرك، وتجدها في <a href="../games/#parent">لوحة ولي الأمر</a>.</p></main>`;
   app.innerHTML = h; W.scrollTo(0, 0);
-  D.title = "الاختبارات والتقييمات | منصة زاد التعليمية";
+  D.title = "الاختبارات وبنوك الأسئلة | منصة زاد التعليمية";
 }
 
-/* ---------- صفحة الفئة ---------- */
-function level(lv) {
+function cardHTML(q) {
+  const b = bestOf(q.slug), K = KIND[q.kind] || KIND.basic, sc = scopeOf(q);
+  const badge = b ? `<span class="qz-best${b.p >= 0.8 ? "" : " mid"}">${b.s} من ${b.n}</span>` : `<span class="qz-best new">جديد</span>`;
+  const L = LV[LVI[q.lv]], where = [L ? L[1] : "", SUBJ[q.subj] ? SUBJ[q.subj][0] : "", q.sem ? SEMN[q.sem] : "", q.unit || "", q.lesson || ""].filter(Boolean).join(" · ");
+  return `<button type="button" class="qz-card" data-go="#q=${encodeURIComponent(q.slug)}"><span class="qz-kd"><img src="${IMG(K[1])}" alt="">${esc(sc ? SCOPE[sc] : K[0].replace("تقييم ", ""))}</span><span><b>${esc(q.title)}</b><small>${esc(where)}</small><small>${esc(K[0])}${q.skill ? " · " + esc(q.skill) : ""} · ${countQ(q.n)}</small></span>${badge}</button>`;
+}
+
+/* ---------- التصفح والتصفية ---------- */
+function browse(h) {
   setPlay(false);
-  const L = LV[LVI[lv]]; if (!L) return home();
-  const list = (LIST || []).filter((q) => q.lv === lv);
-  let h = hero(`<img src="${IMG(L[2])}" alt="" width="44" height="44" style="vertical-align:-10px"> اختبارات ${esc(L[1])}`, `${list.length} اختبارًا في 4 مواد. ابدأ بالبسيط ثم التدريبي ثم الشامل.`, `<a href="../">الرئيسية</a> › <a href="#">الاختبارات</a> › ${esc(L[1])}`, "zozo-cheer", young(lv) ? "اضغط على الاختبار وسأقرأ لك الأسئلة" : "اختر المادة وابدأ بالتقييم البسيط");
-  h += `<main class="zw">${kidsBar()}`;
-  if (!list.length) h += `<div class="qz-empty"><img src="${IMG("zozo-think")}" alt=""><h3>لا توجد اختبارات هنا بعد</h3><p>اختر عمرًا أو صفًا آخر.</p></div>`;
+  const f = { lv: h.get("lv") || "", sj: h.get("sj") || "", sem: h.get("sem") || "", un: h.get("un") || "", ls: h.get("ls") || "", sc: h.get("sc") || "" };
+  const L = f.lv ? LV[LVI[f.lv]] : null; if (f.lv && !L) return home();
+  const all = LIST || [], mk = (k) => (v) => hq(Object.assign({}, f, { [k]: v }, k === "un" ? { ls: "" } : k === "sj" || k === "lv" ? { un: "", ls: "" } : {}));
+  const base = all.filter((q) => (!f.lv || q.lv === f.lv) && (!f.sj || q.subj === f.sj));
+  const list = base.filter((q) => (!f.sem || String(q.sem) === f.sem) && (!f.un || q.unit === f.un) && (!f.ls || q.lesson === f.ls) && (!f.sc || scopeOf(q) === f.sc));
+  const title = (L ? "اختبارات " + L[1] : "كل الاختبارات") + (f.sj ? " · " + SUBJ[f.sj][0] : "") + (f.sc ? " · " + SCOPE[f.sc] : "");
+  let x = hero(L ? `<img src="${IMG(L[2])}" alt="" width="44" height="44" style="vertical-align:-10px"> ${esc(title)}` : esc(title), `${list.length} اختبارًا مطابقًا. ابدأ بالبسيط ثم التدريبي ثم الشامل.`, `<a href="../">الرئيسية</a> › <a href="#">الاختبارات</a> › ${esc(title)}`, "zozo-cheer", L && young(f.lv) ? "اضغط على الاختبار وسأقرأ لك الأسئلة" : "اختر المادة وابدأ بالتقييم البسيط");
+  x += `<main class="zw">${kidsBar()}<section class="qz-filt">`;
+  if (!f.lv) x += chipRow("الصف", LV.filter((l) => all.some((q) => q.lv === l[0])).map((l) => [l[0], l[1]]), f.lv, mk("lv"), "الكل");
+  x += chipRow("المادة", SUBJ_ORDER.filter((s) => base.some((q) => q.subj === s) || all.some((q) => q.subj === s && (!f.lv || q.lv === f.lv))).map((s) => [s, SUBJ[s][0]]), f.sj, mk("sj"), "الكل");
+  const sems = uniq(base.map((q) => q.sem)).sort();
+  if (sems.length) x += chipRow("الفصل", sems.map((s) => [s, SEMN[s]]), f.sem, mk("sem"), "الكل");
+  const unitBase = base.filter((q) => !f.sem || String(q.sem) === f.sem), units = uniq(unitBase.map((q) => q.unit));
+  if (units.length) x += chipRow("الوحدة", units.map((u) => [u, u]), f.un, mk("un"), "الكل");
+  const lessons = uniq(unitBase.filter((q) => !f.un || q.unit === f.un).map((q) => q.lesson));
+  if (f.un && lessons.length) x += chipRow("الدرس", lessons.map((u) => [u, u]), f.ls, mk("ls"), "الكل");
+  x += chipRow("النوع", SCOPE_ORDER.filter((s) => base.some((q) => scopeOf(q) === s)).map((s) => [s, SCOPE[s]]), f.sc, mk("sc"), "الكل");
+  x += `</section>`;
+  const g = gradeOf(f.lv);
+  if (g && BANK.some((b) => b.grade === g && (!f.sj || b.subj === f.sj))) x += `<div class="qz-genbar"><img src="${IMG("zozo-think")}" alt=""><span><b>تريد تدريبًا مختلفًا؟</b><small>اختر عدد الأسئلة والمستوى من بنك الأسئلة.</small></span><button type="button" class="zbtn zb2" data-go="${hq({ gen: 1, lv: f.lv, sj: f.sj })}">تدريب مخصص</button></div>`;
+  if (!list.length) x += `<div class="qz-empty"><img src="${IMG("zozo-think")}" alt=""><h3>لا توجد اختبارات مطابقة بعد</h3><p>جرّب تغيير التصفية أو اختر «الكل».</p></div>`;
   SUBJ_ORDER.forEach((s) => {
-    const L2 = list.filter((q) => q.subj === s).sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.sort_order - b.sort_order);
+    const L2 = list.filter((q) => q.subj === s).sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || (a.sort_order || 0) - (b.sort_order || 0));
     if (!L2.length) return;
-    h += `<section class="s-${s}"><div class="qz-band qz-sb"><img src="${IMG(SUBJ[s][1])}" alt=""><div><h2>${SUBJ[s][0]}</h2><p>${SUBJ[s][2]}</p></div></div><div class="qz-list">`;
-    L2.forEach((q) => {
-      const b = bestOf(q.slug), K = KIND[q.kind];
-      const badge = b ? `<span class="qz-best${b.p >= 0.8 ? "" : " mid"}">${b.s} من ${b.n}</span>` : `<span class="qz-best new">جديد</span>`;
-      h += `<button type="button" class="qz-card" data-go="#q=${encodeURIComponent(q.slug)}"><span class="qz-kd"><img src="${IMG(K[1])}" alt="">${K[0].replace("تقييم ", "")}</span><span><b>${esc(q.title)}</b><small>${esc(K[0])} · ${esc(q.skill || "")} · ${countQ(q.n)}</small></span>${badge}</button>`;
-    });
-    h += `</div></section>`;
+    x += `<section class="s-${s}"><div class="qz-band qz-sb"><img src="${IMG(SUBJ[s][1])}" alt=""><div><h2>${SUBJ[s][0]}</h2><p>${SUBJ[s][2]}</p></div></div><div class="qz-list">${L2.map(cardHTML).join("")}</div></section>`;
   });
-  h += `<p class="qz-note">التقييم البسيط يتأكد من المهارة الأساسية، والتدريبي لتطبيقها، والشامل يجمع عدة مهارات. لا يوجد وقت ضاغط، ويمكنك إعادة أي اختبار.</p></main>`;
-  app.innerHTML = h; W.scrollTo(0, 0);
-  D.title = `اختبارات ${L[1]} | منصة زاد التعليمية`;
+  x += `<p class="qz-note">التقييم البسيط يتأكد من المهارة الأساسية، والتدريبي لتطبيقها، والشامل يجمع عدة مهارات. لا يوجد وقت ضاغط، ويمكنك إعادة أي اختبار.</p></main>`;
+  app.innerHTML = x; W.scrollTo(0, 0);
+  D.title = title + " | منصة زاد التعليمية";
+}
+
+/* ---------- التدريب المخصص من بنك الأسئلة ---------- */
+const DIFFN = { 0: "متنوع", 1: "سهل", 2: "متوسط", 3: "متقدم" };
+function genPage(h) {
+  setPlay(false);
+  const lv = h.get("lv") && gradeOf(h.get("lv")) ? h.get("lv") : "", sj = h.get("sj") || "";
+  const grades = uniq(BANK.map((b) => b.grade)).sort((a, b) => a - b);
+  const g = lv ? gradeOf(lv) : grades[0] || 0;
+  let x = hero("تدريب مخصص", "اختر الصف والمادة وعدد الأسئلة، وزوزو يجهّز لك تدريبًا من بنك الأسئلة.", `<a href="../">الرئيسية</a> › <a href="#">الاختبارات</a> › تدريب مخصص`, "zozo-think", "اختر ما تريد التدرّب عليه");
+  if (!grades.length) { app.innerHTML = x + `<main class="zw"><div class="qz-empty"><img src="${IMG("zozo-think")}" alt=""><h3>لم تُنشر أسئلة في البنك بعد</h3><p>سيظهر المولّد عند نشر أول أسئلة.</p><a class="zbtn zb2" href="#">كل الاختبارات</a></div></main>`; return; }
+  const opt = (a, cur) => a.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(cur) ? " selected" : ""}>${esc(l)}</option>`).join("");
+  x += `<main class="zw"><form class="qz-gen" id="gf"><label><span>الصف</span><select id="gg">${opt(grades.map((n) => ["g" + n, LV[LVI["g" + n]][1]]), "g" + g)}</select></label><label><span>المادة</span><select id="gs"></select></label><label><span>الوحدة</span><select id="gu"></select></label><label><span>الدرس</span><select id="gl"></select></label><label><span>عدد الأسئلة</span><select id="gn"></select></label><label><span>المستوى</span><select id="gd"></select></label><p class="qz-note" id="gi" style="margin:0"></p><button type="submit" class="qp-btn pri" id="gb" style="min-height:54px">ابدأ التدريب</button></form></main>`;
+  app.innerHTML = x; W.scrollTo(0, 0); D.title = "تدريب مخصص | منصة زاد التعليمية";
+  const rows = () => BANK.filter((b) => b.grade === gradeOf($("#gg").value));
+  const fill = (id, items, cur) => { $(id).innerHTML = items; if (cur != null && $(id).querySelector(`[value="${CSS.escape(String(cur))}"]`)) $(id).value = String(cur); };
+  const refresh = (keep) => {
+    const r0 = rows(), subs = SUBJ_ORDER.filter((s) => r0.some((b) => b.subj === s));
+    fill("#gs", opt(subs.map((s) => [s, SUBJ[s][0]]), ""), keep ? $("#gs").value : sj);
+    const r1 = r0.filter((b) => b.subj === $("#gs").value), units = uniq(r1.map((b) => b.unit));
+    fill("#gu", opt([["", "كل الوحدات"]].concat(units.map((u) => [u, u])), ""), keep ? $("#gu").value : "");
+    const r2 = r1.filter((b) => !$("#gu").value || b.unit === $("#gu").value), les = $("#gu").value ? uniq(r2.map((b) => b.lesson)) : [];
+    fill("#gl", opt([["", "كل الدروس"]].concat(les.map((u) => [u, u])), ""), keep ? $("#gl").value : "");
+    const r3 = r2.filter((b) => !$("#gl").value || b.lesson === $("#gl").value), tot = r3.length;
+    const ns = [5, 10, 15, 20].filter((n) => n <= tot); if (!ns.length && tot >= 3) ns.push(tot); else if (ns.length && tot > ns[ns.length - 1] && tot < 20) ns.push(tot);
+    fill("#gn", opt(ns.map((n) => [n, n + " أسئلة"]), ""), ns.includes(+$("#gn").value) ? $("#gn").value : ns[Math.min(1, ns.length - 1)]);
+    const ds = [[0, "متنوع"]].concat([1, 2, 3].filter((d) => r3.some((b) => b.diff === d)).map((d) => [d, DIFFN[d]]));
+    fill("#gd", opt(ds, ""), $("#gd").value || 0);
+    const dsel = +$("#gd").value, avail = dsel ? r3.filter((b) => b.diff === dsel).length : tot;
+    $("#gi").textContent = avail >= 3 ? `المتاح في البنك لهذا الاختيار: ${avail} سؤالًا.` : "لا توجد أسئلة كافية لهذا الاختيار (الحد الأدنى 3). غيّر الوحدة أو المستوى.";
+    $("#gb").disabled = avail < 3 || !ns.length;
+  };
+  ["#gg", "#gs", "#gu", "#gl", "#gd", "#gn"].forEach((id) => $(id).addEventListener("change", () => refresh(id !== "#gg")));
+  refresh(false);
+  $("#gf").onsubmit = (e) => { e.preventDefault(); location.hash = "#q=" + encodeURIComponent(genSlug($("#gg").value, $("#gs").value, $("#gu").value, $("#gl").value, +$("#gn").value, +$("#gd").value)); };
+}
+const genSlug = (lv, sj, un, ls, n, d) => "gen~" + encodeURIComponent(JSON.stringify([lv, sj, un, ls, n, d, Date.now().toString(36)]));
+function seeded(arr, seed) { let s = seedOf(seed) || 7; const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor((s / 233280) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+async function loadGen(slug) {
+  let p; try { p = JSON.parse(decodeURIComponent(slug.slice(4))); } catch (e) { return null; }
+  const [lv, sj, un, ls, n, d, sd] = p, g = gradeOf(lv); if (!g || !SUBJ[sj]) return null;
+  let url = `qbank?select=code,qtype,body,skill,unit,lesson,diff&status=eq.published&grade=eq.${g}&subj=eq.${encodeURIComponent(sj)}`;
+  if (un) url += `&unit=eq.${encodeURIComponent(un)}`; if (ls) url += `&lesson=eq.${encodeURIComponent(ls)}`; if (d) url += `&diff=eq.${+d}`;
+  const rows = await api(url + "&limit=1000"); if (!Array.isArray(rows) || rows.length < 3) return null;
+  const pick = seeded(rows, slug + sd).slice(0, Math.min(+n || 10, rows.length)).sort((a, b) => a.diff - b.diff);
+  const qs = [], psg = {};
+  pick.forEach((r) => { const o = Object.assign({}, r.body); delete o.pg; o.t = r.qtype; o.id = r.code; o.sk = r.skill; o.tp = r.unit + " › " + r.lesson; if (r.body.pg) { const k = "p" + seedOf(String(r.body.pg.x)); psg[k] = r.body.pg; o.psg = k; } qs.push(o); });
+  const dd = { qs, timer: true }; if (Object.keys(psg).length) dd.psg = psg;
+  return { slug, id: null, lv, subj: sj, kind: "practice", title: `تدريب مخصص: ${SUBJ[sj][0]}${un ? " · " + un : ""}${ls ? " · " + ls : ""}`, skill: un || "مهارات متنوعة", diff: +d || 2, intro: `${countQ(qs.length)} من بنك الأسئلة، المستوى: ${DIFFN[+d || 0]}. لا يوجد وقت ضاغط، وتراجع إجاباتك قبل التسليم.`, data: dd };
 }
 
 /* ---------- مشغّل الاختبار ---------- */
@@ -607,10 +698,11 @@ function finish() {
   const n = P.qs.length, s = P.ok.filter(Boolean).length, pct = Math.round((s / n) * 100), secs = P.t0 ? Math.round((Date.now() - P.t0) / 1000) : null;
   const sk = {}; P.qs.forEach((q, k) => { const name = q.sk || P.q.skill || "المهارة"; sk[name] = sk[name] || [0, 0]; sk[name][1]++; if (P.ok[k]) sk[name][0]++; });
   const wrong = P.qs.map((q, k) => k).filter((k) => !P.ok[k]);
+  const tp = {}; P.qs.forEach((q, k) => { if (!q.tp) return; tp[q.tp] = tp[q.tp] || [0, 0]; tp[q.tp][1]++; if (P.ok[k]) tp[q.tp][0]++; });
   if (!P.saved && P.q.slug !== PREV) {
     P.saved = true;
     const o = results();
-    o.at.push({ id: P.attempt, q: P.q.slug, tt: String(P.q.title || "").slice(0, 80), lv: P.q.lv, sj: P.q.subj, k: P.q.kind, s, n, d: new Date().toISOString(), sk, w: wrong.map((k) => P.qs[k].id), t: P.timer ? secs : undefined });
+    o.at.push({ id: P.attempt, q: P.q.slug, tt: String(P.q.title || "").slice(0, 80), lv: P.q.lv, sj: P.q.subj, k: P.q.kind, s, n, d: new Date().toISOString(), sk, tp: Object.keys(tp).length ? tp : undefined, w: wrong.map((k) => P.qs[k].id), t: P.timer ? secs : undefined });
     o.at = o.at.slice(-300); ls.set(RKEY(), o);
     const res = {}; P.qs.forEach((q, k) => { res[q.id] = P.ok[k] ? 1 : 0; });
     if (P.q.id && Object.keys(res).length === n) api("rpc/quiz_done", { method: "POST", body: { p_attempt: P.attempt, p_quiz: P.q.id, p_score: s, p_total: n, p_res: res, p_secs: secs }, timeout: 8000 }).catch(() => { /* العدّاد اختياري */ });
@@ -623,6 +715,7 @@ function finish() {
   const rvH = wrong.map((k) => { const q = P.qs[k]; return `<div class="qs-rq"><h4>${k + 1}. ${q.t === "fill" ? fmt(String(q.q).replace(/__+/g, "____")) : fmt(q.q || "")}</h4><div class="ln y">إجابتك: <b>${answerHTML(q, P.ans[k])}</b></div><div class="ln c">الصحيح: ${correctHTML(q)}</div>${q.ex ? `<p>${fmt(q.ex)}</p>` : ""}</div>`; }).join("");
   const inner = `<div class="qi" style="padding:0"><div class="qi-card"><div class="qs-top"><img class="zz" src="${IMG(pose)}" alt="زوزو"><div class="qs-ring" style="--p:${pct}"><div><b>${s} من ${n}</b><small>إجابات صحيحة</small></div></div><div class="qs-stars" aria-label="${stars} نجوم">${[0, 1, 2].map((k) => `<img src="${IMG("i_star")}" alt="" class="${k < stars ? "" : "off"}">`).join("")}</div><p class="qs-msg">${esc(msg)}</p>${secs != null && P.timer ? `<small style="color:var(--z-ink2);font-weight:700">الوقت: ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}</small>` : ""}</div></div>
   <div class="qi-card"><h2>المهارات</h2><div class="qs-sk">${skH}</div></div>
+  ${Object.keys(tp).length ? `<div class="qi-card"><h2>الموضوعات</h2><div class="qs-sk">${Object.entries(tp).map(([k, v]) => `<div class="qs-skr ${v[0] === v[1] ? "ok" : "rv"}"><span>${esc(k)}</span><small>${v[0] === v[1] ? "أتقنته" : "يحتاج مراجعة"} · ${v[0]} من ${v[1]}</small></div>`).join("")}</div></div>` : ""}
   ${wrong.length ? `<div class="qi-card"><h2>أسئلة تحتاج إلى مراجعة</h2><div class="qs-rv">${rvH}</div></div>` : ""}
   <div class="qi-card"><h2>تدرّب أكثر</h2><div class="qs-sug" id="qsug"><span class="qp-hint">جاري تجهيز الاقتراحات…</span></div></div>
   ${KID.k ? `<p class="qz-note" style="margin:0">حُفظت النتيجة في ملف ${esc(KID.k.n || KID.id)}، وتظهر في <a href="../games/#parent">لوحة ولي الأمر</a>.</p>` : `<p class="qz-note" style="margin:0">حُفظت النتيجة على هذا الجهاز. لمتابعة التقدّم في لوحة ولي الأمر أنشئ ملف الطفل من <a href="../games/#start">الألعاب</a>.</p>`}</div>`;
@@ -649,6 +742,7 @@ function suggest(pct, wrong) {
     const nk = KIND_ORDER[KIND_ORDER.indexOf(q.kind) + 1];
     const nextQ = pct >= 70 ? (list.find((x) => x.subj === q.subj && x.kind === nk) || list.find((x) => x.subj !== q.subj && x.kind === q.kind)) : list.find((x) => x.subj === q.subj && x.kind === "basic") || null;
     let h = g.map((x) => `<a href="${ROOT}games/#g=${encodeURIComponent(x.id)}"><img src="${IMG("i_blocks")}" alt=""><span>لعبة: ${esc(x.t)}<small>${esc(x.skill || x.s || "")}</small></span></a>`).join("");
+    if (/^g\d$/.test(q.lv)) h = `<a href="${ROOT}summaries/?gr=${q.lv.slice(1)}&sub=${encodeURIComponent(LIBSUB[q.subj] || "")}"><img src="${IMG("i_book")}" alt=""><span>راجع الدرس: ملخصات ${esc(LIBSUB[q.subj] || "")} · ${esc(LV[LVI[q.lv]][1])}<small>ملخصات ومراجعات قبل أن تعيد الاختبار</small></span></a>` + h;
     h += `<a href="${ROOT}library/#lv=${q.lv}&sub=${encodeURIComponent(LIBSUB[q.subj])}"><img src="${IMG("i_notebook")}" alt=""><span>ملفات للطباعة: ${esc(LIBSUB[q.subj])} · ${esc(LV[LVI[q.lv]][1])}<small>أوراق عمل وأنشطة من المكتبة التعليمية</small></span></a>`;
     if (nextQ) h += `<a href="#q=${encodeURIComponent(nextQ.slug)}"><img src="${IMG(KIND[nextQ.kind][1])}" alt=""><span>${pct >= 70 ? "الاختبار التالي" : "ابدأ بالتقييم البسيط"}: ${esc(nextQ.title)}<small>${esc(KIND[nextQ.kind][0])} · ${countQ(nextQ.n)}</small></span></a>`;
     box.innerHTML = h;
@@ -675,7 +769,8 @@ D.addEventListener("click", async (e) => {
 function route() {
   const h = new URLSearchParams(location.hash.slice(1));
   if (h.get("q")) { if (P.q && P.q.slug === h.get("q") && P.t0 && !P.done) return; return openQuiz(h.get("q")); }
-  if (h.get("lv")) return level(h.get("lv"));
+  if (h.get("gen")) return genPage(h);
+  if (["lv", "sj", "sc", "sem", "un", "ls"].some((k) => h.get(k))) return browse(h);
   return home();
 }
 W.addEventListener("hashchange", async () => {
@@ -692,6 +787,6 @@ D.addEventListener("click", (e) => { const b = e.target.closest("button,[role=bu
 
 /* ---------- البداية ---------- */
 kidBoot();
-loadList().then(() => route()).catch(() => { app.innerHTML = `<main class="zw"><div class="qz-empty"><img src="${IMG("zozo-help")}" alt=""><h3>تعذّر تحميل الاختبارات</h3><p>تأكد من اتصالك بالإنترنت ثم أعد المحاولة.</p><button type="button" class="zbtn zb2" onclick="location.reload()">إعادة المحاولة</button></div></main>`; });
+Promise.all([loadList(), loadBank()]).then(() => route()).catch(() => { app.innerHTML = `<main class="zw"><div class="qz-empty"><img src="${IMG("zozo-help")}" alt=""><h3>تعذّر تحميل الاختبارات</h3><p>تأكد من اتصالك بالإنترنت ثم أعد المحاولة.</p><button type="button" class="zbtn zb2" onclick="location.reload()">إعادة المحاولة</button></div></main>`; });
 W.__qz = { P, check, complete, show, review, finish, results: () => results(), KID };
 })();

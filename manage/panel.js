@@ -455,7 +455,7 @@ function codeSheet(code, plan, reload, c) {
 /* ---------- المزيد ---------- */
 const SUB = {};
 function more(m) {
-  const items = [["libadm", "📚", "إدارة المكتبة", "#e6dcff", "#c1aef0"], ["storiesadm", "📖", "إدارة القصص", "#e6dcff", "#c1aef0"], ["cardsadm", "🃏", "إدارة البطاقات", "#e6dcff", "#c1aef0"], ["activitiesadm", "🧩", "إدارة الأنشطة", "#e6dcff", "#c1aef0"], ["summariesadm", "📝", "إدارة الملخصات والمراجعات", "#e6dcff", "#c1aef0"], ["cats", "🗂️", "التصنيفات", "#d6ecff", "#9cc9ef"], ["coupons", "🎟️", "أكواد الخصم", "#d8f5e6", "#9fdcbc"], ["customers", "👥", "الزبائن", "#ffe3d1", "#f2b895"], ["reviews", "⭐", "التقييمات", "#fff3c4", "#ecd57d"], ["settings", "🏪", "إعدادات المنصة", "#ffdbe9", "#f0a9c6"], ["account", "🔐", "حسابي", "#e6dcff", "#c1aef0"], ["quizzes", `<img src="${SITE}images/ill/target.svg" alt="" width="40" height="40" style="display:block">`, "الاختبارات والتقييمات", "#efe7ff", "#cdb8f5"]];
+  const items = [["libadm", "📚", "إدارة المكتبة", "#e6dcff", "#c1aef0"], ["storiesadm", "📖", "إدارة القصص", "#e6dcff", "#c1aef0"], ["cardsadm", "🃏", "إدارة البطاقات", "#e6dcff", "#c1aef0"], ["activitiesadm", "🧩", "إدارة الأنشطة", "#e6dcff", "#c1aef0"], ["summariesadm", "📝", "إدارة الملخصات والمراجعات", "#e6dcff", "#c1aef0"], ["qbank", "❓", "بنك الأسئلة", "#e6dcff", "#c1aef0"], ["qtests", "📋", "اختبارات من البنك", "#e6dcff", "#c1aef0"], ["cats", "🗂️", "التصنيفات", "#d6ecff", "#9cc9ef"], ["coupons", "🎟️", "أكواد الخصم", "#d8f5e6", "#9fdcbc"], ["customers", "👥", "الزبائن", "#ffe3d1", "#f2b895"], ["reviews", "⭐", "التقييمات", "#fff3c4", "#ecd57d"], ["settings", "🏪", "إعدادات المنصة", "#ffdbe9", "#f0a9c6"], ["account", "🔐", "حسابي", "#e6dcff", "#c1aef0"], ["quizzes", `<img src="${SITE}images/ill/target.svg" alt="" width="40" height="40" style="display:block">`, "الاختبارات والتقييمات", "#efe7ff", "#cdb8f5"]];
   m.innerHTML = `<div class="big">${items.map(([k, e, l, c, s]) => `<button data-g="${k}" style="--c:${c};--s:${s}"><b>${e}</b>${l}</button>`).join("")}</div>`;
   $$("[data-g]", m).forEach((b) => b.onclick = () => go(b.dataset.g));
 }
@@ -554,7 +554,7 @@ SUB.account = { title: "حسابي", fn: async (m) => {
 } };
 
 /* ---------- الاختبارات والتقييمات ---------- */
-const QSUBJ = { ar: ["اللغة العربية", "u_letters"], math: ["الرياضيات", "u_nums"], sci: ["العلوم", "i_microscope"], gen: ["المهارات العامة", "i_brain"] };
+const QSUBJ = { ar: ["اللغة العربية", "u_letters"], math: ["الرياضيات", "u_nums"], sci: ["العلوم", "i_microscope"], gen: ["المهارات العامة", "i_brain"], en: ["اللغة الإنجليزية", "u_abc"], isl: ["التربية الإسلامية", "i_heart"], life: ["المهارات الحياتية", "i_brain"] };
 const QKIND = { basic: "تقييم بسيط", practice: "تقييم تدريبي", full: "تقييم شامل" };
 const QT = { mc: "اختيار من متعدد", tf: "صح أو خطأ", num: "إدخال عدد", order: "ترتيب", fill: "إكمال الفراغ", sort: "تصنيف", match: "توصيل" };
 const QTD = { mc: "سؤال وخيارات (نص أو صور) وإجابة صحيحة واحدة", tf: "عبارة والطفل يختار صح أو خطأ", num: "الطفل يكتب الناتج بلوحة أرقام", order: "ترتيب حروف أو كلمات أو صور أو أعداد", fill: "جملة فيها فراغ __ وخيارات لإكماله", sort: "سحب العناصر إلى مجموعاتها", match: "توصيل كل صورة أو كلمة بما يناسبها" };
@@ -832,6 +832,6 @@ async function quizEdit(m, id) {
 }
 
 const VIEWS = { home, orders, products, learn, more };
-window.__zp = { sb, $, $$, esc, toast, sheet, closeSheet, ask, fail, imgU, go, productSheet, SUB, ago, loadTax, libTaxNow, LIBSTATUS, LIBTYPES, LIBSEC, LIBLV, get TAX() { return TAXC; } };
+window.__zp = { QH: { mediaField, itemRow, readItem, mfVal, bindMedia, qCheck, QT, QTD, QMAX, qClean, qHas }, sb, $, $$, esc, toast, sheet, closeSheet, ask, fail, imgU, go, productSheet, SUB, ago, loadTax, libTaxNow, LIBSTATUS, LIBTYPES, LIBSEC, LIBLV, get TAX() { return TAXC; } };
 boot().catch((e) => { console.error(e); app.innerHTML = `<div class="empty">تعذّر فتح اللوحة 😕<br><button class="btn sm" onclick="location.reload()">إعادة المحاولة</button></div>`; });
 })();

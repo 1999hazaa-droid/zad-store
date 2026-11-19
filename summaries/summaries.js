@@ -111,6 +111,14 @@ async function related(a) {
     const lv = String(L.quiz).split(":")[0];
     try { const r = await fetch(ROOT + "tests/quizzes.json"); const j = r.ok ? await r.json() : []; const qs = Array.isArray(j) ? j : j.quizzes || []; if (qs.some((x) => x.lv === lv)) out.push(`<a href="${ROOT}tests/#lv=${encodeURIComponent(lv)}">اختبارات الصف ${esc(GR[a.grade - 1])} في المنصة</a>`); } catch {}
   }
+  try {
+    const K = { "اللغة العربية": "ar", "الرياضيات": "math", "العلوم": "sci", "اللغة الإنجليزية": "en", "التربية الإسلامية": "isl", "المهارات الحياتية": "life" }[a.subject];
+    if (K && a.grade >= 1 && a.grade <= 6) {
+      const r = await fetch(SB + `/rest/v1/qbank?status=eq.published&grade=eq.${a.grade}&subj=eq.${K}&select=unit&limit=1`, { headers: { apikey: KEY, Authorization: "Bearer " + KEY } });
+      const j = r.ok ? await r.json() : [];
+      if (Array.isArray(j) && j.length) out.push(`<a href="${ROOT}tests/#gen=1&lv=g${a.grade}&sj=${K}">قِس فهمك: تدريب من بنك الأسئلة (${esc(a.subject)} · الصف ${esc(GR[a.grade - 1])})</a>`);
+    }
+  } catch {}
   return out;
 }
 function drawView(a) {
