@@ -487,7 +487,20 @@ for _g in range(1, 7):
     items.append(dict(slug=f'cards-g{_g}-review', kind='review_cards', grade=_g, subj='mix', unit='مراجعة شاملة', lesson='بطاقات مراجعة', title=f'بطاقات مراجعة الصف {_G[_g-1]}',
         description=f'{len(_cs)} بطاقة سؤال وجواب من دروس الصف {_G[_g-1]} في المنصة للمراجعة السريعة.', goals=[], concepts=[], explanation=[], examples=[],
         points=['اقرأ السؤال وأجب قبل أن تكشف الإجابة.', 'أعد البطاقات التي أخطأت فيها.'], questions=_cs, links=L([], [], None, f'g{_g}:gen'), sort=130 + _g))
-assert len(items) == 62, len(items)
+
+# ===== خرائط مفاهيم للعربي والرياضيات (من مفاهيم الدروس نفسها) =====
+for _slug, _src, _g, _s, _hw, _o in [
+    ('map-g1-ar-harakat', 'sum-g1-ar-harakat', 1, 'ar', 'لكل حركة صندوق فيه شكلها وصوتها ومثال عليها.', 126),
+    ('map-g3-ar-verb-tenses', 'sum-g3-ar-verb-tenses', 3, 'ar', 'للفعل ثلاثة أزمنة، ولكل زمن صندوق فيه معناه وأمثلته.', 127),
+    ('map-g4-ar-noun-verb-particle', 'sum-g4-ar-noun-verb-particle', 4, 'ar', 'الكلمة في العربية اسم أو فعل أو حرف، ولكل قسم صندوق فيه معناه وأمثلته.', 128),
+    ('map-g5-ar-sentences', 'sum-g5-ar-sentences', 5, 'ar', 'نقارن بين الجملة الاسمية والفعلية: بماذا تبدأ وما أركانها.', 129),
+    ('map-g4-math-fractions', 'sum-g4-math-fractions', 4, 'math', 'للكسر بسط ومقام، وقد يكون لكسرين شكلان مختلفان وقيمة واحدة.', 130),
+    ('map-g6-math-percent', 'sum-g6-math-percent', 6, 'math', 'النسبة المئوية عدد من كل 100، ونحوّل بين الكسر والنسبة.', 131)]:
+    _by = {i['slug']: i for i in items}; _i = _by[_src]
+    items.append(dict(slug=_slug, kind='concept_map', grade=_g, subj=_s, unit=_i['unit'], lesson=_i['lesson'], title='خريطة مفاهيم: ' + _i['title'],
+        description=f'خريطة مفاهيم تلخّص درس «{_i["lesson"]}» في صناديق واضحة.', goals=['أن أراجع مفاهيم الدرس في خريطة واحدة.'],
+        concepts=[dict(c) for c in _i['concepts']], explanation=[_hw], examples=[], points=_i['points'], questions=_i['questions'][:5], links=_i['links'], sort=_o))
+assert len(items) == 68, len(items)
 if __name__ == '__main__':
     import json
     print(len(items)); json.dump(items, open('/tmp/sums.json', 'w'), ensure_ascii=False)
