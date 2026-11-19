@@ -12,8 +12,8 @@ const U = (u) => /^https?:/.test(u || "") ? u : ROOT + String(u || "");
 const AD = (n) => String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
 const norm = (s) => String(s || "").replace(/[ً-ٰٟـ]/g, "").replace(/[إأآ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه").toLowerCase();
 const KINDS = { mindmap: ["الخرائط الذهنية", "خريطة ذهنية", "1f9e0"], slides: ["العروض التقديمية", "عرض تقديمي", "i_laptop"], poster: ["الملصقات التعليمية", "ملصق", "i_map"], board: ["اللوحات التعليمية", "لوحة", "i_board"], diagram: ["المخططات والرسوم التوضيحية", "رسم توضيحي", "i_microscope"], table: ["الجداول التعليمية", "جدول", "i_numbers"], infographic: ["الإنفوجرافيك التعليمي", "إنفوجرافيك", "i_chart"], explainer: ["وسائل الشرح المصورة", "وسيلة شرح مصورة", "1f4a1"], concept_cards: ["بطاقات المفاهيم", "بطاقات مفاهيم", "1f0cf"], printable: ["وسائل قابلة للطباعة", "قابلة للطباعة", "270f"] };
-const LV = { a2: "سنة إلى سنتين", a3: "٣ سنوات", a4: "٤ سنوات", a5: "٥ سنوات", a6: "٦ سنوات", g1: "الصف الأول", g2: "الصف الثاني", g3: "الصف الثالث", g4: "الصف الرابع", g5: "الصف الخامس", g6: "الصف السادس" };
-const AGES = ["a2", "a3", "a4", "a5", "a6"], GRADES = ["g1", "g2", "g3", "g4", "g5", "g6"];
+const LV = { a2: "سنة إلى سنتين", a3: "٣ سنوات", a4: "٤ سنوات", a5: "٥ سنوات", a6: "٦ سنوات", g1: "الصف الأول", g2: "الصف الثاني", g3: "الصف الثالث", g4: "الصف الرابع" };
+const AGES = ["a2", "a3", "a4", "a5", "a6"], GRADES = ["g1", "g2", "g3", "g4"];
 const SUBJ = ["اللغة العربية", "الرياضيات", "اللغة الإنجليزية", "العلوم", "التربية الإسلامية", "المهارات الحياتية"];
 const CACHE = "zad-media-v1";
 const lvText = (a) => { const ag = (a.levels || []).filter((x) => x[0] === "a"), gr = (a.levels || []).filter((x) => x[0] === "g"); const o = []; if (gr.length) o.push(gr.length === 1 ? LV[gr[0]] : "الصفوف " + gr.map((g) => AD(g.slice(1))).join("، ")); if (ag.length) o.push(ag.length === 1 ? "عمر " + LV[ag[0]] : "الأعمار " + ag.map((g) => AD(g.slice(1))).join("، ") + " سنوات"); return o.join(" · "); };
@@ -55,7 +55,7 @@ function drawList() {
   const set = (id, h) => { const e = $(id); if (e) e.innerHTML = h; };
   const cnt = {}; base("kind").forEach((a) => (cnt[a.kind] = (cnt[a.kind] || 0) + 1));
   set("#mkinds", Object.keys(KINDS).map((k) => { const n = cnt[k] || 0; return `<button type="button" class="mk${F.kind === k ? " on" : ""}" data-k="kind" data-v="${F.kind === k ? "" : k}" aria-pressed="${F.kind === k}"${n || F.kind === k ? "" : " disabled style='opacity:.45'"}><img src="${icon(KINDS[k][2])}" alt=""><span>${esc(KINDS[k][0])}<small>${AD(n)} وسيلة</small></span></button>`; }).join(""));
-  set("#fstage", "<b>المرحلة</b>" + pill("stage", "", "الكل") + pill("stage", "age", "الأعمار: ١–٦ سنوات") + pill("stage", "grade", "الصفوف: ١–٦"));
+  set("#fstage", "<b>المرحلة</b>" + pill("stage", "", "الكل") + pill("stage", "age", "الأعمار: ١–٦ سنوات") + pill("stage", "grade", "الصفوف: ١–٤"));
   const fl = $("#flv");
   if (fl) { fl.hidden = !F.stage; if (F.stage) fl.innerHTML = "<b>" + (F.stage === "age" ? "العمر" : "الصف") + "</b>" + pill("lv", "", "الكل") + (F.stage === "age" ? AGES : GRADES).map((k) => pill("lv", k, LV[k])).join(""); }
   set("#fsub", "<b>المادة</b>" + pill("sub", "", "الكل") + SUBJ.filter((s) => all.some((a) => a.subject === s)).map((s) => pill("sub", s, s)).join(""));

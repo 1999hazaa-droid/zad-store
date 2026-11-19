@@ -9,7 +9,7 @@ const KINDS = [["worksheet", "ورقة عمل"], ["cutpaste", "قص ولصق"], 
 const KN = Object.fromEntries(KINDS);
 const PRINT = ["worksheet", "cutpaste", "coloring", "matching", "sorting"];
 const DIFF = [["easy", "سهل"], ["medium", "متوسط"], ["hard", "متقدم"]];
-const GR = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
+const GR = ["الأول", "الثاني", "الثالث", "الرابع"];
 const ST = [["draft", "مسودة"], ["published", "منشورة"], ["unpublished", "غير منشورة"]];
 const SN = Object.fromEntries(ST);
 const IU = (u) => /^https?:/.test(u || "") ? u : "../" + String(u || "");

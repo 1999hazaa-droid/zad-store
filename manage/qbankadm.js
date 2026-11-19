@@ -4,7 +4,7 @@
 const Z = window.__zp; if (!Z || !Z.QH) return;
 const { sb, $, $$, esc, toast, sheet, closeSheet, ask, SUB } = Z;
 const { mediaField, itemRow, readItem, mfVal, bindMedia, qCheck, QT, QTD, QMAX, qClean } = Z.QH;
-const GR = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
+const GR = ["الأول", "الثاني", "الثالث", "الرابع"];
 const SJ = { ar: "اللغة العربية", math: "الرياضيات", en: "اللغة الإنجليزية", sci: "العلوم", isl: "التربية الإسلامية", life: "المهارات الحياتية" };
 const DF = { 1: "سهل", 2: "متوسط", 3: "متقدم" };
 const SM = { "": "غير محدد", 1: "الفصل الأول", 2: "الفصل الثاني" };

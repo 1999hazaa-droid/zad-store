@@ -4,7 +4,7 @@
 const Z = window.__zp; if (!Z) return;
 const { sb, $, $$, esc, toast, sheet, closeSheet, fail, imgU, SUB, ago } = Z;
 const TOPICS = [["educational", "تربوية"], ["teaching", "تعليمية"], ["animals", "عن الحيوانات"], ["adventure", "مغامرات"], ["science", "علمية مبسطة"], ["values", "قيم وأخلاق"], ["thinking", "تنمية تفكير"], ["arabic", "تعلّم العربية"], ["english", "تعلّم الإنجليزية"]];
-const LEVELS = [["a3", "3 سنوات"], ["a4", "4 سنوات"], ["a5", "5 سنوات"], ["a6", "6 سنوات"], ["g1", "الأول"], ["g2", "الثاني"], ["g3", "الثالث"], ["g4", "الرابع"], ["g5", "الخامس"], ["g6", "السادس"]];
+const LEVELS = [["a3", "3 سنوات"], ["a4", "4 سنوات"], ["a5", "5 سنوات"], ["a6", "6 سنوات"], ["g1", "الأول"], ["g2", "الثاني"], ["g3", "الثالث"], ["g4", "الرابع"]];
 const STAT = [["draft", "مسودة", "#ece8fb"], ["review", "قيد المراجعة", "#fff3c4"], ["published", "منشورة", "#d8f5e6"], ["unpublished", "غير منشورة", "#ffe3d1"]];
 const SN = Object.fromEntries(STAT.map((x) => [x[0], x[1]])), SC = Object.fromEntries(STAT.map((x) => [x[0], x[2]]));
 let ALL = [], F = "";

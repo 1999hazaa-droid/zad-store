@@ -11,7 +11,7 @@ const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&":
 const U = (u) => /^https?:/.test(u || "") ? u : ROOT + String(u || "");
 const AD = (n) => String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
 const norm = (s) => String(s || "").replace(/[ً-ٰٟـ]/g, "").replace(/[إأآ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه").toLowerCase();
-const GR = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
+const GR = ["الأول", "الثاني", "الثالث", "الرابع"];
 const KINDS = { lesson_summary: "ملخص درس", unit_summary: "ملخص وحدة", semester_review: "مراجعة فصل", subject_review: "مراجعة شاملة للمادة", concept_map: "خريطة مفاهيم", review_cards: "بطاقات مراجعة", practice: "أسئلة تدريبية", mixed_practice: "تدريبات متنوعة", exam_prep: "نموذج مراجعة قبل الاختبار", lesson_review: "مراجعة بعد الدرس", unit_review: "مراجعة بعد الوحدة", midterm_review: "مراجعة منتصف الفصل" };
 const SEM = { 1: "الفصل الأول", 2: "الفصل الثاني" };
 const CACHE = "zad-sums-v1";

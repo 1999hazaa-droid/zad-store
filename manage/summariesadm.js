@@ -6,7 +6,7 @@ const { sb, $, $$, esc, toast, sheet, closeSheet, fail, SUB } = Z;
 const KINDS = [["lesson_summary", "ملخص درس"], ["unit_summary", "ملخص وحدة"], ["semester_review", "مراجعة فصل"], ["subject_review", "مراجعة شاملة للمادة"], ["concept_map", "خريطة مفاهيم"], ["review_cards", "بطاقات مراجعة"], ["practice", "أسئلة تدريبية"], ["mixed_practice", "تدريبات متنوعة"], ["exam_prep", "نموذج مراجعة قبل الاختبار"], ["lesson_review", "مراجعة بعد الدرس"], ["unit_review", "مراجعة بعد الوحدة"], ["midterm_review", "مراجعة منتصف الفصل"]];
 const KN = Object.fromEntries(KINDS);
 const FULL = ["lesson_summary", "unit_summary", "concept_map"];
-const GR = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
+const GR = ["الأول", "الثاني", "الثالث", "الرابع"];
 const ST = [["draft", "مسودة"], ["published", "منشورة"], ["unpublished", "غير منشورة"]];
 const SN = Object.fromEntries(ST);
 const IU = (u) => /^https?:/.test(u || "") ? u : "../" + String(u || "");

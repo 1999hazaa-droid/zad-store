@@ -11,7 +11,7 @@ const U = (u) => /^https?:/.test(u || "") ? u : ROOT + String(u || "");
 const AD = (n) => String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
 const CATS = { letters: "الحروف العربية", numbers: "الأرقام والعد", colors: "الألوان", shapes: "الأشكال", animals: "الحيوانات", food: "الفواكه والخضروات", vocab: "المفردات", english: "الإنجليزية" };
 const CICON = { letters: "أ", numbers: "١٢٣", colors: "🎨", shapes: "🔷", animals: "🦁", food: "🍎", vocab: "📚", english: "ABC" };
-const AGES = [1, 2, 3, 4, 5, 6], GR = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
+const AGES = [1, 2, 3, 4, 5, 6], GR = ["الأول", "الثاني", "الثالث", "الرابع"];
 const NW = ["صفر", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر", "عشرون"];
 const norm = (s) => String(s || "").replace(/[ً-ٰٟـ]/g, "").replace(/[إأآ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه").toLowerCase();
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };

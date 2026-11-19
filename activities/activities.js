@@ -14,7 +14,7 @@ const norm = (s) => String(s || "").replace(/[ً-ٰٟـ]/g, "").replace(/[إأآ
 const CATS = { early: "الطفولة المبكرة", arabic: "اللغة العربية", math: "الرياضيات", science: "العلوم", english: "الإنجليزية", life: "المهارات الحياتية" };
 const KINDS = { worksheet: "ورقة عمل", cutpaste: "قص ولصق", coloring: "تلوين", matching: "توصيل ومطابقة", sorting: "ترتيب وتصنيف", home: "نشاط منزلي", creative: "إبداعي وفني", discovery: "ملاحظة واكتشاف", interactive: "تفاعلي في الموقع" };
 const DIFF = { easy: "سهل", medium: "متوسط", hard: "متقدم" };
-const GR = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
+const GR = ["الأول", "الثاني", "الثالث", "الرابع"];
 const CACHE = "zad-acts-v1";
 const LK = "zad-learn-v3";
 

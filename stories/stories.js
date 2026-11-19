@@ -9,7 +9,7 @@ const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&":
 const ROOT = new URL("../", location.href).href;
 const TOPICS = { educational: "تربوية", teaching: "تعليمية", animals: "عن الحيوانات", adventure: "مغامرات", science: "علمية مبسطة", values: "قيم وأخلاق", thinking: "تنمية تفكير", arabic: "تعلّم العربية", english: "تعلّم الإنجليزية" };
 const AGES = [["a3", "3 سنوات"], ["a4", "4 سنوات"], ["a5", "5 سنوات"], ["a6", "6 سنوات"]];
-const GR = [["g1", "الأول"], ["g2", "الثاني"], ["g3", "الثالث"], ["g4", "الرابع"], ["g5", "الخامس"], ["g6", "السادس"]];
+const GR = [["g1", "الأول"], ["g2", "الثاني"], ["g3", "الثالث"], ["g4", "الرابع"]];
 function ageText(lv) {
   const a = AGES.filter((x) => lv.includes(x[0])), g = GR.filter((x) => lv.includes(x[0]));
   const p = [];

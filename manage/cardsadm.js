@@ -6,7 +6,7 @@ const { sb, $, $$, esc, toast, sheet, closeSheet, fail, SUB } = Z;
 const CATS = [["letters", "الحروف العربية"], ["numbers", "الأرقام والعد"], ["colors", "الألوان"], ["shapes", "الأشكال"], ["animals", "الحيوانات"], ["food", "الفواكه والخضروات"], ["vocab", "المفردات"], ["english", "الإنجليزية"]];
 const CN = Object.fromEntries(CATS);
 const SUBJ = ["لغتي", "رياضيات", "علوم", "إنجليزي", "تربية إسلامية", "مهارات حياتية"];
-const GR = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
+const GR = ["الأول", "الثاني", "الثالث", "الرابع"];
 const ST = [["draft", "مسودة", "#ece8fb"], ["published", "منشورة", "#d8f5e6"], ["unpublished", "غير منشورة", "#ffe3d1"]];
 const SN = Object.fromEntries(ST.map((x) => [x[0], x[1]]));
 const IU = (u) => /^https?:/.test(u || "") ? u : "../" + String(u || "");
