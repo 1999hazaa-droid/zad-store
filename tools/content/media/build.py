@@ -3,7 +3,7 @@
 import sys, os, glob, json, subprocess
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
-import posters, mindmaps, mindmaps2, slides2, posters2, posters3, infographics, tables, diagrams, explainers, cardsets, printables, slides, boards  # noqa
+import posters, mindmaps, mindmaps2, slides2, posters2, posters3, toddlers, infographics, tables, diagrams, explainers, cardsets, printables, slides, boards  # noqa
 from playwright.sync_api import sync_playwright
 from PIL import Image
 TMP = '/tmp/claude-0/-home-claude/f8f16bbd-fb86-5b0f-ab89-39a21cbeece6/scratchpad/media'
