@@ -104,7 +104,7 @@ function blk(b, hs) {
 function article(a) {
   const hs = [], k = (t, arr, cls) => arr && arr.length ? `<div class="box ${cls}"><h3>${t}</h3><ul>${arr.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : "";
   const body = (a.body || []).map((b) => blk(b, hs)).join("");
-  const toc = hs.length > 2 ? `<nav class="toc" aria-label="جدول المحتويات"><h2>المحتويات</h2>${hs.map(([i, t]) => `<a href="#${i}">${esc(t)}</a>`).join("")}</nav>` : "";
+  const toc = hs.length >= 2 ? `<nav class="toc" aria-label="جدول المحتويات"><h2>المحتويات</h2>${hs.map(([i, t]) => `<a href="#${i}">${esc(t)}</a>`).join("")}</nav>` : "";
   const art = `<article class="art">${k("أهداف الدليل", a.goals, "goals")}${a.intro ? `<h2 style="margin-top:6px">مقدمة</h2><p>${esc(a.intro)}</p>` : ""}${body}${k("ملخص أهم النقاط", a.summary, "sum")}</article>`;
   return { toc, art };
 }
