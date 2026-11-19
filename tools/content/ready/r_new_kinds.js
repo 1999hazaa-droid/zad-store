@@ -1,0 +1,37 @@
+  } else if (it.kind === "odd") {
+    const arr = shuf([{ i: d.odd, o: 1 }, { i: d.same, o: 0 }, { i: d.same, o: 0 }, { i: d.same, o: 0 }]);
+    box.innerHTML = `${head}<div class="qq">${esc(d.q)}</div>${spk(d.q, "استمع")}<div class="rdodd">${arr.map((z, j) => `<button type="button" class="opt dgimg" data-o="${z.o}" data-j="${j}" aria-label="الصورة ${AD(j + 1)}"><img src="${icon(z.i)}" alt="" width="84" height="84"></button>`).join("")}</div><div class="fb" id="fb" role="status"></div>${back}`;
+    box.querySelectorAll(".opt").forEach((b) => b.onclick = () => { if (b.disabled) return; if (b.dataset.o === "1") { b.classList.add("good"); box.querySelectorAll(".opt").forEach((x) => (x.disabled = true)); fb("أحسنت! وجدت الصورة المختلفة.", "g"); setTimeout(() => finish(it, wrong, lv), 1200); } else { wrong++; if (CHK) { box.querySelectorAll(".opt").forEach((x) => (x.disabled = true)); fb("شكرا لمحاولتك! لنكمل.", "g"); return void setTimeout(() => finish(it, wrong, lv), 900); } b.classList.add("bad"); b.disabled = true; fb("لا بأس، انظر جيدا وجرّب صورة أخرى.", "b"); } });
+  } else if (it.kind === "quant") {
+    const grp = d.groups.map((g, k) => `<div class="rdgrp">${d.groups.length > 1 ? `<small>${k ? "المجموعة الثانية" : "المجموعة الأولى"}</small>` : ""}<div>${Array.from({ length: g.n }, () => `<img src="${icon(g.img)}" alt="" width="44" height="44">`).join("")}</div></div>`).join("");
+    const m = mc(d.q, d.o, null, "أحسنت!", () => finish(it, wrong, lv), `<div class="rdgrps" role="img" aria-label="${esc(d.q)}">${grp}</div>`); box.innerHTML = head + m.html + back; m.bind(box);
+  } else if (it.kind === "memory") {
+    const cards = shuf(d.icons.concat(d.icons).map((ic, k) => ({ ic, k }))); let open = [], got = 0, lock = false;
+    box.innerHTML = `${head}<div class="qq">${esc(d.q)}</div><p class="hint">لا يوجد خطأ هنا. اقلب بطاقتين، وإذا لم تتشابها فستعودان وتحاول من جديد.</p><div class="rdmem" style="--c:${d.icons.length > 4 ? 4 : 3}">${cards.map((c, j) => `<button type="button" class="rdcard" data-j="${j}" data-ic="${c.ic}" aria-label="بطاقة ${AD(j + 1)}"><span class="f"><img src="${icon(c.ic)}" alt="" width="56" height="56"></span><span class="b">؟</span></button>`).join("")}</div><div class="fb" id="fb" role="status"></div>${back}`;
+    box.querySelectorAll(".rdcard").forEach((b) => b.onclick = () => { if (lock || b.classList.contains("up") || b.classList.contains("ok")) return; b.classList.add("up"); open.push(b); if (open.length < 2) return; lock = true; const [x, y] = open; open = [];
+      if (x.dataset.ic === y.dataset.ic) { x.classList.add("ok"); y.classList.add("ok"); got++; lock = false; fb("رائع! وجدت زوجا.", "g"); if (got === d.icons.length) { fb("أحسنت! وجدت كل الأزواج.", "g"); setTimeout(() => finish(it, 0, lv), 1100); } }
+      else setTimeout(() => { x.classList.remove("up"); y.classList.remove("up"); lock = false; fb("لا بأس، حاول مرة أخرى.", "b"); }, 800); });
+  } else if (it.kind === "trace") {
+    const cw = 480, ch = 300, pts = tracePath(d.shape, cw, ch); let user = [], on = false, tries = 0;
+    box.innerHTML = `${head}<div class="qq">${esc(d.q)}</div>${spk(d.q, "استمع")}<p class="hint">ابدأ من النقطة الخضراء وتتبع الخط المنقط ببطء. لا بأس إن خرجت قليلا.</p><div class="dgbd"><canvas id="cv" class="dgcv" width="${cw}" height="${ch}" role="img" aria-label="لوحة التتبع"></canvas></div><div class="btns"><button type="button" class="abtn" id="clr">من جديد</button></div><div class="fb" id="fb" role="status"></div>${back}`;
+    const cv = $("#cv"), x = cv.getContext("2d");
+    const base = () => { x.clearRect(0, 0, cw, ch); x.fillStyle = "#fff"; x.fillRect(0, 0, cw, ch); x.lineWidth = 14; x.lineCap = x.lineJoin = "round"; x.strokeStyle = "#cdbdf5"; x.setLineDash([2, 20]); x.beginPath(); pts.forEach((p, i) => (i ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]))); if (d.shape === "circle" || d.shape === "square" || d.shape === "triangle") x.closePath(); x.stroke(); x.setLineDash([]); x.fillStyle = "#22c55e"; x.beginPath(); x.arc(pts[0][0], pts[0][1], 13, 0, 7); x.fill(); x.strokeStyle = "#6d28d9"; x.lineWidth = 9; };
+    base();
+    const pt = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cw / r.width, (e.clientY - r.top) * ch / r.height]; };
+    const score = () => { const R = 34; let cov = 0; pts.forEach((p) => { if (user.some((u) => Math.hypot(u[0] - p[0], u[1] - p[1]) < R)) cov++; }); let stray = 0; user.forEach((u) => { if (!pts.some((p) => Math.hypot(u[0] - p[0], u[1] - p[1]) < R * 1.8)) stray++; }); return [cov / pts.length, user.length ? stray / user.length : 1]; };
+    cv.onpointerdown = (e) => { on = true; user = []; base(); cv.setPointerCapture && cv.setPointerCapture(e.pointerId); const p = pt(e); user.push(p); x.beginPath(); x.moveTo(p[0], p[1]); e.preventDefault(); };
+    cv.onpointermove = (e) => { if (!on) return; const p = pt(e), l = user[user.length - 1], n = Math.max(1, Math.ceil(Math.hypot(p[0] - l[0], p[1] - l[1]) / 8)); for (let k = 1; k <= n; k++) user.push([l[0] + (p[0] - l[0]) * k / n, l[1] + (p[1] - l[1]) * k / n]); x.lineTo(p[0], p[1]); x.stroke(); };
+    const up = () => { if (!on) return; on = false; const [c, s] = score();
+      if (c >= 0.8 && s <= 0.25) { fb("أحسنت! تتبعت الخط بجمال.", "g"); cv.onpointerdown = null; setTimeout(() => finish(it, wrong, lv), 1100); }
+      else { wrong++; tries++; if (CHK) { fb("شكرا لمحاولتك! لنكمل.", "g"); cv.onpointerdown = null; return void setTimeout(() => finish(it, wrong, lv), 900); } fb("قريب! ابدأ من النقطة الخضراء وتتبع الخط المنقط مرة أخرى.", "b"); setTimeout(() => { user = []; base(); }, 900); } };
+    cv.onpointerup = up; cv.onpointercancel = up; $("#clr").onclick = () => { user = []; base(); fb("", ""); };
+  } else if (it.kind === "follow") {
+    const txt = "المس " + d.seq.map((i) => d.ph[i]).join(" ثم "); let k = 0, shown = true, tm = 0;
+    const dr = () => {
+      box.innerHTML = `${head}<div class="qq">${esc(d.q)}</div><div class="rdins" id="ins" aria-live="polite">${shown ? esc(txt) : "؟ تذكر التعليمات ثم المس الصور"}</div><div class="btns">${spk(txt, "استمع إلى التعليمات")}${d.hide ? `<button type="button" class="abtn" id="rp">أعد عرض التعليمات</button>` : ""}</div><div class="rdimgs">${d.imgs.map((ic, j) => `<button type="button" class="opt dgimg" data-j="${j}" aria-label="${esc(d.ph[j])}"><img src="${icon(ic)}" alt="" width="64" height="64"></button>`).join("")}</div><div class="fb" id="fb" role="status"></div>${back}`;
+      box.querySelectorAll(".opt").forEach((b) => b.onclick = () => { const j = +b.dataset.j; if (j === d.seq[k]) { b.classList.add("good"); k++; if (k === d.seq.length) { fb("أحسنت! نفذت التعليمات.", "g"); box.querySelectorAll(".opt").forEach((x) => (x.disabled = true)); setTimeout(() => finish(it, wrong, lv), 1200); } else fb("صحيح! أكمل.", "g"); }
+        else { wrong++; if (CHK) { box.querySelectorAll(".opt").forEach((x) => (x.disabled = true)); fb("شكرا لمحاولتك! لنكمل.", "g"); return void setTimeout(() => finish(it, wrong, lv), 900); } k = 0; box.querySelectorAll(".opt").forEach((x) => x.classList.remove("good")); fb("لا بأس، لنبدأ من جديد بهدوء.", "b"); } });
+      if (d.hide) { $("#rp").onclick = () => { shown = true; dr(); hideSoon(); }; }
+    };
+    const hideSoon = () => { if (!d.hide) return; clearTimeout(tm); tm = setTimeout(() => { shown = false; const i = $("#ins"); if (i) i.textContent = "؟ تذكر التعليمات ثم المس الصور"; }, 4500); };
+    dr(); hideSoon();
