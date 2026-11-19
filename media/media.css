@@ -1,0 +1,49 @@
+/* الوسائل التعليمية - زاد (يعتمد على cards.css للفلاتر وactivities.css للأزرار) */
+.md .mkinds{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:12px 0}
+.md .mk{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--z-line);border-radius:16px;padding:8px 10px;cursor:pointer;font:800 13.5px/1.35 var(--z-font);color:var(--z-ink);text-align:start;min-height:56px}
+.md .mk img{width:34px;height:34px;object-fit:contain;flex:none}
+.md .mk small{display:block;font:600 12px var(--z-font);color:var(--z-ink2)}
+.md .mk.on{border-color:var(--z-pri);background:var(--z-tint);color:var(--z-pri)}
+.md .mk:focus-visible{outline:3px solid var(--z-sun);outline-offset:2px}
+.md .mgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));margin:10px 0}
+.md .mc{background:#fff;border:1px solid var(--z-line);border-radius:18px;box-shadow:var(--z-sh-1);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.md .mc .im{display:block;aspect-ratio:4/3;background:var(--z-tint);overflow:hidden;position:relative}
+.md .mc .im img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.md .mc .pg{position:absolute;inset-inline-start:8px;bottom:8px;background:#000a;color:#fff;border-radius:99px;font:700 12px var(--z-font);padding:2px 10px}
+.md .mc .bd{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.md .mc h3{font:800 16px/1.4 var(--z-font);margin:0}
+.md .mc p{font:500 13.5px/1.6 var(--z-font);color:var(--z-ink2);margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.md .mt{display:flex;flex-wrap:wrap;gap:6px}
+.md .mt span{font:700 12px var(--z-font);background:var(--z-tint);color:var(--z-pri);border-radius:99px;padding:3px 10px}
+.md .mt span.k{background:#fff3e0;color:#8a4b00}
+.md .mc .bt{display:flex;gap:6px;margin-top:auto;padding-top:6px}
+.md .mc .abtn{min-height:42px;font-size:13px;flex:1 1 0;padding:0 6px}
+.md .vtop{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:6px 0 10px}
+.md .vtop h1{font:800 21px/1.4 var(--z-font);margin:0;flex:1 1 260px}
+.md .vtop p{font:500 14px/1.7 var(--z-font);color:var(--z-ink2);margin:4px 0 0;flex:1 1 100%}
+.md .tool{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.md .tool .abtn{flex:1 1 130px}
+.md .stage{background:#fff;border:1px solid var(--z-line);border-radius:18px;padding:8px;box-shadow:var(--z-sh-1)}
+.md .vp{overflow:auto;border-radius:12px;background:#f4f1fb;max-height:calc(100vh - 220px);min-height:200px;text-align:center;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom}
+.md .vp img{display:block;margin:0 auto;background:#fff;user-select:none;-webkit-user-drag:none}
+.md .vp img.fit{width:auto;max-width:100%;max-height:calc(100vh - 230px)}
+.md .nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.md .nav .abtn{flex:0 0 auto;min-width:96px}
+.md .nav .cnt{font:800 15px var(--z-font);color:var(--z-ink2);min-width:70px;text-align:center}
+.md .thumbs{display:flex;gap:8px;overflow-x:auto;padding:8px 2px 2px}
+.md .thumbs button{flex:none;border:3px solid transparent;border-radius:10px;padding:0;background:#fff;cursor:pointer;overflow:hidden;width:96px}
+.md .thumbs button.on{border-color:var(--z-pri)}
+.md .thumbs img{display:block;width:100%;aspect-ratio:var(--ar,1.41);object-fit:cover}
+.md .stage:fullscreen{background:#111;padding:10px;display:flex;flex-direction:column}
+.md .stage:fullscreen .vp{max-height:none;flex:1;background:#111}
+.md .stage:fullscreen .vp img.fit{max-height:calc(100vh - 140px)}
+.md .rel a{display:block;padding:8px 10px;border:1px solid var(--z-line);border-radius:12px;margin-top:6px;color:var(--z-pri);font:700 14.5px var(--z-font);text-decoration:none}
+.md .note{font:600 13px/1.7 var(--z-font);color:var(--z-ink2);margin-top:12px}
+.md #prt{display:none}
+@media(max-width:560px){.md .mgrid{grid-template-columns:1fr 1fr;gap:8px}.md .mc .bt{flex-direction:column}.md .mc h3{font-size:14.5px}.md .mc p{display:none}.md .vtop h1{font-size:18px}}
+@media(max-width:380px){.md .mgrid{grid-template-columns:1fr}}
+@media print{
+body.md>*{display:none!important}
+body.md>#prt{display:block!important}
+.md #prt img{display:block;width:100%;height:auto;page-break-after:always;break-after:page}
+.md #prt img:last-child{page-break-after:auto;break-after:auto}}
