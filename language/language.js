@@ -73,6 +73,7 @@ const DICTS = {
   school: ["قاموس المدرسة", "1f392", (c) => c.cat === "vocab" && c.sub === "البيت والمدرسة" && ["كتاب", "قلم", "حقيبة", "مقص", "سبورة", "مكتبه"].includes(norm(c.word_ar))],
   home: ["قاموس المنزل", "1f3e0", (c) => c.cat === "vocab" && c.sub === "البيت والمدرسة" && ["مفتاح", "ساعه", "باب", "سرير", "خزانه", "كره"].includes(norm(c.word_ar))],
   nature: ["قاموس الطبيعة", "1f333", (c) => c.cat === "vocab" && c.sub === "الطبيعة"], jobs: ["قاموس المهن", "x_doctor", (c) => c.cat === "vocab" && c.sub === "المهن"],
+  numbers: ["قاموس الأرقام", "1f522", (c) => c.cat === "numbers" && !/[=+]/.test(c.word_ar) && /\/num\//.test(c.image_url || "")],
 };
 function dictPage() {
   const box = $("#aview"); let cur = new URLSearchParams(location.search).get("d"); if (!DICTS[cur]) cur = "animals"; let q = "";
@@ -100,20 +101,34 @@ function resultView(box, title, qs, back) {
 }
 function frame(box, title, qs, i, body, msg) { box.innerHTML = `<div class="qh"><h2>${esc(title)}</h2><div class="bar"><i style="width:${(i / qs.length) * 100}%"></i></div><small>سؤال ${AD(i + 1)} من ${AD(qs.length)}</small></div>${body}<div class="fb" id="fb" role="status">${msg || ""}</div>`; }
 /* ===== التدريب ===== */
-const KINDN = { ar: { order: "ترتيب الكلمات لتكوين جملة", fill: "اختر الكلمة المناسبة", passage: "اقرأ وأجب", opp: "الكلمات المتقابلة", odd: "اكتشف الكلمة المختلفة", write: "الكتابة والتعبير", build: "رتّب الحروف لتكوين كلمة" }, en: { order: "Put the words in order", fill: "Choose the right word", passage: "Read and answer", opp: "Opposites", odd: "Find the odd word", write: "Write a sentence", build: "Make the word from letters" } };
+const KINDN = { ar: { order: "ترتيب الكلمات لتكوين جملة", fill: "اختر الكلمة المناسبة", passage: "اقرأ وأجب", opp: "الكلمات المتقابلة", odd: "اكتشف الكلمة المختلفة", write: "الكتابة والتعبير", build: "رتّب الحروف لتكوين كلمة", pos: "مواضع الحروف في الكلمة", story: "أسئلة فهم القصة" }, en: { order: "Put the words in order", fill: "Choose the right word", passage: "Read and answer", opp: "Opposites", odd: "Find the odd word", write: "Write a sentence", build: "Make the word from letters", pos: "Letters in the word", story: "Story questions" } };
 async function practicePage() {
   const box = $("#aview"), p = new URLSearchParams(location.search), lang = p.get("lang") === "en" ? "en" : "ar", kind = p.get("kind") || "order"; let lv = getLv();
   if (!KINDN[lang][kind]) return (box.innerHTML = `<div class="sempty"><h3>نوع غير معروف</h3><p><a class="abtn go" href="${ROOT}language/">العودة</a></p></div>`);
-  let tier = +p.get("tier") || tierOf(lv);
+  let tier = +p.get("tier") || tierOf(lv); if (kind === "story" && !tier) tier = 2;
   if (lv === "a2") return (box.innerHTML = `<div class="sempty"><h3>هذه التدريبات لعمر ٣ سنوات فأكثر</h3><p>لعمر سنة إلى سنتين: شاهدوا البطاقات والقواميس معًا واسمعوا الأسماء بصوت الكبير.</p><p><a class="abtn go" href="${ROOT}language/dict/">القواميس المصورة</a></p></div>`);
   if (!tier) {
     let av = [1, 2, 3];
-    if (kind !== "build") { const its = await loadItems(lang); if (its) av = [1, 2, 3].filter((t) => its.some((x) => x.kind === kind && x.levels.some((l) => TIERLV[t].includes(l)))); }
+    if (kind !== "build" && kind !== "pos") { const its = await loadItems(lang); if (its) av = [1, 2, 3].filter((t) => its.some((x) => x.kind === kind && x.levels.some((l) => TIERLV[t].includes(l)))); }
     box.innerHTML = `<div class="hero"><img src="${icon("i_pencils")}" alt=""><div><h1>${esc(KINDN[lang][kind])}</h1><p>اختر المستوى المناسب. لا يلزم أن يكون مستوى الطفل مطابقًا لعمره، ويمكنه أن يرتقي أو يعود بحسب حاجته.</p></div></div>${av.length ? `<div class="tiers">${av.map((t) => `<a class="abtn go" href="?lang=${lang}&kind=${kind}&tier=${t}">${TIERN[t]}</a>`).join("")}</div>` : `<div class="sempty"><h3>لا يوجد محتوى لهذا النوع بعد</h3></div>`}<p><a class="abtn" href="${ROOT}language/">العودة إلى عالم اللغات</a></p>`; return;
   }
   const lvs = lv && tierOf(lv) === tier ? [lv] : TIERLV[tier];
   let qs = [], title = KINDN[lang][kind] + " — " + TIERN[tier].split(" (")[0];
-  if (kind === "build") {
+  if (kind === "pos") {
+    const ar = lang === "ar", L = (c) => (ar ? nod(c.word_ar) : String(c.word_en || "").toLowerCase());
+    const AL = "ابتثجحخدذرزسشصضطظعغفقكلمنهوي".split(""), EL = "abcdefghijklmnopqrstuvwxyz".split("");
+    let pool = CARDS.filter((c) => c.image_url && c.cat !== "numbers" && (ar ? !isEnC(c) && /^[ء-ي]+$/.test(L(c)) : c.word_en && /^[A-Za-z]+$/.test(c.word_en)) && L(c).length >= 3 && L(c).length <= (tier === 1 ? 5 : 8));
+    if (lv && tierOf(lv) === tier) { const f = pool.filter((c) => cardLv(c).includes(lv)); if (f.length >= 6) pool = f; }
+    const kinds = tier === 1 ? ["f"] : tier === 2 ? ["f", "l"] : ["f", "l", "m"];
+    qs = shuf(pool).slice(0, 6).map((c, n) => {
+      const w = L(c), ch = [...w], k = kinds[n % kinds.length]; let a, qt;
+      if (k === "f") { a = ch[0]; qt = ar ? "ما الحرف الذي تبدأ به الكلمة؟" : "Which letter does the word start with?"; }
+      else if (k === "l") { a = ch[ch.length - 1]; qt = ar ? "ما الحرف الذي تنتهي به الكلمة؟" : "Which letter does the word end with?"; }
+      else { a = ch[Math.floor(ch.length / 2)]; qt = ar ? "ما الحرف الأوسط في الكلمة؟" : "Which letter is in the middle of the word?"; if (ch.length % 2 === 0) { a = ch[ch.length / 2 - 1]; qt = ar ? "ما الحرف الذي يقع قبل منتصف الكلمة مباشرة؟" : "Which letter comes just before the middle?"; } }
+      const SIM = { "أ": "ا", "إ": "ا", "آ": "ا", "ا": "أ", "ة": "ه", "ه": "ة", "ى": "ي", "ي": "ى" }; const dis = shuf((ar ? AL : EL).filter((x) => x !== a && x !== SIM[a] && !ch.includes(x))).slice(0, 2), o = shuf(dis.concat([a]));
+      return { t: "mc", slug: null, img: SU(c.image_url), word: ar ? c.word_ar : c.word_en, aud: ar ? c.audio_url : "", q: qt, o, a: o.indexOf(a), label: (ar ? c.word_ar : c.word_en) + " ← " + a, sk: ar ? "مواضع الحروف في الكلمة" : "Letter positions", lang };
+    });
+  } else if (kind === "build") {
     let pool = CARDS.filter((c) => { if (lang === "ar") { const w = nod(c.word_ar); return !isEnC(c) && c.cat !== "numbers" && /^[ء-ي]+$/.test(w) && w.length >= 3 && w.length <= (tier === 1 ? 4 : tier === 2 ? 5 : 7); } const w = String(c.word_en || ""); return /^[A-Za-z]+$/.test(w) && w.length >= 3 && w.length <= (tier === 1 ? 4 : tier === 2 ? 5 : 7) && c.cat !== "english" || (c.cat === "english" && /^[A-Za-z]{3,7}$/.test(w) && w.length <= (tier === 1 ? 4 : tier === 2 ? 5 : 7)); });
     if (lv && tierOf(lv) === tier) { const f = pool.filter((c) => cardLv(c).includes(lv)); if (f.length >= 4) pool = f; }
     qs = shuf(pool).slice(0, 5).map((c) => ({ t: "build", c, ans: lang === "ar" ? nod(c.word_ar) : c.word_en.toLowerCase(), label: lang === "ar" ? c.word_ar : c.word_en, sk: lang === "ar" ? "تركيب الحروف لتكوين الكلمات" : "Spelling" }));
@@ -126,6 +141,7 @@ async function practicePage() {
     else if (kind === "fill") qs = shuf(pool).slice(0, 5).map((x) => { const o = shuf(x.data.o.map((t, i) => [t, i])), a = o.findIndex((z) => z[1] === x.data.a); return { t: "fill", slug: x.slug, s: x.data.s, o: o.map((z) => z[0]), a, label: x.data.s.replace("___", x.data.o[x.data.a]), sk: x.skill, lang }; });
     else if (kind === "order") qs = shuf(pool).slice(0, 4).map((x) => ({ t: "order", slug: x.slug, words: x.data.words, label: x.data.words.join(" "), sk: x.skill, lang }));
     else if (kind === "write") qs = shuf(pool).slice(0, 3).map((x) => ({ t: "write", slug: x.slug, x, label: x.title, sk: x.skill, lang }));
+    else if (kind === "story") { const x = items.find((z) => z.kind === "story" && z.slug === p.get("s")); if (x) { x.data.text = x.data.pages.map((g) => g.t).join(" "); qs = x.data.qs.map((q) => ({ t: "mc", slug: x.slug, q: q.q, o: q.o, a: q.a, label: q.q, sk: x.skill, lang, shuffle: true })); if (x.data.events) qs.push({ t: "events", slug: x.slug, ev: x.data.events, label: "ترتيب أحداث القصة", sk: "ترتيب أحداث القصة", lang }); PASS = x; title = x.title; } }
     else if (kind === "passage") { const x = shuf(pool)[0]; if (x) { qs = x.data.qs.map((q) => ({ t: "mc", slug: x.slug, q: q.q, o: q.o, a: q.a, label: q.q, sk: x.skill, lang, shuffle: true })); if (x.data.events) qs.push({ t: "events", slug: x.slug, ev: x.data.events, label: "ترتيب أحداث النص", sk: "ترتيب أحداث القصة", lang }); PASS = x; } }
   }
   if (!qs.length) return (box.innerHTML = `<div class="sempty"><h3>لا توجد أسئلة لهذا المستوى بعد</h3><p>جرّب مستوى آخر.</p><p><a class="abtn go" href="?lang=${lang}&kind=${kind}">اختيار المستوى</a></p></div>`);
@@ -135,13 +151,13 @@ async function practicePage() {
   function show() {
     if (i >= qs.length) return resultView(box, title, done, back);
     const q = qs[i]; let tried = false;
-    const rec = (ok) => { if (q.t === "build") ansCard(q.c, ok, q.sk); else ansItem(q.slug, ok, q.sk); };
+    const rec = (ok) => { if (q.t === "build") ansCard(q.c, ok, q.sk); else if (q.slug) ansItem(q.slug, ok, q.sk); else { skill(q.sk, ok); save(); } };
     const fb = (t, c) => { const f = $("#fb"); f.className = "fb " + c; f.textContent = t; };
     const dirCls = q.lang === "en" || (q.t === "build" && lang === "en") ? "ltr" : "";
     if (q.t === "mc" || q.t === "fill") {
       const opts = q.t === "mc" && q.shuffle ? (() => { const a = q.o[q.a], o = shuf(q.o); q.o = o; q.a = o.indexOf(a); return o; })() : q.o;
-      const head = q.t === "fill" ? `<div class="sent ${dirCls}">${esc(q.s).replace("___", '<span class="bl">؟</span>')}</div>${spk(q.s.replace("___", " … "), q.lang, "", "استمع")}` : `<div class="qq ${dirCls}">${esc(q.q)}</div>`;
-      frame(box, title, qs, i, `${PASS && q.t === "mc" && kind === "passage" ? passBlock(PASS, lang) : ""}${head}<div class="opts ${dirCls}">${opts.map((o, j) => `<button type="button" class="opt" data-j="${j}">${esc(o)}</button>`).join("")}</div>`);
+      const head = q.t === "fill" ? `<div class="sent ${dirCls}">${esc(q.s).replace("___", '<span class="bl">؟</span>')}</div>${spk(q.s.replace("___", " … "), q.lang, "", "استمع")}` : `${q.img ? `<div class="bpic"><img src="${esc(q.img)}" alt="" width="110" height="110">${spk(q.word, q.lang, q.aud || "", "استمع للكلمة")}</div><div class="wshow ${dirCls}">${esc(q.word)}</div>` : ""}<div class="qq ${dirCls}">${esc(q.q)}</div>`;
+      frame(box, title, qs, i, `${PASS && q.t === "mc" && (kind === "passage" || kind === "story") ? passBlock(PASS, lang) : ""}${head}<div class="opts ${dirCls}">${opts.map((o, j) => `<button type="button" class="opt" data-j="${j}">${esc(o)}</button>`).join("")}</div>`);
       $("#aview").querySelectorAll(".opt").forEach((b) => b.onclick = () => { const j = +b.dataset.j; if (b.disabled) return; if (j === q.a) { b.classList.add("good"); box.querySelectorAll(".opt").forEach((x) => (x.disabled = true)); fb("أحسنت!" + (q.why ? " " + q.why : ""), "g"); if (!tried) rec(true); next(!tried, q); } else { b.classList.add("bad"); b.disabled = true; if (!tried) { tried = true; rec(false); } fb("حاول مرة أخرى.", "b"); } });
     } else if (q.t === "order" || q.t === "build") {
       const units = q.t === "order" ? q.words : q.ans.split(""); let bank = shuf(units.map((u, k) => ({ u, k }))); if (bank.length > 1 && bank.every((b, k) => b.u === units[k])) bank = bank.reverse(); let pick = [];
@@ -167,6 +183,30 @@ async function practicePage() {
 }
 let PASS = null;
 function passBlock(x, lang) { return `<div class="pas ${lang === "en" ? "ltr" : ""}"><h3>${esc(x.title)}</h3><p>${esc(x.data.text)}</p>${spk(x.data.text, lang, "", lang === "ar" ? "استمع للنص" : "Listen")}${x.data.vocab && x.data.vocab.length ? `<div class="vc">${x.data.vocab.map((v) => `<span><b>${esc(v[0])}</b>: ${esc(v[1])}</span>`).join("")}</div>` : ""}</div>`; }
+/* ===== القصص المصورة ===== */
+async function storyPage() {
+  const box = $("#aview"), p = new URLSearchParams(location.search), lang = p.get("lang") === "en" ? "en" : "ar", slug = p.get("s"); let lv = getLv();
+  const all = await loadItems(lang); if (!all) return (box.innerHTML = `<div class="sempty"><h3>تعذّر تحميل القصص</h3><p>تحقّق من الاتصال ثم أعد المحاولة.</p></div>`);
+  const L = all.filter((x) => x.kind === "story");
+  if (!slug) {
+    const f = (lv && lv !== "a2") ? L.filter((x) => x.levels.includes(lv)) : L; const list = f.length ? f : L;
+    box.innerHTML = `<div class="hero"><img src="${icon("1f4d6")}" alt=""><div><h1>${lang === "ar" ? "القصص اللغوية المصورة" : "Illustrated English Stories"}</h1><p>اقرأ القصة صفحة صفحة، واستمع إلى كل صفحة، وتعلّم مفرداتها، ثم أجب عن أسئلة الفهم.${lv && f.length ? " المعروض يناسب: " + esc(LV[lv]) + "." : ""}</p></div></div>
+<div class="lks" style="margin:6px 0"><a class="abtn${lang === "ar" ? " go" : ""}" href="?lang=ar">قصص عربية</a><a class="abtn${lang === "en" ? " go" : ""}" href="?lang=en">English stories</a></div>
+${list.length ? `<div class="mgrid">${list.map((x) => `<a class="mk tc" href="?lang=${lang}&s=${encodeURIComponent(x.slug)}"><img src="${icon(x.icon || "1f4d6")}" alt="" loading="lazy" width="80" height="80"><b>${esc(x.title)}</b><small>${esc(x.levels.map((l) => LV[l]).join("، "))}</small></a>`).join("")}</div>` : `<div class="sempty"><h3>لا توجد قصص بعد</h3></div>`}
+<p><a class="abtn" href="${ROOT}language/">العودة إلى عالم اللغات</a> <a class="abtn" href="${ROOT}stories/">مكتبة القصص الكاملة</a></p>`; return;
+  }
+  const x = L.find((z) => z.slug === slug); if (!x) return (box.innerHTML = `<div class="sempty"><h3>القصة غير موجودة</h3><p><a class="abtn go" href="?lang=${lang}">القصص</a></p></div>`);
+  const pg = x.data.pages, ltr = lang === "en"; let i = 0, seen = new Set();
+  const draw = () => {
+    seen.add(i); const g = pg[i], last = i === pg.length - 1;
+    box.innerHTML = `<div class="qh"><h2>${esc(x.title)}</h2><div class="bar"><i style="width:${((i + 1) / pg.length) * 100}%"></i></div><small>صفحة ${AD(i + 1)} من ${AD(pg.length)}</small></div>
+<div class="spage ${ltr ? "ltr" : ""}"><img src="${icon(g.img)}" alt="" width="180" height="180"><p class="stx">${esc(g.t)}</p>${spk(g.t, lang, "", ltr ? "Listen" : "استمع إلى الصفحة")}</div>
+<div class="btns"><button type="button" class="abtn" id="sp" ${i ? "" : "disabled"}>${ltr ? "◀" : "▶"} السابقة</button>${last ? "" : `<button type="button" class="abtn go" id="sn">التالية ${ltr ? "▶" : "◀"}</button>`}</div>
+${last ? `<section class="art"><h2>${ltr ? "New words" : "مفردات القصة"}</h2><div class="vc ${ltr ? "ltr" : ""}">${x.data.vocab.map((v) => `<span><b>${esc(v[0])}</b> ${spk(v[0], lang, "", "نطق " + v[0])} ${esc(v[1])}</span>`).join("")}</div><div class="btns"><a class="abtn go" href="${ROOT}language/practice/?lang=${lang}&kind=story&s=${encodeURIComponent(x.slug)}&tier=2">أجب عن أسئلة الفهم</a><a class="abtn" href="?lang=${lang}">قصة أخرى</a></div><p class="hint">تُحسب القصة في تقدّمك بعد الإجابة عن الأسئلة، لا بمجرد قراءتها.</p></section>` : ""}`;
+    const pv = $("#sp"), nx = $("#sn"); if (pv) pv.onclick = () => { i--; draw(); window.scrollTo({ top: 0 }); }; if (nx) nx.onclick = () => { i++; draw(); window.scrollTo({ top: 0 }); };
+  };
+  draw();
+}
 /* ===== الاستماع ===== */
 async function listenPage() {
   const box = $("#aview"), p = new URLSearchParams(location.search), lang = p.get("lang") === "en" ? "en" : "ar", mode = p.get("mode") === "repeat" ? "repeat" : "choose"; const lv = getLv();
@@ -239,14 +279,14 @@ function writePage() {
 const TILES = {
   ar: [["الحروف العربية", "i_letters" , "تعرّف على الحروف من الألف إلى الياء بأشكالها وأصواتها وكلماتها، وتتبّعها بإصبعك.", [["بطاقات الحروف", "cards/?cat=letters"], ["مطابقة الحرف بالصورة", "cards/?cat=letters&mode=match"], ["تتبّع الحروف", "language/write/?lang=ar&mode=trace"]], "1f4d6"],
     ["المفردات العربية", "", "الأسرة والحيوانات والفواكه والألوان والأشكال والملابس والطعام وأجزاء الجسم والمواصلات والمهن والطبيعة.", [["بطاقات المفردات", "cards/?cat=vocab"], ["الحيوانات", "cards/?cat=animals"], ["الفواكه والخضروات", "cards/?cat=food"], ["الألوان", "cards/?cat=colors"], ["الأشكال", "cards/?cat=shapes"], ["القواميس المصورة", "language/dict/"]], "1f4da"],
-    ["تكوين الكلمات والجمل", "", "رتّب الحروف لتكوّن كلمة، ورتّب الكلمات لتكوّن جملة، وأكمل الجمل بالكلمة المناسبة.", [["ترتيب الحروف", "language/practice/?lang=ar&kind=build"], ["ترتيب الكلمات", "language/practice/?lang=ar&kind=order"], ["اختر الكلمة المناسبة", "language/practice/?lang=ar&kind=fill"], ["المتقابلات", "language/practice/?lang=ar&kind=opp"], ["الكلمة المختلفة", "language/practice/?lang=ar&kind=odd"]], "i_puzzle"],
-    ["القراءة والفهم", "", "اقرأ نصوصًا قصيرة بمستويات مختلفة، واستمع إليها، وأجب عن الأسئلة ورتّب الأحداث.", [["اقرأ وأجب", "language/practice/?lang=ar&kind=passage"], ["القصص", "stories/"]], "1f4d6"],
+    ["تكوين الكلمات والجمل", "", "رتّب الحروف لتكوّن كلمة، ورتّب الكلمات لتكوّن جملة، وأكمل الجمل بالكلمة المناسبة.", [["ترتيب الحروف", "language/practice/?lang=ar&kind=build"], ["مواضع الحروف", "language/practice/?lang=ar&kind=pos"], ["ترتيب الكلمات", "language/practice/?lang=ar&kind=order"], ["اختر الكلمة المناسبة", "language/practice/?lang=ar&kind=fill"], ["المتقابلات", "language/practice/?lang=ar&kind=opp"], ["الكلمة المختلفة", "language/practice/?lang=ar&kind=odd"]], "i_puzzle"],
+    ["القراءة والفهم", "", "اقرأ نصوصًا قصيرة بمستويات مختلفة، واستمع إليها، وأجب عن الأسئلة ورتّب الأحداث.", [["اقرأ وأجب", "language/practice/?lang=ar&kind=passage"], ["القصص اللغوية المصورة", "language/story/?lang=ar"], ["مكتبة القصص", "stories/"]], "1f4d6"],
     ["الكتابة والتعبير", "", "تتبّع الحروف، وانسخ الكلمات، واكتب جملًا من كلمات معطاة.", [["تتبّع الحروف", "language/write/?lang=ar&mode=trace"], ["نسخ الكلمات", "language/write/?lang=ar&mode=copy"], ["اكتب جملة", "language/practice/?lang=ar&kind=write"]], "270f"]],
   en: [["English Letters", "", "الحروف من A إلى Z، الكبيرة والصغيرة، مع الكلمة المرتبطة بكل حرف وصورتها.", [["بطاقات الحروف", "cards/?cat=english"], ["Trace letters", "language/write/?lang=en&mode=trace"]], "u_abc"],
     ["English Vocabulary", "", "الألوان والأرقام والحيوانات والفواكه والخضروات وكلمات أساسية مع الصور.", [["بطاقات الإنجليزية", "cards/?cat=english"], ["القواميس المصورة", "language/dict/"]], "1f4da"],
-    ["Words and Sentences", "", "ضمائر وأفعال وكلمات متقابلة وتكوين جمل بسيطة واستخدام الكلمات في جمل.", [["Make the word", "language/practice/?lang=en&kind=build"], ["Put the words in order", "language/practice/?lang=en&kind=order"], ["Choose the word", "language/practice/?lang=en&kind=fill"], ["Opposites", "language/practice/?lang=en&kind=opp"], ["Odd one out", "language/practice/?lang=en&kind=odd"]], "i_puzzle"],
+    ["Words and Sentences", "", "ضمائر وأفعال وكلمات متقابلة وتكوين جمل بسيطة واستخدام الكلمات في جمل.", [["Make the word", "language/practice/?lang=en&kind=build"], ["Letter positions", "language/practice/?lang=en&kind=pos"], ["Put the words in order", "language/practice/?lang=en&kind=order"], ["Choose the word", "language/practice/?lang=en&kind=fill"], ["Opposites", "language/practice/?lang=en&kind=opp"], ["Odd one out", "language/practice/?lang=en&kind=odd"]], "i_puzzle"],
     ["Listening and Speaking", "", "استمع إلى الكلمات وكرّر النطق واربط الصوت بالصورة.", [["Listen and choose", "language/listen/?lang=en&mode=choose"], ["استمع وكرّر", "language/listen/?lang=en&mode=repeat"]], "i_sound"],
-    ["Reading", "", "نصوص إنجليزية قصيرة وأسئلة فهم بسيطة ومفردات من السياق.", [["Read and answer", "language/practice/?lang=en&kind=passage"], ["Write a sentence", "language/practice/?lang=en&kind=write"]], "1f4d6"]],
+    ["Reading", "", "نصوص إنجليزية قصيرة وأسئلة فهم بسيطة ومفردات من السياق.", [["Read and answer", "language/practice/?lang=en&kind=passage"], ["Illustrated stories", "language/story/?lang=en"], ["Write a sentence", "language/practice/?lang=en&kind=write"]], "1f4d6"]],
 };
 function progBox() {
   const sk = Object.entries(S.lang.sk).map(([k, v]) => ({ k, o: v.o, w: v.w })).sort((a, b) => b.o + b.w - (a.o + a.w));
@@ -276,7 +316,7 @@ ${progBox()}
 }
 async function boot() {
   loadDB(); await loadCards();
-  if (PAGE === "dict") dictPage(); else if (PAGE === "practice") practicePage(); else if (PAGE === "listen") listenPage(); else if (PAGE === "write") writePage(); else hubPage();
+  if (PAGE === "dict") dictPage(); else if (PAGE === "practice") practicePage(); else if (PAGE === "listen") listenPage(); else if (PAGE === "write") writePage(); else if (PAGE === "story") storyPage(); else hubPage();
 }
 boot();
 })();

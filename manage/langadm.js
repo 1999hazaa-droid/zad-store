@@ -4,11 +4,11 @@
 const Z = window.__zp; if (!Z) return;
 const { sb, $, $$, esc, toast, sheet, closeSheet, fail, SUB } = Z;
 const LANGS = [["ar", "العربية"], ["en", "الإنجليزية"]];
-const KINDS = [["order", "ترتيب كلمات الجملة"], ["fill", "اختر الكلمة المناسبة"], ["passage", "نص قراءة وأسئلة فهم"], ["opp", "كلمات متقابلة"], ["odd", "اكتشف الكلمة المختلفة"], ["write", "كتابة جملة من كلمات"]];
+const KINDS = [["order", "ترتيب كلمات الجملة"], ["fill", "اختر الكلمة المناسبة"], ["passage", "نص قراءة وأسئلة فهم"], ["opp", "كلمات متقابلة"], ["odd", "اكتشف الكلمة المختلفة"], ["write", "كتابة جملة من كلمات"], ["story", "قصة مصورة بمفردات وأسئلة"]];
 const LEVELS = [["a3", "٣ سنوات"], ["a4", "٤ سنوات"], ["a5", "٥ سنوات"], ["a6", "٦ سنوات"], ["g1", "الصف الأول"], ["g2", "الصف الثاني"], ["g3", "الصف الثالث"], ["g4", "الصف الرابع"]];
 const ST = [["draft", "مسودة"], ["published", "منشور"], ["unpublished", "غير منشور"]];
 const KN = Object.fromEntries(KINDS), SN = Object.fromEntries(ST), LN = Object.fromEntries(LANGS);
-const CATK = { order: "sentences", fill: "fill", passage: "reading", opp: "opposites", odd: "odd", write: "writing" };
+const CATK = { order: "sentences", fill: "fill", passage: "reading", opp: "opposites", odd: "odd", write: "writing", story: "stories" };
 const IC = (c) => `../images/zad/${c}.webp`;
 const lines = (t) => String(t).split("\n").map((l) => l.trim()).filter(Boolean);
 const AR_RE = /^[ء-ي٠-٩\s.،؟!:\-0-9]+$/, EN_RE = /^[A-Za-z0-9\s.,?!'\-]+$/;
@@ -18,6 +18,7 @@ const EX = {
   passage: '{"text":"...","vocab":[["كلمة","معناها"]],"qs":[{"q":"سؤال؟","o":["الصحيح","خطأ","خطأ"],"a":0}],"events":["حدث أول","حدث ثان","حدث ثالث"]}',
   opp: '{"pairs":[["كبير","صغير"],["طويل","قصير"],["حار","بارد"],["فوق","تحت"],["نهار","ليل"]]}',
   odd: '{"qs":[{"items":["أسد","قطة","تفاحة","حصان"],"a":2,"why":"التفاحة فاكهة"}]}',
+  story: '{"pages":[{"t":"جملة الصفحة الأولى.","img":"1f431"},{"t":"جملة الصفحة الثانية.","img":"1f431"},{"t":"جملة الصفحة الثالثة.","img":"1f431"}],"vocab":[["كلمة","معناها"]],"qs":[{"q":"سؤال؟","o":["الصحيح","خطأ","خطأ"],"a":0}],"events":["حدث أول","حدث ثان","حدث ثالث"]}',
   write: '{"prompt":"اكتب جملة فيها الكلمات التالية","words":["القط","يشرب"]}',
 };
 /* فحص بنية البيانات قبل الحفظ أو النشر: يعيد قائمة أخطاء */
@@ -30,6 +31,7 @@ function checkData(d, kind, lang) {
   else if (kind === "passage") { if (!d.text) e.push("النص ناقص"); else ch(d.text); if (!Array.isArray(d.qs) || d.qs.length < 2) e.push("سؤالان على الأقل"); else d.qs.forEach((q, i) => { ch(q.q, " (سؤال " + (i + 1) + ")"); opts(q.o, q.a, " (سؤال " + (i + 1) + ")"); }); if (d.events && (!Array.isArray(d.events) || d.events.length < 3)) e.push("ترتيب الأحداث يحتاج ثلاثة أحداث"); }
   else if (kind === "opp") { if (!Array.isArray(d.pairs) || d.pairs.length < 5) e.push("خمسة أزواج متقابلة على الأقل"); else { const all = d.pairs.flat(); if (new Set(all).size !== all.length) e.push("كلمات مكررة بين الأزواج"); all.forEach((x) => ch(x)); } }
   else if (kind === "odd") { if (!Array.isArray(d.qs) || !d.qs.length) e.push("سؤال واحد على الأقل"); else d.qs.forEach((q, i) => { if (!Array.isArray(q.items) || q.items.length !== 4 || new Set(q.items).size !== 4) e.push("أربع كلمات مختلفة في السؤال " + (i + 1)); else { q.items.forEach((x) => ch(x)); if (!(q.a >= 0 && q.a < 4)) e.push("إجابة السؤال " + (i + 1)); } }); }
+  else if (kind === "story") { if (!Array.isArray(d.pages) || d.pages.length < 3 || d.pages.length > 6) e.push("القصة من ثلاث صفحات إلى ست"); else d.pages.forEach((p, i) => { ch(p.t || "", " (صفحة " + (i + 1) + ")"); if (!p.img || !/^[0-9a-z_-]+$/i.test(p.img)) e.push("رمز صورة الصفحة " + (i + 1)); }); if (!Array.isArray(d.qs) || d.qs.length < 3) e.push("ثلاثة أسئلة فهم على الأقل"); else d.qs.forEach((q, i) => { ch(q.q, " (سؤال " + (i + 1) + ")"); opts(q.o, q.a, " (سؤال " + (i + 1) + ")"); }); if (!Array.isArray(d.vocab) || !d.vocab.length) e.push("مفردة واحدة على الأقل مع معناها"); if (d.events && (!Array.isArray(d.events) || d.events.length < 3)) e.push("ترتيب الأحداث يحتاج ثلاثة أحداث"); }
   else if (kind === "write") { if (!d.prompt) e.push("نص التعليمات ناقص"); if (!Array.isArray(d.words) || d.words.length < 2) e.push("كلمتان على الأقل"); else d.words.forEach((x) => ch(x)); }
   return e;
 }

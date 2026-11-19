@@ -50,3 +50,5 @@
 .lg .tc2 canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:15px}.lg #dc{touch-action:none}
 #ltoast{position:fixed;bottom:90px;inset-inline:12px;margin:auto;max-width:360px;background:#351078;color:#fff;border-radius:14px;padding:10px 14px;font:800 15px Cairo,sans-serif;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s;z-index:60}#ltoast.on{opacity:1}
 @media(max-width:560px){.lg .tg{grid-template-columns:1fr}}
+.lg .wshow{text-align:center;font-size:30px;font-weight:800;color:#5b2bd1;margin:4px 0 2px}.lg .wshow.ltr{direction:ltr}
+.lg .spage{text-align:center;margin:10px 0}.lg .spage img{width:180px;height:180px;object-fit:contain}.lg .stx{font:800 24px/1.9 var(--z-font);margin:8px 0}.lg .spage.ltr{direction:ltr}.lg .vc span{display:block;margin:6px 0}
