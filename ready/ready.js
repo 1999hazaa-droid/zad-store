@@ -93,6 +93,7 @@ ${it.family ? `<div class="rv"><b>نشاط مع الأسرة:</b><p>${esc(it.fam
   $("#again").onclick = () => location.reload();
 }
 const D8 = (a) => a;
+const ART = { day_2: "scene_day_2" };
 function tracePath(sh, w, h) {
   const N = 90, o = [], cx = w / 2, cy = h / 2; const seg = (a, b, n) => { for (let i = 0; i < n; i++) o.push([a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n]); };
   if (sh === "line") seg([w - 50, cy], [50, cy], N); else if (sh === "wave") { for (let i = 0; i <= N; i++) { const t = i / N; o.push([w - 50 - t * (w - 100), cy + 55 * Math.sin(t * Math.PI * 4)]); } } else if (sh === "zigzag") { const v = [[w - 50, cy + 60], [w - 130, cy - 60], [w - 210, cy + 60], [w - 290, cy - 60], [w - 370, cy + 60], [50, cy - 60]]; for (let k = 0; k < v.length - 1; k++) seg(v[k], v[k + 1], 18); o.push(v[v.length - 1]); } else if (sh === "circle") { for (let i = 0; i < N; i++) { const t = -Math.PI / 2 - i / N * Math.PI * 2; o.push([cx + 100 * Math.cos(t), cy + 100 * Math.sin(t)]); } } else if (sh === "square") { const v = [[cx + 95, cy - 95], [cx - 95, cy - 95], [cx - 95, cy + 95], [cx + 95, cy + 95]]; for (let k = 0; k < 4; k++) seg(v[k], v[(k + 1) % 4], 22); } else { const v = [[cx, cy - 105], [cx - 115, cy + 95], [cx + 115, cy + 95]]; for (let k = 0; k < 3; k++) seg(v[k], v[(k + 1) % 3], 30); }
@@ -119,7 +120,7 @@ function playPage(forced) {
       else { const m = mc(d.check.q, d.check.o, null, d.check.why, () => finish(it, wrong, lv)); box.innerHTML = head + m.html + back; m.bind(box); }
     }; draw();
   } else if (it.kind === "choose") {
-    const m = mc(d.q, d.o, d.fb, "", () => finish(it, wrong, lv), `<div class="spage"><img src="${icon(it.icon)}" alt="" width="150" height="150"><p class="stx">${esc(d.scene)}</p></div>`);
+    const m = mc(d.q, d.o, d.fb, "", () => finish(it, wrong, lv), `<div class="spage"><img src="${ART[it.slug] ? ROOT + "images/ready/" + ART[it.slug] + ".webp" : icon(it.icon)}" alt="" width="150" height="150" style="border-radius:18px"><p class="stx">${esc(d.scene)}</p></div>`);
     box.innerHTML = head + m.html + back; m.bind(box);
   } else if (it.kind === "order") {
     const units = d.steps; let bank = shuf(units.map((u, k) => ({ u, k }))); if (bank.every((b, k) => b.u === units[k])) bank = bank.reverse(); let pick = [];
