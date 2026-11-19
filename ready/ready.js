@@ -93,7 +93,7 @@ ${it.family ? `<div class="rv"><b>نشاط مع الأسرة:</b><p>${esc(it.fam
   $("#again").onclick = () => location.reload();
 }
 const D8 = (a) => a;
-const ART = { day_1: "scene_day_1", day_2: "scene_day_2", day_3: "scene_day_3", day_4: "scene_day_4", day_5: "scene_day_5", day_6: "scene_day_6", day_7: "scene_day_7" };
+const ART = { day_1: "scene_day_1", day_2: "scene_day_2", day_3: "scene_day_3", day_4: "scene_day_4", day_5: "scene_day_5", day_6: "scene_day_6", day_7: "scene_day_7", day_8: "scene_day_8" };
 function tracePath(sh, w, h) {
   const N = 90, o = [], cx = w / 2, cy = h / 2; const seg = (a, b, n) => { for (let i = 0; i < n; i++) o.push([a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n]); };
   if (sh === "line") seg([w - 50, cy], [50, cy], N); else if (sh === "wave") { for (let i = 0; i <= N; i++) { const t = i / N; o.push([w - 50 - t * (w - 100), cy + 55 * Math.sin(t * Math.PI * 4)]); } } else if (sh === "zigzag") { const v = [[w - 50, cy + 60], [w - 130, cy - 60], [w - 210, cy + 60], [w - 290, cy - 60], [w - 370, cy + 60], [50, cy - 60]]; for (let k = 0; k < v.length - 1; k++) seg(v[k], v[k + 1], 18); o.push(v[v.length - 1]); } else if (sh === "circle") { for (let i = 0; i < N; i++) { const t = -Math.PI / 2 - i / N * Math.PI * 2; o.push([cx + 100 * Math.cos(t), cy + 100 * Math.sin(t)]); } } else if (sh === "square") { const v = [[cx + 95, cy - 95], [cx - 95, cy - 95], [cx - 95, cy + 95], [cx + 95, cy + 95]]; for (let k = 0; k < 4; k++) seg(v[k], v[(k + 1) % 4], 22); } else { const v = [[cx, cy - 105], [cx - 115, cy + 95], [cx + 115, cy + 95]]; for (let k = 0; k < 3; k++) seg(v[k], v[(k + 1) % 3], 30); }
