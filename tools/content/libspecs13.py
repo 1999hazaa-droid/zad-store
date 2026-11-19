@@ -23,15 +23,20 @@ def ans(q):
 def build(it):
     C, T = SD.COL.get(it['subj'], ('#7c3aed', '#efe7ff'))
     sname = SD.SUBJ.get(it['subj'], 'مراجعة شاملة')
-    kindname = 'نموذج مراجعة قبل الاختبار' if it['kind'] == 'exam_prep' else 'ملخص درس'
+    kindname = 'نموذج مراجعة قبل الاختبار' if it['kind'] == 'exam_prep' else 'خريطة مفاهيم' if it['kind'] == 'concept_map' else 'ملخص درس'
     sp = spec(slug=it['slug'], title=it['title'], subtitle=kindname, chips=[f'الصف {["الأول","الثاني","الثالث","الرابع","الخامس","السادس"][it["grade"]-1]}', sname, kindname], color=C, tint=T,
               note='محتوى أصلي من إعداد منصة زاد، غير منسوب لكتاب مدرسي أو منهج محدد. يُستعمل للمراجعة والتدريب.')
     P = []
     qs = it['questions']
     if it['kind'] != 'exam_prep':
         g = '<div class="bx"><b>أهداف التعلّم</b><br>' + '<br>'.join('• ' + ar(x) for x in it['goals']) + '</div>'
-        tb = '<table><tr><th style="width:30%">المفهوم</th><th>المعنى</th></tr>' + ''.join(f'<tr><td><b>{ar(c["t"])}</b></td><td dir="auto">{ar(c["d"])}</td></tr>' for c in it['concepts']) + '</table>'
-        P.append(('الملخص: ' + it['lesson'], f'{sname} · وحدة: {it["unit"]}', g + '<div style="height:3mm"></div>' + tb, 'sum'))
+        if it['kind'] == 'concept_map':
+            tb = ('<div style="text-align:center"><div style="display:inline-block;background:%s;color:#fff;border-radius:6mm;padding:3mm 9mm;font-size:17pt;font-weight:800">%s</div><div style="font-size:18pt;color:%s;line-height:1">&#9660;</div></div>' % (C, ar(it['lesson']), C)
+                  + '<div style="display:flex;flex-wrap:wrap;gap:3mm;justify-content:center">' + ''.join(
+                      f'<div style="flex:1 1 42%;min-width:60mm;border:.6mm solid {C};background:{T};border-radius:4mm;padding:3mm;text-align:center"><div style="font-weight:800;font-size:14pt;color:{C};margin-bottom:1mm">{ar(c["t"])}</div><div style="font-size:12pt;line-height:1.7" dir="auto">{ar(c["d"])}</div></div>' for c in it['concepts']) + '</div>')
+        else:
+            tb = '<table><tr><th style="width:30%">المفهوم</th><th>المعنى</th></tr>' + ''.join(f'<tr><td><b>{ar(c["t"])}</b></td><td dir="auto">{ar(c["d"])}</td></tr>' for c in it['concepts']) + '</table>'
+        P.append((('خريطة المفاهيم: ' if it['kind'] == 'concept_map' else 'الملخص: ') + it['lesson'], f'{sname} · وحدة: {it["unit"]}', g + '<div style="height:3mm"></div>' + tb, 'sum'))
         ex = ''.join(para(x) for x in it['explanation'])
         exs = '<div class="bx"><b>أمثلة</b><br>' + '<br>'.join(f'<span dir="auto">{fm(x)}</span>' for x in it['examples']) + '</div>' if it['examples'] else ''
         P.append(('الشرح المبسّط والأمثلة', 'اقرأ الشرح ببطء ثم انظر إلى الأمثلة.', ex + '<div style="height:3mm"></div>' + exs, 'sum'))

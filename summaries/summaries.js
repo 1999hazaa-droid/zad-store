@@ -117,7 +117,8 @@ function drawView(a) {
   D.title = a.title + " | منصة زاد التعليمية"; const bc = $("#abc"); if (bc) bc.textContent = a.title;
   const body = [];
   if ((a.goals || []).length) body.push(sec("أهداف التعلّم", ul(a.goals)));
-  if ((a.concepts || []).length) body.push(sec("أهم المفاهيم", `<table class="ct"><tbody>${a.concepts.map((c) => `<tr><th scope="row">${fm(c.t)}</th><td>${fm(c.d)}</td></tr>`).join("")}</tbody></table>`));
+  if (a.kind === "concept_map" && (a.concepts || []).length) body.push(sec("خريطة المفاهيم", `<div class="cmap"><div class="cm-c">${fm(a.lesson || a.title)}</div><div class="cm-a" aria-hidden="true">▼</div><div class="cm-b">${a.concepts.map((c) => `<div class="cm-n"><b>${fm(c.t)}</b><span>${fm(c.d)}</span></div>`).join("")}</div></div>`));
+  else if ((a.concepts || []).length) body.push(sec("أهم المفاهيم", `<table class="ct"><tbody>${a.concepts.map((c) => `<tr><th scope="row">${fm(c.t)}</th><td>${fm(c.d)}</td></tr>`).join("")}</tbody></table>`));
   if ((a.explanation || []).length) body.push(sec("الشرح المبسّط", a.explanation.map((p) => `<p>${fm(p)}</p>`).join("")));
   if ((a.examples || []).length) body.push(sec("أمثلة", ul(a.examples)));
   if ((a.points || []).length) body.push(sec("نقاط المراجعة", ul(a.points)));
