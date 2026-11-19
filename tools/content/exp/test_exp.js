@@ -9,11 +9,11 @@ await p.route('**/rest/v1/experiments*',r=>{const u=new URL(r.request().url());c
 await p.route(/rest\/v1\/(stories|cards|activities|media_aids)/,r=>r.fulfill({json:[{slug:'x',title:'عنصر مرتبط'}],headers:{'access-control-allow-origin':'*'}}));
 await p.goto('http://localhost:8765/experiments/');await p.waitForSelector('.tc');
 console.log(vp.width,'cards',await p.locator('#sres .tc').count(),'topics',await p.locator('.mk').count());
-await p.click('[data-k=kind][data-v=sensory]');console.log('sensory',await p.locator('#sres .tc').count());
+
 await p.click('[data-k=kind][data-v=""]');await p.click('[data-k=adult][data-v=required]');console.log('required',await p.locator('#sres .tc').count());
 await p.click('#sclr');await p.fill('#sq','ظل');console.log('search',await p.locator('#sres .tc').count());
 await p.screenshot({path:`/tmp/el${vp.width}.png`});
-for(const e of (vp.width===390?G:G.filter(g=>['ex-sink-float','sn-light-spot','pr-garden'].includes(g.slug)))){
+for(const e of (process.env.ONLY?G.filter(g=>process.env.ONLY.split(',').includes(g.slug)):vp.width===390?G:G.filter(g=>['ex-sink-float','sn-light-spot','pr-garden'].includes(g.slug)))){
  const tiers=[...new Set(e.levels.map(l=>T[l]))];
  for(const tier of tiers){
   const lv=e.levels.find(l=>T[l]===tier);

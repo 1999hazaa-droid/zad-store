@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """python3 build.py <out.sql> [--nopdf]"""
 import json, sys, os, html
-import e_water, e_colors, e_plants, e_light, e_air, e_daily, e_projects, e_sensory
+import e_water, e_colors, e_plants, e_light, e_air, e_daily, e_projects, e_sensory, e_more
 import ecommon as c
 bad = c.lint()
 if bad: print('\n'.join(bad)); sys.exit(1)
