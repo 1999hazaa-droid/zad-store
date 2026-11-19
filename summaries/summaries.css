@@ -48,3 +48,11 @@ body.sm>main{display:block!important}
 .sm .cm-n{flex:1 1 200px;border:2px solid var(--z-pri);background:var(--z-tint);border-radius:16px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
 .sm .cm-n b{font:800 16px var(--z-font);color:var(--z-pri)}
 .sm .cm-n span{font:500 14.5px/1.7 var(--z-font)}
+
+.sm .fcg{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.sm .fc{display:flex;flex-direction:column;text-align:start;border:2px dashed var(--z-pri);background:#fff;border-radius:16px;padding:0;overflow:hidden;cursor:pointer;font:inherit;min-height:110px}
+.sm .fc .fq{padding:10px 12px;font:700 15px/1.8 var(--z-font);color:var(--z-ink);flex:1}
+.sm .fc .fa{display:none;background:var(--z-tint);color:var(--z-pri);padding:8px 12px;font:800 14.5px/1.7 var(--z-font)}
+.sm .fc.open .fa,.sm.sa .fc .fa{display:block}
+.sm .fc:focus-visible{outline:3px solid var(--z-sun);outline-offset:2px}
+@media print{.sm .fcg{grid-template-columns:1fr 1fr}.sm .fc{break-inside:avoid}}

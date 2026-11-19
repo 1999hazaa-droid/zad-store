@@ -122,7 +122,8 @@ function drawView(a) {
   if ((a.explanation || []).length) body.push(sec("الشرح المبسّط", a.explanation.map((p) => `<p>${fm(p)}</p>`).join("")));
   if ((a.examples || []).length) body.push(sec("أمثلة", ul(a.examples)));
   if ((a.points || []).length) body.push(sec("نقاط المراجعة", ul(a.points)));
-  if ((a.questions || []).length) body.push(sec("أسئلة للتأكد من الفهم", `<button type="button" class="abtn noprint" id="sans" style="margin-bottom:8px">${SA ? "إخفاء الإجابات" : "إظهار الإجابات"}</button><ol class="qs">${a.questions.map(qhtml).join("")}</ol>`));
+  if (a.kind === "review_cards" && (a.questions || []).length) body.push(sec("بطاقات المراجعة", `<button type="button" class="abtn noprint" id="sans" style="margin-bottom:8px">${SA ? "إخفاء الإجابات" : "إظهار الإجابات"}</button><p class="noprint" style="margin:0 0 8px;font:600 13.5px var(--z-font);color:var(--z-ink2)">اقرأ السؤال وأجب، ثم المس البطاقة لتكشف الإجابة.</p><div class="fcg">${a.questions.map((q) => `<button type="button" class="fc" aria-expanded="false"><span class="fq">${fm(q.q)}</span><span class="fa">الإجابة: ${fm(q.a)}</span></button>`).join("")}</div>`));
+  else if ((a.questions || []).length) body.push(sec("أسئلة للتأكد من الفهم", `<button type="button" class="abtn noprint" id="sans" style="margin-bottom:8px">${SA ? "إخفاء الإجابات" : "إظهار الإجابات"}</button><ol class="qs">${a.questions.map(qhtml).join("")}</ol>`));
   const acts = `<a class="abtn go" href="${esc(U(a.pdf_url))}" target="_blank" rel="noopener">فتح PDF</a><a class="abtn" href="${esc(U(a.pdf_url))}" download>تحميل PDF</a>${a.bw_url ? `<a class="abtn" href="${esc(U(a.bw_url))}" download>PDF أبيض وأسود</a>` : ""}<button type="button" class="abtn" id="sprt">طباعة</button><a class="abtn" href="../">العودة إلى القائمة</a>`;
   $("#aview").innerHTML = `<div class="hd"><img src="${esc(U(a.cover_url))}" alt="" width="110" height="146"><div><h1>${esc(a.title)}</h1><div class="mt"><span>الصف ${esc(GR[a.grade - 1])}</span><span>${esc(a.subject)}</span><span class="k">${esc(KINDS[a.kind] || a.kind)}</span>${a.semester ? `<span>${esc(SEM[a.semester])}</span>` : ""}</div><p style="margin:8px 0 0;font:500 14px/1.7 var(--z-font);color:var(--z-ink2)">${esc([a.unit, a.lesson].filter(Boolean).join(" · "))}</p></div></div>
 <div class="acts">${acts}</div>${body.join("")}<div id="srel"></div>
@@ -130,6 +131,7 @@ function drawView(a) {
   D.body.classList.toggle("sa", SA);
   const on = (id, f) => { const e = $(id); if (e) e.addEventListener("click", f); };
   on("#sans", () => { SA = !SA; D.body.classList.toggle("sa", SA); $("#sans").textContent = SA ? "إخفاء الإجابات" : "إظهار الإجابات"; });
+  D.querySelectorAll(".fc").forEach((b) => b.addEventListener("click", () => { const o = b.classList.toggle("open"); b.setAttribute("aria-expanded", o); }));
   on("#sprt", () => W.print());
   related(a).then((o) => { const e = $("#srel"); if (e && o.length) e.innerHTML = sec("مرتبط بهذا الدرس", `<div class="rel">${o.join("")}</div>`); });
 }

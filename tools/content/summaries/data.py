@@ -471,7 +471,23 @@ cmap('map-g5-sci-water-cycle', 5, 'sci', 'الماء', 'دورة الماء', '�
 cmap('map-g6-sci-energy', 6, 'sci', 'الطاقة', 'أشكال الطاقة', 'خريطة مفاهيم: أشكال الطاقة', 'خريطة تجمع أشكال الطاقة الستة مع وصف كل شكل.',
  [('الحركية', 'طاقة الأجسام المتحركة'), ('الحرارية', 'طاقة الحرارة'), ('الكهربائية', 'طاقة الشحنات الكهربائية المتحركة'), ('الضوئية', 'طاقة الضوء'), ('الصوتية', 'طاقة الاهتزازات التي نسمعها'), ('الكيميائية', 'طاقة مخزّنة في الغذاء والوقود والبطاريات')],
  ['كل صندوق شكل من أشكال الطاقة، والطاقة تتحوّل من شكل إلى آخر ولا تفنى.'], ['أن أسمّي أشكال الطاقة وأصفها.'], ['للطاقة أشكال متعددة.', 'الطاقة تتحوّل ولا تفنى.'], 'sum-g6-sci-energy', 125)
-assert len(items) == 56, len(items)
+
+# ===== بطاقات مراجعة: سؤال وجواب من أسئلة الدروس المراجَعة سابقاً =====
+def _card(q):
+    if q['type'] == 'mcq': return dict(type='short', q=q['q'] + ' (' + ' / '.join(q['opts']) + ')', a=q['opts'][q['a']])
+    if q['type'] == 'tf': return dict(type='short', q=q['q'] + ' (صح أم خطأ؟)', a='صح' if q['a'] else 'خطأ')
+    if q['type'] == 'fill': return dict(type='short', q=q['q'], a=q['a'])
+    return None
+for _g in range(1, 7):
+    _ls = [i for i in items if i['grade'] == _g and i['kind'] == 'lesson_summary']
+    _cs = []
+    for _l in _ls:
+        _cs += [c for c in (_card(q) for q in _l['questions'][:3]) if c][:2]
+    _cs = _cs[:12]
+    items.append(dict(slug=f'cards-g{_g}-review', kind='review_cards', grade=_g, subj='mix', unit='مراجعة شاملة', lesson='بطاقات مراجعة', title=f'بطاقات مراجعة الصف {_G[_g-1]}',
+        description=f'{len(_cs)} بطاقة سؤال وجواب من دروس الصف {_G[_g-1]} في المنصة للمراجعة السريعة.', goals=[], concepts=[], explanation=[], examples=[],
+        points=['اقرأ السؤال وأجب قبل أن تكشف الإجابة.', 'أعد البطاقات التي أخطأت فيها.'], questions=_cs, links=L([], [], None, f'g{_g}:gen'), sort=130 + _g))
+assert len(items) == 62, len(items)
 if __name__ == '__main__':
     import json
     print(len(items)); json.dump(items, open('/tmp/sums.json', 'w'), ensure_ascii=False)

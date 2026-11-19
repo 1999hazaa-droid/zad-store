@@ -23,11 +23,16 @@ def ans(q):
 def build(it):
     C, T = SD.COL.get(it['subj'], ('#7c3aed', '#efe7ff'))
     sname = SD.SUBJ.get(it['subj'], 'مراجعة شاملة')
-    kindname = 'نموذج مراجعة قبل الاختبار' if it['kind'] == 'exam_prep' else 'خريطة مفاهيم' if it['kind'] == 'concept_map' else 'ملخص درس'
+    kindname = 'نموذج مراجعة قبل الاختبار' if it['kind'] == 'exam_prep' else 'خريطة مفاهيم' if it['kind'] == 'concept_map' else 'بطاقات مراجعة' if it['kind'] == 'review_cards' else 'ملخص درس'
     sp = spec(slug=it['slug'], title=it['title'], subtitle=kindname, chips=[f'الصف {["الأول","الثاني","الثالث","الرابع","الخامس","السادس"][it["grade"]-1]}', sname, kindname], color=C, tint=T,
               note='محتوى أصلي من إعداد منصة زاد، غير منسوب لكتاب مدرسي أو منهج محدد. يُستعمل للمراجعة والتدريب.')
     P = []
     qs = it['questions']
+    if it['kind'] == 'review_cards':
+        cards = [f'<div style="border:.5mm dashed {C};border-radius:4mm;background:#fff;padding:4mm 4mm 0;break-inside:avoid"><div style="font-weight:800;font-size:13pt;line-height:1.8;min-height:20mm" dir="auto">{ar(q["q"])}</div><div style="border-top:.5mm dotted #888;margin:2mm -4mm 0"></div><div style="background:{T};margin:0 -4mm;padding:3mm 4mm;border-radius:0 0 4mm 4mm;font-size:12.5pt;color:{C};font-weight:700" dir="auto">الإجابة: {ar(str(ans(q)))}</div></div>' for q in qs]
+        for k in range(0, len(cards), 6):
+            P.append((f'بطاقات المراجعة ({k // 6 + 1})', 'اقرأ السؤال وأجب بصوتك ثم اقرأ الإجابة. اقصّ البطاقات واطوِها عند الخط المنقط إن أردت.', '<div style="display:grid;grid-template-columns:1fr 1fr;gap:5mm">' + ''.join(cards[k:k + 6]) + '</div>', 'sum'))
+        return sp, P
     if it['kind'] != 'exam_prep':
         g = '<div class="bx"><b>أهداف التعلّم</b><br>' + '<br>'.join('• ' + ar(x) for x in it['goals']) + '</div>'
         if it['kind'] == 'concept_map':
