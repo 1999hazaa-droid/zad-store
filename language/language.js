@@ -207,6 +207,23 @@ ${last ? `<section class="art"><h2>${ltr ? "New words" : "مفردات القص�
   };
   draw();
 }
+/* ===== أشكال الحرف العربي ===== */
+function formsPage() {
+  const box = $("#aview"), L = "ابتثجحخدذرزسشصضطظعغفقكلمنهوي".split(""), NJ = "ادذرزو".split(""), Z = "\u200D";
+  let cur = new URLSearchParams(location.search).get("c"); if (!L.includes(cur)) cur = "ب";
+  const draw = () => {
+    const nj = NJ.includes(cur), f = nj ? [["منفصل", cur], ["آخر الكلمة", "ـ" + cur]] : [["منفصل", cur], ["أول الكلمة", cur + Z], ["وسط الكلمة", Z + cur + Z], ["آخر الكلمة", Z + cur]];
+    const ex = CARDS.filter((c) => !isEnC(c) && c.cat !== "numbers" && nod(c.word_ar).length >= 3 && nod(c.word_ar).includes(cur)).slice(0, 4);
+    box.innerHTML = `<div class="hero"><img src="${icon("u_letters")}" alt=""><div><h1>أشكال الحرف في الكلمة</h1><p>يتغيّر شكل الحرف العربي بحسب موضعه: أول الكلمة أو وسطها أو آخرها.</p></div></div>
+<div class="dtabs" role="group" aria-label="الحروف">${L.map((x) => `<button type="button" class="zpill${x === cur ? " on" : ""}" data-c="${x}" aria-pressed="${x === cur}">${x}</button>`).join("")}</div>
+<div class="fgrid">${f.map((x) => `<div class="fc"><span class="fch">${x[1]}</span><small>${x[0]}</small></div>`).join("")}</div>
+${nj ? `<p class="hint">هذا الحرف لا يتصل بما بعده، فله شكلان فقط.</p>` : ""}
+${ex.length ? `<h3>كلمات فيها هذا الحرف</h3><div class="mgrid">${ex.map((c) => { const w = nod(c.word_ar), at = w.indexOf(cur), pos = at === 0 ? "في أول الكلمة" : at === w.length - 1 ? "في آخر الكلمة" : "في وسط الكلمة"; return `<div class="mk tc"><img src="${esc(SU(c.image_url))}" alt="" width="80" height="80"><b>${esc(c.word_ar)}</b><small>الحرف ${pos}</small></div>`; }).join("")}</div>` : ""}
+<p><a class="abtn go" href="${ROOT}language/practice/?lang=ar&kind=pos">تدرّب على مواضع الحروف</a> <a class="abtn" href="${ROOT}language/">العودة</a></p>`;
+    box.querySelectorAll("[data-c]").forEach((b) => b.onclick = () => { cur = b.dataset.c; history.replaceState(null, "", "?c=" + encodeURIComponent(cur)); draw(); });
+  };
+  draw();
+}
 /* ===== الاستماع ===== */
 async function listenPage() {
   const box = $("#aview"), p = new URLSearchParams(location.search), lang = p.get("lang") === "en" ? "en" : "ar", mode = p.get("mode") === "repeat" ? "repeat" : "choose"; const lv = getLv();
@@ -277,7 +294,7 @@ function writePage() {
 }
 /* ===== الرئيسية ===== */
 const TILES = {
-  ar: [["الحروف العربية", "i_letters" , "تعرّف على الحروف من الألف إلى الياء بأشكالها وأصواتها وكلماتها، وتتبّعها بإصبعك.", [["بطاقات الحروف", "cards/?cat=letters"], ["مطابقة الحرف بالصورة", "cards/?cat=letters&mode=match"], ["تتبّع الحروف", "language/write/?lang=ar&mode=trace"]], "1f4d6"],
+  ar: [["الحروف العربية", "u_letters" , "تعرّف على الحروف من الألف إلى الياء بأشكالها وأصواتها وكلماتها، وتتبّعها بإصبعك.", [["بطاقات الحروف", "cards/?cat=letters"], ["أشكال الحرف في الكلمة", "language/forms/"], ["مطابقة الحرف بالصورة", "cards/?cat=letters&mode=match"], ["تتبّع الحروف", "language/write/?lang=ar&mode=trace"]], "1f4d6"],
     ["المفردات العربية", "", "الأسرة والحيوانات والفواكه والألوان والأشكال والملابس والطعام وأجزاء الجسم والمواصلات والمهن والطبيعة.", [["بطاقات المفردات", "cards/?cat=vocab"], ["الحيوانات", "cards/?cat=animals"], ["الفواكه والخضروات", "cards/?cat=food"], ["الألوان", "cards/?cat=colors"], ["الأشكال", "cards/?cat=shapes"], ["القواميس المصورة", "language/dict/"]], "1f4da"],
     ["تكوين الكلمات والجمل", "", "رتّب الحروف لتكوّن كلمة، ورتّب الكلمات لتكوّن جملة، وأكمل الجمل بالكلمة المناسبة.", [["ترتيب الحروف", "language/practice/?lang=ar&kind=build"], ["مواضع الحروف", "language/practice/?lang=ar&kind=pos"], ["ترتيب الكلمات", "language/practice/?lang=ar&kind=order"], ["اختر الكلمة المناسبة", "language/practice/?lang=ar&kind=fill"], ["المتقابلات", "language/practice/?lang=ar&kind=opp"], ["الكلمة المختلفة", "language/practice/?lang=ar&kind=odd"]], "i_puzzle"],
     ["القراءة والفهم", "", "اقرأ نصوصًا قصيرة بمستويات مختلفة، واستمع إليها، وأجب عن الأسئلة ورتّب الأحداث.", [["اقرأ وأجب", "language/practice/?lang=ar&kind=passage"], ["القصص اللغوية المصورة", "language/story/?lang=ar"], ["مكتبة القصص", "stories/"]], "1f4d6"],
@@ -316,7 +333,7 @@ ${progBox()}
 }
 async function boot() {
   loadDB(); await loadCards();
-  if (PAGE === "dict") dictPage(); else if (PAGE === "practice") practicePage(); else if (PAGE === "listen") listenPage(); else if (PAGE === "write") writePage(); else if (PAGE === "story") storyPage(); else hubPage();
+  if (PAGE === "dict") dictPage(); else if (PAGE === "practice") practicePage(); else if (PAGE === "listen") listenPage(); else if (PAGE === "write") writePage(); else if (PAGE === "story") storyPage(); else if (PAGE === "forms") formsPage(); else hubPage();
 }
 boot();
 })();
