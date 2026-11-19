@@ -1,0 +1,23 @@
+/* المهارات الحياتية - زاد (يعتمد على language.css للأزرار والأسئلة) */
+.lf .lfcats{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.lf .lfc{display:flex;flex-direction:column;align-items:center;gap:4px;border:2px solid var(--z-line);border-radius:18px;padding:12px 8px;background:#fff;text-decoration:none;color:inherit;text-align:center}
+.lf .lfc:hover{border-color:var(--z-pri)}.lf .lfc img{width:64px;height:64px;object-fit:contain}.lf .lfc b{font:800 15px/1.5 var(--z-font)}.lf .lfc small{font:600 12.5px var(--z-font);color:var(--z-ink2)}
+.lf .lfc .bar{width:100%}
+.lf .lfsteps{margin:0;padding-inline-start:22px;font:600 15px/2 var(--z-font)}
+.lf .lfstep.lock{opacity:.75}.lf .lfstep h2 small{font:600 13px var(--z-font);color:var(--z-ink2)}
+.lf .lfl{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.lf .lfi{display:flex;gap:10px;align-items:center;border:2px solid var(--z-line);border-radius:16px;padding:8px 10px;background:#fff;text-decoration:none;color:inherit}
+.lf .lfi.done{border-color:#2e9d57;background:#f1fbf4}.lf .lfi img{width:52px;height:52px;object-fit:contain;flex:none}
+.lf .lfi b{display:block;font:800 15.5px/1.5 var(--z-font)}.lf .lfi small{font:600 12.5px var(--z-font);color:var(--z-ink2)}
+.lf .lfpool{display:flex;gap:8px;flex-wrap:wrap;min-height:56px;border:3px dashed #b9a8e8;border-radius:16px;padding:8px;margin:8px 0}
+.lf .lfcard{display:inline-block;border:2px solid var(--z-pri);border-radius:12px;background:#fff;color:var(--z-pri);font:800 16px var(--z-font);padding:8px 12px;cursor:grab;touch-action:none;user-select:none;min-height:44px}
+.lf .lfcard.sel{background:var(--z-pri);color:#fff}.lf .lfcard.on{cursor:default;background:#e6f7ec;border-color:#2e9d57;color:#1f7a3a}
+.lf .lfgroups{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.lf .lfg{border:3px solid var(--z-line);border-radius:16px;padding:8px;background:#fcfbff;min-height:110px}.lf .lfg.over{border-color:var(--z-pri);background:#f0eaff}
+.lf .lfg h3{font:800 16px var(--z-font);margin:0 0 6px;color:var(--z-pri)}.lf .lfgi{display:flex;gap:6px;flex-wrap:wrap}
+.lfghost{position:fixed;z-index:999;pointer-events:none;opacity:.9;box-shadow:0 6px 18px #0004;display:inline-block;border:2px solid var(--z-pri);border-radius:12px;background:#fff;color:var(--z-pri);font:800 16px Cairo,sans-serif;padding:8px 12px}
+.lf .lfslot{list-style:decimal inside;padding:8px}.lf .lfslot li{list-style:none}.lf .lfslot .opt.on{background:var(--z-tint);border-color:var(--z-pri)}
+.lf .lfck{list-style:none;padding:0;margin:8px 0}.lf .lfck li{margin:6px 0}.lf .lfck label{display:flex;gap:10px;align-items:center;border:2px solid var(--z-line);border-radius:14px;padding:10px 12px;font:700 16px var(--z-font);background:#fff;min-height:52px}
+.lf .lfck input{width:24px;height:24px;accent-color:#6d28d9}
+.lf .lfbd{display:flex;gap:8px;flex-wrap:wrap}.lf .lfbd span{display:inline-flex;gap:6px;align-items:center;background:#fff7e0;border-radius:99px;padding:4px 12px 4px 8px;font:800 14px var(--z-font)}
+.lf .ph{color:#9a8fc0;font:600 15px var(--z-font)}
