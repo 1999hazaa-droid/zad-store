@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="../css/zad-ui.css?v=4">
 <link rel="stylesheet" href="lib.css?v=3">
 <link rel="stylesheet" href="../next/rec.css?v=1">
+<link rel="stylesheet" href="../find/find.css?v=1">
 </head>
 <body class="lib">
 <header class="ztop"><div class="zw"><a class="zlogo" href="../">زاد التعليمية</a><nav aria-label="روابط المنصة"><a class="zn-main" href="../"><img src="../images/ill/home.svg" alt="">الرئيسية</a><a href="../free/"><img src="../images/ill/blocks.svg" alt="">الألعاب</a><a href="../grades/"><img src="../images/ill/books.svg" alt="">الصفوف</a><a href="../tests/"><img src="../images/ill/target.svg" alt="">الاختبارات</a><a href="../learn/"><img src="../images/ill/star.svg" alt="">تعلّم والعب</a></nav></div></header>
@@ -37,9 +38,10 @@
 
 <div class="zsrch"><div class="zw"><div role="search">
 <label for="lq"><img class="lic" src="../images/zad/i_search.webp" alt=""><span class="zsr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">ابحث في المكتبة</span></label>
-<input id="lq" type="search" enterkeyhint="search" autocomplete="off" placeholder="ابحث باسم الملف أو المادة أو المهارة أو الصف">
+<input id="lq" type="search" enterkeyhint="search" autocomplete="off" placeholder="ابحث عن قصة، ورقة عمل، نشاط أو درس…">
 <button type="button" id="lqx" aria-label="مسح البحث" hidden><svg class="lsvg" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 </div></div></div>
+<p class="zfmore"><a href="../find/" id="lfind">بحث متقدم: فلاتر واقتراحات وبحث حسب احتياج الطفل ←</a></p>
 
 <main class="zw" id="lmain">
 <div class="ltabs" role="tablist" aria-label="عرض الملفات">
@@ -85,5 +87,6 @@
 <script src="lib.js?v=6" defer></script>
 <script src="../js/zad-back.js?v=8e44711078" defer></script>
 <script src="../next/rec.js?v=2" defer></script>
+<script>(function(){var q=document.getElementById("lq"),a=document.getElementById("lfind");if(!q||!a)return;var go=function(){var v=q.value.trim();return "../find/"+(v?"?q="+encodeURIComponent(v):"")};a.addEventListener("click",function(){a.href=go()});q.addEventListener("keydown",function(e){if(e.key==="Enter"&&q.value.trim()){e.preventDefault();location.href=go()}})})();</script>
 </body>
 </html>

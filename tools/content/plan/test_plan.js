@@ -125,7 +125,7 @@ for(const vp of [{width:390,height:800},{width:1200,height:900}]){
  // 14) نموذج جاهز
  await reset(KS());await p.click('#pcreate');await p.click('#wlv [data-l=a5]');await p.selectOption('#wt','pt_mid');if((await p.inputValue('#wn'))!=='4')E(W+' النموذج لم يملأ العدد');
  // 15) أماكن الدخول
- await p.goto(B+'next/');if(!(await p.textContent('body')).includes('خطتي التعليمية'))E(W+' رابط الخطة في صفحة التوصيات');
+ await p.goto(B+'next/');await p.waitForFunction(()=>document.body.textContent.includes('خطتي التعليمية'),null,{timeout:8000}).catch(()=>{});if(!(await p.textContent('body')).includes('خطتي التعليمية'))E(W+' رابط الخطة في صفحة التوصيات');
  await ctx.close();
 }
 await b.close();console.log(errs.length?'FAILED '+errs.length:'ALL OK');process.exit(errs.length?1:0)})();
