@@ -44,7 +44,29 @@ function loadDB() {
   if (!p.lv) { const a = parseInt(S.age, 10); p.lv = !a ? "a5" : a <= 2 ? "a2" : a <= 6 ? "a" + a : "g" + Math.min(4, a - 6); }
   if (!LV[p.lv]) p.lv = "a5"; if (!CHS[p.ch]) p.ch = "boy"; P = p;
 }
-function save() { DB._t = Date.now(); try { localStorage.setItem(LK, JSON.stringify(DB)); } catch {} }
+function save() { DB._t = Date.now(); try { localStorage.setItem(LK, JSON.stringify(DB)); } catch {} syncSoon(); }
+/* ---- حساب ولي الأمر والمزامنة (نفس حساب «زاد» والجدول learn_saves: صف واحد لكل حساب، لا يقرؤه غيره) ---- */
+const SBK2 = W.ATHR_SUPABASE_ANON || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpjbnd6cGV2ZWh1ZGhuc3VsamR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNDc4MDIsImV4cCI6MjEwNzYyMzgwMn0.WNr3b4xybHT7bb7Z0lnDHJq3QimA5-Ds9x-Pwic5840";
+let SESS = null; try { SESS = JSON.parse(localStorage.getItem("zad-sess")); } catch {}
+const setSess = (x) => { SESS = x; try { x ? localStorage.setItem("zad-sess", JSON.stringify(x)) : localStorage.removeItem("zad-sess"); } catch {} };
+const lastSync = () => { try { return localStorage.getItem("zad-sync-last") || ""; } catch { return ""; } };
+const setLast = (v) => { try { localStorage.setItem("zad-sync-last", v); } catch {} };
+const consent = () => { try { return localStorage.getItem("zad-pf-consent") === "1"; } catch { return false; } };
+async function sb(path, o) { o = o || {}; const r = await fetch(SB + path, { method: o.method || "GET", headers: Object.assign({ apikey: SBK2, "Content-Type": "application/json", Authorization: "Bearer " + (o.tok || SBK2) }, o.headers || {}), body: o.body ? JSON.stringify(o.body) : undefined }); let j = null; try { j = await r.json(); } catch {} if (!r.ok) throw new Error((j && (j.msg || j.error_description || j.message)) || "خطأ " + r.status); return j; }
+const mkSess = (j) => ({ at: j.access_token, rt: j.refresh_token, exp: Date.now() + (j.expires_in || 3600) * 1000, email: (j.user && j.user.email) || (SESS && SESS.email), uid: (j.user && j.user.id) || (SESS && SESS.uid) });
+async function tok() { if (!SESS) return null; if (SESS.exp - 60000 < Date.now()) { try { setSess(mkSess(await sb("/auth/v1/token?grant_type=refresh_token", { method: "POST", body: { refresh_token: SESS.rt } }))); } catch { setSess(null); return null; } } return SESS.at; }
+let pushT = 0, HOLDSYNC = false, SYNCMSG = "";
+function syncSoon() { if (!SESS || !consent() || HOLDSYNC) return; clearTimeout(pushT); pushT = setTimeout(pushNow, 3000); }
+async function pushNow() {
+  try { const t = await tok(); if (!t) return false; const at = new Date().toISOString(); let cur = DB; try { const x = JSON.parse(localStorage.getItem(LK)); if (x && x.kids) cur = x; } catch {} await sb("/rest/v1/learn_saves?on_conflict=user_id", { method: "POST", tok: t, headers: { Prefer: "resolution=merge-duplicates" }, body: { user_id: SESS.uid, data: cur, updated_at: at } }); setLast(at); SYNCMSG = "تم الحفظ في الحساب " + new Date().toLocaleTimeString("ar"); return true; }
+  catch (e) { SYNCMSG = "تعذر الحفظ في الحساب الآن. سنحاول عند التعديل التالي."; return false; }
+}
+async function pullCloud() { const t = await tok(); if (!t) return null; const r = await sb("/rest/v1/learn_saves?select=data,updated_at&user_id=eq." + SESS.uid, { tok: t }); return r[0] || null; }
+function adoptCloud(c) { DB = c.data; try { localStorage.setItem(LK, JSON.stringify(DB)); } catch {} setLast(c.updated_at || new Date().toISOString()); }
+async function checkConflict() {
+  if (!SESS || !consent()) return;
+  try { const c = await pullCloud(); if (c && c.updated_at && lastSync() && c.updated_at > lastSync()) { HOLDSYNC = true; W.__pfConflict = c; } } catch {}
+}
 const idbo = () => new Promise((ok, no) => { try { const r = indexedDB.open("zad-pf", 1); r.onupgradeneeded = () => r.result.createObjectStore("img"); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); } catch (e) { no(e); } });
 const idbDo = async (mode, fn) => { const db = await idbo(); return new Promise((ok, no) => { const tx = db.transaction("img", mode), st = tx.objectStore("img"), rq = fn(st); tx.oncomplete = () => ok(rq && rq.result); tx.onerror = () => no(tx.error); }); };
 const pk = (k) => DB.cur + "|" + k;
@@ -139,9 +161,41 @@ function hubPage() {
 <div class="btns pfmain"><a class="abtn go" href="${ROOT}portfolio/works/">عرض ملف الإنجاز</a><a class="abtn" href="${ROOT}portfolio/report/?print=1">تحميل أو طباعة الملف</a></div>
 ${CERR ? '<p class="hint">تعذر تحميل بعض بيانات الملف الآن. حاول لاحقًا.</p>' : ""}
 <section class="art"><h2>آخر الأعمال</h2>${latest.length ? `<div class="pfgrid">${latest.map(card).join("")}</div>` : `<div class="pfempty"><img src="${ROOT}images/zad/i_puzzle.webp" alt="" width="64" height="64"><p>${empty ? "ملف الإنجاز ما زال فارغًا، وسيمتلئ تلقائيًا عند إكمال أنشطة وقصص واختبارات في المنصة." : "لا أعمال مرئية في الملف الآن."}</p><div class="btns">${abtn(ROOT + "activities/", "أنشطة وأوراق عمل")}${abtn(ROOT + "stories/", "قصص تعليمية")}${abtn(ROOT + "quizzes/", "اختبارات ومسابقات")}</div></div>`}</section>
-<section class="art pftr"><h2>نقل الملف إلى جهاز آخر</h2><p>الملف محفوظ على هذا الجهاز فقط. لنقله إلى جهاز آخر، صدّر ملفًا من هنا ثم افتحه في الجهاز الجديد بزر «استيراد». الملف يحتوي أعمال الطفل وشهاداته وصورها وتقدمه في الألعاب، فاحتفظ به عندك ولا ترسله لأحد غير مَن تثق به.</p><div class="btns"><button class="abtn go" type="button" id="pfexp">تصدير ملف الطفل</button><button class="abtn" type="button" id="pfimp">استيراد ملف</button></div><p class="hint" id="pftm"></p></section>
-<section class="art pfpriv"><h2>خصوصية الملف</h2><p>هذا الملف خاص بالطفل ووليّ أمره، ومحفوظ على هذا الجهاز فقط. لا يظهر لأحد، ولا توجد قائمة ترتيب أو مقارنة بين الأطفال، ولا نحفظ صورًا أو معلومات شخصية. المشاركة الوحيدة تتم بطباعة الملف أو حفظه PDF بقرارك أنت.</p><div class="btns"><button class="abtn" type="button" id="pfhid">أعمال أخفيتها (${AD(hiddenCnt())})</button><button class="abtn qzdanger" type="button" id="pfdel">حذف ملف الإنجاز</button></div><p class="hint" id="pfmsg"></p></section>`);
-  bindKid(); bindPriv(); bindPhotos(); bindTransfer();
+<section class="art pfacc"><h2>حساب ولي الأمر وحفظ الملف على الخادم</h2>${accHTML()}<p class="hint" id="pfam" role="status"></p></section>
+<section class="art pftr"><h2>نقل الملف إلى جهاز آخر</h2><p>بدون حساب، الملف محفوظ على هذا الجهاز فقط (والصور تبقى على الجهاز دائمًا). لنقله إلى جهاز آخر، صدّر ملفًا من هنا ثم افتحه في الجهاز الجديد بزر «استيراد». الملف يحتوي أعمال الطفل وشهاداته وصورها وتقدمه في الألعاب، فاحتفظ به عندك ولا ترسله لأحد غير مَن تثق به.</p><div class="btns"><button class="abtn go" type="button" id="pfexp">تصدير ملف الطفل</button><button class="abtn" type="button" id="pfimp">استيراد ملف</button></div><p class="hint" id="pftm"></p></section>
+<section class="art pfpriv"><h2>خصوصية الملف</h2><p>هذا الملف خاص بالطفل ووليّ أمره، ويُحفظ على هذا الجهاز، وعلى الخادم داخل حساب وليّ الأمر فقط إن وافق على ذلك. لا يظهر لأحد، ولا توجد قائمة ترتيب أو مقارنة بين الأطفال، ولا تُرفع الصور ولا معلومات شخصية. المشاركة الوحيدة تتم بطباعة الملف أو حفظه PDF بقرارك أنت.</p><div class="btns"><button class="abtn" type="button" id="pfhid">أعمال أخفيتها (${AD(hiddenCnt())})</button><button class="abtn qzdanger" type="button" id="pfdel">حذف ملف الإنجاز</button></div><p class="hint" id="pfmsg"></p></section>`);
+  bindKid(); bindPriv(); bindPhotos(); bindTransfer(); bindAcc();
+}
+function accHTML() {
+  const note = '<p class="hint">ما يُحفظ على الخادم: الاسم الأول للطفل وسجلات نشاطه وملف إنجازه وشهاداته، داخل حساب ولي الأمر فقط ولا يراها غيره، ولا تُستخدم للدعاية ولا للترتيب. الصور لا تُرفع أبدًا وتبقى على جهازك. يمكنك حذف النسخة من الخادم في أي وقت.</p>';
+  if (SESS) return `<p>مسجّل الدخول: <b dir="ltr">${esc(SESS.email || "")}</b></p>${consent() ? `<p>المزامنة التلقائية <b>مفعّلة</b>. ${esc(SYNCMSG)}</p>` : "<p>المزامنة التلقائية متوقفة لأنك لم توافق بعد.</p>"}${W.__pfConflict ? '<p class="hint"><b>يوجد في حسابك نسخة أحدث من جهاز آخر.</b> اختر «استعادة من الحساب» لتحميلها، أو «حفظ الآن» لاستبدالها بنسخة هذا الجهاز.</p>' : ""}
+<label class="pfck"><input type="checkbox" id="pfcons" ${consent() ? "checked" : ""}> أوافق، بصفتي وليّ الأمر، على حفظ ملف إنجاز طفلي على الخادم</label>${note}
+<div class="btns"><button class="abtn go" type="button" id="pfsy">حفظ الآن</button><button class="abtn" type="button" id="pfrs">استعادة من الحساب</button><button class="abtn" type="button" id="pflo">تسجيل الخروج</button><button class="abtn qzdanger" type="button" id="pfsd">حذف نسخة الخادم</button></div>`;
+  return `<p>سجّل الدخول كوليّ أمر ليُحفظ ملف الإنجاز تلقائيًا ويظهر على أي جهاز. هذا الحساب نفسه الذي تستخدمه في «زاد التعليمية» والألعاب.</p>
+<input class="nm" id="pfem" type="email" inputmode="email" autocomplete="email" placeholder="البريد الإلكتروني" dir="ltr"><input class="nm" id="pfpw" type="password" autocomplete="current-password" placeholder="كلمة المرور (٨ أحرف فأكثر)" dir="ltr">
+<label class="pfck"><input type="checkbox" id="pfcons"> أوافق، بصفتي وليّ الأمر، على حفظ ملف إنجاز طفلي على الخادم</label>${note}
+<div class="btns"><button class="abtn go" type="button" id="pfli">دخول</button><button class="abtn" type="button" id="pfsu">إنشاء حساب</button><button class="abtn" type="button" id="pffg">نسيت كلمة المرور</button></div>`;
+}
+function bindAcc() {
+  const m = $("#pfam"); if (!m) return; const say = (t) => { m.textContent = t; };
+  const cons = $("#pfcons"); if (cons) cons.onchange = () => { try { localStorage.setItem("zad-pf-consent", cons.checked ? "1" : "0"); } catch {} if (SESS && cons.checked) pushNow().then(() => location.reload()); else if (SESS) location.reload(); };
+  const busy = async (f) => { try { say("..."); await f(); } catch (e) { say(String(e.message).includes("Invalid login") ? "البريد أو كلمة المرور غير صحيحة" : e.message || "تعذر الإكمال"); } };
+  const em = () => $("#pfem").value.trim(), pw = () => $("#pfpw").value;
+  const needC = () => { if (!cons.checked) throw new Error("ضع علامة الموافقة أولًا."); try { localStorage.setItem("zad-pf-consent", "1"); } catch {} };
+  const after = async () => {
+    const c = await pullCloud(), mine = Object.values(DB.kids).some((k) => k.name);
+    if (c && c.data && c.data.kids) {
+      if (!mine || confirm("وجدنا ملفًا محفوظًا في حسابك. موافق = استعادته (واستبدال بيانات هذا الجهاز). إلغاء = رفع بيانات هذا الجهاز إلى الحساب بدلًا منه.")) { adoptCloud(c); location.reload(); return; }
+    }
+    await pushNow(); location.reload();
+  };
+  if ($("#pfli")) $("#pfli").onclick = () => busy(async () => { needC(); setSess(mkSess(await sb("/auth/v1/token?grant_type=password", { method: "POST", body: { email: em(), password: pw() } }))); await after(); });
+  if ($("#pfsu")) $("#pfsu").onclick = () => busy(async () => { needC(); if (pw().length < 8) throw new Error("كلمة المرور قصيرة (٨ أحرف على الأقل)"); const j = await sb("/auth/v1/signup", { method: "POST", body: { email: em(), password: pw() } }); if (j.access_token) { setSess(mkSess(j)); await after(); } else say("أرسلنا رسالة تأكيد إلى بريدك. افتح الرابط ثم ارجع وسجّل الدخول."); });
+  if ($("#pffg")) $("#pffg").onclick = () => busy(async () => { if (!em()) throw new Error("اكتب بريدك أولًا"); await sb("/auth/v1/recover?redirect_to=" + encodeURIComponent(ROOT + "learn/"), { method: "POST", body: { email: em() } }); say("أرسلنا رابط استعادة كلمة المرور إلى بريدك."); });
+  if ($("#pflo")) $("#pflo").onclick = () => { setSess(null); location.reload(); };
+  if ($("#pfsy")) $("#pfsy").onclick = () => busy(async () => { if (!consent()) throw new Error("ضع علامة الموافقة أولًا."); if (W.__pfConflict && !confirm("سيستبدل هذا نسخة الحساب الأحدث بنسخة هذا الجهاز. متابعة؟")) return say(""); HOLDSYNC = false; W.__pfConflict = null; say((await pushNow()) ? "تم الحفظ في الحساب." : "تعذر الحفظ الآن."); });
+  if ($("#pfrs")) $("#pfrs").onclick = () => busy(async () => { const c = await pullCloud(); if (!c || !c.data || !c.data.kids) return say("لا توجد نسخة محفوظة في حسابك."); if (!confirm("سيستبدل هذا بيانات هذا الجهاز بنسخة الحساب. متابعة؟")) return; adoptCloud(c); location.reload(); });
+  if ($("#pfsd")) $("#pfsd").onclick = () => busy(async () => { if (!confirm("حذف نسخة ملف الإنجاز المحفوظة على الخادم نهائيًا؟ بيانات هذا الجهاز تبقى.")) return; const t = await tok(); await sb("/rest/v1/learn_saves?user_id=eq." + SESS.uid, { method: "DELETE", tok: t }); try { localStorage.setItem("zad-pf-consent", "0"); } catch {} say("تم حذف النسخة من الخادم وإيقاف المزامنة."); setTimeout(() => location.reload(), 700); });
 }
 function bindPriv() {
   const msg = $("#pfmsg"), h = $("#pfhid"); if (h) h.onclick = () => { if (!hiddenCnt()) { msg.textContent = "لا توجد أعمال مخفية."; return; } P.hide = {}; save(); location.reload(); };
@@ -254,6 +308,6 @@ function reportPage() {
   if (p.get("print") === "1") setTimeout(() => W.print(), 600);
 }
 W.ZPF = { evalCert, rawRecords, works, quizRecords, get state() { return { P, EARNED, REC, META, CERTS }; } };
-async function init() { await prepare(); ({ hub: hubPage, works: worksPage, cert: certPage, report: reportPage })[PAGE](); const p = D.getElementById("avw"); if (p) p.setAttribute("aria-busy", "false"); }
+async function init() { await checkConflict(); await prepare(); ({ hub: hubPage, works: worksPage, cert: certPage, report: reportPage })[PAGE](); const p = D.getElementById("avw"); if (p) p.setAttribute("aria-busy", "false"); }
 if (D.body.classList.contains("pf")) init().catch((e) => { reportErr("init", (e && e.message) || "init"); const b = $("#aview"); if (b) b.innerHTML = '<div class="sempty"><h3>تعذر تحميل ملف الإنجاز الآن</h3><p>حاول مرة أخرى بعد قليل.</p></div>'; });
 })();

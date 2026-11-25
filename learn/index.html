@@ -3464,7 +3464,7 @@ async function tok() {
 let pushT = 0, syncMsg = "";
 function syncSoon() { if (!SESS) return; clearTimeout(pushT); pushT = setTimeout(pushNow, 4000); }
 async function pushNow() {
-  try { const t = await tok(); if (!t) return; await sb("/rest/v1/learn_saves?on_conflict=user_id", { method: "POST", tok: t, headers: { Prefer: "resolution=merge-duplicates" }, body: { user_id: SESS.uid, data: DB, updated_at: new Date().toISOString() } }); syncMsg = "تمّ الحفظ في الحساب ☁️"; } catch (e) { syncMsg = "تعذّرت المزامنة (ستُعاد لاحقاً)"; }
+  try { const t = await tok(); if (!t) return; const _at = new Date().toISOString(); await sb("/rest/v1/learn_saves?on_conflict=user_id", { method: "POST", tok: t, headers: { Prefer: "resolution=merge-duplicates" }, body: { user_id: SESS.uid, data: DB, updated_at: _at } }); try { localStorage.setItem("zad-sync-last", _at); } catch {} syncMsg = "تمّ الحفظ في الحساب ☁️"; } catch (e) { syncMsg = "تعذّرت المزامنة (ستُعاد لاحقاً)"; }
 }
 async function pullCloud() { const t = await tok(); if (!t) return null; const r = await sb("/rest/v1/learn_saves?select=data,updated_at&user_id=eq." + SESS.uid, { tok: t }); return r[0] || null; }
 function adopt(d) { DB = d; Object.keys(DB.kids).forEach((k) => { DB.kids[k] = Object.assign(DEF(), DB.kids[k]); DB.kids[k].av = Object.assign(DEF().av, DB.kids[k].av); }); if (!DB.kids[DB.cur]) DB.cur = Object.keys(DB.kids)[0]; S = DB.kids[DB.cur]; save(); }
