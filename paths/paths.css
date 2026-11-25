@@ -1,0 +1,25 @@
+/* المسارات التعليمية (يبني على skills.css) */
+.pth .pthcov{display:flex;align-items:center;gap:14px;border-radius:22px;padding:16px;margin:14px 0;background:linear-gradient(135deg,var(--c,#e6dcff),#fff);border:1px solid var(--z-tint2,#e4d9ff)}
+.pth .pthcov img{width:84px;height:84px;flex:none}.pth .pthcov h2{margin:0 0 6px;font-size:21px;color:var(--z-pri,#5b2bb8);line-height:1.4}
+.pth .pthmeta{display:flex;flex-wrap:wrap;gap:6px}.pth .pthmeta span{font-size:12px;font-weight:700;background:#fff;color:#3a1a85;border-radius:99px;padding:3px 10px;border:1px solid #e4d9ff}
+.pth .pthmeta .fr{background:#dff6e7;color:#17683a}.pth .pthmeta .pd{background:#fff0d1;color:#8a5200}
+.pth .pthbar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.pth .pthbar a,.pth .pthbar button{border:0;border-radius:99px;background:var(--z-pri,#5b2bb8);color:#fff;font:800 14px var(--z-font,inherit);padding:11px 18px;min-height:46px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.pth .pthbar .alt{background:#fff;color:var(--z-pri,#5b2bb8);border:2px solid var(--z-pri,#5b2bb8)}
+.pth .pthbar button[aria-pressed=true]{background:#f1eaff}
+.pth .pthbar a:focus-visible,.pth .pthbar button:focus-visible,.pth .pthstep a:focus-visible{outline:3px solid #f5a623;outline-offset:2px}
+.pth .pthgoal{background:#faf7ff;border:1px solid var(--z-tint2,#e4d9ff);border-radius:18px;padding:12px 14px;margin:10px 0;font-size:14px;line-height:1.7}
+.pth .pthgoal h3{margin:0 0 4px;font-size:15px;color:var(--z-pri,#5b2bb8)}.pth .pthgoal ul{margin:4px 0 0;padding-inline-start:22px}
+.pth .pthprog{background:#fff;border:2px dashed var(--z-tint2,#e4d9ff);border-radius:16px;padding:10px 12px;font-size:14px;margin:10px 0;line-height:1.7}
+.pth .pthprog .bar{height:10px;background:#eee6ff;border-radius:99px;overflow:hidden;margin:6px 0}.pth .pthprog .bar i{display:block;height:100%;background:var(--z-pri,#5b2bb8)}
+.pth .pthstep{display:flex;gap:10px;align-items:center;background:#fff;border:1px solid var(--z-tint2,#e4d9ff);border-radius:16px;padding:10px 12px;margin:8px 0;flex-wrap:wrap}
+.pth .pthstep .no{width:32px;height:32px;border-radius:50%;background:var(--z-pri,#5b2bb8);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.pth .pthstep .no.open{background:#17683a}.pth .pthstep .no.done{background:#17683a}
+.pth .pthstep b{flex:1;min-width:150px;font-size:15px}.pth .pthstep .mt{display:flex;gap:5px;flex-wrap:wrap}.pth .pthstep .mt span{font-size:12px;font-weight:700;background:#f1eaff;color:#3a1a85;border-radius:99px;padding:2px 9px}
+.pth .pthstep .mt .fr{background:#dff6e7;color:#17683a}.pth .pthstep .mt .pd{background:#fff0d1;color:#8a5200}
+.pth .pthstep a{background:var(--z-pri,#5b2bb8);color:#fff;border-radius:99px;padding:8px 14px;font:800 13px var(--z-font,inherit);text-decoration:none;min-height:38px;display:inline-flex;align-items:center}
+.pth .skf .ck{flex-direction:row;align-items:center;gap:6px;font-weight:700}
+.zpathbar{max-width:760px;margin:10px auto;padding:10px 14px;background:#f1eaff;border:1px solid #cdb8f5;border-radius:16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;direction:rtl;font-family:inherit;color:#2a1a52}
+.zpathbar b{flex:1;min-width:160px;font-size:14px}.zpathbar a{background:#5b2bb8;color:#fff;border-radius:99px;padding:8px 14px;font-weight:800;font-size:13px;text-decoration:none;min-height:38px;display:inline-flex;align-items:center}
+.zpathbar a.alt{background:#fff;color:#5b2bb8;border:2px solid #5b2bb8}
+@media (max-width:480px){.pth .pthcov{flex-direction:column;text-align:center}.zpathbar{margin:10px 16px}}
