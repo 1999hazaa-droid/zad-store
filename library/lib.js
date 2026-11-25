@@ -39,8 +39,13 @@ const store = {
   get(k, d) { try { const v = JSON.parse(localStorage.getItem("zad.lib." + k)); return v == null ? d : v; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem("zad.lib." + k, JSON.stringify(v)); } catch (e) { /* وضع التصفح الخاص */ } }
 };
-let FAV = store.get("fav", []), REC = store.get("recent", []);
-if (!Array.isArray(FAV)) FAV = []; if (!Array.isArray(REC)) REC = [];
+/* المفضلة = المخزن الموحد «محتواي المحفوظ» (لكل طفل)؛ FAV قائمة معرّفات ملفات المكتبة المحفوظة مشتقة منه */
+const SV = window.ZSAVED; let FAV = [], REC = store.get("recent", []);
+if (!Array.isArray(REC)) REC = [];
+const favKey = (p) => "lib:" + (p.slug || p.id);
+const isFav = (p) => !!SV && SV.has(favKey(p));
+function syncFav() { if (!SV || !S || !S.items) { FAV = []; return; } FAV = S.items.filter(isFav).sort((a, b) => (SV.get(favKey(b)).at || 0) - (SV.get(favKey(a)).at || 0)).map((p) => p.id); }
+const favMeta = (p) => ({ key: favKey(p), title: p.name, ct: SV.libCt(p), dom: p.lib_subject || "", lv: p.lib_levels || [], img: p.thumb_url || p.image_url || "", paid: !isFree(p) });
 
 const DIFF = { easy: "سهل", medium: "متوسط", hard: "متقدّم" };
 const TYPES = { worksheet: "ورقة عمل", pdf: "ملف PDF", story: "قصة تعليمية", cards: "بطاقات تعليمية", home_activity: "نشاط منزلي", exercises: "تدريبات", review: "مراجعة دراسية", summary: "ملخص", teaching_aid: "وسيلة تعليمية", printable_activity: "نشاط قابل للطباعة" };
@@ -168,7 +173,7 @@ function writeHash(push) {
 /* ---------- عرض البطاقات ---------- */
 function card(p, o) {
   o = o || {};
-  const free = isFree(p), fav = FAV.includes(p.id), sec = SECI[p.lib_section], pg = pagesTxt(p.pages), lv = lvLabel(p);
+  const free = isFree(p), fav = isFav(p), sec = SECI[p.lib_section], pg = pagesTxt(p.pages), lv = lvLabel(p);
   const subj = [p.lib_subject, p.lib_skill].filter(Boolean).join(" · ");
   const badges = (isNew(p) ? '<span class="lnew">جديد</span>' : "") + (free ? '<span class="lfree">مجاني</span>' : `<span class="lprice">${esc(money(p.price))}</span>`);
   let act;
@@ -176,7 +181,7 @@ function card(p, o) {
   else act = `<div class="lact two"><button type="button" class="lbt" data-a="pv">${ICON.eye}معاينة</button>${p.is_available === false ? '<button type="button" class="lbt ord" disabled>غير متاح حاليًا</button>' : `<a class="lbt ord" href="${esc(prodUrl(p))}" data-a="ord">${ICON.cart}اطلب الملف</a>`}</div>`;
   return `<article class="lc" data-id="${esc(p.id)}">
 <button type="button" class="lth" data-a="pv" aria-label="معاينة ${esc(p.name)}"><img src="${esc(thumb(p))}" alt="" loading="lazy" decoding="async" width="420" height="525"><span class="lbg">${badges}</span>${pg ? `<span class="lpg">${esc(pg)}</span>` : ""}</button>
-<button type="button" class="lfav" data-a="fav" aria-pressed="${fav}" aria-label="${fav ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}: ${esc(p.name)}">${ICON.heart}</button>
+<button type="button" class="lfav" data-a="fav" aria-pressed="${fav}" title="${fav ? "تم الحفظ" : "حفظ"}" aria-label="${fav ? "إزالة من المفضلة (تم الحفظ)" : "حفظ في المفضلة"}: ${esc(p.name)}">${ICON.heart}</button>
 <div class="lbd"><h3>${esc(p.name)}</h3>${p.description ? `<p class="lds">${esc(String(p.description).split("\n")[0])}</p>` : ""}
 <div class="lmeta">${lv ? `<span>${esc(lv)}</span>` : ""}${o.skill && p.lib_skill ? `<span class="ls">${esc(p.lib_skill)}</span>` : p.lib_subject ? `<span class="ls" title="${esc(subj)}">${esc(p.lib_subject)}</span>` : sec ? `<span class="ls">${esc(sec[1])}</span>` : ""}</div>
 <div class="lft"><b>${esc(p.file_type || "PDF")}</b>${DIFF[p.lib_difficulty] ? `<span class="ldf">${esc(DIFF[p.lib_difficulty])}</span>` : ""}${pg ? `<span>${esc(pg)}</span>` : ""}${free && p.bw_url ? "<span>ملوّن وأبيض وأسود</span>" : ""}</div>
@@ -240,7 +245,7 @@ function results() {
 }
 function favView() {
   const list = FAV.map((id) => S.byId.get(id)).filter(Boolean);
-  if (!list.length) return empty("لا توجد ملفات في المفضلة بعد", "اضغط على القلب في أي ملف ليُحفظ هنا على جهازك.", "i_heart", '<button type="button" class="zbtn zb2" data-tab="all">تصفّح المكتبة</button>');
+  if (!list.length) return empty("لا توجد ملفات في المفضلة بعد", "اضغط على القلب في أي ملف ليُحفظ هنا. وكل ما حفظته من البحث والأنشطة تجده في «محتواي المحفوظ».", "i_heart", '<button type="button" class="zbtn zb2" data-tab="all">تصفّح المكتبة</button>');
   return `<div class="lbar"><p><b>${esc(countTxt(list.length))}</b> في المفضلة</p></div>` + grid(list);
 }
 function recentView() {
@@ -285,16 +290,17 @@ function setF(patch, top) { Object.assign(S, patch); writeHash(false); render({ 
 
 /* ---------- الاستخدام: المفضلة والأخيرة والعدّاد ---------- */
 function toggleFav(p, btn) {
-  const i = FAV.indexOf(p.id);
-  if (i >= 0) FAV.splice(i, 1); else FAV.unshift(p.id);
-  store.set("fav", FAV);
-  const on = i < 0;
-  $$(`.lc[data-id="${CSS.escape(p.id)}"] .lfav`).forEach((b) => { b.setAttribute("aria-pressed", String(on)); b.setAttribute("aria-label", (on ? "إزالة من المفضلة" : "إضافة إلى المفضلة") + ": " + p.name); });
-  toast(on ? "أُضيف إلى المفضلة" : "أُزيل من المفضلة");
+  if (!SV) return btn;
+  const r = SV.toggle(favMeta(p));
+  if (!r.ok) { toast(r.msg); return btn; }
+  const on = !!r.on; syncFav();
+  $$(`.lc[data-id="${CSS.escape(p.id)}"] .lfav`).forEach((b) => { b.setAttribute("aria-pressed", String(on)); b.setAttribute("title", on ? "تم الحفظ" : "حفظ"); b.setAttribute("aria-label", (on ? "إزالة من المفضلة (تم الحفظ)" : "حفظ في المفضلة") + ": " + p.name); });
+  toast(on ? "تم الحفظ في «محتواي المحفوظ»" : "أُزيل من المحفوظات");
   renderTabs();
   if (S.tab === "fav" && !on) render();
   return btn;
 }
+window.addEventListener("zad-saved", () => { if (!S.loaded) return; syncFav(); $$(".lc").forEach((c) => { const q = S.byId.get(c.dataset.id), b = q && c.querySelector(".lfav"); if (!b) return; const on = isFav(q); b.setAttribute("aria-pressed", String(on)); b.setAttribute("title", on ? "تم الحفظ" : "حفظ"); }); renderTabs(); if (S.tab === "fav") render(); });
 function used(p, counted) {
   REC = [{ id: p.id, t: Date.now() }].concat(REC.filter((r) => r.id !== p.id)).slice(0, 24);
   store.set("recent", REC); renderTabs();
@@ -510,6 +516,7 @@ function setItems(rows, uses) {
   S.items = list; S.byId = new Map(list.map((p) => [p.id, p]));
   if (uses) S.uses = uses;
   S.loaded = true; S.failed = false;
+  if (SV) { SV.migrate(list.map((p) => Object.assign({ id: p.id, key: favKey(p) }, favMeta(p)))); syncFav(); }
   renderStats();
 }
 function boot() {

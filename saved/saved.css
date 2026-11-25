@@ -1,0 +1,37 @@
+/* محتواي المحفوظ + زر الحفظ المشترك + رسالة التأكيد */
+.zs-toast{position:fixed;inset-inline:16px;bottom:88px;margin:auto;max-width:360px;z-index:90;background:#2a1a52;color:#fff;padding:12px 16px;border-radius:14px;font:700 14px var(--z-font,inherit);text-align:center;box-shadow:0 8px 24px #0004}
+/* زر الحفظ على البطاقات (يستعمله البحث والمكتبة) */
+.zsb{display:inline-flex;align-items:center;gap:5px;border:0;background:#ffffffee;color:#8a1f5c;box-shadow:0 2px 6px #0003;border-radius:99px;min-height:38px;padding:0 12px 0 10px;cursor:pointer;font:800 13px var(--z-font,inherit)}
+.zsb svg{width:19px;height:19px;fill:none;stroke:#b0357a;stroke-width:2;flex:none}
+.zsb[aria-pressed=true]{background:#fde7f1;color:#a3174f}.zsb[aria-pressed=true] svg{fill:#d6336c;stroke:#d6336c}
+.zsb:focus-visible{outline:3px solid #f5a623;outline-offset:2px}
+.fzcard .fv.zsb{position:absolute;top:8px;inset-inline-start:8px;width:auto;height:auto;border-radius:99px;display:inline-flex}
+.lc .zsb.lfav{width:auto}
+/* الصفحة */
+.sz .szhead{margin:20px 0 6px}.szhead h2{margin:0;font-size:19px;color:var(--z-pri,#5b2bb8)}.szpriv{margin:4px 0 0;font-size:13px;color:#5d4f85}
+.szbar{display:flex;gap:8px;overflow-x:auto;padding:10px 2px;scrollbar-width:thin}
+.szbar button{flex:none;border:2px solid var(--z-tint2,#e4d9ff);background:#fff;color:var(--z-ink,#2a1a52);border-radius:99px;padding:8px 14px;font:700 14px var(--z-font,inherit);cursor:pointer;min-height:42px}
+.szbar button[aria-selected=true]{background:var(--z-pri,#5b2bb8);border-color:var(--z-pri,#5b2bb8);color:#fff}
+.szbar button.add{border-style:dashed;color:var(--z-pri,#5b2bb8)}
+.szbar button:focus-visible,.szbulk button:focus-visible,.szlmg button:focus-visible{outline:3px solid #f5a623;outline-offset:2px}
+.szlmg{background:#faf7ff;border:1px solid var(--z-tint2,#e4d9ff);border-radius:18px;padding:12px;margin:4px 0 10px;display:flex;flex-direction:column;gap:8px}
+.szlmg[hidden]{display:none}
+.szlmg .r{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.szlmg input{flex:1;min-width:150px;border:2px solid var(--z-tint2,#e4d9ff);border-radius:12px;padding:8px 12px;font:600 15px var(--z-font,inherit);min-height:42px}
+.szlmg .m{margin:0;font-weight:700;font-size:13px}.szlmg .m.bad{color:#b3261e}
+.szlmg h3{margin:0;font-size:15px}
+.szbulk{position:sticky;top:6px;z-index:20;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#2a1a52;color:#fff;border-radius:16px;padding:10px 12px;margin:8px 0}
+.szbulk[hidden]{display:none}
+.szbulk b{font-size:14px}.szbulk select{border-radius:10px;padding:6px;font:700 13px var(--z-font,inherit);min-height:38px}
+.szbulk button{border:0;border-radius:99px;background:#fff;color:#2a1a52;font:800 13px var(--z-font,inherit);padding:8px 14px;min-height:40px;cursor:pointer}
+.szbulk button.dg{background:#ffd9d6;color:#8a1410}
+.fzcard.off{opacity:.88}.fzcard.off .th{filter:grayscale(1);opacity:.6}
+.fzcard .st{margin:0;font-size:12px;font-weight:700;color:#8a5200}.fzcard .st.bad{color:#b3261e}
+.fzcard .sd{margin:0;font-size:12px;color:#6b5d92}
+.fzcard .ac span.dis{flex:1;text-align:center;border-radius:99px;font:800 13px var(--z-font,inherit);padding:9px 8px;min-height:40px;background:#eee;color:#777}
+.fzcard .ck{position:absolute;top:10px;inset-inline-end:10px;width:28px;height:28px;accent-color:#5b2bb8;z-index:2}
+.fzcard.sel{outline:3px solid var(--z-pri,#5b2bb8)}
+.fzcard .ac button.rm{color:#9a1c16;border-color:#9a1c16}
+.sz .fzcard .fv{display:none}
+@media(max-width:560px){.szbulk{position:static}}
+@media(max-width:560px){.sz .fzcard .ac{flex-direction:column}.sz .fzcard .ac a,.sz .fzcard .ac button,.sz .fzcard .ac span.dis{flex:none;width:100%}}

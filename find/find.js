@@ -27,17 +27,11 @@ function toUrl(push) {
   try { history[push ? "pushState" : "replaceState"]({}, "", u); } catch (e) { /* */ }
 }
 
-/* ---------- المفضلة (على الجهاز فقط) ---------- */
-const favLib = () => { const a = Z.lget("zad.lib.fav", []); return Array.isArray(a) ? a : []; };
-const favFind = () => { const a = Z.lget("zad.find.fav", []); return Array.isArray(a) ? a : []; };
-function savedSet() { const s = new Set(favFind()), ids = new Set(favLib()); X.items.forEach((i) => { if (i.src === "lib" && ids.has(i.id)) s.add(i.key); }); return s; }
-function toggleFav(it) {
-  try {
-    if (it.src === "lib") { const a = favLib(), i = a.indexOf(it.id); if (i >= 0) a.splice(i, 1); else a.unshift(it.id); localStorage.setItem("zad.lib.fav", JSON.stringify(a)); }
-    else { const a = favFind(), i = a.indexOf(it.key); if (i >= 0) a.splice(i, 1); else a.unshift(it.key); localStorage.setItem("zad.find.fav", JSON.stringify(a)); }
-    return true;
-  } catch (e) { return false; }
-}
+/* ---------- المحفوظ (المخزن الموحد «محتواي المحفوظ») ---------- */
+const SV = window.ZSAVED;
+const savedSet = () => (SV ? SV.keys() : new Set());
+const metaOf = (it) => ({ key: it.key, title: it.title, ct: it.ct, dom: it.dom, lv: it.lv, img: Z.imgOf(it), paid: it.paid });
+function toggleFav(it) { if (!SV) return null; return SV.toggle(metaOf(it)); }
 
 /* ---------- خطتي ---------- */
 const PLAN_SRC = new Set(["acts", "bank", "proj", "life", "ready", "val", "vid", "songs", "stories", "quiz"]);
@@ -67,21 +61,9 @@ async function pushNow() {
     const at = new Date().toISOString(); const r = await fetch(SB + "/rest/v1/learn_saves?on_conflict=user_id", { method: "POST", headers: Object.assign({ Prefer: "resolution=merge-duplicates" }, H), body: JSON.stringify({ user_id: S.uid, data: Z.lget(LK, {}), updated_at: at }) }); if (r.ok) localStorage.setItem("zad-sync-last", at);
   } catch (e) { /* */ }
 }
-/** يضيف عنصرًا إلى خطة الأسبوع بنفس بنية صفحة «خطتي»؛ يعيد نص خطأ أو "" عند النجاح */
-function addToPlan(it, date) {
-  const lv = kidLv(); if (!lv) return "اختر عمر طفلك أو صفه أولًا من صفحة خطتي.";
-  if (!it.lv.includes(lv)) return "هذا المحتوى غير مناسب لمستوى طفلك الحالي (" + Z.LVN[lv] + ").";
-  let DB = Z.lget(LK, null) || { cur: "k1", kids: { k1: {} } }; if (!DB.kids || !Object.keys(DB.kids).length) DB.kids = { k1: {} }; if (!DB.kids[DB.cur]) DB.cur = Object.keys(DB.kids)[0];
-  const k = DB.kids[DB.cur]; k.plan = k.plan || {}; k.plan.weeks = k.plan.weeks || {}; k.plan.set = k.plan.set || {};
-  const ws = weekStart(date), d = dayIdx(date);
-  const w = (k.plan.weeks[ws] = k.plan.weeks[ws] || { id: RID(), created: Date.now(), days: [], n: 0, doms: [], review: false, lv, paused: false, items: [] });
-  if (w.items.some((i) => i.key === it.key)) return "هذا النشاط مضاف مسبقًا إلى خطة هذا الأسبوع.";
-  if (w.items.filter((i) => i.day === d).length >= capOf(lv)) return "هذا اليوم ممتلئ؛ اختر يومًا آخر لتجنب الإرهاق.";
-  w.items.push({ id: RID(), key: it.key, day: d, st: "todo", c: Date.now(), why: "نشاط اخترته من «ابحث في المكتبة».", ty: "find", tries: 0, note: "" });
-  if (!w.days.includes(d)) w.days.push(d);
-  DB._t = Date.now(); try { localStorage.setItem(LK, JSON.stringify(DB)); } catch (e) { return "تعذّر الحفظ على الجهاز."; }
-  clearTimeout(pt); pt = setTimeout(pushNow, 2500); return "";
-}
+function refreshFav(k) { const on = savedSet().has(k); $$(".fzcard").filter((c) => c.dataset.k === k).forEach((c) => { const b = $("[data-a=fav]", c); if (!b) return; b.setAttribute("aria-pressed", on); const it = X.items.find((i) => i.key === k); b.setAttribute("aria-label", (on ? "إزالة من المفضلة" : "حفظ في المفضلة") + ": " + (it ? it.title : "")); const sp = $(".zst", b); if (sp) sp.textContent = on ? "تم الحفظ" : "حفظ"; }); }
+window.addEventListener("zad-saved", () => { if (READY) render(); });
+const addToPlan = (it, date) => (SV ? SV.addToPlan(it, date) : "تعذّر تحميل خطتي.");
 
 /* ---------- العرض ---------- */
 const lvTxt = (it) => { const l = it.lv; if (!l.length) return ""; if (it.src === "games" && it.ageTxt) return it.ageTxt; if (l.length === 1) return Z.LVN[l[0]]; return Z.LVN[l[0]] + " إلى " + Z.LVN[l[l.length - 1]]; };
@@ -91,7 +73,7 @@ function card(it, saved) {
   const st = it.paid ? `<span class="pd">مدفوع · ${esc(money(it.price))}</span>` : `<span class="fr">مجاني</span>`;
   const ico = isIcon && it.src !== "lib";
   return `<article class="fzcard" data-k="${esc(it.key)}"><a class="th${ico ? " ic" : ""}" href="${esc(ROOT + it.url)}" tabindex="-1" aria-hidden="true"><img src="${esc(Z.imgOf(it))}" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${ROOT}images/zad/i_puzzle.webp'"></a>
-<button type="button" class="fv" data-a="fav" aria-pressed="${fav}" aria-label="${fav ? "إزالة من المفضلة" : "حفظ في المفضلة"}: ${esc(it.title)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></button>
+<button type="button" class="fv zsb" data-a="fav" aria-pressed="${fav}" aria-label="${fav ? "إزالة من المفضلة" : "حفظ في المفضلة"}: ${esc(it.title)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="zst">${fav ? "تم الحفظ" : "حفظ"}</span></button>
 <div class="bd"><h3>${esc(it.title)}</h3>${it.desc ? `<p class="ds">${esc(it.desc)}</p>` : ""}
 <div class="mt"><span>${esc(Z.CT[it.ct])}</span>${lvTxt(it) ? `<span>${esc(lvTxt(it))}</span>` : ""}<span>${esc(Z.domName(it.dom))}</span>${st}</div>
 ${it.paid ? '<p class="pn">المعاينة متاحة قبل الطلب.</p>' : ""}</div>
@@ -106,7 +88,7 @@ function planBox(it) {
 function active() {
   const a = [];
   ST.lv.forEach((l) => a.push(["lv", l, Z.LVN[l]])); ST.ct.forEach((c) => a.push(["ct", c, Z.CT[c]])); ST.dom.forEach((d) => a.push(["dom", d, Z.domName(d)])); ST.av.forEach((v) => a.push(["av", v, AVL[v]]));
-  if (ST.need) a.push(["need", ST.need, Z.NEEDS[ST.need].label]); if (ST.saved) a.push(["saved", "1", "المحفوظة فقط"]);
+  if (ST.need) a.push(["need", ST.need, Z.NEEDS[ST.need].label]); if (ST.saved) a.push(["saved", "1", "المحتوى المحفوظ"]);
   return a;
 }
 const F = () => ({ lv: ST.lv, ct: ST.ct, dom: ST.dom, av: ST.av, need: ST.need, saved: ST.saved ? savedSet() : null });
@@ -122,7 +104,7 @@ function filterPanel() {
   const doms = X.doms.filter((d) => has((i) => i.dom === d.slug)).map((d) => pill("dom", d.slug, d.title)); if (has((i) => i.dom === "other")) doms.push(pill("dom", "other", "متنوع"));
   const avs = [["free", (i) => i.free], ["paid", (i) => i.paid], ["preview", (i) => i.preview], ["print", (i) => i.printable], ["inter", (i) => i.interactive]].filter(([, fn]) => has(fn)).map(([k]) => pill("av", k, AVL[k]));
   return grp("حسب العمر", ages) + grp("حسب الصف الدراسي", grades) + grp("حسب نوع المحتوى", cts) + grp("حسب المجال", doms) + grp("حسب توفر المحتوى", avs) +
-    (savedSet().size ? `<fieldset><legend>المفضلة</legend><div class="fzchips"><button type="button" class="fzchip${ST.saved ? " on" : ""}" data-f="saved" aria-pressed="${ST.saved}">المحفوظة في المفضلة فقط</button></div></fieldset>` : "") +
+    (savedSet().size ? `<fieldset><legend>المحتوى المحفوظ</legend><div class="fzchips"><button type="button" class="fzchip${ST.saved ? " on" : ""}" data-f="saved" aria-pressed="${ST.saved}">المحتوى المحفوظ فقط</button></div></fieldset>` : "") +
     `<button type="button" class="fzt" data-f="clear">مسح الفلاتر</button>`;
 }
 function sortOpts() {
@@ -187,7 +169,7 @@ D.addEventListener("click", (e) => {
   if (t.dataset.dom) return change(() => { ST.q = ""; ST.dom = new Set([t.dataset.dom]); ST.open = true; });
   if (t.dataset.a === "more") return change(() => { ST.shown += PAGE; });
   const c = t.closest(".fzcard"); if (!c) return; const it = X.items.find((i) => i.key === c.dataset.k); if (!it) return;
-  if (t.dataset.a === "fav") { if (!toggleFav(it)) return; const on = savedSet().has(it.key); t.setAttribute("aria-pressed", on); t.setAttribute("aria-label", (on ? "إزالة من المفضلة" : "حفظ في المفضلة") + ": " + it.title); if (ST.saved || $("#fzf:not([hidden])")) render(); return; }
+  if (t.dataset.a === "fav") { const r = toggleFav(it); if (!r) return; if (!r.ok) { SV.toast(r.msg); return; } SV.toast(r.on ? "تم الحفظ في «محتواي المحفوظ»" : "أُزيل من المحفوظات"); refreshFav(it.key); if (ST.saved || $("#fzf:not([hidden])")) render(); return; }
   if (t.dataset.a === "plan") { const old = $(".fzplan", c); if (old) { old.remove(); return; } c.insertAdjacentHTML("beforeend", planBox(it)); const s = $(".fzplan select,.fzplan a", c); if (s) s.focus(); return; }
   if (t.dataset.a === "plancancel") { const b = $(".fzplan", c); if (b) b.remove(); return; }
   if (t.dataset.a === "planok") { const msg = $("[data-r=msg]", c), r = addToPlan(it, $("[data-r=day]", c).value); msg.className = "m " + (r ? "bad" : "ok"); msg.innerHTML = r ? esc(r) : `تمت الإضافة إلى خطتك. <a href="${ROOT}plan/">فتح خطتي</a>`; }
@@ -199,6 +181,6 @@ window.addEventListener("popstate", () => { fromUrl(); render(); });
 
 fromUrl(); $("#fzq").value = ST.q; $("#fzclearq").hidden = !ST.q;
 Z.typeahead($("#fzq"), (s) => { $("#fzq").value = s.text; commit(s.text); });
-Z.load().then(() => { READY = true; ST.open = ST.lv.size + ST.ct.size + ST.dom.size + ST.av.size > 0 && matchMedia("(min-width:700px)").matches; render(); }).catch(() => { READY = true; render(); });
+Promise.all([Z.load(), SV ? SV.ready() : 0]).then(() => { if (SV) SV.migrate(X.items); READY = true; ST.open = ST.lv.size + ST.ct.size + ST.dom.size + ST.av.size > 0 && matchMedia("(min-width:700px)").matches; render(); }).catch(() => { READY = true; render(); });
 window.__findState = ST;
 })();

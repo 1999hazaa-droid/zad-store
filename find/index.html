@@ -13,7 +13,8 @@
 <link rel="preload" href="../fonts/cairo-bold.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="../css/zad-tokens.css">
 <link rel="stylesheet" href="../css/zad-ui.css?v=4">
-<link rel="stylesheet" href="find.css?v=2">
+<link rel="stylesheet" href="find.css?v=3">
+<link rel="stylesheet" href="../saved/saved.css?v=3">
 </head>
 <body class="fz">
 <header class="ztop"><div class="zw"><a class="zlogo" href="../">زاد التعليمية</a><nav aria-label="روابط المنصة"><a class="zn-main" href="../"><img src="../images/ill/home.svg" alt="">الرئيسية</a><a href="../free/"><img src="../images/ill/blocks.svg" alt="">الألعاب</a><a href="../grades/"><img src="../images/ill/books.svg" alt="">الصفوف</a><a href="../tests/"><img src="../images/ill/target.svg" alt="">الاختبارات</a><a href="../learn/"><img src="../images/ill/star.svg" alt="">تعلّم والعب</a></nav></div></header>
@@ -30,6 +31,7 @@
 <input id="fzq" name="q" type="search" autocomplete="off" enterkeyhint="search" maxlength="60" placeholder="ابحث عن قصة، ورقة عمل، نشاط أو درس…">
 <button type="submit">بحث</button>
 </form></div>
+<p class="zfmore"><a href="../saved/" id="fzsaved">محتواي المحفوظ</a></p>
 <p class="zfmore" id="fzclearq" hidden><a href="./" id="fzclearqa">مسح البحث</a></p>
 
 <section class="fzneeds" id="fzneeds" aria-label="البحث حسب احتياج الطفل" hidden><h2>ماذا يحتاج طفلك الآن؟</h2><div class="fzchips" id="fzneedc" role="group"></div></section>
@@ -49,8 +51,9 @@
 <nav class="ztab" aria-label="التنقل السفلي"><a href="../"><b><img src="../images/ill/home.svg" alt=""></b>الرئيسية</a><a href="../free/"><b><img src="../images/ill/blocks.svg" alt=""></b>ألعاب</a><a class="on" href="../library/"><b><img src="../images/ill/books.svg" alt=""></b>المكتبة</a><a href="../tests/"><b><img src="../images/ill/target.svg" alt=""></b>اختبارات</a><a href="../learn/"><b><img src="../images/ill/star.svg" alt=""></b>تعلّم</a></nav>
 
 <script src="../js/supabase-config.js?v=beb96d8866"></script>
-<script src="zfind.js?v=1"></script>
-<script src="find.js?v=1" defer></script>
+<script src="zfind.js?v=2"></script>
+<script src="../saved/zsaved.js?v=1"></script>
+<script src="find.js?v=2" defer></script>
 <script src="../js/zad-back.js?v=8e44711078" defer></script>
 </body>
 </html>

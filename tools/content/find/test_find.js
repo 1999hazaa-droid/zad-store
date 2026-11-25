@@ -113,7 +113,7 @@ for(const vp of (process.env.VP?[{width:+process.env.VP,height:800}]:[{width:390
  const lib=await p.$eval('[data-k="lib:s-p1"]',e=>({plan:!!e.querySelector('[data-a=plan]')}));if(lib.plan)E(W+' زر الخطة على ملف مكتبة غير مناسب');
  if((await p.$$('[data-k^="games:"] [data-a=plan]')).length)E(W+' زر الخطة على لعبة');
  // 9) المفضلة
- await click('[data-k="lib:s-p1"] .fv');await click('[data-k="bank:bank-y"] .fv');const fv=await p.evaluate(()=>[localStorage.getItem('zad.lib.fav'),localStorage.getItem('zad.find.fav')]);if(fv[0]!=='["p1"]'||fv[1]!=='["bank:bank-y"]')E(W+' المفضلة '+fv);
+ await click('[data-k="lib:s-p1"] .fv');await click('[data-k="bank:bank-y"] .fv');const fv=await p.evaluate(()=>{const D=JSON.parse(localStorage.getItem('zad-learn-v3'));const s=D.kids[D.cur].saved;return Object.keys(s.items).sort().join()});if(fv!=='bank:bank-y,lib:s-p1')E(W+' المفضلة '+fv);
  await go('?sv=1');t=await titles();if(t.length!==2)E(W+' المحفوظة فقط '+t);
  // 10) إضافة إلى خطتي
  await go('');await p.evaluate(()=>{localStorage.removeItem('zad-learn-v3');localStorage.removeItem('zad-rec-lv')});await click('[data-k="bank:bank-y"] [data-a=plan]');if(!(await p.textContent('[data-k="bank:bank-y"] .fzplan')).includes('اختر عمر'))E(W+' بدون مستوى');

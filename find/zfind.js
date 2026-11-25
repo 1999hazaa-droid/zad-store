@@ -302,7 +302,7 @@ const PH = "ابحث عن قصة، ورقة عمل، نشاط أو درس…";
 function mountBoxes() {
   D.querySelectorAll("[data-zfind]").forEach((el) => {
     if (el.dataset.ready) return; el.dataset.ready = 1;
-    el.innerHTML = `<form class="zfbox" role="search" action="${esc(ROOT + "find/")}" method="get" data-zf-wrap><label class="zfl" for="zfq${esc(el.dataset.zfind || "x")}"><span class="zfv">ابحث في المكتبة</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></label><input id="zfq${esc(el.dataset.zfind || "x")}" name="q" type="search" autocomplete="off" enterkeyhint="search" maxlength="60" placeholder="${esc(PH)}"><button type="submit">بحث</button></form><p class="zfmore"><a href="${esc(ROOT + "find/")}">بحث متقدم بالفلاتر</a></p>`;
+    el.innerHTML = `<form class="zfbox" role="search" action="${esc(ROOT + "find/")}" method="get" data-zf-wrap><label class="zfl" for="zfq${esc(el.dataset.zfind || "x")}"><span class="zfv">ابحث في المكتبة</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></label><input id="zfq${esc(el.dataset.zfind || "x")}" name="q" type="search" autocomplete="off" enterkeyhint="search" maxlength="60" placeholder="${esc(PH)}"><button type="submit">بحث</button></form><p class="zfmore"><a href="${esc(ROOT + "find/")}">بحث متقدم بالفلاتر</a> · <a href="${esc(ROOT + "saved/")}">محتواي المحفوظ</a></p>`;
     const f = el.querySelector("form"), inp = el.querySelector("input");
     typeahead(inp, (s) => { inp.value = s.text; f.submit(); });
   });
