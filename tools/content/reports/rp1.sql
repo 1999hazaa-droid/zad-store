@@ -1,3 +1,4 @@
+-- مرجع: البذور الفعلية طُبّقت على القاعدة وقد تختلف كلماتها المفتاحية قليلًا عن هذا الملف (المصدر الصحيح هو جدول rp_config)
 create table if not exists public.rp_config(
  slug text primary key, kind text not null check (kind in ('domain','indicator','reco')), title text not null,
  data jsonb not null default '{}'::jsonb, status text not null default 'active' check (status in ('active','off')),

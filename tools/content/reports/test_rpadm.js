@@ -1,0 +1,24 @@
+// اختبار قواعد التحقق في لوحة إدارة التقارير (بدون واجهة): NODE_PATH=$(npm root -g) node tools/content/reports/test_rpadm.js
+const fs=require('fs');const src=fs.readFileSync(__dirname+'/../../../manage/rpadm.js','utf8');const errs=[];const E=m=>{console.log('ERR',m);errs.push(m)};
+global.window={__zp:{sb:{},$:()=>0,$$:()=>[],esc:x=>x,toast(){},sheet(){},closeSheet(){},fail(){},SUB:{}}};
+new Function('window',src)(global.window);const T=window.__rpTest;
+const ok=(r)=>({data:{type:'story',text:r}});
+if(T.chkReco(ok('اقرأ القصة «{title}»، فهي مناسبة لمستوى الطفل ولم يقرأها بعد.')).length)E('توصية سليمة رُفضت');
+if(!T.chkReco(ok('اقرأ القصة «{title}»، فهي أفضل من غيرها عند الأطفال.')).length)E('عبارة مقارنة قُبلت');
+if(!T.chkReco(ok('اقرأ القصة، فهي مناسبة جدا لمستواه ولم يقرأها.')).length)E('بدون title قُبلت');
+if(!T.chkReco(ok('اقرأ القصة «{title}»، فقد أنهى 10 قصص بنجاح.')).length)E('رقم ثابت قُبل');
+if(!T.chkReco(ok('اقرأ القصة «{title}»، فهي مناسبة وعنوانها {best}.')).length)E('متغير غير مسموح قُبل');
+if(!T.chkReco(ok('اقرأ القصة «{title}» الآن.')).length)E('بدون سبب قُبلت');
+const dom={slug:'x',title:'الرياضيات',data:{icon:'🔢',words:['جمع'],src:['val'],quiz:[],skills:[]}};
+if(T.chkDom(dom).length)E('مجال سليم رُفض '+T.chkDom(dom));
+if(!T.chkDom({...dom,data:{...dom.data,src:['bad src']}}).length)E('مصدر خاطئ قُبل');
+if(!T.chkDom({...dom,data:{icon:'🔢',words:[],src:[],quiz:[],skills:[]}}).length)E('مجال بلا ربط قُبل');
+if(!T.chkDom({...dom,title:'<b>'}).length)E('عنوان غير عربي قُبل');
+const doms=[{slug:'math',data:{words:['جمع','عد'],src:[],skills:['مهارة خاصة']}},{slug:'values',data:{words:['قيم'],src:['val']}},{slug:'english',data:{words:[]}},{slug:'arabic',data:{words:['حرف'],src:['stories:arabic']}}];
+const c=(r)=>T.classify(doms,r);
+if(c({src:'bank',skill:'جمع وطرح ضمن عشرين'})!=='math')E('جمع');if(c({src:'bank',skill:'العد من واحد إلى عشرة'})!=='math')E('العد');
+if(c({src:'val',skill:'x'})!=='values')E('مصدر val');if(c({src:'stories',topic:'arabic',title:'x'})!=='arabic')E('قصة عربية');
+if(c({src:'bank',skill:'Spelling short words'})!=='english')E('إنجليزي');if(c({src:'acts',skill:'مهارة خاصة'})!=='math')E('مهارة مربوطة');
+if(c({src:'acts',skill:'مهارة مجهولة تماما'})!=='other')E('غير مصنف');
+if(c({src:'acts',skill:'تعاون',title:'قيم الصدق'})!=='values')E('عنوان بديل');
+console.log(errs.length?'FAILED '+errs.length:'ALL OK');process.exit(errs.length?1:0);

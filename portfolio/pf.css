@@ -37,3 +37,18 @@
 .pf .pfck{display:flex;gap:8px;align-items:flex-start;margin:10px 0;font-weight:700;line-height:1.7}
 .pf .pfck input{width:22px;height:22px;flex:none;margin-top:3px}
 @media print{.pf .pfacc{display:none!important}}
+/* تقارير التقدم */
+.pf .rphead{background:linear-gradient(135deg,#efe7ff,#fff);border:2px solid var(--z-tint2);border-radius:22px;padding:14px;margin:8px 0}.pf .rphead h1{margin:0 0 4px;font:900 24px/1.4 var(--z-font);color:var(--z-pri)}.pf .rphead p{margin:2px 0}
+.pf .rpnavp{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.pf .rpdoms{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.pf .rpdom{background:#fff;border:2px solid var(--z-line);border-radius:18px;padding:12px;min-width:0;break-inside:avoid}.pf .rpdom h3{margin:0 0 6px;font:900 17px/1.5 var(--z-font);color:var(--z-pri)}.pf .rpdom p{margin:4px 0}
+.pf .rpl{list-style:none;margin:6px 0;padding:0;display:grid;gap:6px}.pf .rpl li{background:#faf8ff;border-radius:12px;padding:8px 10px;line-height:1.8;overflow-wrap:anywhere;break-inside:avoid}.pf .rpl small{color:var(--z-ink2)}
+.pf .rpneed{background:#fff6e5;border-radius:12px;padding:8px 10px;font-weight:700}
+.pf .rpchip{display:inline-block;background:#efe7ff;color:var(--z-pri);border-radius:99px;padding:4px 12px;margin:3px;font:800 13px var(--z-font)}
+.pf .rprec li{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.pf .rpkid{background:#fffbea;border:2px dashed #f0c64a;border-radius:20px;padding:12px;break-inside:avoid}.pf .rpkl{list-style:none;margin:0;padding:0;display:grid;gap:8px}.pf .rpkl li{font:800 20px/1.6 var(--z-font);display:flex;gap:10px;align-items:center}.pf .rpkl span{font-size:32px}
+.pf .rpbanner{background:#e9f9ee;border:2px solid #7bc68f;border-radius:16px;padding:10px 12px;margin:8px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-weight:800}
+@media print{@page{size:A4;margin:14mm}.pf .nopr,.pf .ztab,.pf .ztop{display:none!important}.pf .rpdom,.pf .rpl li,.pf .pfstat,.pf .rpkid,.pf section.art{break-inside:avoid}.pf .rpdoms{grid-template-columns:1fr 1fr}.pf .pfchart{height:80px}}
+/* تصحيح الطباعة: ملف activities.css يخفي كل عناصر الصفحة عند الطباعة، فنُعيد إظهار المحتوى الرئيسي فقط */
+@media print{body.pf>main{display:block!important}body.pf>.ztop,body.pf>.ztab,body.pf>script{display:none!important}}
+@media print{body.pf #pfkid,body.pf #pfedit{display:none!important}}

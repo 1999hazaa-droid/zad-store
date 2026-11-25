@@ -5,7 +5,7 @@ const W = window, D = document, PAGE = D.body.dataset.page || "hub";
 const SB = String(W.ATHR_SUPABASE_URL || "https://zcnwzpevehudhnsuljdy.supabase.co").replace(/\/+$/, "");
 const KEY = W.ATHR_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_BX7sdXrDSCMBBJVPGscMMg_jKbSmmam";
 const H = { apikey: KEY, Authorization: "Bearer " + KEY };
-const ROOT = new URL(PAGE === "hub" ? "../" : "../../", D.baseURI).href;
+const ROOT = new URL(PAGE === "hub" || PAGE === "rhub" ? "../" : "../../", D.baseURI).href;
 const $ = (s, r) => (r || D).querySelector(s), $$ = (s, r) => [...(r || D).querySelectorAll(s)];
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const AD = (n) => String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
@@ -18,15 +18,15 @@ const QC = { early: "التعلم المبكر", arabic: "اللغة العرب�
 /* المصادر: key → جدول المحتوى، التبويب، النوع، رابط العمل، حقول الجلب */
 const SRC = {
   acts: { tb: "activities", cols: "slug,title,skill,subject,summary,image_url,pdf_url,kind", tab: "ws", type: "ورقة عمل أو نشاط", url: (s) => `${ROOT}activities/view/?a=${encodeURIComponent(s)}` },
-  bank: { tb: "bank_items", cols: "slug,title,icon,skill,descr,pdf_url", tab: "ws", type: "نشاط من بنك الأنشطة", url: (s) => `${ROOT}bank/play/?s=${encodeURIComponent(s)}` },
-  proj: { tb: "proj_items", cols: "slug,title,icon,skill,descr,kind", tab: "proj", type: "مشروع أو تحدٍّ", url: (s) => `${ROOT}projects/play/?s=${encodeURIComponent(s)}` },
+  bank: { tb: "bank_items", cols: "slug,title,icon,skill,subject,descr,pdf_url", tab: "ws", type: "نشاط من بنك الأنشطة", url: (s) => `${ROOT}bank/play/?s=${encodeURIComponent(s)}` },
+  proj: { tb: "proj_items", cols: "slug,title,icon,skill,subject,descr,kind", tab: "proj", type: "مشروع أو تحدٍّ", url: (s) => `${ROOT}projects/play/?s=${encodeURIComponent(s)}` },
   life: { tb: "life_items", cols: "slug,title,icon,cat", tab: "proj", type: "نشاط من المهارات الحياتية", lab: "المهارات الحياتية", url: (s) => `${ROOT}life/play/?s=${encodeURIComponent(s)}` },
   ready: { tb: "ready_items", cols: "slug,title,icon,cat", tab: "proj", type: "نشاط من الاستعداد المدرسي", lab: "الاستعداد المدرسي", url: (s) => `${ROOT}ready/play/?s=${encodeURIComponent(s)}` },
   val: { tb: "val_items", cols: "slug,title,icon,cat", tab: "les", type: "درس من القيم والسلوك", lab: "القيم والسلوك", url: (s) => `${ROOT}values/play/?s=${encodeURIComponent(s)}` },
   dig: { tb: "dig_items", cols: "slug,title,icon,cat", tab: "les", type: "درس من المهارات الرقمية", lab: "المهارات الرقمية", url: (s) => `${ROOT}digital/play/?s=${encodeURIComponent(s)}` },
   exp: { tb: "exp_items", cols: "slug,title,icon,cat", tab: "les", type: "درس من الثقافة العامة", lab: "الثقافة العامة", url: (s) => `${ROOT}explore/play/?s=${encodeURIComponent(s)}` },
-  vid: { tb: "video_items", cols: "slug,title,icon,skill,descr", tab: "les", type: "درس مرئي", url: (s) => `${ROOT}videos/play/?s=${encodeURIComponent(s)}` },
-  songs: { tb: "song_items", cols: "slug,title,icon,skill", tab: "les", type: "نشيد تعليمي", url: (s) => `${ROOT}songs/play/?s=${encodeURIComponent(s)}` },
+  vid: { tb: "video_items", cols: "slug,title,icon,skill,subject,descr", tab: "les", type: "درس مرئي", url: (s) => `${ROOT}videos/play/?s=${encodeURIComponent(s)}` },
+  songs: { tb: "song_items", cols: "slug,title,icon,skill,cat", tab: "les", type: "نشيد تعليمي", url: (s) => `${ROOT}songs/play/?s=${encodeURIComponent(s)}` },
   games: { tb: null, tab: "proj", type: "لعبة تعليمية", lab: "الألعاب التعليمية", url: (s) => `${ROOT}games/#g=${encodeURIComponent(s)}` },
   stories: { tb: "stories", cols: "slug,title,summary,topic,cover_url", tab: "les", type: "قصة تعليمية", lab: "القراءة والقصص", url: (s) => `${ROOT}stories/read/?s=${encodeURIComponent(s)}` },
 };
@@ -95,7 +95,7 @@ async function loadMeta(raw) {
   const bySrc = {}; raw.forEach((r) => (bySrc[r.src] = bySrc[r.src] || []).push(r.slug));
   await Promise.all(Object.keys(bySrc).map(async (s) => {
     const cfg = SRC[s], slugs = [...new Set(bySrc[s])]; META[s] = META[s] || {};
-    if (s === "games") { try { const cat = await (await fetch(ROOT + "games/catalog.json")).json(); cat.forEach((g) => { META.games[g.id] = { slug: g.id, title: g.t, skill: g.skill, summary: g.s }; }); } catch (e) { reportErr("meta", "games " + e.message); CERR = true; } return; }
+    if (s === "games") { try { const cat = await (await fetch(ROOT + "games/catalog.json")).json(); cat.forEach((g) => { META.games[g.id] = { slug: g.id, title: g.t, skill: g.skill, subject: g.subj, summary: g.s }; }); } catch (e) { reportErr("meta", "games " + e.message); CERR = true; } return; }
     for (let i = 0; i < slugs.length; i += 40) {
       const part = slugs.slice(i, i + 40).filter((x) => !META[s][x]); if (!part.length) continue;
       try { const rows = await rest(`${cfg.tb}?status=eq.published&slug=in.(${part.map(encodeURIComponent).join(",")})&select=${cfg.cols}`); rows.forEach((x) => (META[s][x.slug] = x)); } catch (e) { reportErr("meta", s + " " + e.message); CERR = true; }
@@ -134,7 +134,7 @@ function issue() {
 const works = () => REC.filter((x) => META[x.src] && META[x.src][x.slug]).map((x) => { const m = META[x.src][x.slug], cfg = SRC[x.src], key = x.src + ":" + x.slug; return { key, src: x.src, slug: x.slug, t: x.t, tab: cfg.tab, title: m.title, type: cfg.type, skill: m.skill || cfg.lab || (m.cat ? String(m.cat) : "") || m.subject || m.topic || "", text: m.descr || m.summary || m.goal || "", icon: m.icon || m.image_url || m.cover_url || "", pdf: m.pdf_url || "", url: cfg.url(x.slug), by: x.how === "parent" ? "بمساعدة ولي الأمر" : "" }; });
 const visible = () => works().filter((w) => !P.hide[w.key]).sort((a, b) => b.t - a.t);
 const hiddenCnt = () => works().filter((w) => P.hide[w.key]).length;
-async function prepare() { loadDB(); const raw = rawRecords(); REC = raw; await Promise.all([loadMeta(raw), loadCerts()]); issue(); }
+async function prepare() { loadDB(); const raw = rawRecords(); REC = raw; await Promise.all([loadMeta(raw), loadCerts(), PAGE === "rhub" || PAGE === "rview" ? loadRp() : 0]); issue(); }
 const skel = (m) => { const b = $("#aview"); b.innerHTML = m; const p = D.getElementById("avw"); if (p) p.setAttribute("aria-busy", "false"); return b; };
 const abtn = (h, t, c) => `<a class="abtn${c ? " " + c : ""}" href="${h}">${t}</a>`;
 function kidBar() {
@@ -150,7 +150,7 @@ function bindKid() {
     $("#pff").onsubmit = (e) => { e.preventDefault(); P.nick = $("#pfn").value.trim().slice(0, 24); P.ch = ($("input[name=pfc]:checked") || { value: P.ch }).value; P.lv = $("#pfl").value; const g = $("#pfg").value; if (g) P.gp = g; else delete P.gp; save(); location.reload(); };
   };
 }
-function nav(on) { return `<nav class="pfnav" aria-label="أقسام ملف الإنجاز">${abtn(ROOT + "portfolio/", "الرئيسية", on === "hub" ? "go" : "")}${TABS.map(([k, n]) => abtn(ROOT + "portfolio/works/?tab=" + k, n, on === k ? "go" : "")).join("")}${abtn(ROOT + "portfolio/report/", "تقرير ولي الأمر", on === "rep" ? "go" : "")}</nav>`; }
+function nav(on) { return `<nav class="pfnav" aria-label="أقسام ملف الإنجاز">${abtn(ROOT + "portfolio/", "الرئيسية", on === "hub" ? "go" : "")}${TABS.map(([k, n]) => abtn(ROOT + "portfolio/works/?tab=" + k, n, on === k ? "go" : "")).join("")}${abtn(ROOT + "portfolio/report/", "تقرير ولي الأمر", on === "rep" ? "go" : "")}${abtn(ROOT + "reports/", "تقارير التقدم", "")}</nav>`; }
 /* ===== الرئيسية ===== */
 function hubPage() {
   const v = visible(), cnt = (t) => v.filter((w) => w.tab === t).length, q = quizRecords().filter((x) => !x.contest);
@@ -158,7 +158,7 @@ function hubPage() {
   const stat = (n, l) => `<div class="pfstat"><b>${AD(n)}</b><span>${l}</span></div>`;
   const latest = v.slice(0, 5), empty = !v.length && !q.length;
   const b = skel(`${kidBar()}<div class="pfstats">${stat(acts, "نشاطًا مكتملًا")}${stat(les, "قصة أو درسًا أتمّها")}${stat(saved, "عملًا محفوظًا")}${stat(q.length, "اختبارًا مكتملًا")}${stat(EARNED.length, "شهادة إنجاز")}</div>
-<div class="btns pfmain"><a class="abtn go" href="${ROOT}portfolio/works/">عرض ملف الإنجاز</a><a class="abtn" href="${ROOT}portfolio/report/?print=1">تحميل أو طباعة الملف</a></div>
+<div class="btns pfmain"><a class="abtn go" href="${ROOT}portfolio/works/">عرض ملف الإنجاز</a><a class="abtn" href="${ROOT}portfolio/report/?print=1">تحميل أو طباعة الملف</a><a class="abtn" href="${ROOT}reports/">تقارير التقدم الأسبوعية والشهرية</a></div>
 ${CERR ? '<p class="hint">تعذر تحميل بعض بيانات الملف الآن. حاول لاحقًا.</p>' : ""}
 <section class="art"><h2>آخر الأعمال</h2>${latest.length ? `<div class="pfgrid">${latest.map(card).join("")}</div>` : `<div class="pfempty"><img src="${ROOT}images/zad/i_puzzle.webp" alt="" width="64" height="64"><p>${empty ? "ملف الإنجاز ما زال فارغًا، وسيمتلئ تلقائيًا عند إكمال أنشطة وقصص واختبارات في المنصة." : "لا أعمال مرئية في الملف الآن."}</p><div class="btns">${abtn(ROOT + "activities/", "أنشطة وأوراق عمل")}${abtn(ROOT + "stories/", "قصص تعليمية")}${abtn(ROOT + "quizzes/", "اختبارات ومسابقات")}</div></div>`}</section>
 <section class="art pfacc"><h2>حساب ولي الأمر وحفظ الملف على الخادم</h2>${accHTML()}<p class="hint" id="pfam" role="status"></p></section>
@@ -307,7 +307,154 @@ function reportPage() {
   $("#pfp").onsubmit = (e) => { e.preventDefault(); const u = new URLSearchParams({ p: sel.value }); if (sel.value === "custom") { if (!$("#pff1").value || !$("#pft1").value) return; u.set("from", $("#pff1").value); u.set("to", $("#pft1").value); } location.search = u.toString(); };
   if (p.get("print") === "1") setTimeout(() => W.print(), 600);
 }
+/* ===================== تقارير تقدم الطفل لوليّ الأمر ===================== */
+const DAY = 864e5;
+let RPC = { dom: [], reco: [], ind: {}, err: false };
+const RPDEF = { rule_complete: { gameStars: 1, quizMinQ: 3 }, ind_need: { minAns: 3, rate: 0.6 } };
+async function loadRp() {
+  try {
+    const rows = await rest("rp_config?order=sort_order.asc&select=slug,kind,title,data");
+    RPC = { dom: rows.filter((r) => r.kind === "domain").map((r) => ({ slug: r.slug, title: r.title, d: r.data || {} })), reco: rows.filter((r) => r.kind === "reco").map((r) => ({ slug: r.slug, type: (r.data || {}).type, text: (r.data || {}).text })), ind: {}, err: false };
+    rows.filter((r) => r.kind === "indicator").forEach((r) => (RPC.ind[r.slug] = r.data || {}));
+  } catch (e) { RPC = { dom: [], reco: [], ind: {}, err: true }; reportErr("rp-config", e.message); }
+}
+const rpInd = (k) => Object.assign({}, RPDEF[k] || {}, RPC.ind[k] || {});
+const rpOn = (k) => RPC.err || !!RPC.ind[k];
+const tokens = (s) => String(s || "").toLowerCase().split(/[^\p{L}]+/u).filter(Boolean).map((t) => t.replace(/^ال/, ""));
+function domOf(r) {
+  const D_ = RPC.dom; if (!D_.length) return "other";
+  for (const d of D_) { if ((d.d.skills || []).includes(r.skill)) return d.slug; }
+  for (const d of D_) { const s = d.d.src || []; if (s.includes(r.src) || (r.topic && s.includes(r.src + ":" + r.topic))) return d.slug; }
+  if (/[a-z]{3}/i.test(r.skill || "")) { const e = D_.find((d) => d.slug === "english"); if (e) return e.slug; }
+  for (const txt of [[r.skill, r.subject, r.cat].join(" "), r.title]) {
+    const tk = tokens(txt); if (!tk.length) continue;
+    for (const d of D_) if ((d.d.words || []).some((w) => { const x = String(w).toLowerCase().replace(/^ال/, ""); return x && tk.some((t) => t.startsWith(x)); })) return d.slug;
+  }
+  return "other";
+}
+const domName = (s) => (RPC.dom.find((d) => d.slug === s) || { title: "أنشطة متنوعة" }).title;
+const rpSet = () => { const r = (P.rp = P.rp || {}); r.type = ["week", "month", "custom"].includes(r.type) ? r.type : "week"; r.hideDom = r.hideDom || {}; r.hide = r.hide || {}; r.notif = r.notif ? 1 : 0; return r; };
+const loc0 = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d; };
+function period(type, off, from, to) {
+  const now = new Date();
+  if (type === "month") { const a = new Date(now.getFullYear(), now.getMonth() + (off || 0), 1), z = new Date(a.getFullYear(), a.getMonth() + 1, 1); return { a: a.getTime(), z: z.getTime() - 1, name: a.toLocaleDateString("ar", { month: "long", year: "numeric" }) }; }
+  if (type === "custom") { const a = from ? Date.parse(from + "T00:00:00") : NaN, z = to ? Date.parse(to + "T00:00:00") : NaN; if (!(a <= z) || z - a > 366 * DAY) return null; return { a, z: z + DAY - 1, name: "" }; }
+  const t0 = loc0(Date.now()), back = (t0.getDay() + 1) % 7, a = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() - back + (off || 0) * 7), z = new Date(a.getFullYear(), a.getMonth(), a.getDate() + 7);
+  return { a: a.getTime(), z: z.getTime() - 1, name: "" };
+}
+const mDom = (w) => { const m = (META[w.src] || {})[w.slug] || {}; return domOf({ src: w.src, skill: m.skill || "", subject: m.subject || "", cat: m.cat || "", topic: m.topic || "", title: w.title }); };
+function buildReport(pr, type) {
+  const cfg = rpInd("rule_complete"), need = rpInd("ind_need"), inP = (t) => t >= pr.a && t <= pr.z, minS = cfg.gameStars || 1;
+  const all = works().filter((w) => !P.hide[w.key] && !(w.src === "games" && (+((REC.find((x) => x.src === "games" && x.slug === w.slug) || {}).stars) || 0) < minS));
+  const undated = all.filter((w) => !(w.t > 0)).length;
+  const wk = all.filter((w) => w.t > 0 && inP(w.t)).map((w) => Object.assign({}, w, { dom: mDom(w) })).sort((a, b) => a.t - b.t);
+  const q = quizQ(), minQ = cfg.quizMinQ || 3;
+  const ql = q.log.filter((e) => e && e.n >= minQ && inP(e.ts)).map((e) => Object.assign({}, e, { dom: String(e.k).startsWith("c:") ? "other" : (RPC.dom.find((d) => (d.d.quiz || []).includes(e.c)) || {}).slug || "other" }));
+  const qKeys = [...new Set(ql.map((e) => e.k))];
+  const retrain = ql.filter((e) => q.log.some((o) => o.k === e.k && o.ts < e.ts)).length;
+  const progress = []; qKeys.forEach((k) => { const L = q.log.filter((e) => e.k === k && e.n >= minQ).sort((a, b) => a.ts - b.ts), lastIn = L.filter((e) => inP(e.ts)).pop(), first = L[0]; if (lastIn && first && lastIn !== first && lastIn.ok / lastIn.n > first.ok / first.n) progress.push({ title: lastIn.t, from: first.ok, fn: first.n, to: lastIn.ok, tn: lastIn.n, k }); });
+  const needSk = Object.entries(q.sk).filter(([, s]) => s.n >= (need.minAns || 3) && s.ok / s.n < (need.rate || 0.6)).map(([k, s]) => ({ k, ok: s.ok, n: s.n, dom: (RPC.dom.find((d) => (d.d.quiz || []).includes(s.c)) || {}).slug || "other" }));
+  const skills = {}; wk.forEach((w) => { const sk = ((META[w.src] || {})[w.slug] || {}).skill; if (sk) skills[sk] = (skills[sk] || 0) + 1; });
+  const certs = EARNED.filter((c) => P.certs[c.slug] && inP(P.certs[c.slug].t));
+  const days = Math.min(62, Math.max(1, Math.round((pr.z + 1 - pr.a) / DAY))), bars = Array(days).fill(0);
+  wk.forEach((w) => { const i = Math.floor((w.t - pr.a) / DAY); if (i >= 0 && i < days) bars[i]++; }); ql.forEach((e) => { const i = Math.floor((e.ts - pr.a) / DAY); if (i >= 0 && i < days) bars[i]++; });
+  const cnt = { acts: wk.filter((w) => w.src !== "stories" && !["val", "dig", "exp", "vid", "songs"].includes(w.src)).length, les: wk.filter((w) => ["stories", "val", "dig", "exp", "vid", "songs"].includes(w.src)).length, wsp: wk.filter((w) => ["acts", "bank", "proj"].includes(w.src)).length, games: wk.filter((w) => w.src === "games").length, quiz: qKeys.length };
+  const used = {}; wk.forEach((w) => (used[w.src] = 1)); if (qKeys.length) used.quiz = 1;
+  return { pr, type, wk, ql, qKeys, retrain, progress, needSk, skills, certs, days, bars, cnt, used, undated };
+}
+const SECN = { acts: "الأنشطة وأوراق العمل", bank: "بنك الأنشطة", proj: "المشروعات والتحديات", life: "المهارات الحياتية", ready: "الاستعداد المدرسي", val: "القيم والسلوك", dig: "المهارات الرقمية", exp: "الثقافة العامة", vid: "الدروس المرئية", songs: "الأناشيد", games: "الألعاب التعليمية", stories: "القصص", quiz: "الاختبارات والمسابقات" };
+let POOL = null;
+async function loadPool() {
+  if (POOL) return POOL; POOL = { stories: [], bank: [], quiz: [] }; const lv = P.lv;
+  const get = async (k, path, f) => { try { POOL[k] = (await rest(path)).map(f); } catch (e) { reportErr("rp-pool", k + " " + e.message); } };
+  await Promise.all([
+    get("stories", `stories?status=eq.published&levels=cs.{${lv}}&select=slug,title,topic&limit=100`, (x) => Object.assign(x, { src: "stories", url: SRC.stories.url(x.slug) })),
+    get("bank", `bank_items?status=eq.published&levels=cs.{${lv}}&select=slug,title,skill,subject,cat&limit=300`, (x) => Object.assign(x, { src: "bank", url: SRC.bank.url(x.slug) })),
+    get("quiz", `qz_quizzes?status=eq.published&levels=cs.{${lv}}&select=slug,title,cat,skill,subject&limit=100`, (x) => Object.assign(x, { src: "quiz", url: `${ROOT}quizzes/quiz/?q=${encodeURIComponent(x.slug)}` })),
+  ]); return POOL;
+}
+function recos(R) {
+  const T = (ty) => RPC.reco.find((r) => r.type === ty), out = [], urls = new Set(), rs = rpSet(), sel = (d) => !rs.hideDom[d];
+  const fill = (tx, o) => String(tx).replace(/\{(\w+)\}/g, (_, k) => (o[k] == null ? "" : o[k]));
+  const add = (ty, o, url) => { const t = T(ty); if (!t || !t.text || urls.has(url) || out.length >= 6) return; urls.add(url); out.push({ ty, url, text: fill(t.text, o) }); };
+  const q = quizQ(), done = new Set(Object.keys(q.h || {})), have = new Set(REC.map((x) => x.src + ":" + x.slug));
+  const pd = (x) => domOf({ src: x.src, skill: x.skill || "", subject: x.subject || "", cat: x.cat || "", topic: x.topic || "", title: x.title });
+  Object.entries(q.h || {}).filter(([k, h]) => h && h.tot > 0 && !k.startsWith("c:") && h.best / h.tot < 0.6).sort((a, b) => a[1].best / a[1].tot - b[1].best / b[1].tot).slice(0, 2).forEach(([k, h]) => add("low_skill", { title: h.title || k, best: AD(h.best), tot: AD(h.tot) }, `${ROOT}quizzes/quiz/?q=${encodeURIComponent(k)}`));
+  const inPer = new Set(R.wk.map((w) => w.dom).concat(R.ql.map((e) => e.dom)));
+  const earlier = works().filter((w) => !P.hide[w.key] && w.t > 0 && w.t < R.pr.a && w.src !== "games").map((w) => Object.assign({}, w, { dom: mDom(w) })).sort((a, b) => b.t - a.t), seen = new Set();
+  earlier.forEach((w) => { if (w.dom === "other" || inPer.has(w.dom) || seen.has(w.dom) || !sel(w.dom)) return; seen.add(w.dom); add("retrain", { title: w.title, domain: domName(w.dom) }, w.url); });
+  if (!R.qKeys.length && POOL) { const c = POOL.quiz.find((x) => !done.has(x.slug) && sel(pd(x))); if (c) add("quiz", { title: c.title }, c.url); }
+  if (POOL) { const s = POOL.stories.find((x) => !have.has("stories:" + x.slug) && sel(pd(x))); if (s) add("story", { title: s.title }, s.url); }
+  if (POOL) { const dm = new Set(works().map(mDom)); RPC.dom.filter((d) => sel(d.slug) && !dm.has(d.slug)).slice(0, 2).forEach((d) => { const b = POOL.bank.find((x) => !have.has("bank:" + x.slug) && pd(x) === d.slug); if (b) add("empty", { title: b.title, domain: d.title }, b.url); }); }
+  if (POOL) { const dd = [...inPer].find((d) => d !== "other" && sel(d)); if (dd) { const b = POOL.bank.find((x) => !have.has("bank:" + x.slug) && pd(x) === dd); if (b) add("worksheet", { title: b.title, domain: domName(dd) }, b.url); } }
+  return out;
+}
+const rpLink = (w) => `<a href="${w.url}">${esc(w.title)}</a>`;
+function childBox(R) {
+  const L = [], c = R.cnt;
+  if (c.acts) L.push(["🌟", "أكملت أنشطة جميلة"]); if (c.les) L.push(["📖", "تعلمت شيئًا جديدًا"]); if (c.quiz) L.push(["🎯", "جرّبت اختبارًا"]); if (Object.keys(R.skills).length) L.push(["💪", "تدربت على مهارة جديدة"]); if (R.certs.length) L.push(["🏅", "حصلت على شهادة"]);
+  if (!L.length) L.push(["🌱", "أنا مستعد لأتعلم شيئًا جديدًا"]); else L.push(["🚶", "أنا أواصل التعلم خطوة بخطوة"]);
+  return `<section class="art rpkid"><h2>إنجازاتي ${R.type === "month" ? "هذا الشهر" : R.type === "week" ? "هذا الأسبوع" : "في هذه الفترة"}</h2><ul class="rpkl">${L.map(([e, t]) => `<li><span aria-hidden="true">${e}</span>${t}</li>`).join("")}</ul></section>`;
+}
+function rpGenLog(kind) { try { const k = "zad-rp-s:" + kind; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, "1"); fetch(SB + "/rest/v1/rp_stats", { method: "POST", headers: Object.assign({ "Content-Type": "application/json", Prefer: "return=minimal" }, H), body: JSON.stringify({ kind, level: P.lv }) }).catch(() => {}); } catch {} }
+function rviewPage() {
+  const p = new URLSearchParams(location.search), rs = rpSet(), type = ["week", "month", "custom"].includes(p.get("t")) ? p.get("t") : rs.type, off = Math.min(0, parseInt(p.get("off"), 10) || 0);
+  const pr = period(type, off, p.get("from"), p.get("to"));
+  if (!pr) { skel(`<div class="zbc nopr"><a href="../../">الرئيسية</a> › <a href="../">تقارير التقدم</a></div><div class="pfempty"><p>الفترة المحددة غير صحيحة. اختر تاريخ بداية قبل تاريخ النهاية وبحد أقصى سنة.</p>${abtn("../", "العودة", "go")}</div>`); return; }
+  const R = buildReport(pr, type), hid = rs.hide, sd = (d) => !rs.hideDom[d];
+  const seg = (n, l) => `<div class="pfstat"><b>${AD(n)}</b><span>${l}</span></div>`, mx = Math.max(1, ...R.bars), ind = rpOn;
+  const doms = RPC.dom.concat([{ slug: "other", title: "أنشطة متنوعة", d: { icon: "⭐" } }]).filter((d) => sd(d.slug));
+  const domHtml = doms.map((d) => {
+    const ws = R.wk.filter((w) => w.dom === d.slug), qs = R.ql.filter((e) => e.dom === d.slug), qk = [...new Set(qs.map((e) => e.k))], sk = [...new Set(ws.map((w) => ((META[w.src] || {})[w.slug] || {}).skill).filter(Boolean))], nd = R.needSk.filter((x) => x.dom === d.slug);
+    if (d.slug === "other" && !ws.length && !qs.length) return "";
+    const has = ws.length || qk.length;
+    return `<article class="rpdom" data-dom="${d.slug}"><h3><span aria-hidden="true">${d.d.icon || "⭐"}</span> ${esc(d.title)}</h3>${has ? `<p>أنشطة مكتملة: <b>${AD(ws.length)}</b> · اختبارات: <b>${AD(qk.length)}</b></p>${sk.length ? `<p class="hint">مهارات تدرب عليها: ${sk.slice(0, 8).map(esc).join("، ")}</p>` : ""}${ws.length && !hid.works ? `<ul class="rpl">${ws.slice(0, 6).map((w) => `<li>${rpLink(w)} <small>${esc(w.type)} · ${fmt(w.t)}</small></li>`).join("")}${ws.length > 6 ? `<li class="hint">و ${AD(ws.length - 6)} أخرى</li>` : ""}</ul>` : ""}` : '<p class="hint">لا توجد بيانات كافية في هذه الفترة لهذا المجال.</p>'}${nd.length && !hid.need ? `<p class="rpneed">يحتاج إلى مراجعة: ${nd.map((x) => `${esc(x.k)} (${AD(x.ok)} من ${AD(x.n)})`).join("، ")}</p>` : ""}</article>`;
+  }).join("");
+  const body = () => {
+    const rec = recos(R);
+    skel(`<div class="zbc nopr"><a href="../../">الرئيسية</a> › <a href="../">تقارير التقدم</a> › التقرير</div>${kidBar()}
+<div class="nopr rpnavp">${type !== "custom" ? `<a class="abtn" href="?t=${type}&off=${off - 1}">${type === "month" ? "الشهر السابق" : "الأسبوع السابق"}</a>${off < 0 ? `<a class="abtn" href="?t=${type}&off=${off + 1}">${type === "month" ? "الشهر التالي" : "الأسبوع التالي"}</a>` : ""}` : ""}<a class="abtn" href="../">إعدادات التقرير</a></div>
+<header class="rphead"><h1>تقرير تقدّم ${esc(kidName())}</h1><p>${type === "week" ? "التقرير الأسبوعي" : type === "month" ? "التقرير الشهري" : "تقرير مخصص"} · من ${fmt(pr.a)} إلى ${fmt(Math.min(pr.z, Date.now()))}${type === "month" ? " · " + esc(pr.name) : ""}</p><p class="hint">${esc(LV[P.lv])} · يعرض هذا التقرير ما أُنجز فعليًا في زاد على هذا الجهاز، وليس تقييمًا لقدرات الطفل ولا مقارنة بغيره.</p></header>
+<section class="art"><div class="pfstats">${seg(R.cnt.acts, "أنشطة مكتملة")}${seg(R.cnt.les, "دروس وقصص")}${seg(R.cnt.wsp, "أوراق عمل ومشروعات")}${seg(R.cnt.games, "ألعاب")}${seg(R.cnt.quiz, "اختبارات")}${!hid.certs ? seg(R.certs.length, "شهادات") : ""}${seg(Object.keys(R.skills).length, "مهارات تدرب عليها")}${ind("ind_retrain") ? seg(R.retrain, "مرات إعادة التدريب") : ""}</div>${R.undated ? `<p class="hint">يوجد ${AD(R.undated)} عملًا قديمًا بلا تاريخ لا يدخل في تقارير الفترات.</p>` : ""}</section>
+${ind("ind_chart") ? `<section class="art"><h2>النشاط اليومي</h2><div class="pfchart" role="img" aria-label="عدد الإنجازات اليومية">${R.bars.map((n, i) => `<div class="pfb" title="${fmt(pr.a + i * DAY)}: ${AD(n)}"><i style="height:${Math.round((n / mx) * 100)}%"></i></div>`).join("")}</div><p class="hint">كل عمود يوم، والأطول يعني إنجازات أكثر في ذلك اليوم.</p></section>` : ""}
+<section class="art"><h2>الأقسام التي استخدمها الطفل</h2>${Object.keys(R.used).length ? `<p>${Object.keys(R.used).map((k) => `<span class="rpchip">${esc(SECN[k] || k)}</span>`).join("")}</p>` : '<p class="hint">لم تُسجَّل أنشطة في هذه الفترة.</p>'}</section>
+<section class="art"><h2>التقدم حسب المجال</h2><div class="rpdoms">${domHtml || '<p class="hint">لا توجد مجالات للعرض.</p>'}</div>${RPC.err ? '<p class="hint">تعذر تحميل تصنيف المجالات الآن، لذلك لا يظهر التقسيم.</p>' : ""}</section>
+${ind("ind_progress") ? `<section class="art"><h2>مهارات أظهرت تقدمًا</h2>${R.progress.length ? `<ul class="rpl">${R.progress.map((x) => `<li><b>${esc(x.title)}</b>: من ${AD(x.from)} من ${AD(x.fn)} إلى ${AD(x.to)} من ${AD(x.tn)}</li>`).join("")}</ul>` : '<p class="hint">لا توجد بيانات كافية لإظهار تقدم في هذه الفترة. يظهر التقدم عند إعادة اختبار سبق إجراؤه بنتيجة أفضل.</p>'}</section>` : ""}
+${!hid.need && ind("ind_need") ? `<section class="art"><h2>مهارات تحتاج إلى مزيد من التدريب</h2>${R.needSk.length ? `<ul class="rpl">${R.needSk.map((x) => `<li><b>${esc(x.k)}</b>: ${AD(x.ok)} إجابات صحيحة من ${AD(x.n)} سؤالًا (من كل المحاولات). التدريب يصنع الفرق.</li>`).join("")}</ul>` : '<p class="hint">لا توجد مهارة تحتاج مراجعة بحسب البيانات الحالية.</p>'}</section>` : ""}
+${!hid.certs ? `<section class="art"><h2>الشهادات في الفترة</h2>${R.certs.length ? `<ul class="rpl">${R.certs.map((c) => `<li><b>${esc(c.title)}</b> · ${fmt(P.certs[c.slug].t)} · <a class="nopr" href="../../portfolio/cert/?c=${encodeURIComponent(c.slug)}">عرض</a></li>`).join("")}</ul>` : '<p class="hint">لا شهادات جديدة في هذه الفترة.</p>'}</section>` : ""}
+${!hid.works ? `<section class="art"><h2>أبرز الأعمال المحفوظة في ملف الإنجاز</h2>${R.wk.length ? `<ul class="rpl">${R.wk.slice(-8).reverse().map((w) => `<li>${rpLink(w)} <small>${esc(w.type)} · ${fmt(w.t)}</small></li>`).join("")}</ul><p class="nopr"><a href="../../portfolio/works/">عرض ملف الإنجاز كاملًا</a></p>` : '<p class="hint">لا أعمال في هذه الفترة.</p>'}</section>` : ""}
+<section class="art"><h2>ماذا نتعلم بعد ذلك؟</h2>${rec.length ? `<ul class="rpl rprec">${rec.map((r) => `<li>${esc(r.text)} <a class="abtn go nopr" href="${r.url}">افتح</a></li>`).join("")}</ul>` : '<p class="hint">لا توجد توصيات محددة الآن. واصلوا ما بدأتموه.</p>'}</section>
+${childBox(R)}
+<div class="btns nopr"><button type="button" class="abtn go" id="rpprint">طباعة التقرير أو حفظه PDF</button></div><p class="hint nopr">التقرير خاص بوليّ الأمر ولا يُرسل إلى أحد. الأرقام من سجلات هذا الجهاز${SESS && consent() ? " (ومتزامنة مع حسابك)" : ""}.</p>`);
+    bindKid(); $("#rpprint").onclick = () => { rpGenLog("print"); W.print(); };
+    rs.last = { type, a: pr.a, z: pr.z, t: Date.now() }; rs.seen = (type === "week" ? "w" : type === "month" ? "m" : "c") + pr.a; save(); rpGenLog(type);
+    W.__rp = { R, rec }; if (p.get("print") === "1") setTimeout(() => W.print(), 700);
+  };
+  loadPool().then(body, body);
+}
+function rhubPage() {
+  const rs = rpSet(), cur = period("week", 0), prev = period("week", -1), R0 = buildReport(cur, "week");
+  const last = rs.last ? `${rs.last.type === "week" ? "أسبوعي" : rs.last.type === "month" ? "شهري" : "مخصص"} · ${fmt(rs.last.a)} إلى ${fmt(rs.last.z)} (أُنشئ ${fmt(rs.last.t)})` : "لم يُنشأ تقرير بعد";
+  const due = rs.notif && rs.seen !== "w" + prev.a;
+  const t = new Date(), ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`, f0 = new Date(t.getTime() - 6 * DAY);
+  const seg = (n, l) => `<div class="pfstat"><b>${AD(n)}</b><span>${l}</span></div>`;
+  skel(`<div class="zbc"><a href="../">الرئيسية</a> › تقارير تقدم الطفل</div>${kidBar()}
+${due ? `<div class="rpbanner" role="status">تقرير الأسبوع الماضي جاهز للاطلاع. <a class="abtn go" href="view/?t=week&off=-1">عرض التقرير</a></div>` : ""}
+<section class="art"><h1>تقارير تقدم ${esc(kidName())}</h1><p class="hint">${esc(LV[P.lv])} · الأسبوع الحالي حتى الآن (من ${fmt(cur.a)}):</p><div class="pfstats">${seg(R0.cnt.acts, "أنشطة مكتملة")}${seg(R0.cnt.les, "دروس وقصص")}${seg(R0.cnt.wsp, "أوراق عمل ومشروعات")}${seg(R0.cnt.quiz, "اختبارات")}${seg(Object.keys(R0.skills).length, "مهارات تدرب عليها")}</div><p><b>آخر تقرير:</b> ${esc(last)}</p>
+<div class="btns"><a class="abtn go" href="view/?t=week" id="rpw">عرض التقرير الأسبوعي</a><a class="abtn go" href="view/?t=month" id="rpm">عرض التقرير الشهري</a><a class="abtn" href="view/?t=week&print=1" id="rpp1">طباعة التقرير أو حفظ PDF</a></div></section>
+<section class="art"><h2>تقرير لفترة تحددها</h2><form class="pfper" id="rpcf"><label>من<input type="date" id="rpf" value="${ymd(f0)}" max="${ymd(t)}"></label><label>إلى<input type="date" id="rpt" value="${ymd(t)}" max="${ymd(t)}"></label><button class="abtn go" type="submit">عرض التقرير</button></form><p class="hint" id="rpcm" role="status"></p></section>
+<section class="art"><h2>إعدادات التقارير</h2><form class="pfedit" id="rpsf"><label>التقرير الافتراضي<select id="rpty"><option value="week"${rs.type === "week" ? " selected" : ""}>أسبوعي</option><option value="month"${rs.type === "month" ? " selected" : ""}>شهري</option></select></label>
+<fieldset><legend>المجالات التي تظهر في التقرير</legend>${RPC.dom.map((d) => `<label class="pfck"><input type="checkbox" data-d="${d.slug}" ${rs.hideDom[d.slug] ? "" : "checked"}> ${d.d.icon || ""} ${esc(d.title)}</label>`).join("") || '<p class="hint">تعذر تحميل المجالات الآن.</p>'}</fieldset>
+<fieldset><legend>إخفاء تفاصيل غير ضرورية</legend><label class="pfck"><input type="checkbox" data-h="works" ${rs.hide.works ? "checked" : ""}> إخفاء قوائم الأعمال المفصلة</label><label class="pfck"><input type="checkbox" data-h="certs" ${rs.hide.certs ? "checked" : ""}> إخفاء الشهادات</label><label class="pfck"><input type="checkbox" data-h="need" ${rs.hide.need ? "checked" : ""}> إخفاء المهارات التي تحتاج تدريبًا</label></fieldset>
+<fieldset><legend>تذكير داخل الموقع (اختياري)</legend><label class="pfck"><input type="checkbox" id="rpnf" ${rs.notif ? "checked" : ""}> أذكّرني هنا عندما يجهز تقرير الأسبوع الماضي</label><p class="hint">التذكير يظهر داخل هذه الصفحة فقط عند زيارتك لها. لا نرسل رسائل ولا بريدًا ولا إشعارات على جهازك.</p></fieldset>
+<div class="btns"><button class="abtn go" type="submit">حفظ الإعدادات</button></div><p class="hint" id="rpsm" role="status"></p></form></section>
+<section class="art pfpriv"><h2>الخصوصية</h2><p>التقارير تُبنى على جهازك من سجلات طفلك، ولا تُنشر ولا تُشارَك ولا تُرتَّب ولا تقارن الطفل بغيره. يُحفظ فقط تاريخ آخر تقرير وإعداداتك. ${SESS && consent() ? "وبما أنك فعّلت المزامنة، تُحفظ الإعدادات مع ملف الإنجاز في حسابك." : ""}</p><div class="btns"><button class="abtn qzdanger" type="button" id="rpdel">حذف إعدادات التقارير وسجل آخر تقرير</button></div><p class="hint" id="rpdm" role="status"></p></section>`);
+  bindKid();
+  $("#rpcf").onsubmit = (e) => { e.preventDefault(); const a = $("#rpf").value, z = $("#rpt").value; if (!period("custom", 0, a, z)) { $("#rpcm").textContent = "اختر تاريخ بداية قبل تاريخ النهاية، وبحد أقصى سنة."; return; } location.href = `view/?t=custom&from=${a}&to=${z}`; };
+  $("#rpsf").onsubmit = (e) => { e.preventDefault(); rs.type = $("#rpty").value; $$("[data-d]").forEach((x) => { if (x.checked) delete rs.hideDom[x.dataset.d]; else rs.hideDom[x.dataset.d] = 1; }); $$("[data-h]").forEach((x) => { rs.hide[x.dataset.h] = x.checked ? 1 : 0; }); rs.notif = $("#rpnf").checked ? 1 : 0; save(); $("#rpsm").textContent = "تم حفظ الإعدادات."; };
+  $("#rpdel").onclick = () => { if (!confirm("حذف إعدادات التقارير وسجل آخر تقرير لهذا الطفل؟ (لا تُحذف أنشطته)")) return; delete P.rp; save(); $("#rpdm").textContent = "تم الحذف."; setTimeout(() => location.reload(), 600); };
+}
 W.ZPF = { evalCert, rawRecords, works, quizRecords, get state() { return { P, EARNED, REC, META, CERTS }; } };
-async function init() { await checkConflict(); await prepare(); ({ hub: hubPage, works: worksPage, cert: certPage, report: reportPage })[PAGE](); const p = D.getElementById("avw"); if (p) p.setAttribute("aria-busy", "false"); }
+async function init() { await checkConflict(); await prepare(); ({ hub: hubPage, works: worksPage, cert: certPage, report: reportPage, rhub: rhubPage, rview: rviewPage })[PAGE](); const p = D.getElementById("avw"); if (p) p.setAttribute("aria-busy", "false"); }
 if (D.body.classList.contains("pf")) init().catch((e) => { reportErr("init", (e && e.message) || "init"); const b = $("#aview"); if (b) b.innerHTML = '<div class="sempty"><h3>تعذر تحميل ملف الإنجاز الآن</h3><p>حاول مرة أخرى بعد قليل.</p></div>'; });
 })();
