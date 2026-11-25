@@ -13,7 +13,7 @@
 
 - المحتوى أصلي، غير منسوب لأي منهج أو كتاب مدرسي.
 - أسئلة الرياضيات وحلولها تُحسب برمجيًا (`Fraction`/`Decimal`) فلا تختلف الإجابة عن السؤال.
-- المولّد: `tools/content/libgen.py` (القالب) و`tools/content/libspecs.py` (الملفات) و`tools/content/build.py` (PDF ملوّن + أبيض وأسود عبر Ghostscript + معاينات webp).
+- المولّد: `tools/content/libgen.py` (القالب) و`tools/content/libspecs*.py` (الملفات؛ حُذفت من المستودع، وتوجد في الوسم backup-before-libspecs-delete وفي سجل git) و`tools/content/build.py` (PDF ملوّن + أبيض وأسود عبر Ghostscript + معاينات webp).
 - الأمر: `python3 tools/content/build.py [اسم_الدالة]` ثم إدراج الصف في `products` (price 0، lib_status published).
 - لكل ملف: نسخة ملوّنة وأخرى أبيض وأسود، غلاف، ومعاينات لكل الصفحات.
 
