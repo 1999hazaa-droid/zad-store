@@ -274,7 +274,7 @@ ${K("target","الاختبارات والتقييمات","أسئلة قصيرة 
 ${K("sparkle","المزيد","عالم زاد والمغامرات والإنجازات وأكثر","كل الفئات","games/#more","#F0EAFE","#5526B8")}
 </div>
 </div></section>
-<section class="zm-sec" aria-labelledby="zm-rec"><div class="wrap"><div class="zm-head"><h2 id="zm-rec">أنشطة مقترحة <em>لطفلك</em></h2></div><div class="rec-mount" data-max="5"></div><p class="rmore"><a href="${A("next/")}">ماذا نتعلم بعد ذلك؟ كل الاقتراحات والإعدادات</a> · <a href="${A("plan/")}">خطتي التعليمية الأسبوعية</a></p></div></section>
+<section class="zm-sec" aria-labelledby="zm-rec"><div class="wrap"><div class="zm-head"><h2 id="zm-rec">أنشطة مقترحة <em>لطفلك</em></h2></div><div class="rec-mount" data-max="5"></div><p class="rmore"><a href="${A("next/")}">ماذا نتعلم بعد ذلك؟ كل الاقتراحات والإعدادات</a> · <a href="${A("plan/")}">خطتي التعليمية الأسبوعية</a> · <a href="${A("calendar/")}">التقويم التعليمي</a></p></div></section>
 <section class="zm-band" aria-labelledby="zm-w"><div class="wrap">
 <div class="zm-head"><h2 id="zm-w">${X("لماذا")} <em>${X("زاد")}</em>${X("؟")}</h2></div>
 <div class="zm-stats">${H("blocks","ألعاب تعليمية ممتعة","تعلّم من خلال اللعب","#F0EAFE")}${H("star","مجانية بالكامل","ألعاب تعليمية مجانية للأطفال","#FFF4D6")}${H("tablet","بدون إنترنت","العب في أي وقت ومكان","#E5F3FF")}${H("cap","من سنة إلى الصف الرابع","محتوى مناسب للأطفال","#E4F6ED")}</div>
