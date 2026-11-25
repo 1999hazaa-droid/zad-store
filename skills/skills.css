@@ -1,0 +1,33 @@
+/* ابحث حسب المهارة */
+.sk .skdoms{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:16px 0}
+.skdom{border:2px solid var(--c,#e4d9ff);background:#fff;border-radius:20px;padding:12px 8px;text-align:center;cursor:pointer;font:800 15px var(--z-font,inherit);color:var(--z-ink,#2a1a52);min-height:116px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.skdom img{width:56px;height:56px}.skdom small{font-weight:700;color:#5d4f85;font-size:12px}
+.skdom[aria-pressed=true]{background:var(--c,#e6dcff);border-color:var(--z-pri,#5b2bb8)}
+.skdom:focus-visible,.skcard a:focus-visible,.skcard button:focus-visible,.skf select:focus-visible{outline:3px solid #f5a623;outline-offset:2px}
+.skf{background:#faf7ff;border:1px solid var(--z-tint2,#e4d9ff);border-radius:20px;padding:12px;margin:8px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.skf label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:800;color:var(--z-pri,#5b2bb8)}
+.skf select,.skf input{border:2px solid var(--z-tint2,#e4d9ff);border-radius:12px;padding:8px;font:700 14px var(--z-font,inherit);min-height:42px;background:#fff;color:var(--z-ink,#2a1a52)}
+.skhint{font-size:13px;color:#5d4f85;margin:4px 0}
+.skgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin:12px 0}
+.skcard{background:#fff;border:1px solid var(--z-tint2,#e4d9ff);border-top:5px solid var(--c,#c1aef0);border-radius:18px;box-shadow:0 3px 10px #3510781a;padding:12px;display:flex;flex-direction:column;gap:8px}
+.skcard h3{margin:0;font-size:16px;line-height:1.45;color:var(--z-ink,#2a1a52)}
+.skcard .mt{display:flex;flex-wrap:wrap;gap:5px}.skcard .mt span{font-size:12px;font-weight:700;background:#f1eaff;color:#3a1a85;border-radius:99px;padding:2px 9px}
+.skcard p{margin:0;font-size:13px;color:#5d4f85;line-height:1.5}
+.skcard .go{margin-top:auto;display:block;text-align:center;background:var(--z-pri,#5b2bb8);color:#fff;border-radius:99px;padding:10px;font:800 14px var(--z-font,inherit);text-decoration:none;min-height:42px}
+.sktitle{display:flex;gap:12px;align-items:center;margin:16px 0 4px}.sktitle img{width:64px;height:64px}.sktitle h2{margin:0;font-size:22px;color:var(--z-pri,#5b2bb8)}
+.skback{display:inline-block;margin:10px 0;color:var(--z-pri,#5b2bb8);font-weight:800}
+.skstage{margin:18px 0 6px;font-size:17px;color:var(--z-pri,#5b2bb8)}.skstage small{font-weight:600;color:#5d4f85;font-size:13px}
+.skpath{background:#faf7ff;border:1px solid var(--z-tint2,#e4d9ff);border-radius:20px;padding:12px 14px;margin:12px 0}
+.skpath ol{margin:8px 0 0;padding-inline-start:22px;display:flex;flex-direction:column;gap:6px}.skpath a{color:var(--z-pri,#5b2bb8);font-weight:800}
+.skprog{background:#fff;border:2px dashed var(--z-tint2,#e4d9ff);border-radius:16px;padding:10px 12px;font-size:14px;margin:10px 0}
+.skplan{background:#f6f1ff;border:1px solid var(--z-tint2,#e4d9ff);border-radius:18px;padding:12px;margin:12px 0;display:flex;flex-direction:column;gap:8px}
+.skplan label.ck{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:700;min-height:38px}
+.skplan .m{margin:0;font-weight:700;font-size:13px}.skplan .m.bad{color:#b3261e}.skplan .m.ok{color:#17683a}
+.skplan button{border:0;border-radius:99px;background:var(--z-pri,#5b2bb8);color:#fff;font:800 14px var(--z-font,inherit);padding:10px 16px;min-height:44px;cursor:pointer}
+.skplan button.alt{background:#fff;color:var(--z-pri,#5b2bb8);border:2px solid var(--z-pri,#5b2bb8)}
+.skplan select{border:2px solid var(--z-tint2,#e4d9ff);border-radius:10px;padding:6px;font:700 13px var(--z-font,inherit);min-height:38px}
+.skres{background:#fff;border:1px solid var(--z-tint2,#e4d9ff);border-radius:16px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.skres b{flex:1;min-width:150px;font-size:15px}.skres .mt{display:flex;gap:5px;flex-wrap:wrap}.skres .mt span{font-size:12px;font-weight:700;background:#f1eaff;color:#3a1a85;border-radius:99px;padding:2px 9px}
+.skres .mt .fr{background:#dff6e7;color:#17683a}.skres .mt .pd{background:#fff0d1;color:#8a5200}
+.skres a{background:var(--z-pri,#5b2bb8);color:#fff;border-radius:99px;padding:8px 14px;font:800 13px var(--z-font,inherit);text-decoration:none;min-height:38px;display:inline-flex;align-items:center}
+@media (max-width:480px){.skdoms{grid-template-columns:repeat(2,1fr)}}
