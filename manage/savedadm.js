@@ -4,7 +4,7 @@
 "use strict";
 const Z = window.__zp; if (!Z) return;
 const { sb, $, $$, esc, toast, SUB } = Z;
-const CT = { story: "قصص تعليمية", ws: "أوراق عمل", cards: "بطاقات تعليمية", home: "أنشطة منزلية", video: "دروس مرئية", game: "ألعاب تعليمية", quiz: "اختبارات", project: "مشروعات", res: "موارد تعليمية" };
+const CT = { story: "قصص تعليمية", ws: "أوراق عمل", cards: "بطاقات تعليمية", home: "أنشطة منزلية", video: "دروس مرئية", game: "ألعاب تعليمية", quiz: "اختبارات", project: "مشروعات", res: "موارد تعليمية", pack: "حزم تعليمية" };
 let TAB = "types", FILTER = "", OFF = [], ERRS = [];
 const F = () => window.ZFIND;
 const fail = (e) => { console.error(e); toast("تعذّر الحفظ. تأكد من الإنترنت وحاول مرة ثانية"); };

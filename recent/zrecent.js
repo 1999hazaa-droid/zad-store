@@ -144,6 +144,8 @@ function init() {
   }
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+/* فتح مورد من «الحزم التعليمية»: يُحمَّل شريط التنقل بين موارد الحزمة (pk وpi في الرابط) */
+if (/[?&]pk=/.test(location.search) && !W.ZPACKS) { const s = document.createElement("script"); s.src = ROOT + "packs/zpacks.js?v=1"; document.head.appendChild(s); }
 
 W.ZRECENT = { ROOT, SRC_CT, SRC_NAME, ST_TXT, list, put, remove, clear, setHide, me, status, resume, resolve, card, mount, remountAll, touchLib, loadCfg, cfg: () => CFG, kidId, esc, AD, fdate, needZ, allowed };
 })(window);

@@ -34,7 +34,7 @@ const money = (n) => (Number(n) || 0).toFixed(3) + " ر.ع";
 
 function card(r) {
   const off = r.st === "gone", sel = ST.picked.has(r.key), planOk = r.it && PLAN_SRC.has(r.it.src);
-  const stt = r.paid ? `<span class="pd">مدفوع${r.price ? " · " + esc(money(r.price)) : ""}</span>` : r.it ? `<span class="fr">مجاني</span>` : "";
+  const stt = r.it && r.it.src === "pack" ? "" : r.paid ? `<span class="pd">مدفوع${r.price ? " · " + esc(money(r.price)) : ""}</span>` : r.it ? `<span class="fr">مجاني</span>` : "";
   const note = off ? `<p class="st bad">هذا المحتوى لم يعد متاحًا. يمكنك إزالته من قائمتك.</p>` : r.st === "unk" ? `<p class="st bad">تعذّر التحقق من توفر المحتوى الآن، أعد المحاولة لاحقًا.</p>` : r.paid ? `<p class="st">محتوى مدفوع: تتاح المعاينة هنا، والملف الكامل بعد الطلب.</p>` : "";
   const img = r.img || ROOT + "images/zad/i_puzzle.webp";
   const open = !r.it ? `<span class="dis" aria-disabled="true">${off ? "غير متاح" : "تعذّر التحقق"}</span>` : `<a href="${esc(ROOT + r.it.url)}" aria-label="${r.paid ? "عرض المعاينة" : "فتح المحتوى"}: ${esc(r.t)}">${r.paid ? "عرض المعاينة" : "فتح المحتوى"}</a>`;
@@ -133,10 +133,18 @@ function logGone(all) {
 }
 
 render();
-Promise.all([Z.load().catch(() => null), S.ready()]).then(() => {
+/* الحزم التعليمية الجاهزة: تُحفظ بمفتاح pack:slug وتُعرض هنا إن كانت منشورة وجاهزة */
+async function loadPacks() {
+  Z.CT.pack = "حزم تعليمية"; if (!Z.CTK.includes("pack")) Z.CTK.push("pack");
+  try {
+    const P = window.ZPACKS; if (!P) throw new Error("no packs"); const ps = await P.load();
+    ps.forEach((p) => { const r = P.resolve(p, Z); if (r.items.length < P.MIN_READY) return; live.set("pack:" + p.slug, { key: "pack:" + p.slug, src: "pack", slug: p.slug, title: p.title, ct: "pack", dom: p.dom, lv: p.levels, img: p.cover, paid: false, price: 0, hidden: false, url: "packs/view/?p=" + encodeURIComponent(p.slug), icon: null }); });
+  } catch (e) { X.failed.push("pack"); }
+}
+Promise.all([Z.load().catch(() => null), S.ready()]).then(() => loadPacks()).then(() => {
   X.all.forEach((i) => live.set(i.key, i)); FAILED = X.failed.length > 0;
   S.migrate(X.items);
-  if (!FAILED) { const m = {}; X.items.forEach((i) => { m[i.key] = i; }); S.refresh(m); }
+  if (!FAILED) { const m = {}; X.items.forEach((i) => { m[i.key] = i; }); live.forEach((i, k) => { if (i.src === "pack") m[k] = i; }); S.refresh(m); }
   READY = true; render(); if (!FAILED) logGone(recs());
 });
 })();
