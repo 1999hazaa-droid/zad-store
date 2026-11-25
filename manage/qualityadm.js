@@ -71,6 +71,7 @@ SUB.qualityadm = { title: "مركز جودة المحتوى", fn: async function
   const ok = await loadMe();
   if (!ok || !S.me.roles.length) { m.innerHTML = '<button class="chip" onclick="window.__go(\'more\')">→ رجوع</button><p class="mut">ليست لديك صلاحية الدخول إلى مركز الجودة.</p>'; return; }
   await Promise.all([loadItems(), loadDash()]);
+  if (window.__qualityOpen) { S.sel = window.__qualityOpen; window.__qualityOpen = null; }
   if (S.sel) return detail(m, S.sel);
   paint(m);
 } };
@@ -145,7 +146,8 @@ async function detail(m, key) {
   const pk = it.src === "pack" ? await packInfo(it) : null;
   const sl = await sb.from("src_links").select("*").eq("item_key", key), ids = (sl.data || []).map((x) => x.source_id);
   const ss = ids.length ? await sb.from("src_sources").select("id,title,author,status,rights,link_status,next_review").in("id", ids) : { data: [] };
-  DET = { it, reviews: rv.data || [], log: lg.data || [], pack: pk, sources: { links: sl.data || [], src: ss.data || [], err: !!(sl.error || ss.error) } };
+  const fbr = await sb.from("fb_items").select("id,ref,kind,status,priority").eq("item_key", key);
+  DET = { it, reviews: rv.data || [], log: lg.data || [], pack: pk, fb: fbr.data || [], sources: { links: sl.data || [], src: ss.data || [], err: !!(sl.error || ss.error) } };
   card = JSON.parse(JSON.stringify({ scores: (it.card || {}).scores || {}, notes: (it.card || {}).notes || {}, blockers: (it.card || {}).blockers || [], summary: (it.card || {}).summary || "" }));
   drawDetail(m);
 }
@@ -188,6 +190,8 @@ function drawDetail(m) {
       ${can("edu_reviewer", "design_reviewer") ? `<div class="qc-acts"><input class="qi" data-sn="${esc(l.id)}" maxlength="400" placeholder="ملاحظة جودة مرتبطة بهذا المصدر" aria-label="ملاحظة جودة" value=""><button class="chip" data-snb="${esc(l.id)}">حفظ الملاحظة</button></div>` : ""}</div>`; }).join("")}
     <p class="mut" style="font-size:12px">وجود مصدر موثّق ليس دليلًا كافيًا على صحة المورد؛ يبقى تقييم المحتوى نفسه مطلوبًا في البطاقة أعلاه.</p>
     <div class="qc-acts">${S.me.roles.length ? '<button class="chip" id="qsrcgo">فتح مركز المصادر</button>' : ""}</div></div>`;
+  const FBK = { new: "جديدة", in_review: "قيد المراجعة", need_info: "تحتاج معلومات", accepted: "مقبولة", resolved: "تمت معالجتها", unactionable: "غير قابلة للتنفيذ", duplicate: "مكررة" }, fbOpen = (DET.fb || []).filter((x) => ["new", "in_review", "need_info", "accepted"].includes(x.status));
+  const fbBox = (DET.fb || []).length ? `<div class="qc-box" style="margin-top:12px" id="qfb"><b>ملاحظات أولياء الأمور</b>${fbOpen.length ? `<div class="qc-prob">${AD(fbOpen.length)} ملاحظة مفتوحة على هذا المورد؛ راجعها قبل الاعتماد أو إعادة النشر.</div>` : '<p class="mut">لا توجد ملاحظات مفتوحة.</p>'}${DET.fb.map((x) => `<div class="mut" style="font-size:13px">• ${esc(x.ref)} — ${FBK[x.status] || x.status}</div>`).join("")}<div class="qc-acts"><button class="chip" id="qfbgo">فتح ملاحظات أولياء الأمور</button></div></div>` : "";
   const noteBox = ["in_review", "published", "draft", "needs_changes", "suspended"].includes(st) ? `<label class="mut" for="qnote">${st === "published" ? "سبب القرار / الإيقاف" : st === "in_review" ? "التعديل المطلوب (لطلب التعديل) أو ملاحظة" : "ملاحظة تُسجَّل مع الإجراء"}</label><textarea id="qnote" maxlength="400"></textarea>` : "";
   const recheckBox = st === "published" && !it.recheck && can("content_editor", "edu_reviewer", "design_reviewer", "publisher") ? `<div class="qc-acts"><select id="qrs" aria-label="سبب إعادة التقييم">${RECHECK.map((r) => `<option>${r}</option>`).join("")}</select><button class="chip" id="qrc">طلب إعادة تقييم</button></div>` : "";
   const packBox = pack ? `<div class="qc-box" style="margin-top:12px"><b>مراجعة الحزمة كاملة</b>${pack.problems.length ? pack.problems.map((p) => `<div class="qc-prob">${esc(p)}</div>`).join("") : '<div class="qc-ok">كل الموارد منشورة وصالحة ومناسبة لعمر/صف الحزمة وعددها كافٍ.</div>'}
@@ -203,7 +207,7 @@ function drawDetail(m) {
   ${it.legacy && st === "published" ? '<div class="qc-prob">هذا المورد نُشر قبل تفعيل مركز الجودة ولم تُسجَّل له مراجعة. ابدأ بالتقييم ثم اضغط «اجتاز ويبقى منشورًا» أو أوقفه مؤقتًا.</div>' : ""}</div>
   <div class="qc-det"><div><div class="qc-box"><b>بطاقة التقييم</b> <span class="mut" style="font-size:12px">(الدرجات داخلية للمراجع فقط ولا تُعرض للمستخدم)</span>${crit}
   <label class="mut" for="qsum">ملخص المراجعة</label><textarea id="qsum" maxlength="500" ${scoreEditable("edu") || scoreEditable("dsg") ? "" : "disabled"}>${esc(card.summary || "")}</textarea>
-  <p class="mut" style="font-size:13px">المتوسط الداخلي: <b>${av == null ? "—" : AD(av)}</b> — لا يحدد القرار وحده؛ أي معيار أقل من 3 أو مشكلة مانعة يمنع الاعتماد.</p>${noteBox}<div class="qc-acts">${a.join("")}${gotoAdm}</div>${recheckBox}</div>${packBox}${srcBox}</div>
+  <p class="mut" style="font-size:13px">المتوسط الداخلي: <b>${av == null ? "—" : AD(av)}</b> — لا يحدد القرار وحده؛ أي معيار أقل من 3 أو مشكلة مانعة يمنع الاعتماد.</p>${noteBox}<div class="qc-acts">${a.join("")}${gotoAdm}</div>${recheckBox}</div>${packBox}${srcBox}${fbBox}</div>
   <div><div class="qc-box"><b>المراجعات السابقة</b>${rvH}</div><div class="qc-box" style="margin-top:12px"><b>سجل التغييرات</b>${lgH}</div></div></div></div>`;
   bindDetail(m);
 }
@@ -221,6 +225,7 @@ function bindDetail(m) {
     CRIT.forEach(([k, , g]) => { if (!allow(g)) return; if (card.scores[k] != null) sc[k] = card.scores[k]; nt[k] = card.notes[k] || ""; if (card.blockers.includes(k)) bl.push(k); });
     return sb.rpc("quality_card_save", { p_key: key, p_scores: sc, p_notes: nt, p_blockers: bl, p_summary: card.summary }); };
   const b = (id, f) => { const e = $(id, m); if (e) e.onclick = f; };
+  b("#qfbgo", () => { S.sel = null; window.__fbFilter = { res: key }; window.__go("feedbackadm"); });
   b("#qsrcgo", () => { S.sel = null; window.__go("sourcesadm"); });
   $$("[data-snb]", m).forEach((bt) => (bt.onclick = () => { const v = (($(`[data-sn="${bt.dataset.snb}"]`, m) || {}).value || "").trim(); if (!v) return toast("اكتب الملاحظة أولًا"); run(() => sb.rpc("src_note", { p_link: bt.dataset.snb, p_note: v }), "حُفظت ملاحظة المصدر"); }));
   b("#qedit", () => { S.sel = null; window.__go(ADM[it.src]); });

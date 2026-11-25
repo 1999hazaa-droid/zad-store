@@ -377,6 +377,7 @@ function openPreview(p, push) {
   if (!p) return;
   PV.back = D.activeElement; PV.p = p; PV.i = 0; PV.z = 1; PV.bw = false; PV.list = []; PV.mode = "images"; const seq = ++PV.seq;
   $("#lpvt").textContent = p.name;
+  { const fb = $("#lfb"); if (fb) { fb.hidden = true; fb.onclick = null; const tryA = (n) => { if (window.ZFEEDBACK) window.ZFEEDBACK.attach(fb, "lib:" + (p.slug || p.id), p.name, () => seq === PV.seq); else if (n < 20) setTimeout(() => tryA(n + 1), 250); }; tryA(0); } }
   $("#lpvm").textContent = [lvLabel(p), SECI[p.lib_section] && SECI[p.lib_section][1], p.file_type || "PDF", pagesTxt(p.pages)].filter(Boolean).join(" · ");
   $("#limg").removeAttribute("src"); $("#lload").hidden = false; $("#lload").textContent = "جاري تحميل المعاينة…";
   $("#lpn").textContent = ""; $("#ldots").innerHTML = "";
