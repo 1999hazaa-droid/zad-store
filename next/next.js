@@ -11,7 +11,7 @@ async function draw() {
   const kids = st.DB ? Object.keys(st.DB.kids) : [];
   const nm = (k) => (st.DB.kids[k].name || (st.DB.kids[k].pf && st.DB.kids[k].pf.nick) || "الطفل " + (kids.indexOf(k) + 1));
   view.innerHTML = `<div class="zbc"><a href="../">الرئيسية</a> › <a href="../library/">المكتبة</a> › ماذا نتعلم بعد ذلك؟</div>
-<section class="art"><h1>ماذا نتعلم بعد ذلك؟</h1><p class="hint">اقتراحات من محتوى زاد لطفلك، بحسب عمره أو صفه وما أنجزه فعلًا، وتحت كل اقتراح سببه.</p>
+<section class="art"><h1>ماذا نتعلم بعد ذلك؟</h1><p class="hint"><a href="../plan/">حوّل الاقتراحات إلى خطتي التعليمية الأسبوعية</a></p><p class="hint">اقتراحات من محتوى زاد لطفلك، بحسب عمره أو صفه وما أنجزه فعلًا، وتحت كل اقتراح سببه.</p>
 ${kids.length > 1 ? `<label class="nxk">الطفل: <select id="nxkid">${kids.map((k) => `<option value="${esc(k)}"${k === st.cur ? " selected" : ""}>${esc(nm(k))}</option>`).join("")}</select></label>` : ""}
 ${st.lv ? `<p class="hint">المرحلة: <b>${esc(R.LV[st.lv])}</b> · <button type="button" class="abtn" id="nxlv">تغيير</button></p>` : ""}
 <div class="rec-mount" id="nxrec"></div></section>

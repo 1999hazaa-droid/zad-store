@@ -158,7 +158,7 @@ async function mount(el, o) {
     })));
   } catch (e) { reportErr("mount " + e.message); list.removeAttribute("aria-busy"); list.innerHTML = '<p class="rempty">تعذر تحميل الاقتراحات الآن. حاول لاحقًا.</p>'; }
 }
-W.ZREC = { mount, state, recSet, saveSet, loadCfg, loadPool, compute, LV, LVK, domName, get cfg() { return CFG; }, domOf, doneSet, gameFits };
+W.ZREC = { mount, state, recSet, saveSet, loadCfg, loadPool, compute, LV, LVK, domName, get cfg() { return CFG; }, domOf, doneSet, gameFits, imgOf, dur, reasonOf, lvRange, URLS, KIND, TB, ROOT, rest, today, reportErr, wGroup, TYPE };
 const auto = () => D.querySelectorAll(".rec-mount").forEach((el) => { if (!el.classList.contains("rec-w")) mount(el, { max: +el.dataset.max || 5, domain: el.dataset.domain || "", title: el.dataset.title || "" }); });
 if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", auto); else auto();
 try { let tm = 0; new MutationObserver(() => { clearTimeout(tm); tm = setTimeout(auto, 120); }).observe(D.body || D.documentElement, { childList: true, subtree: true }); } catch {}
