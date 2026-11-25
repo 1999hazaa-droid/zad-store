@@ -29,7 +29,7 @@ const CRIT = [
 const CNAME = Object.fromEntries(CRIT.map((c) => [c[0], c[1]]));
 const ROLES = [["content_editor", "مسؤول إضافة المحتوى", "يرسل الموارد للمراجعة"], ["edu_reviewer", "مراجع تعليمي", "يقيّم المعايير التعليمية ويعتمد"], ["design_reviewer", "مراجع تصميم", "يقيّم التصميم وسهولة الاستخدام والملفات"], ["publisher", "مسؤول نشر", "ينشر المقبول ويوقف مؤقتًا"], ["library_manager", "مدير المكتبة", "كل الصلاحيات وإدارة الأدوار"]];
 const RECHECK = ["خطأ تعليمي", "تحديث منهج أو معلومة", "ملاحظة من ولي أمر", "رابط أو ملف معطل", "مشكلة تصميم أو تفاعل", "تغيّر صلاحيات الوصول"];
-const EVT = { submit: "أُرسل للمراجعة", card_save: "حُفظ التقييم", accepted: "اعتُمد", needs_changes: "طُلب تعديل", keep: "اجتاز إعادة التقييم ويبقى منشورًا", published: "نُشر", suspended: "أُوقف مؤقتًا", edit: "تعديل", recheck: "طُلبت إعادة تقييم", legacy: "نُشر دون مراجعة", seed: "سجل أولي", created: "أُضيف كمسودة", deleted: "حُذف من المصدر", renamed: "تغيّر رمزه", roles: "تغيير أدوار" };
+const EVT = { submit: "أُرسل للمراجعة", card_save: "حُفظ التقييم", accepted: "اعتُمد", needs_changes: "طُلب تعديل", keep: "اجتاز إعادة التقييم ويبقى منشورًا", published: "نُشر", suspended: "أُوقف مؤقتًا", edit: "تعديل", recheck: "طُلبت إعادة تقييم", legacy: "نُشر دون مراجعة", seed: "سجل أولي", created: "أُضيف كمسودة", deleted: "حُذف من المصدر", renamed: "تغيّر رمزه", roles: "تغيير أدوار", version_created: "أُنشئت نسخة تحديث", version_submitted: "أُرسلت نسخة للمراجعة", version_changes: "نسخة تحتاج إلى تعديل", version_approved: "اعتُمدت نسخة", version_published: "نُشرت نسخة جديدة", version_reinstated: "نُشرت نسخة وأُعيد إتاحة المورد", version_restored: "استعادة نسخة سابقة", version_cancelled: "أُوقف تحديث", version_deleted: "حُذفت نسخة عمل" };
 const PAGE = 40;
 
 const S = { tab: "dash", me: { roles: [], name: "" }, items: [], dash: null, f: { q: "", st: "", type: "", lv: "", flag: "" }, page: 0, sel: null, staff: null };
@@ -147,7 +147,8 @@ async function detail(m, key) {
   const sl = await sb.from("src_links").select("*").eq("item_key", key), ids = (sl.data || []).map((x) => x.source_id);
   const ss = ids.length ? await sb.from("src_sources").select("id,title,author,status,rights,link_status,next_review").in("id", ids) : { data: [] };
   const fbr = await sb.from("fb_items").select("id,ref,kind,status,priority").eq("item_key", key);
-  DET = { it, reviews: rv.data || [], log: lg.data || [], pack: pk, fb: fbr.data || [], sources: { links: sl.data || [], src: ss.data || [], err: !!(sl.error || ss.error) } };
+  const vrs = await sb.from("ver_versions").select("id,major,minor,kind,status,summary,created_at,created_by_name,published_at,review_result,urgent").eq("item_key", key).order("major", { ascending: false }).order("minor", { ascending: false });
+  DET = { it, reviews: rv.data || [], log: lg.data || [], pack: pk, fb: fbr.data || [], ver: vrs.data || [], sources: { links: sl.data || [], src: ss.data || [], err: !!(sl.error || ss.error) } };
   card = JSON.parse(JSON.stringify({ scores: (it.card || {}).scores || {}, notes: (it.card || {}).notes || {}, blockers: (it.card || {}).blockers || [], summary: (it.card || {}).summary || "" }));
   drawDetail(m);
 }
@@ -191,6 +192,8 @@ function drawDetail(m) {
     <p class="mut" style="font-size:12px">وجود مصدر موثّق ليس دليلًا كافيًا على صحة المورد؛ يبقى تقييم المحتوى نفسه مطلوبًا في البطاقة أعلاه.</p>
     <div class="qc-acts">${S.me.roles.length ? '<button class="chip" id="qsrcgo">فتح مركز المصادر</button>' : ""}</div></div>`;
   const FBK = { new: "جديدة", in_review: "قيد المراجعة", need_info: "تحتاج معلومات", accepted: "مقبولة", resolved: "تمت معالجتها", unactionable: "غير قابلة للتنفيذ", duplicate: "مكررة" }, fbOpen = (DET.fb || []).filter((x) => ["new", "in_review", "need_info", "accepted"].includes(x.status));
+  const VST = { working: "قيد التعديل", in_review: "تنتظر المراجعة", needs_changes: "تحتاج إلى تعديل", approved: "معتمدة وتنتظر النشر", published: "الحالية", superseded: "سابقة", cancelled: "أُوقف التحديث" };
+  const verBox = `<div class="qc-box" style="margin-top:12px" id="qver"><b>سجل النسخ والتحديثات</b>${(DET.ver || []).length ? DET.ver.slice(0, 5).map((v) => `<div class="mut" style="font-size:13px">• النسخة ${AD(v.major + "." + v.minor)} — ${VST[v.status] || v.status}${v.urgent ? " (عاجل)" : ""} — ${esc(v.summary || "")}</div>`).join("") + ((DET.ver || []).length > 5 ? `<div class="mut" style="font-size:12px">و${AD(DET.ver.length - 5)} نسخة أخرى…</div>` : "") : '<p class="mut">لا توجد نسخ مسجّلة؛ يبدأ السجل عند أول تحديث.</p>'}<div class="qc-acts"><button class="chip" id="qvergo">فتح مركز تحديث المحتوى</button></div></div>`;
   const fbBox = (DET.fb || []).length ? `<div class="qc-box" style="margin-top:12px" id="qfb"><b>ملاحظات أولياء الأمور</b>${fbOpen.length ? `<div class="qc-prob">${AD(fbOpen.length)} ملاحظة مفتوحة على هذا المورد؛ راجعها قبل الاعتماد أو إعادة النشر.</div>` : '<p class="mut">لا توجد ملاحظات مفتوحة.</p>'}${DET.fb.map((x) => `<div class="mut" style="font-size:13px">• ${esc(x.ref)} — ${FBK[x.status] || x.status}</div>`).join("")}<div class="qc-acts"><button class="chip" id="qfbgo">فتح ملاحظات أولياء الأمور</button></div></div>` : "";
   const noteBox = ["in_review", "published", "draft", "needs_changes", "suspended"].includes(st) ? `<label class="mut" for="qnote">${st === "published" ? "سبب القرار / الإيقاف" : st === "in_review" ? "التعديل المطلوب (لطلب التعديل) أو ملاحظة" : "ملاحظة تُسجَّل مع الإجراء"}</label><textarea id="qnote" maxlength="400"></textarea>` : "";
   const recheckBox = st === "published" && !it.recheck && can("content_editor", "edu_reviewer", "design_reviewer", "publisher") ? `<div class="qc-acts"><select id="qrs" aria-label="سبب إعادة التقييم">${RECHECK.map((r) => `<option>${r}</option>`).join("")}</select><button class="chip" id="qrc">طلب إعادة تقييم</button></div>` : "";
@@ -207,7 +210,7 @@ function drawDetail(m) {
   ${it.legacy && st === "published" ? '<div class="qc-prob">هذا المورد نُشر قبل تفعيل مركز الجودة ولم تُسجَّل له مراجعة. ابدأ بالتقييم ثم اضغط «اجتاز ويبقى منشورًا» أو أوقفه مؤقتًا.</div>' : ""}</div>
   <div class="qc-det"><div><div class="qc-box"><b>بطاقة التقييم</b> <span class="mut" style="font-size:12px">(الدرجات داخلية للمراجع فقط ولا تُعرض للمستخدم)</span>${crit}
   <label class="mut" for="qsum">ملخص المراجعة</label><textarea id="qsum" maxlength="500" ${scoreEditable("edu") || scoreEditable("dsg") ? "" : "disabled"}>${esc(card.summary || "")}</textarea>
-  <p class="mut" style="font-size:13px">المتوسط الداخلي: <b>${av == null ? "—" : AD(av)}</b> — لا يحدد القرار وحده؛ أي معيار أقل من 3 أو مشكلة مانعة يمنع الاعتماد.</p>${noteBox}<div class="qc-acts">${a.join("")}${gotoAdm}</div>${recheckBox}</div>${packBox}${srcBox}${fbBox}</div>
+  <p class="mut" style="font-size:13px">المتوسط الداخلي: <b>${av == null ? "—" : AD(av)}</b> — لا يحدد القرار وحده؛ أي معيار أقل من 3 أو مشكلة مانعة يمنع الاعتماد.</p>${noteBox}<div class="qc-acts">${a.join("")}${gotoAdm}</div>${recheckBox}</div>${packBox}${srcBox}${fbBox}${verBox}</div>
   <div><div class="qc-box"><b>المراجعات السابقة</b>${rvH}</div><div class="qc-box" style="margin-top:12px"><b>سجل التغييرات</b>${lgH}</div></div></div></div>`;
   bindDetail(m);
 }
@@ -225,6 +228,7 @@ function bindDetail(m) {
     CRIT.forEach(([k, , g]) => { if (!allow(g)) return; if (card.scores[k] != null) sc[k] = card.scores[k]; nt[k] = card.notes[k] || ""; if (card.blockers.includes(k)) bl.push(k); });
     return sb.rpc("quality_card_save", { p_key: key, p_scores: sc, p_notes: nt, p_blockers: bl, p_summary: card.summary }); };
   const b = (id, f) => { const e = $(id, m); if (e) e.onclick = f; };
+  b("#qvergo", () => { S.sel = null; window.__verOpen = key; window.__go("versionsadm"); });
   b("#qfbgo", () => { S.sel = null; window.__fbFilter = { res: key }; window.__go("feedbackadm"); });
   b("#qsrcgo", () => { S.sel = null; window.__go("sourcesadm"); });
   $$("[data-snb]", m).forEach((bt) => (bt.onclick = () => { const v = (($(`[data-sn="${bt.dataset.snb}"]`, m) || {}).value || "").trim(); if (!v) return toast("اكتب الملاحظة أولًا"); run(() => sb.rpc("src_note", { p_link: bt.dataset.snb, p_note: v }), "حُفظت ملاحظة المصدر"); }));
