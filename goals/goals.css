@@ -1,0 +1,15 @@
+/* الأهداف التعليمية (يبني على skills.css) */
+.gl .glout{background:#fff;border:1px solid var(--z-tint2,#e4d9ff);border-radius:18px;padding:12px 14px;margin:12px 0}
+.gl .glout h3,.gl .glver h3,.gl .gltip h3{margin:0 0 6px;font-size:16px;color:var(--z-pri,#5b2bb8)}
+.gl .glout ul{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.6}
+.gl .glver,.gl .gltip{background:#faf7ff;border:1px solid var(--z-tint2,#e4d9ff);border-radius:18px;padding:12px 14px;margin:10px 0;font-size:14px;line-height:1.7}
+.gl .glver p,.gl .gltip p{margin:0}
+.gl .glnote{background:#fff8e6;border:1px solid #f0d58a;border-radius:16px;padding:10px 12px;font-size:13px;margin:10px 0;line-height:1.6}
+.gl .skcard .oc{font-size:13px;color:#3a1a85;font-weight:700}
+.zgoalbox{max-width:760px;margin:18px auto;padding:14px 16px;background:#faf7ff;border:1px solid #e4d9ff;border-top:5px solid #6b3fd4;border-radius:18px;font-family:inherit;direction:rtl;color:#2a1a52;line-height:1.7}
+.zgoalbox h2{margin:0 0 6px;font-size:18px;color:#4b2aa5}.zgoalbox h3{margin:10px 0 2px;font-size:14px;color:#5b2bb8}
+.zgoalbox p{margin:0;font-size:14px}.zgoalbox ul{margin:4px 0 0;padding-inline-start:22px;font-size:14px}
+.zgoalbox .tag{display:inline-block;font-size:12px;font-weight:700;background:#f1eaff;color:#3a1a85;border-radius:99px;padding:2px 9px;margin-inline-end:5px}
+.zgoalbox a{display:inline-block;margin-top:8px;font-weight:800;color:#5b2bb8}
+.zgoalbox .gnote{font-size:12px;color:#5d4f85;margin-top:8px}
+@media (max-width:480px){.zgoalbox{margin:14px 16px}}
