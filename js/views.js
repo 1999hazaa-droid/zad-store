@@ -262,6 +262,7 @@ return`<section class="zm-hero" aria-labelledby="zm-h1"><div class="wrap zm-hg">
 <svg class="zm-sq" viewBox="0 0 60 30"><path d="M2 20C8 4 14 4 18 16S28 28 32 14 42 2 46 14 54 26 58 10"/></svg></div>
 </div></section>
 <section class="zm-sec zfwrap" aria-labelledby="zm-find"><div class="wrap"><div class="zm-head"><h2 id="zm-find">ابحث في <em>المكتبة</em></h2></div><div data-zfind="home"></div></div></section>
+<section class="zm-sec zrwrap" aria-label="تابع من حيث توقفت"><div class="wrap"><div data-zrecent="home"></div></div></section>
 <section class="zm-sec" id="sections" aria-labelledby="zm-s"><div class="wrap">
 <div class="zm-head"><h2 id="zm-s">${X("أقسام")} <em>${X("زاد")}</em> ${X("التعليمية")}</h2><p>${X("اختر القسم المناسب لطفلك وابدأ رحلة التعلّم")}</p></div>
 <div class="zm-grid">

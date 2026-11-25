@@ -286,6 +286,8 @@ body{background:linear-gradient(180deg,#f1ecff 0%,#e9f4ff 55%,#fff4ea 100%) fixe
 .bubble{background:#fffdf8;box-shadow:0 4px 0 #e4dcfa}
 .stats span{background:#fffdf8}
 </style>
+<link rel="stylesheet" href="../recent/recent.css?v=2">
+<script src="../recent/zrecent.js?v=1" defer></script>
 </head>
 <body>
 <div id="app"></div>
@@ -649,6 +651,7 @@ function lettersHub(first) {
   <div class="top"><button class="icon-btn" id="back" aria-label="رجوع">🏠</button><span class="stars">⭐ ${S.stars}</span><div class="row" style="flex-wrap:nowrap">${toggles()}</div></div>
   <div class="hubhead"><button class="avb" id="avb" aria-label="شخصيتي">${avatar(S.av, 68)}</button><div style="flex:1"><h1>مرحباً يا ${S.name}!</h1>${S.cn ? `<small class="xl">مع صديقك ${S.cn}</small>` : ""}<p>أتقنت ${doneCount()} من ٢٨ حرفاً</p><div class="xp"><i style="width:${Math.round((S.xp % 120) / 120 * 100)}%"></i></div><small class="xl">مستوى ${lvl()} · ${lvName()}</small></div></div>
   ${zfr()}
+  <div data-zrecent="kid" style="padding:0 12px"></div>
   <div class="stage" style="justify-content:flex-start;gap:12px">
     <button class="next" id="nx"><span class="L">${nl.ch}</span><span><b>${P(nl.id).best >= 60 ? "أعد الدرس" : "الدرس التالي"}: حرف ${nl.name}</b><small>نحو ١٠ دقائق · ألعاب وكتابة وكلمات</small></span></button>
     ${due.length ? `<button class="quick" id="qk">⚡ تدريب سريع على ${due.slice(0, 3).map((l) => l.ch).join(" ")}</button>` : ""}

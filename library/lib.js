@@ -373,6 +373,7 @@ function loadMedia(p) {
     .catch(() => ({ mode: "images", list: [p.image_url || p.thumb_url].filter(Boolean), offline: true }));
 }
 function openPreview(p, push) {
+  try { if (p && window.ZRECENT) window.ZRECENT.touchLib(p.slug || p.id); } catch (e) { /* */ }
   if (!p) return;
   PV.back = D.activeElement; PV.p = p; PV.i = 0; PV.z = 1; PV.bw = false; PV.list = []; PV.mode = "images"; const seq = ++PV.seq;
   $("#lpvt").textContent = p.name;

@@ -25,6 +25,7 @@
 <link rel="stylesheet" href="/zad-store/css/home-simple.css?v=24">
 <link rel="stylesheet" href="/zad-store/next/rec.css?v=1">
 <link rel="stylesheet" href="/zad-store/find/find.css?v=1">
+<link rel="stylesheet" href="/zad-store/recent/recent.css?v=2">
 <style id="themeVars">:root{--primary:#5B34D6;--hero:#5B34D6;--bg:#F7F5FF;--text:#1B1430;--on-primary:#FFFFFF;--logo-filter:none;--font-head:"Cairo","Cairo",system-ui,sans-serif;--font-body:"Cairo",system-ui,-apple-system,"Segoe UI",sans-serif}</style>
 <script>window.ATHR_BASE = "/zad-store/";
 (function () { var d = document.documentElement; try { var m = JSON.parse(localStorage.getItem("huroof_mode")); if (m === "light" || m === "dark" || m === "auto") d.setAttribute("data-mode", m); } catch (e) {} try { if (JSON.parse(localStorage.getItem("huroof_lang")) === "en") { d.lang = "en"; d.dir = "ltr"; d.classList.add("i18n-wait"); setTimeout(function () { d.classList.remove("i18n-wait"); }, 2500); } } catch (e) {}
@@ -70,6 +71,7 @@ if (/^#(admin|orders)$/.test(location.hash)) { location.replace(window.ATHR_BASE
 <svg class="zm-sq" viewBox="0 0 60 30"><path d="M2 20C8 4 14 4 18 16S28 28 32 14 42 2 46 14 54 26 58 10"></path></svg></div>
 </div></section>
 <section class="zm-sec zfwrap" aria-labelledby="zm-find"><div class="wrap"><div class="zm-head"><h2 id="zm-find">ابحث في <em>المكتبة</em></h2></div><div data-zfind="home"></div></div></section>
+<section class="zm-sec zrwrap" aria-label="تابع من حيث توقفت"><div class="wrap"><div data-zrecent="home"></div></div></section>
 <section class="zm-sec" id="sections" aria-labelledby="zm-s"><div class="wrap">
 <div class="zm-head"><h2 id="zm-s">أقسام <em>زاد</em> التعليمية</h2><p>اختر القسم المناسب لطفلك وابدأ رحلة التعلّم</p></div>
 <div class="zm-grid">
@@ -114,5 +116,6 @@ if (/^#(admin|orders)$/.test(location.hash)) { location.replace(window.ATHR_BASE
 <script src="/zad-store/js/zad-back.js?v=8e44711078" defer></script>
 <script src="/zad-store/next/rec.js?v=2" defer></script>
 <script src="/zad-store/find/zfind.js?v=2" defer></script>
+<script src="/zad-store/recent/zrecent.js?v=1" defer></script>
 </body>
 </html>
