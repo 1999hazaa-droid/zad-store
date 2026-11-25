@@ -49,6 +49,7 @@ function init(s) {
   show();
 }
 function stop(keep) { token++; if (hasTTS) try { speechSynthesis.cancel(); } catch (e) {} if (audioEl) { try { audioEl.pause(); } catch (e) {} audioEl = null; } if (!keep) playing = false; paintAud(); }
+function pfStory() { try { const LK = "zad-learn-v3"; const DB = JSON.parse(localStorage.getItem(LK)); if (!DB || !DB.kids) return; const S = DB.kids[DB.cur]; if (!S) return; const st = (S.stories = S.stories || {}); if (!st[slug]) { st[slug] = { t: Date.now(), d: 1 }; DB._t = Date.now(); localStorage.setItem(LK, JSON.stringify(DB)); } } catch (e) {} }
 function go(n) { const was = playing; paused = false; stop(true); i = Math.max(0, Math.min(pages.length, n)); segIdx = 0; playing = was && i < pages.length; show(); if (playing) speak(); try { scrollTo({ top: 0 }); } catch (e) {} }
 function show() {
   const total = pages.length + 1;
@@ -58,7 +59,7 @@ function show() {
   $("#rprev").disabled = i === 0;
   $("#rnext").hidden = i >= pages.length; $("#raud").hidden = i >= pages.length;
   $("#rnote").hidden = true;
-  if (i < pages.length) page(pages[i]); else acts();
+  if (i < pages.length) page(pages[i]); else { pfStory(); acts(); }
   paintAud();
 }
 function page(p) {

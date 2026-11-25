@@ -1,0 +1,19 @@
+insert into public.pf_certs (slug,title,kind,levels,design,descr,rule,status,sort_order) values
+('first_step','خطواتي الأولى في التعلم','act',array['a2','a3']::text[],'sun','أنجزتَ أول نشاط لك في زاد. خطوة جميلة، واصل اللعب والتعلم!','{"src": ["acts", "bank", "life", "ready", "val", "dig", "exp", "proj", "vid", "songs", "stories"], "n": 1}'::jsonb,'active',10),
+('colors_explorer','أحسنت في استكشاف الألوان','act',array['a2','a3']::text[],'leaf','أكملتَ اختبارًا قصيرًا من التعلم المبكر. أحسنت!','{"src": ["quiz"], "qcat": "early", "n": 1}'::jsonb,'active',20),
+('new_activity','أنجزت نشاطًا جديدًا','act',array['a2','a3']::text[],'star','أكملتَ عدة أنشطة جديدة مع أهلك. تقدّم جميل!','{"src": ["acts", "bank", "life", "ready"], "n": 3}'::jsonb,'active',30),
+('letters_explorer','مستكشف الحروف','skill',array['a4','a5','a6']::text[],'leaf','أكملتَ اختبارات الحروف واللغة. واصل الاستكشاف!','{"src": ["quiz"], "qcat": "arabic", "n": 2}'::jsonb,'active',40),
+('shapes_numbers_hero','بطل الأشكال والأرقام','skill',array['a4','a5','a6']::text[],'star','تدرّبتَ على الأرقام والأشكال في أكثر من اختبار. أحسنت!','{"src": ["quiz"], "qcat": "math", "n": 2}'::jsonb,'active',50),
+('small_story_reader','قارئ القصص الصغير','story',array['a4','a5','a6']::text[],'rose','قرأتَ قصصًا تعليمية حتى نهايتها. أحسنت!','{"src": ["stories"], "n": 2}'::jsonb,'active',60),
+('early_activities','أكملت أنشطة متنوعة','ws',array['a4','a5','a6']::text[],'sky','أنجزتَ مجموعة أنشطة متنوعة. خطوة بعد خطوة!','{"src": ["acts", "bank", "life", "ready"], "n": 5}'::jsonb,'active',70),
+('worksheets_set','أكملت مجموعة من أوراق العمل','ws',array['g1','g2','g3','g4']::text[],'sun','أنهيتَ عدة أوراق عمل وأنشطة. جهد جميل!','{"src": ["acts"], "n": 3}'::jsonb,'active',80),
+('math_unit','أنجزت وحدة في الرياضيات','unit',array['g1','g2','g3','g4']::text[],'star','أكملتَ عدة اختبارات في الرياضيات. تقدّم رائع!','{"src": ["quiz"], "qcat": "math", "n": 4}'::jsonb,'active',90),
+('reading_progress','تقدمت في القراءة','story',array['g1','g2','g3','g4']::text[],'rose','قرأتَ عدة قصص تعليمية حتى آخرها. واصل القراءة!','{"src": ["stories"], "n": 3}'::jsonb,'active',100),
+('edu_project','أكملت مشروعًا تعليميًا','challenge',array['g1','g2','g3','g4']::text[],'sea','أنجزتَ مشروعًا أو تحديًا تعليميًا. عمل جميل!','{"src": ["proj"], "n": 1}'::jsonb,'active',110),
+('science_step','خطوة في العلوم','unit',array['g1','g2','g3','g4']::text[],'leaf','أكملتَ اختبارات في العلوم والمعرفة. فضول جميل!','{"src": ["quiz"], "qcat": "science", "n": 3}'::jsonb,'active',120),
+('english_step','خطواتي في الإنجليزية','skill',array['a5','a6','g1','g2','g3','g4']::text[],'sky','تدرّبتَ على الإنجليزية في أكثر من اختبار. أحسنت!','{"src": ["quiz"], "qcat": "english", "n": 2}'::jsonb,'active',130),
+('skill_progress','تقدّم في مهارة','skill',array['a4','a5','a6','g1','g2','g3','g4']::text[],'star','أجبتَ إجابات جيدة في إحدى المهارات عبر عدة أسئلة. تقدّم جميل!','{"src": ["skills"], "n": 1, "minAns": 6, "rate": 0.75}'::jsonb,'active',140),
+('contest_participant','شاركت في تحدٍّ تعليمي','contest',array['a3','a4','a5','a6','g1','g2','g3','g4']::text[],'sea','شاركتَ في مسابقة تعليمية قصيرة. شكرًا لمشاركتك!','{"src": ["contest"], "n": 1}'::jsonb,'active',150),
+('video_learner','أتممت دروسًا مرئية','unit',array['a4','a5','a6','g1','g2','g3','g4']::text[],'sun','شاهدتَ دروسًا مرئية وأكملت أسئلتها. أحسنت!','{"src": ["vid", "songs"], "n": 3}'::jsonb,'active',160),
+('values_unit','أكملت وحدة في القيم والسلوك','unit',array['a4','a5','a6','g1','g2','g3','g4']::text[],'rose','أكملتَ عدة مواقف في القيم والمهارات الحياتية. سلوك جميل!','{"src": ["val", "life"], "n": 5}'::jsonb,'active',170)
+on conflict (slug) do nothing;
