@@ -18,9 +18,9 @@ const {chromium}=require('playwright');const fs=require('fs');const errs=[];cons
   items.push(mk('pack:pk1','حزمة الحروف','in_review',['a5'],{round:1}));
   const DB={quality_items:items,quality_reviews:[{key:'stories:s2',round:1,reviewer_name:'مراجع',decided_at:'2026-11-19T10:00:00Z',decision:'needs_changes',scores:{accuracy:2,age:4},notes:{accuracy:'الإجابة خاطئة'},blockers:['accuracy'],avg:3,todo:'صحّح الإجابة'}],
    quality_log:[{key:'stories:s2',at:'2026-11-19T10:00:00Z',actor_name:'مراجع',event:'needs_changes',from_status:'in_review',to_status:'needs_changes',note:'صحّح الإجابة'},{key:'stories:s2',at:'2026-11-18T10:00:00Z',actor_name:'النظام',event:'edit',from_status:'draft',to_status:'draft',note:'تعديل على المورد',detail:{fields:['title'],changes:{title:['قديم','جديد']}}}],
-   packs:[{id:'P1',slug:'pk1',levels:['a5']}],pack_items:[{pack_id:'P1',key:'bank:leg1',pos:1},{pack_id:'P1',key:'bank:leg2',pos:2},{pack_id:'P1',key:'bank:ghost',pos:3}]};
+   src_links:[{id:'L1',source_id:'S1',item_key:'stories:s1',use_type:'rephrased',location:'الفصل 2',info_used:'ترتيب الحروف',changes:'',needs_review:false,verify:true,qnote:null}],src_sources:[{id:'S1',title:'مرجع تعليم القراءة',author:'جهة معروفة',status:'needs_review',rights:'unclear',link_status:'unchecked',next_review:null}],packs:[{id:'P1',slug:'pk1',levels:['a5']}],pack_items:[{pack_id:'P1',key:'bank:leg1',pos:1},{pack_id:'P1',key:'bank:leg2',pos:2},{pack_id:'P1',key:'bank:ghost',pos:3}]};
   window.DB=DB;
-  const q=(tb)=>{const st={f:[],ord:null,asc:true};const api={select(){return api},eq(c,v){st.f.push(r=>r[c]===v);return api},order(c,o){st.ord=c;st.asc=!o||o.ascending!==false;return api},limit(){return api},then(res){let r=DB[tb].filter(x=>st.f.every(f=>f(x)));if(st.ord)r=r.slice().sort((a,b)=>String(a[st.ord]).localeCompare(String(b[st.ord]))*(st.asc?1:-1));res({data:JSON.parse(JSON.stringify(r)),error:null})}};return api};
+  const q=(tb)=>{const st={f:[],ord:null,asc:true};const api={select(){return api},eq(c,v){st.f.push(r=>r[c]===v);return api},in(c,vs){st.f.push(r=>vs.includes(r[c]));return api},order(c,o){st.ord=c;st.asc=!o||o.ascending!==false;return api},limit(){return api},then(res){let r=DB[tb].filter(x=>st.f.every(f=>f(x)));if(st.ord)r=r.slice().sort((a,b)=>String(a[st.ord]).localeCompare(String(b[st.ord]))*(st.asc?1:-1));res({data:JSON.parse(JSON.stringify(r)),error:null})}};return api};
   const R={quality_my:()=>({data:window.ME}),
    quality_dashboard:()=>({data:{counts:DB.quality_items.reduce((o,i)=>(o[i.status]=(o[i.status]||0)+1,o),{}),legacy:95,recheck:1,avg_hours:null,avg_n:0,reviews:1,issues:[{c:'accuracy',n:3},{c:'safety',n:1}],reasons:[{r:'رابط أو ملف معطل',n:1}]}}),
    quality_pack_check:()=>({data:{problems:['مورد غير موجود: bank:ghost']}}),
@@ -68,6 +68,11 @@ const {chromium}=require('playwright');const fs=require('fs');const errs=[];cons
  await p.fill('#qq','قيد المراجعة');await p.waitForTimeout(400);await ck('#qlist [data-o]');t=await txt();
  for(const c of ['صحة المعلومات','ملاءمة العمر والصف','الأهداف التعليمية','جودة التصميم','سهولة الاستخدام','جودة الملفات','السلامة والخصوصية'])if(!t.includes(c))E('معيار ناقص '+c);
  if(!t.includes('داخلية للمراجع فقط'))E('تنبيه الدرجات الداخلية');const ov=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);if(ov>0)E('تجاوز أفقي في صفحة المورد '+ov);if(!t.includes('اللغة العربية'))E('المجال');
+ // 3ب) قسم «المصادر والمراجع» داخل بطاقة المورد
+ if(!t.includes('المصادر والمراجع')||!t.includes('مرجع تعليم القراءة')||!t.includes('يحتاج إلى مراجعة')||!t.includes('حقوق غير واضحة')||!t.includes('ينتظر التحقق')||!t.includes('ليس دليلًا كافيًا'))E('قسم المصادر '+t.slice(-700));
+ await p.fill('[data-sn=L1]','المصدر قديم نسبيًا');await ck('[data-snb=L1]');const cs0=await calls();const sn=cs0.find(c=>c[0]==='src_note');if(!sn||sn[1].p_link!=='L1'||sn[1].p_note!=='المصدر قديم نسبيًا')E('ملاحظة جودة المصدر '+JSON.stringify(sn));
+ await ck('#qsrcgo');if(await p.evaluate(()=>window.went)!=='sourcesadm')E('الانتقال لمركز المصادر');await p.evaluate(()=>{window.__qualityTest.S.sel=null});await go();await ck('[data-t=list]');await p.fill('#qq','قيد المراجعة');await p.waitForTimeout(400);await ck('#qlist [data-o]');
+
  for(const k of ['accuracy','age','goals','design','usability','files','safety'])await ck('[data-c='+k+'] [data-s="4"]');
  await ck('[data-c=accuracy] [data-bl]');await p.fill('[data-c=accuracy] [data-n]','خطأ في الإجابة الثالثة');
  await ck('#qsave');let cs=await calls();let sv=cs.find(c=>c[0]==='quality_card_save');if(!sv||Object.keys(sv[1].p_scores).length!==7||sv[1].p_blockers.join()!=='accuracy'||!sv[1].p_notes.accuracy.includes('خطأ'))E('حفظ التقييم '+JSON.stringify(sv));
@@ -77,6 +82,7 @@ const {chromium}=require('playwright');const fs=require('fs');const errs=[];cons
  await p.fill('#qnote','صحّح الإجابة الثالثة');await ck('#qnc');cs=await calls();const dc=cs.find(c=>c[0]==='quality_decide');if(!dc||dc[1].p_decision!=='needs_changes'||!dc[1].p_note.includes('صحّح'))E('طلب التعديل '+JSON.stringify(cs));
  t=await txt();if(!t.includes('يحتاج إلى تعديل'))E('الحالة بعد طلب التعديل');
  if(!(await p.$('#qsub')))E('زر إعادة الإرسال بعد التعديل');await ck('#qsub');cs=await calls();if(!cs.find(c=>c[0]==='quality_submit'))E('إعادة الإرسال');
+ await ck('#qback');await p.fill('#qq','فيديو');await p.waitForTimeout(400);await ck('#qlist [data-o]');t=await txt();if(!t.includes('لا يوجد مصدر موثّق لهذا المورد'))E('مورد بلا مصدر');
  // 4) مورد تحتاج تعديل: السجل والمراجعات السابقة محفوظة
  await ck('#qback');await p.fill('#qq','تحتاج');await p.waitForTimeout(400);await ck('#qlist [data-o]');t=await txt();
  if(!t.includes('الإجابة خاطئة')||!t.includes('صحّح الإجابة')||!t.includes('الحقول: title')||!t.includes('«قديم» ← «جديد»'))E('سجل المراجعات والتعديلات '+t.slice(0,400));

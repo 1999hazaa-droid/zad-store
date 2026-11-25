@@ -143,7 +143,9 @@ async function detail(m, key) {
   m.innerHTML = '<p class="mut">جارٍ التحميل…</p>';
   const [rv, lg] = await Promise.all([sb.from("quality_reviews").select("*").eq("key", key).order("decided_at", { ascending: false }), sb.from("quality_log").select("*").eq("key", key).order("at", { ascending: false }).limit(100)]);
   const pk = it.src === "pack" ? await packInfo(it) : null;
-  DET = { it, reviews: rv.data || [], log: lg.data || [], pack: pk };
+  const sl = await sb.from("src_links").select("*").eq("item_key", key), ids = (sl.data || []).map((x) => x.source_id);
+  const ss = ids.length ? await sb.from("src_sources").select("id,title,author,status,rights,link_status,next_review").in("id", ids) : { data: [] };
+  DET = { it, reviews: rv.data || [], log: lg.data || [], pack: pk, sources: { links: sl.data || [], src: ss.data || [], err: !!(sl.error || ss.error) } };
   card = JSON.parse(JSON.stringify({ scores: (it.card || {}).scores || {}, notes: (it.card || {}).notes || {}, blockers: (it.card || {}).blockers || [], summary: (it.card || {}).summary || "" }));
   drawDetail(m);
 }
@@ -176,6 +178,16 @@ function drawDetail(m) {
   if (st === "accepted" && can("publisher")) a.push('<button class="chip pri" id="qpub">نشر</button>');
   if (st === "published" && can("publisher", "edu_reviewer", "design_reviewer")) a.push('<button class="chip bad" id="qsus">إيقاف مؤقت</button>');
   const av = avgOf();
+  const SRC_ST = { active: "فعّال", needs_review: "يحتاج إلى مراجعة", unapproved: "غير معتمد" }, SRC_RT = { conditions: "وفق شروط محددة", licensed: "مرخّص", quote_limited: "اقتباس ضمن حدود الترخيص", reference_only: "للاطلاع فقط", unclear: "حقوق غير واضحة" }, SRC_USE = { direct: "منقولة مباشرة", rephrased: "أُعيدت صياغتها", derived: "نشاط/استنتاج مبني على المصدر" };
+  const sx = DET.sources, smap = new Map(sx.src.map((x) => [x.id, x])), bad = sx.links.filter((l) => { const s_ = smap.get(l.source_id) || {}; return s_.status !== "active" || s_.rights === "unclear" || s_.link_status === "broken"; });
+  const srcBox = `<div class="qc-box" style="margin-top:12px" id="qsrc"><b>المصادر والمراجع</b>${sx.err ? '<p class="mut">تعذّر تحميل المصادر.</p>' : ""}
+    ${sx.links.length ? "" : '<p class="mut">لا يوجد مصدر موثّق لهذا المورد. غياب التوثيق لا يعني أن المحتوى خاطئ، لكنه يعني أن مصدر معلوماته غير مسجّل.</p>'}
+    ${sx.links.some((l) => l.verify) ? '<div class="qc-prob">توجد معلومات يجب التحقق من مصدرها قبل النشر؛ لا يُعتمد المورد حتى يزيل المراجع علامة التحقق.</div>' : ""}${bad.length ? `<div class="qc-prob">${AD(bad.length)} من المصادر غير معتمد أو يحتاج مراجعة أو حقوقه غير واضحة أو رابطه معطّل.</div>` : ""}
+    ${sx.links.map((l) => { const s_ = smap.get(l.source_id) || {}; return `<div class="qc-row" style="cursor:default;display:block"><b>${esc(s_.title || "مصدر محذوف")}</b> <span class="qc-f ${s_.status === "active" ? "" : "w"}">${SRC_ST[s_.status] || "—"}</span><span class="qc-f">${SRC_RT[s_.rights] || "—"}</span>${l.verify ? '<span class="qc-f w">ينتظر التحقق</span>' : ""}
+      <div style="font-size:13px">${esc(SRC_USE[l.use_type] || l.use_type)}${l.location ? " — " + esc(l.location) : ""}${l.info_used ? "<div>المعلومة: " + esc(l.info_used) + "</div>" : ""}${l.qnote ? '<div class="qc-prob">ملاحظة جودة: ' + esc(l.qnote) + "</div>" : ""}</div>
+      ${can("edu_reviewer", "design_reviewer") ? `<div class="qc-acts"><input class="qi" data-sn="${esc(l.id)}" maxlength="400" placeholder="ملاحظة جودة مرتبطة بهذا المصدر" aria-label="ملاحظة جودة" value=""><button class="chip" data-snb="${esc(l.id)}">حفظ الملاحظة</button></div>` : ""}</div>`; }).join("")}
+    <p class="mut" style="font-size:12px">وجود مصدر موثّق ليس دليلًا كافيًا على صحة المورد؛ يبقى تقييم المحتوى نفسه مطلوبًا في البطاقة أعلاه.</p>
+    <div class="qc-acts">${S.me.roles.length ? '<button class="chip" id="qsrcgo">فتح مركز المصادر</button>' : ""}</div></div>`;
   const noteBox = ["in_review", "published", "draft", "needs_changes", "suspended"].includes(st) ? `<label class="mut" for="qnote">${st === "published" ? "سبب القرار / الإيقاف" : st === "in_review" ? "التعديل المطلوب (لطلب التعديل) أو ملاحظة" : "ملاحظة تُسجَّل مع الإجراء"}</label><textarea id="qnote" maxlength="400"></textarea>` : "";
   const recheckBox = st === "published" && !it.recheck && can("content_editor", "edu_reviewer", "design_reviewer", "publisher") ? `<div class="qc-acts"><select id="qrs" aria-label="سبب إعادة التقييم">${RECHECK.map((r) => `<option>${r}</option>`).join("")}</select><button class="chip" id="qrc">طلب إعادة تقييم</button></div>` : "";
   const packBox = pack ? `<div class="qc-box" style="margin-top:12px"><b>مراجعة الحزمة كاملة</b>${pack.problems.length ? pack.problems.map((p) => `<div class="qc-prob">${esc(p)}</div>`).join("") : '<div class="qc-ok">كل الموارد منشورة وصالحة ومناسبة لعمر/صف الحزمة وعددها كافٍ.</div>'}
@@ -191,7 +203,7 @@ function drawDetail(m) {
   ${it.legacy && st === "published" ? '<div class="qc-prob">هذا المورد نُشر قبل تفعيل مركز الجودة ولم تُسجَّل له مراجعة. ابدأ بالتقييم ثم اضغط «اجتاز ويبقى منشورًا» أو أوقفه مؤقتًا.</div>' : ""}</div>
   <div class="qc-det"><div><div class="qc-box"><b>بطاقة التقييم</b> <span class="mut" style="font-size:12px">(الدرجات داخلية للمراجع فقط ولا تُعرض للمستخدم)</span>${crit}
   <label class="mut" for="qsum">ملخص المراجعة</label><textarea id="qsum" maxlength="500" ${scoreEditable("edu") || scoreEditable("dsg") ? "" : "disabled"}>${esc(card.summary || "")}</textarea>
-  <p class="mut" style="font-size:13px">المتوسط الداخلي: <b>${av == null ? "—" : AD(av)}</b> — لا يحدد القرار وحده؛ أي معيار أقل من 3 أو مشكلة مانعة يمنع الاعتماد.</p>${noteBox}<div class="qc-acts">${a.join("")}${gotoAdm}</div>${recheckBox}</div>${packBox}</div>
+  <p class="mut" style="font-size:13px">المتوسط الداخلي: <b>${av == null ? "—" : AD(av)}</b> — لا يحدد القرار وحده؛ أي معيار أقل من 3 أو مشكلة مانعة يمنع الاعتماد.</p>${noteBox}<div class="qc-acts">${a.join("")}${gotoAdm}</div>${recheckBox}</div>${packBox}${srcBox}</div>
   <div><div class="qc-box"><b>المراجعات السابقة</b>${rvH}</div><div class="qc-box" style="margin-top:12px"><b>سجل التغييرات</b>${lgH}</div></div></div></div>`;
   bindDetail(m);
 }
@@ -209,6 +221,8 @@ function bindDetail(m) {
     CRIT.forEach(([k, , g]) => { if (!allow(g)) return; if (card.scores[k] != null) sc[k] = card.scores[k]; nt[k] = card.notes[k] || ""; if (card.blockers.includes(k)) bl.push(k); });
     return sb.rpc("quality_card_save", { p_key: key, p_scores: sc, p_notes: nt, p_blockers: bl, p_summary: card.summary }); };
   const b = (id, f) => { const e = $(id, m); if (e) e.onclick = f; };
+  b("#qsrcgo", () => { S.sel = null; window.__go("sourcesadm"); });
+  $$("[data-snb]", m).forEach((bt) => (bt.onclick = () => { const v = (($(`[data-sn="${bt.dataset.snb}"]`, m) || {}).value || "").trim(); if (!v) return toast("اكتب الملاحظة أولًا"); run(() => sb.rpc("src_note", { p_link: bt.dataset.snb, p_note: v }), "حُفظت ملاحظة المصدر"); }));
   b("#qedit", () => { S.sel = null; window.__go(ADM[it.src]); });
   b("#qsub", () => run(() => sb.rpc("quality_submit", { p_key: key, p_note: note() }), "أُرسل للمراجعة"));
   b("#qsave", () => run(sv, "حُفظ التقييم"));
