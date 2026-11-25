@@ -31,3 +31,5 @@
 @media(min-width:700px){.pf .pfcert{aspect-ratio:1.414}.pf .pfcin{min-height:0;height:100%}.pf .pfcav{position:absolute;bottom:4%;inset-inline-start:4%}}
 @media print{.pf .pfcert{aspect-ratio:1.414}.pf .pfcin{min-height:0;height:100%}.pf .pfcav{position:absolute;bottom:4%;inset-inline-start:4%}}
 @media print{@page{size:A4 landscape;margin:8mm}body.pf{background:#fff}.pf .ztop,.pf .ztab,.pf .nopr,.pf .zbc,.pf .pfnav,.pf .pfhead button,.pf .pfhead select,.pf .btns,.pf form{display:none!important}.pf .pfcert{margin:0 auto;max-width:none;width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}.pf .art,.pf .pfstat{break-inside:avoid}}
+.pf .pfph{display:block;max-width:100%;width:200px;border-radius:12px;border:2px solid var(--z-line);margin:6px 0}
+@media print{.pf .pfph{width:160px}.pf .pftr,.pf .pfpriv{display:none!important}}

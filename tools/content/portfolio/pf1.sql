@@ -15,5 +15,6 @@ insert into public.pf_certs (slug,title,kind,levels,design,descr,rule,status,sor
 ('skill_progress','تقدّم في مهارة','skill',array['a4','a5','a6','g1','g2','g3','g4']::text[],'star','أجبتَ إجابات جيدة في إحدى المهارات عبر عدة أسئلة. تقدّم جميل!','{"src": ["skills"], "n": 1, "minAns": 6, "rate": 0.75}'::jsonb,'active',140),
 ('contest_participant','شاركت في تحدٍّ تعليمي','contest',array['a3','a4','a5','a6','g1','g2','g3','g4']::text[],'sea','شاركتَ في مسابقة تعليمية قصيرة. شكرًا لمشاركتك!','{"src": ["contest"], "n": 1}'::jsonb,'active',150),
 ('video_learner','أتممت دروسًا مرئية','unit',array['a4','a5','a6','g1','g2','g3','g4']::text[],'sun','شاهدتَ دروسًا مرئية وأكملت أسئلتها. أحسنت!','{"src": ["vid", "songs"], "n": 3}'::jsonb,'active',160),
-('values_unit','أكملت وحدة في القيم والسلوك','unit',array['a4','a5','a6','g1','g2','g3','g4']::text[],'rose','أكملتَ عدة مواقف في القيم والمهارات الحياتية. سلوك جميل!','{"src": ["val", "life"], "n": 5}'::jsonb,'active',170)
+('values_unit','أكملت وحدة في القيم والسلوك','unit',array['a4','a5','a6','g1','g2','g3','g4']::text[],'rose','أكملتَ عدة مواقف في القيم والمهارات الحياتية. سلوك جميل!','{"src": ["val", "life"], "n": 5}'::jsonb,'active',170),
+('game_explorer','أنهيت ألعابًا تعليمية','act',array['a3','a4','a5','a6','g1','g2','g3','g4']::text[],'sky','لعبتَ وأكملتَ عدة ألعاب تعليمية بنجوم جميلة. واصل اللعب والتعلم!','{"src":["games"],"n":5}'::jsonb,'active',180)
 on conflict (slug) do nothing;

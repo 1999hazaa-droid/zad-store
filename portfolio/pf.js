@@ -27,8 +27,13 @@ const SRC = {
   exp: { tb: "exp_items", cols: "slug,title,icon,cat", tab: "les", type: "درس من الثقافة العامة", lab: "الثقافة العامة", url: (s) => `${ROOT}explore/play/?s=${encodeURIComponent(s)}` },
   vid: { tb: "video_items", cols: "slug,title,icon,skill,descr", tab: "les", type: "درس مرئي", url: (s) => `${ROOT}videos/play/?s=${encodeURIComponent(s)}` },
   songs: { tb: "song_items", cols: "slug,title,icon,skill", tab: "les", type: "نشيد تعليمي", url: (s) => `${ROOT}songs/play/?s=${encodeURIComponent(s)}` },
+  games: { tb: null, tab: "proj", type: "لعبة تعليمية", lab: "الألعاب التعليمية", url: (s) => `${ROOT}games/#g=${encodeURIComponent(s)}` },
   stories: { tb: "stories", cols: "slug,title,summary,topic,cover_url", tab: "les", type: "قصة تعليمية", lab: "القراءة والقصص", url: (s) => `${ROOT}stories/read/?s=${encodeURIComponent(s)}` },
 };
+const lget = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch { return d; } };
+const gProfiles = () => { const a = lget("hg_profiles", []); return Array.isArray(a) ? a.filter((x) => typeof x === "string" && lget("hg_kid:" + x, null)) : []; };
+function gId() { const ps = gProfiles(); if (P.gp && ps.includes(P.gp)) return P.gp; if (P.gp === "-") return ""; const nm = [P.nick, S.name].filter(Boolean); const m = ps.find((x) => nm.includes(x)); return m || (ps.length === 1 && Object.keys(DB.kids).length === 1 ? ps[0] : ""); }
+function gameRecords() { const id = gId(); if (!id) return []; const prog = lget("hg_prog:" + id, {}), gt = lget("hg_gt:" + id, {}); return Object.entries(prog).filter(([, v]) => v > 0).map(([k, v]) => ({ src: "games", slug: k, t: +gt[k] || 0, stars: v })); }
 const TABS = [["ws", "أوراق العمل"], ["proj", "المشروعات والأنشطة"], ["les", "القصص والدروس"], ["quiz", "الاختبارات والمسابقات"], ["cert", "الشهادات"]];
 let DB = null, S = null, P = null, META = {}, CERTS = [], REC = [], EARNED = [], CERR = false;
 function loadDB() {
@@ -40,6 +45,15 @@ function loadDB() {
   if (!LV[p.lv]) p.lv = "a5"; if (!CHS[p.ch]) p.ch = "boy"; P = p;
 }
 function save() { DB._t = Date.now(); try { localStorage.setItem(LK, JSON.stringify(DB)); } catch {} }
+const idbo = () => new Promise((ok, no) => { try { const r = indexedDB.open("zad-pf", 1); r.onupgradeneeded = () => r.result.createObjectStore("img"); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); } catch (e) { no(e); } });
+const idbDo = async (mode, fn) => { const db = await idbo(); return new Promise((ok, no) => { const tx = db.transaction("img", mode), st = tx.objectStore("img"), rq = fn(st); tx.oncomplete = () => ok(rq && rq.result); tx.onerror = () => no(tx.error); }); };
+const pk = (k) => DB.cur + "|" + k;
+const photoGet = (k) => idbDo("readonly", (st) => st.get(pk(k))).catch(() => null);
+const photoSet = (k, v) => idbDo("readwrite", (st) => st.put(v, pk(k)));
+const photoDel = (k) => idbDo("readwrite", (st) => st.delete(pk(k))).catch(() => {});
+const photoKeys = () => idbDo("readonly", (st) => st.getAllKeys()).catch(() => []);
+async function photoClear() { const pre = DB.cur + "|"; for (const k of await photoKeys()) if (String(k).startsWith(pre)) await idbDo("readwrite", (st) => st.delete(k)).catch(() => {}); }
+const toJpeg = (file) => new Promise((ok, no) => { const u = URL.createObjectURL(file), im = new Image(); im.onload = () => { const m = Math.min(1, 640 / Math.max(im.width, im.height)), c = D.createElement("canvas"); c.width = Math.max(1, Math.round(im.width * m)); c.height = Math.max(1, Math.round(im.height * m)); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u); ok(c.toDataURL("image/jpeg", 0.8)); }; im.onerror = () => { URL.revokeObjectURL(u); no(new Error("img")); }; im.src = u; });
 const kidName = () => P.nick || S.name || "طفلي";
 const young = () => P.lv === "a2" || P.lv === "a3";
 async function rest(path) { const r = await fetch(SB + "/rest/v1/" + path, { headers: H }); if (!r.ok) throw new Error("rest " + r.status); return r.json(); }
@@ -52,12 +66,14 @@ function rawRecords() {
   [["bank", S.bank && S.bank.done], ["proj", S.proj && S.proj.done], ["vid", S.vid && S.vid.done], ["songs", S.songs && S.songs.done]].forEach(([s, m]) => Object.entries(m || {}).forEach(([k, r]) => { if (r && (r.d || r.t)) add(s, k, tsOf(r), { n: r.d }); }));
   [["life", S.life], ["ready", S.ready], ["val", S.val], ["dig", S.dig], ["exp", S.exp]].forEach(([s, o]) => Object.entries((o && o.it) || {}).forEach(([k, r]) => { if (r && r.d) add(s, k, tsOf(r), { n: r.d }); }));
   Object.entries(S.stories || {}).forEach(([k, r]) => add("stories", k, tsOf(r)));
+  gameRecords().forEach((g) => add("games", g.slug, g.t, { stars: g.stars }));
   return out;
 }
 async function loadMeta(raw) {
   const bySrc = {}; raw.forEach((r) => (bySrc[r.src] = bySrc[r.src] || []).push(r.slug));
   await Promise.all(Object.keys(bySrc).map(async (s) => {
     const cfg = SRC[s], slugs = [...new Set(bySrc[s])]; META[s] = META[s] || {};
+    if (s === "games") { try { const cat = await (await fetch(ROOT + "games/catalog.json")).json(); cat.forEach((g) => { META.games[g.id] = { slug: g.id, title: g.t, skill: g.skill, summary: g.s }; }); } catch (e) { reportErr("meta", "games " + e.message); CERR = true; } return; }
     for (let i = 0; i < slugs.length; i += 40) {
       const part = slugs.slice(i, i + 40).filter((x) => !META[s][x]); if (!part.length) continue;
       try { const rows = await rest(`${cfg.tb}?status=eq.published&slug=in.(${part.map(encodeURIComponent).join(",")})&select=${cfg.cols}`); rows.forEach((x) => (META[s][x.slug] = x)); } catch (e) { reportErr("meta", s + " " + e.message); CERR = true; }
@@ -80,7 +96,7 @@ function evalCert(c) {
   if (src.includes("contest")) qs.filter((x) => x.contest).forEach((x) => ts.push(x.first));
   if (src.includes("skills")) { const q = quizQ(), good = Object.values(q.sk).filter((s) => s.n >= (r.minAns || 5) && s.ok / s.n >= (r.rate || 0.75) && (!r.qcat || s.c === r.qcat)).length; const last = q.log.reduce((m, e) => Math.max(m, e.ts || 0), 0); for (let i = 0; i < good; i++) ts.push(last); }
   ts.sort((a, b) => a - b);
-  return { have: ts.length, need: n, done: ts.length >= n, t: ts[n - 1] || 0 };
+  return { have: ts.length, need: n, done: ts.length >= n, t: ts[n - 1] || ts.find((x) => x > 0) || Date.now() };
 }
 function issue() {
   EARNED = []; let ch = false;
@@ -107,9 +123,9 @@ function bindKid() {
   const sel = $("#pfkid"); if (sel) sel.onchange = () => { DB.cur = sel.value; save(); location.reload(); };
   const b = $("#pfedit"); if (b) b.onclick = () => {
     const f = $("#pfform"); if (f.innerHTML) { f.innerHTML = ""; return; }
-    f.innerHTML = `<form class="pfedit" id="pff"><label>الاسم الذي يظهر في الملف والشهادات<input type="text" id="pfn" maxlength="24" value="${esc(P.nick || S.name || "")}" autocomplete="off"></label><fieldset><legend>الصورة الرمزية</legend><div class="pfchs">${Object.entries(CHS).map(([k, n]) => `<label class="pfch"><input type="radio" name="pfc" value="${k}"${P.ch === k ? " checked" : ""}><img src="${ROOT}games/chars/${k}-160.png" alt="" width="64" height="64"><span>${n}</span></label>`).join("")}</div></fieldset><label>العمر أو الصف<select id="pfl">${Object.entries(LV).map(([k, v]) => `<option value="${k}"${P.lv === k ? " selected" : ""}>${v}</option>`).join("")}</select></label><div class="btns"><button class="abtn go" type="submit">حفظ</button><button class="abtn" type="button" id="pfx">إلغاء</button></div><p class="hint">الاسم والصورة يبقيان على هذا الجهاز فقط ولا يُرفعان إلى أي مكان.</p></form>`;
+    f.innerHTML = `<form class="pfedit" id="pff"><label>الاسم الذي يظهر في الملف والشهادات<input type="text" id="pfn" maxlength="24" value="${esc(P.nick || S.name || "")}" autocomplete="off"></label><fieldset><legend>الصورة الرمزية</legend><div class="pfchs">${Object.entries(CHS).map(([k, n]) => `<label class="pfch"><input type="radio" name="pfc" value="${k}"${P.ch === k ? " checked" : ""}><img src="${ROOT}games/chars/${k}-160.png" alt="" width="64" height="64"><span>${n}</span></label>`).join("")}</div></fieldset><label>ملف الألعاب المرتبط بهذا الطفل<select id="pfg"><option value="">تلقائي</option>${gProfiles().map((x) => `<option value="${esc(x)}"${P.gp === x ? " selected" : ""}>${esc(x)}</option>`).join("")}<option value="-"${P.gp === "-" ? " selected" : ""}>بدون ربط</option></select></label><label>العمر أو الصف<select id="pfl">${Object.entries(LV).map(([k, v]) => `<option value="${k}"${P.lv === k ? " selected" : ""}>${v}</option>`).join("")}</select></label><div class="btns"><button class="abtn go" type="submit">حفظ</button><button class="abtn" type="button" id="pfx">إلغاء</button></div><p class="hint">الاسم والصورة يبقيان على هذا الجهاز فقط ولا يُرفعان إلى أي مكان.</p></form>`;
     $("#pfx").onclick = () => (f.innerHTML = "");
-    $("#pff").onsubmit = (e) => { e.preventDefault(); P.nick = $("#pfn").value.trim().slice(0, 24); P.ch = ($("input[name=pfc]:checked") || { value: P.ch }).value; P.lv = $("#pfl").value; save(); location.reload(); };
+    $("#pff").onsubmit = (e) => { e.preventDefault(); P.nick = $("#pfn").value.trim().slice(0, 24); P.ch = ($("input[name=pfc]:checked") || { value: P.ch }).value; P.lv = $("#pfl").value; const g = $("#pfg").value; if (g) P.gp = g; else delete P.gp; save(); location.reload(); };
   };
 }
 function nav(on) { return `<nav class="pfnav" aria-label="أقسام ملف الإنجاز">${abtn(ROOT + "portfolio/", "الرئيسية", on === "hub" ? "go" : "")}${TABS.map(([k, n]) => abtn(ROOT + "portfolio/works/?tab=" + k, n, on === k ? "go" : "")).join("")}${abtn(ROOT + "portfolio/report/", "تقرير ولي الأمر", on === "rep" ? "go" : "")}</nav>`; }
@@ -123,28 +139,65 @@ function hubPage() {
 <div class="btns pfmain"><a class="abtn go" href="${ROOT}portfolio/works/">عرض ملف الإنجاز</a><a class="abtn" href="${ROOT}portfolio/report/?print=1">تحميل أو طباعة الملف</a></div>
 ${CERR ? '<p class="hint">تعذر تحميل بعض بيانات الملف الآن. حاول لاحقًا.</p>' : ""}
 <section class="art"><h2>آخر الأعمال</h2>${latest.length ? `<div class="pfgrid">${latest.map(card).join("")}</div>` : `<div class="pfempty"><img src="${ROOT}images/zad/i_puzzle.webp" alt="" width="64" height="64"><p>${empty ? "ملف الإنجاز ما زال فارغًا، وسيمتلئ تلقائيًا عند إكمال أنشطة وقصص واختبارات في المنصة." : "لا أعمال مرئية في الملف الآن."}</p><div class="btns">${abtn(ROOT + "activities/", "أنشطة وأوراق عمل")}${abtn(ROOT + "stories/", "قصص تعليمية")}${abtn(ROOT + "quizzes/", "اختبارات ومسابقات")}</div></div>`}</section>
+<section class="art pftr"><h2>نقل الملف إلى جهاز آخر</h2><p>الملف محفوظ على هذا الجهاز فقط. لنقله إلى جهاز آخر، صدّر ملفًا من هنا ثم افتحه في الجهاز الجديد بزر «استيراد». الملف يحتوي أعمال الطفل وشهاداته وصورها وتقدمه في الألعاب، فاحتفظ به عندك ولا ترسله لأحد غير مَن تثق به.</p><div class="btns"><button class="abtn go" type="button" id="pfexp">تصدير ملف الطفل</button><button class="abtn" type="button" id="pfimp">استيراد ملف</button></div><p class="hint" id="pftm"></p></section>
 <section class="art pfpriv"><h2>خصوصية الملف</h2><p>هذا الملف خاص بالطفل ووليّ أمره، ومحفوظ على هذا الجهاز فقط. لا يظهر لأحد، ولا توجد قائمة ترتيب أو مقارنة بين الأطفال، ولا نحفظ صورًا أو معلومات شخصية. المشاركة الوحيدة تتم بطباعة الملف أو حفظه PDF بقرارك أنت.</p><div class="btns"><button class="abtn" type="button" id="pfhid">أعمال أخفيتها (${AD(hiddenCnt())})</button><button class="abtn qzdanger" type="button" id="pfdel">حذف ملف الإنجاز</button></div><p class="hint" id="pfmsg"></p></section>`);
-  bindKid(); bindPriv();
+  bindKid(); bindPriv(); bindPhotos(); bindTransfer();
 }
 function bindPriv() {
   const msg = $("#pfmsg"), h = $("#pfhid"); if (h) h.onclick = () => { if (!hiddenCnt()) { msg.textContent = "لا توجد أعمال مخفية."; return; } P.hide = {}; save(); location.reload(); };
   const d = $("#pfdel"); if (!d) return; let st = 0;
   d.onclick = () => {
-    if (st === 0) { st = 1; msg.innerHTML = "هذا يحذف الأسماء والصور والملاحظات والشهادات من ملف هذا الطفل على هذا الجهاز. سجلات النشاط نفسها تبقى، فقد تظهر الأعمال والشهادات مجددًا بحسابها من النشاط. للحذف التام اختر «حذف كل تقدم الطفل». اضغط مرة ثانية للتأكيد."; d.textContent = "نعم، احذف ملف الإنجاز"; const a = D.createElement("button"); a.className = "abtn qzdanger"; a.type = "button"; a.textContent = "حذف كل تقدم الطفل من هذا الجهاز"; a.onclick = () => { if (!confirm("سيُمسح كل تقدم هذا الطفل في جميع أقسام زاد على هذا الجهاز نهائيا. متأكد؟")) return; if (Object.keys(DB.kids).length > 1) { delete DB.kids[DB.cur]; DB.cur = Object.keys(DB.kids)[0]; } else DB.kids[DB.cur] = {}; save(); location.href = ROOT + "portfolio/"; }; d.after(a); return; }
+    if (st === 0) { st = 1; msg.innerHTML = "هذا يحذف الأسماء والصور والملاحظات والشهادات من ملف هذا الطفل على هذا الجهاز. سجلات النشاط نفسها تبقى، فقد تظهر الأعمال والشهادات مجددًا بحسابها من النشاط. للحذف التام اختر «حذف كل تقدم الطفل». اضغط مرة ثانية للتأكيد."; d.textContent = "نعم، احذف ملف الإنجاز"; const a = D.createElement("button"); a.className = "abtn qzdanger"; a.type = "button"; a.textContent = "حذف كل تقدم الطفل من هذا الجهاز"; a.onclick = () => { if (!confirm("سيُمسح كل تقدم هذا الطفل في جميع أقسام زاد على هذا الجهاز نهائيا. متأكد؟")) return; photoClear().then(() => { if (Object.keys(DB.kids).length > 1) { delete DB.kids[DB.cur]; DB.cur = Object.keys(DB.kids)[0]; } else DB.kids[DB.cur] = {}; save(); location.href = ROOT + "portfolio/"; }); }; d.after(a); return; }
+    photoClear().then(() => { delete S.pf; save(); location.href = ROOT + "portfolio/"; }); return;
     delete S.pf; save(); location.href = ROOT + "portfolio/";
   };
 }
+const KEEP = ["name", "age", "av", "acts", "bank", "proj", "life", "ready", "val", "dig", "exp", "vid", "songs", "stories", "quiz", "pf", "dict", "lang", "cards", "xp", "stars"];
+function bindTransfer() {
+  const msg = $("#pftm"), say = (t) => { if (msg) msg.textContent = t; };
+  $("#pfexp").onclick = async () => {
+    try {
+      const kid = JSON.parse(JSON.stringify(S)), photos = {}, pre = DB.cur + "|";
+      for (const k of await photoKeys()) if (String(k).startsWith(pre)) photos[String(k).slice(pre.length)] = await idbDo("readonly", (st) => st.get(k));
+      const gid = gId(), games = gid ? { id: gid, kid: lget("hg_kid:" + gid, null), prog: lget("hg_prog:" + gid, {}), gt: lget("hg_gt:" + gid, {}) } : null;
+      const blob = new Blob([JSON.stringify({ v: 1, kind: "zad-portfolio", at: Date.now(), kid, photos, games })], { type: "application/json" }), a = D.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = "zad-portfolio.json"; D.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); say("تم تجهيز الملف zad-portfolio.json. احفظه في مكان آمن.");
+    } catch (e) { reportErr("export", (e && e.message) || "export"); say("تعذر تصدير الملف."); }
+  };
+  $("#pfimp").onclick = () => {
+    const f = D.createElement("input"); f.type = "file"; f.accept = "application/json,.json"; f.onchange = async () => {
+      const file = f.files && f.files[0]; if (!file) return; if (file.size > 25e6) return say("الملف كبير جدا.");
+      try {
+        const o = JSON.parse(await file.text()); if (!o || o.v !== 1 || o.kind !== "zad-portfolio" || !o.kid || typeof o.kid !== "object") return say("هذا ليس ملف ملف إنجاز صالحا من زاد.");
+        if (!confirm("سيُضاف هذا الملف كطفل جديد على هذا الجهاز دون مسح أي بيانات موجودة. متابعة؟")) return;
+        const kid = {}; KEEP.forEach((k) => { if (o.kid[k] !== undefined) kid[k] = o.kid[k]; });
+        let id = "k" + Date.now().toString(36); DB.kids[id] = kid; const old = DB.cur; DB.cur = id;
+        for (const [k, v] of Object.entries(o.photos || {})) if (typeof v === "string" && v.startsWith("data:image/jpeg;base64,") && v.length < 4e6) await photoSet(k, v);
+        if (o.games && o.games.kid && typeof o.games.id === "string") { let gid = o.games.id, ps = gProfiles(); while (ps.includes(gid)) gid += " ٢"; try { localStorage.setItem("hg_kid:" + gid, JSON.stringify(o.games.kid)); localStorage.setItem("hg_prog:" + gid, JSON.stringify(o.games.prog || {})); localStorage.setItem("hg_gt:" + gid, JSON.stringify(o.games.gt || {})); localStorage.setItem("hg_profiles", JSON.stringify(lget("hg_profiles", []).concat([gid]))); } catch {} kid.pf = kid.pf || {}; kid.pf.gp = gid; }
+        save(); say("تم استيراد الملف كطفل جديد."); setTimeout(() => location.reload(), 600);
+      } catch (e) { reportErr("import", (e && e.message) || "import"); say("تعذر قراءة الملف. تأكد أنه ملف مُصدّر من هذه الصفحة."); }
+    }; f.click();
+  };
+}
 function card(w) {
-  return `<article class="pfc" data-k="${esc(w.key)}"><img src="${esc(icon(w.icon))}" alt="" width="56" height="56" loading="lazy" onerror="this.src='${ROOT}images/zad/i_puzzle.webp'"><div class="pfcb"><b>${esc(w.title)}</b><small>${esc(w.type)} · ${w.t ? fmt(w.t) : "تاريخ غير مسجل"}</small>${w.skill ? `<small>المهارة: ${esc(w.skill)}</small>` : ""}${w.by ? `<small>${w.by}</small>` : ""}<p>${esc(P.notes[w.key] || w.text || "")}</p><div class="btns"><a class="abtn go" href="${esc(w.url)}">عرض العمل</a>${w.pdf ? `<a class="abtn" href="${esc(w.pdf.startsWith("http") ? w.pdf : ROOT + w.pdf)}" target="_blank" rel="noopener">طباعة نسخة</a>` : ""}<button type="button" class="abtn pfnote" data-k="${esc(w.key)}">ملاحظة</button><button type="button" class="abtn pfhide" data-k="${esc(w.key)}">إخفاء من الملف</button></div></div></article>`;
+  return `<article class="pfc" data-k="${esc(w.key)}"><img src="${esc(icon(w.icon))}" alt="" width="56" height="56" loading="lazy" onerror="this.src='${ROOT}images/zad/i_puzzle.webp'"><div class="pfcb"><b>${esc(w.title)}</b><small>${esc(w.type)} · ${w.t ? fmt(w.t) : "تاريخ غير مسجل"}</small>${w.skill ? `<small>المهارة: ${esc(w.skill)}</small>` : ""}${w.by ? `<small>${w.by}</small>` : ""}<p>${esc(P.notes[w.key] || w.text || "")}</p><img class="pfph" data-k="${esc(w.key)}" alt="صورة العمل" hidden><div class="btns"><a class="abtn go" href="${esc(w.url)}">عرض العمل</a>${w.pdf ? `<a class="abtn" href="${esc(w.pdf.startsWith("http") ? w.pdf : ROOT + w.pdf)}" target="_blank" rel="noopener">طباعة نسخة</a>` : ""}<button type="button" class="abtn pfnote" data-k="${esc(w.key)}">ملاحظة</button><button type="button" class="abtn pfpic" data-k="${esc(w.key)}">صورة للعمل</button><button type="button" class="abtn pfpdel" data-k="${esc(w.key)}" hidden>حذف الصورة</button><button type="button" class="abtn pfhide" data-k="${esc(w.key)}">إخفاء من الملف</button></div></div></article>`;
 }
 /* ===== الأعمال والتبويبات ===== */
 function worksPage() {
   let tab = new URLSearchParams(location.search).get("tab"); if (!TABS.some((t) => t[0] === tab)) tab = "ws";
   const v = visible(), body = { ws: () => list(v.filter((w) => w.tab === "ws"), "لا أوراق عمل مكتملة بعد. ابدأ من قسم الأنشطة.", ROOT + "activities/", "أنشطة وأوراق عمل"), proj: () => list(v.filter((w) => w.tab === "proj"), "لا مشروعات أو أنشطة مكتملة بعد.", ROOT + "projects/", "المشروعات والتحديات"), les: () => list(v.filter((w) => w.tab === "les"), "لا قصص أو دروس مكتملة بعد.", ROOT + "stories/", "القصص التعليمية"), quiz: quizTab, cert: certTab }[tab];
-  const b = skel(`<div class="zbc"><a href="../../">الرئيسية</a> › <a href="../">ملف الإنجاز</a> › ${esc(TABS.find((t) => t[0] === tab)[1])}</div>${kidBar()}${nav(tab)}<section class="art" id="pftab"></section>`);
-  $("#pftab").innerHTML = body(); bindKid();
+  const b = skel(`<div class="zbc"><a href="../../">الرئيسية</a> › <a href="../">ملف الإنجاز</a> › ${esc(TABS.find((t) => t[0] === tab)[1])}</div>${kidBar()}${nav(tab)}<section class="art" id="pftab"></section><div class="btns nopr"><button type="button" class="abtn" id="pfpr">طباعة هذه الصفحة أو حفظها PDF</button></div>`);
+  $("#pfpr").onclick = () => W.print();
+  $("#pftab").innerHTML = body(); bindKid(); bindPhotos();
   $$(".pfhide").forEach((x) => (x.onclick = () => { if (!confirm("إخفاء هذا العمل من ملف الإنجاز؟ (لا يحذف النشاط نفسه، ويمكن إظهاره من الصفحة الرئيسية)")) return; P.hide[x.dataset.k] = 1; save(); location.reload(); }));
   $$(".pfnote").forEach((x) => (x.onclick = () => { const t = prompt("ملاحظة قصيرة عن هذا العمل (يراها وليّ الأمر فقط):", P.notes[x.dataset.k] || ""); if (t == null) return; const s = t.trim().slice(0, 140); if (s) P.notes[x.dataset.k] = s; else delete P.notes[x.dataset.k]; save(); location.reload(); }));
+}
+function bindPhotos() {
+  $$(".pfph").forEach(async (im) => { const v = await photoGet(im.dataset.k); if (v) { im.src = v; im.hidden = false; const d = im.closest(".pfcb").querySelector(".pfpdel"); if (d) d.hidden = false; const a = im.closest(".pfcb").querySelector(".pfpic"); if (a) a.textContent = "تغيير الصورة"; } });
+  $$(".pfpic").forEach((x) => (x.onclick = () => {
+    if (!P.photoOk) { if (!confirm("موافقة وليّ الأمر: هل توافق على حفظ صورة هذا العمل على هذا الجهاز فقط؟ لا تُرفع الصورة إلى الإنترنت ولا تظهر لأحد، ويمكنك حذفها في أي وقت. اضغط موافق للمتابعة.")) return; P.photoOk = Date.now(); save(); }
+    const f = D.createElement("input"); f.type = "file"; f.accept = "image/*"; f.onchange = async () => { const file = f.files && f.files[0]; if (!file) return; if (!/^image\//.test(file.type) || file.size > 15e6) { alert("اختر صورة أصغر من ١٥ ميغابايت."); return; } try { await photoSet(x.dataset.k, await toJpeg(file)); location.reload(); } catch (e) { reportErr("photo", (e && e.message) || "photo"); alert("تعذر حفظ الصورة. جرّب صورة أخرى."); } }; f.click(); }));
+  $$(".pfpdel").forEach((x) => (x.onclick = async () => { if (!confirm("حذف صورة هذا العمل من هذا الجهاز؟")) return; await photoDel(x.dataset.k); location.reload(); }));
 }
 function list(a, emptyMsg, href, lab) { return a.length ? `<p class="hint">${AD(a.length)} عملًا. الأحدث أولًا.</p><div class="pfgrid">${a.map(card).join("")}</div>` : `<div class="pfempty"><img src="${ROOT}images/zad/i_puzzle.webp" alt="" width="64" height="64"><p>${emptyMsg}</p>${abtn(href, lab, "go")}</div>`; }
 function quizTab() {
