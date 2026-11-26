@@ -46,6 +46,7 @@ SUB.libadm = { title: "إدارة المكتبة", fn: async function view(m) {
   <div class="card"><b>أحدث المحتويات المضافة</b>${latest.map((p) => `<div style="font-size:14px;margin-top:6px"><span data-e="${p.id}" style="cursor:pointer;color:var(--p);font-weight:700">${esc(p.name)}</span> <small class="mut">· ${ago(p.created_at)} · ${ST[p.lib_status] || "—"}</small></div>`).join("")}</div>
   <div class="row"><button class="btn" id="ln">➕ محتوى جديد</button><button class="btn g" id="lt">🗂️ التصنيفات</button></div>
   <div class="row" style="margin-top:8px"><button class="btn g" id="la">📜 سجل التغييرات</button><button class="btn g" id="lb">💾 نسخة احتياطية</button></div>
+  <div class="row" style="margin-top:8px"><button class="btn g" id="lrv">🔍 مركز مراجعة المكتبة</button></div>
   <input type="search" id="lq" placeholder="🔍 ابحث بالعنوان أو المادة أو الكلمات المفتاحية" value="${esc(F.q)}" style="margin-top:12px">
   <div class="chips" id="lch"></div>
   <div class="row"><label class="f"><span>النوع</span><select id="lty"><option value="">كل الأنواع</option>${tax().type.map(([k, v]) => `<option value="${k}" ${F.type === k ? "selected" : ""}>${esc(v)}</option>`).join("")}</select></label>
@@ -66,7 +67,7 @@ SUB.libadm = { title: "إدارة المكتبة", fn: async function view(m) {
   $("#lse").onchange = (e) => { F.sec = e.target.value; draw(); };
   $("#ln").onclick = () => productSheet(null, reload, { lib_section: "ws", lib_levels: [], lib_status: "draft", is_visible: false, price: 0 });
   $("#lt").onclick = () => taxSheet(reload);
-  $("#la").onclick = () => auditSheet(reload);
+  $("#lrv").onclick = () => window.__go("libreviewadm"); $("#la").onclick = () => auditSheet(reload);
   $("#lb").onclick = backup;
   draw();
 } };
