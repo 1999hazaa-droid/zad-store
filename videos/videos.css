@@ -102,3 +102,4 @@
 .dg .vbtns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 .dg .vbtns button,.dg .vbtns a{min-height:48px;min-width:48px;border:2px solid #6d28d9;border-radius:14px;background:#fff;color:#4b1fa8;font:800 16px var(--z-font);padding:6px 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
 .dg .vbtns .main{background:#6d28d9;color:#fff}
+.rvc .chip{min-height:40px;padding:8px 14px}

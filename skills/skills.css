@@ -31,3 +31,4 @@
 .skres .mt .fr{background:#dff6e7;color:#17683a}.skres .mt .pd{background:#fff0d1;color:#8a5200}
 .skres a{background:var(--z-pri,#5b2bb8);color:#fff;border-radius:99px;padding:8px 14px;font:800 13px var(--z-font,inherit);text-decoration:none;min-height:38px;display:inline-flex;align-items:center}
 @media (max-width:480px){.skdoms{grid-template-columns:repeat(2,1fr)}}
+.skback{min-height:40px;display:inline-flex;align-items:center}

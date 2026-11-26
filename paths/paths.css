@@ -66,3 +66,4 @@
 .pth .evintro,.pth .evprivacy{font-size:13px;line-height:1.8;color:#4a3d6b}.pth .cnt{font-size:13px;color:#6b5c8f;margin:4px 0}
 .pth #fkid{border:2px solid #e4d9ff;border-radius:10px;padding:6px;min-height:44px;font:inherit;margin:4px 6px}
 @media (max-width:480px){.pth .pthgrid{grid-template-columns:1fr}.pth .pthstg{padding:10px}}
+.skback{min-height:40px;display:inline-flex;align-items:center}
