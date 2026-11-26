@@ -1,0 +1,61 @@
+/* مركز معايير تقييم المشاريع – زاد: بنفسجي، بطاقات صغيرة، بلا درجات */
+.ev .evtabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 6px}
+.ev .evtabs a{border:2px solid #cdb8f5;background:#fff;color:#3a1a85;border-radius:99px;font:800 14px var(--z-font,inherit);padding:8px 16px;min-height:44px;display:inline-flex;align-items:center;text-decoration:none}
+.ev .evtabs a[aria-current=page]{background:var(--z-pri,#5b2bb8);color:#fff;border-color:var(--z-pri,#5b2bb8)}
+.ev a:focus-visible,.ev button:focus-visible,.ev textarea:focus-visible,.ev select:focus-visible,.ev input:focus-visible{outline:3px solid #f5a623;outline-offset:2px}
+.ev .evgrid{display:grid;gap:10px;margin:10px 0}
+.ev .evpc{background:#fff;border:2px solid #e4d9ff;border-radius:22px;padding:12px;display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:start}
+.ev .evpc>img{width:64px;height:64px;background:#f6f1ff;border-radius:18px;padding:8px;box-sizing:border-box}
+.ev .evpc h3{margin:0 0 4px;font-size:17px;line-height:1.5;color:var(--z-pri,#5b2bb8)}
+.ev .evpc p{margin:2px 0;font-size:14px;line-height:1.7}
+.ev .evpc .mt{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0}
+.ev .evpc .mt span{background:#f1eaff;color:#3a1a85;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700}
+.ev .evpc .mt .ok{background:#dff6e7;color:#17683a}
+.ev .evpc .act{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+.ev .btn,.ev .act a,.ev .act button{border:0;border-radius:99px;background:var(--z-pri,#5b2bb8);color:#fff;font:800 14px var(--z-font,inherit);padding:10px 18px;min-height:44px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.ev .alt{background:#fff!important;color:var(--z-pri,#5b2bb8)!important;border:2px solid var(--z-pri,#5b2bb8)!important}
+.ev .evhead{display:grid;grid-template-columns:76px 1fr;gap:12px;align-items:center;background:#faf7ff;border:2px solid #e4d9ff;border-radius:22px;padding:12px;margin:10px 0}
+.ev .evhead img{width:76px;height:76px;background:#fff;border-radius:20px;padding:8px;box-sizing:border-box}
+.ev .evhead h2{margin:0;font-size:19px;color:var(--z-pri,#5b2bb8);line-height:1.5}
+.ev .evhead p{margin:3px 0 0;font-size:14px;line-height:1.8}
+.ev .evgoal b{color:#3a1a85}
+.ev .evbox{background:#fff;border:2px solid #e4d9ff;border-radius:18px;padding:12px;margin:10px 0}
+.ev .evbox h3{margin:0 0 6px;font-size:16px;color:#3a1a85}
+.ev .evintro{background:#f1eaff;border-radius:14px;padding:10px 12px;font-size:15px;line-height:1.8;margin:8px 0}
+.ev .evagain{background:#fff6e0;border:2px solid #f5c76b;border-radius:14px;padding:10px 12px;font-size:14px;line-height:1.8;margin:8px 0}
+.ev .evstage{font-size:15px;font-weight:800;color:#6b3fd4;margin:14px 0 4px}
+.ev .evcr{background:#fff;border:2px solid #e4d9ff;border-radius:18px;padding:10px 12px;margin:8px 0}
+.ev .evcr.sug{border-color:#f5a623}
+.ev .evcr p{margin:0 0 8px;font-size:16px;font-weight:700;line-height:1.7;color:#2b1060}
+.ev .evcr .tag{display:inline-block;background:#fff6e0;color:#8a5a00;border-radius:99px;padding:1px 10px;font-size:12px;font-weight:700;margin-inline-start:6px}
+.ev .evst{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ev .evst button{border:2px solid #cdb8f5;background:#fff;color:#3a1a85;border-radius:16px;font:800 13px var(--z-font,inherit);padding:8px 4px;min-height:92px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;line-height:1.4}
+.ev .evst button svg{width:44px;height:44px}
+.ev .evst button[aria-checked=true]{border-color:var(--z-pri,#5b2bb8);background:#f1eaff;box-shadow:0 0 0 3px #cdb8f5}
+.ev .evst button[data-s=done][aria-checked=true]{background:#fff7d6;border-color:#e0a800;box-shadow:0 0 0 3px #ffe08a}
+.ev .evst button[data-s=retry][aria-checked=true]{background:#e4f8ee;border-color:#2b9a66;box-shadow:0 0 0 3px #b7ecd0}
+.ev label.lab{display:block;font-weight:800;color:#3a1a85;margin:10px 0 4px;font-size:15px}
+.ev textarea,.ev select,.ev input[type=text]{width:100%;box-sizing:border-box;border:2px solid #cdb8f5;border-radius:14px;padding:10px 12px;font:600 15px var(--z-font,inherit);background:#fff;color:#2b1060}
+.ev textarea{min-height:76px;resize:vertical}
+.ev .cnt{font-size:12px;color:#6b6b7b;margin:2px 0}
+.ev .evbtns{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.ev .evbtns a,.ev .evbtns button{border:0;border-radius:99px;background:var(--z-pri,#5b2bb8);color:#fff;font:800 15px var(--z-font,inherit);padding:12px 20px;min-height:48px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.ev .evbtns .alt{border-width:2px}
+.ev .evmsg{background:linear-gradient(135deg,#f1eaff,#fff7d6);border:2px solid #cdb8f5;border-radius:20px;padding:14px;margin:12px 0;font-size:17px;font-weight:800;color:#3a1a85;line-height:1.8}
+.ev .evmsg small{display:block;font-weight:600;font-size:14px;margin-top:4px;color:#2b1060}
+.ev .evlist{margin:6px 0;padding-inline-start:22px}
+.ev .evlist li{margin:5px 0;line-height:1.8;font-size:15px}
+.ev .evsug{display:grid;gap:8px;margin:8px 0}
+.ev .evsug a{display:flex;gap:8px;align-items:center;background:#fff;border:1px solid #e4d9ff;border-radius:14px;padding:10px 12px;text-decoration:none;color:#2b1060;font-weight:700;min-height:48px}
+.ev .evsug small{font-weight:700;color:#6b3fd4}
+.ev .pills{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.ev .pills button{border:2px solid #cdb8f5;background:#fff;color:#3a1a85;border-radius:99px;font:800 14px var(--z-font,inherit);padding:8px 16px;min-height:44px;cursor:pointer}
+.ev .pills button[aria-pressed=true]{background:var(--z-pri,#5b2bb8);color:#fff;border-color:var(--z-pri,#5b2bb8)}
+.ev .evrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;border-top:1px dashed #e4d9ff;padding:8px 0}
+.ev .evrow:first-child{border-top:0}
+.ev .sk{background:#f1eaff;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700;color:#3a1a85}
+.ev .evprivacy{font-size:13px;color:#4a3a78;background:#faf7ff;border:1px dashed #cdb8f5;border-radius:12px;padding:8px 12px;margin:10px 0;line-height:1.8}
+.ev .skback{display:inline-block;margin:10px 0;font-weight:800;color:var(--z-pri,#5b2bb8);text-decoration:none}
+@media(min-width:768px){.ev .evgrid{grid-template-columns:1fr 1fr}.ev .evst button{min-height:104px;font-size:14px}.ev .evst button svg{width:52px;height:52px}}
+@media(max-width:380px){.ev .evst button{font-size:12px;padding:6px 2px}}
+@media print{.ztop,.ztab,.evbtns,.evtabs,.skback,.zph,.fzfoot,.noprint{display:none!important}.ev .evbox,.ev .evhead{break-inside:avoid}}
