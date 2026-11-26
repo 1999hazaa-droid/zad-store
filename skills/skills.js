@@ -79,7 +79,18 @@ function planBox(s, rs) {
   const opts = DAYS.map((n, i) => { const d = S.addDays(ws, i), dd = S.parse(d); return `<option value="${d}"${d === t ? " selected" : ""}>${n} ${AD(dd.getDate())}</option>`; }).join("");
   return `<div class="skplan" id="skplan"><b>أضف المهارة إلى خطة طفلك (${esc(Z.LVN[lv])})</b>${ok.map((l, i) => `<label class="ck"><input type="checkbox" data-k="${esc(l.it.key)}"${i < 2 ? " checked" : ""}> ${esc(l.it.title)} <small>(${esc(STN[l.stage] || "")})</small></label>`).join("")}<label>اليوم من هذا الأسبوع <select id="skday">${opts}</select></label><div><button type="button" id="skadd">إضافة المحدد إلى الخطة</button></div><p class="m" id="skmsg" role="status"></p></div>`;
 }
-let REV = {};
+let REV = {}, REL = [];
+const RKIND = { base: "مهارة مرتبطة", within: "داخل المادة", cross: "بين المواد", daily: "مع الحياة اليومية" };
+/* «مهارات مرتبطة بهذه المهارة»: علاقات يحدّدها فريق المحتوى (rel_public) ويراجعها مراجع قبل النشر */
+function relBox(s) {
+  const rs = REL.filter((r) => (r.from === s.slug || r.to === s.slug) && (!ST.lv || r.levels.includes(ST.lv)) && r.levels.some((l) => s.levels.includes(l)));
+  const li = rs.map((r) => {
+    const o = SK.find((x) => x.slug === (r.from === s.slug ? r.to : r.from)); if (!o) return "";
+    const its = (r.items || []).map((x) => ({ it: Z.X.items.find((i) => i.key === x.k), b: x.bridge })).filter((x) => x.it), b = its.find((x) => x.b) || its[0];
+    return `<li><b>${esc(o.name)}</b> <small>(${esc(RKIND[r.kind])})</small><br>${esc(r.expl)}${b ? `<br><a class="skgo" href="${esc(url(b.it))}">نشاط يربط المهارتين: ${esc(b.it.title)}</a>` : ""} <a class="skgo" href="#s=${encodeURIComponent(o.slug)}">فتح المهارة</a></li>`;
+  }).filter(Boolean);
+  return li.length ? `<div class="skpath" id="skrel"><b>مهارات مرتبطة بهذه المهارة</b><ul>${li.join("")}</ul><a class="skgo" href="${ROOT}map/#k=${encodeURIComponent(s.slug)}">عرض خريطة الروابط</a></div>` : "";
+}
 /* «راجع ما تعلمته أولًا»: اختياري، من روابط المهارات السابقة التي حدّدها فريق المحتوى (review_public)؛ لا يمنع الوصول للمهارة */
 function revBox(s) {
   const r = REV[s.slug]; if (!r || !(r.pre || []).length) return "";
@@ -94,7 +105,7 @@ function skill(slug) {
   const sec = STG.map((g) => { const a = by(g[0]); if (!a.length) return ""; return `<h3 class="skstage">${g[1]} <small>${g[2]}</small></h3>${a.map((l) => `<div class="skres"><b>${esc(l.it.title)}</b><div class="mt">${l.it.ct ? `<span>${esc(Z.CT[l.it.ct] || "")}</span>` : ""}<span>${esc(lvTxt(l.it.lv))}</span>${l.role === "sub" ? `<span>مهارة داعمة</span>` : ""}${badge(l.it)}</div><a href="${esc(url(l.it))}" aria-label="${l.it.paid ? "عرض المعاينة" : "فتح"}: ${esc(l.it.title)}">${l.it.paid ? "عرض المعاينة" : "فتح"}</a></div>`).join("")}`; }).join("");
   let path = "";
   if (s.path && rs.length) { const steps = STG.map((g) => { const m = rs.filter((l) => l.stage === g[0]).slice(0, 1)[0]; return m ? `<li><b>${g[1]}:</b> <a href="${esc(url(m.it))}">${esc(m.it.title)}</a></li>` : ""; }).filter(Boolean); if (steps.length > 1) path = `<div class="skpath"><b>مسار مقترح لهذه المهارة</b><p class="skhint">الترتيب مبني على التسلسل التعليمي (تعرّف ثم تدرّب ثم طبّق ثم راجع) وليس على تاريخ إضافة المورد. يمكنك اتباعه أو فتح أي مورد مباشرة من القائمة أدناه.</p><ol>${steps.join("")}</ol></div>`; }
-  root.innerHTML = `<a class="skback" href="#">← كل المهارات</a><div class="sktitle"><img src="${ROOT}images/ill/${esc(s.d.icon)}" alt=""><div><h2>${esc(s.name)}</h2><div class="mt skcard" style="border:0;box-shadow:none;padding:0;--c:${esc(s.d.color)}"><div class="mt"><span>${esc(s.d.name)}</span><span>${esc(lvTxt(s.levels))}</span><span>${s.path ? "مهارة متسلسلة" : "مهارة"}</span></div></div></div></div>${s.descr ? `<p>${esc(s.descr)}</p>` : ""}${progress(s)}${revBox(s)}<div class="skf"><label>العمر أو الصف<select id="sklv2">${lvO}</select></label></div><div id="skstart"></div>${path}${rs.length ? sec : `<div class="fzempty"><h3>لا توجد موارد بهذه الاختيارات</h3><p>جرّب كل الأعمار والصفوف.</p></div>`}${planBox(s, rs)}`;
+  root.innerHTML = `<a class="skback" href="#">← كل المهارات</a><div class="sktitle"><img src="${ROOT}images/ill/${esc(s.d.icon)}" alt=""><div><h2>${esc(s.name)}</h2><div class="mt skcard" style="border:0;box-shadow:none;padding:0;--c:${esc(s.d.color)}"><div class="mt"><span>${esc(s.d.name)}</span><span>${esc(lvTxt(s.levels))}</span><span>${s.path ? "مهارة متسلسلة" : "مهارة"}</span></div></div></div></div>${s.descr ? `<p>${esc(s.descr)}</p>` : ""}${progress(s)}${revBox(s)}${relBox(s)}<div class="skf"><label>العمر أو الصف<select id="sklv2">${lvO}</select></label></div><div id="skstart"></div>${path}${rs.length ? sec : `<div class="fzempty"><h3>لا توجد موارد بهذه الاختيارات</h3><p>جرّب كل الأعمار والصفوف.</p></div>`}${planBox(s, rs)}`;
   D.title = s.name + " | ابحث حسب المهارة | منصة زاد التعليمية";
 }
 
@@ -127,6 +138,7 @@ async function init() {
   try {
     const [j] = await Promise.all([fetchSkills(), Z.load()]);
     try { const rj = await fetch(SB + "/rest/v1/rpc/review_public", { method: "POST", headers: { apikey: ANON, Authorization: "Bearer " + ANON, "Content-Type": "application/json" }, body: "{}" }); if (rj.ok) { const o = await rj.json(); REV = {}; (o.items || []).forEach((x) => (REV[x.s] = Object.assign({ self: true }, x))); } } catch (e) { REV = {}; }
+    try { const rr = await fetch(SB + "/rest/v1/rpc/rel_public", { method: "POST", headers: { apikey: ANON, Authorization: "Bearer " + ANON, "Content-Type": "application/json" }, body: "{}" }); if (rr.ok) { const o = await rr.json(); REL = o.items || []; } } catch (e) { REL = []; }
     DATA = j; if (!Z.X.items.length && (Z.X.failed || []).length) throw new Error("index");
     prep(); const k = kidLv(); if (k) ST.lv = ""; bind(); route();
   } catch (e) {
