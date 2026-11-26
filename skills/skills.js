@@ -79,6 +79,13 @@ function planBox(s, rs) {
   const opts = DAYS.map((n, i) => { const d = S.addDays(ws, i), dd = S.parse(d); return `<option value="${d}"${d === t ? " selected" : ""}>${n} ${AD(dd.getDate())}</option>`; }).join("");
   return `<div class="skplan" id="skplan"><b>أضف المهارة إلى خطة طفلك (${esc(Z.LVN[lv])})</b>${ok.map((l, i) => `<label class="ck"><input type="checkbox" data-k="${esc(l.it.key)}"${i < 2 ? " checked" : ""}> ${esc(l.it.title)} <small>(${esc(STN[l.stage] || "")})</small></label>`).join("")}<label>اليوم من هذا الأسبوع <select id="skday">${opts}</select></label><div><button type="button" id="skadd">إضافة المحدد إلى الخطة</button></div><p class="m" id="skmsg" role="status"></p></div>`;
 }
+let REV = {};
+/* «راجع ما تعلمته أولًا»: اختياري، من روابط المهارات السابقة التي حدّدها فريق المحتوى (review_public)؛ لا يمنع الوصول للمهارة */
+function revBox(s) {
+  const r = REV[s.slug]; if (!r || !(r.pre || []).length) return "";
+  const li = r.pre.map((p) => { const k = SK.find((x) => x.slug === p.s); return k ? `<li><b>${esc(k.name)}</b> <a class="skgo" href="${p.rev ? ROOT + "review/#s=" + encodeURIComponent(p.s) : "#s=" + encodeURIComponent(p.s)}">${p.rev ? "مراجعة قصيرة" : "فتح المهارة"}</a></li>` : ""; }).join("");
+  return li ? `<div class="skpath" id="skrev"><b>راجع ما تعلمته أولًا</b><p class="skhint">اختياري: مهارات تسبق هذه المهارة. يمكنك تخطيها والبدء مباشرة.</p><ul>${li}</ul><a class="skgo" href="#skstart">ابدأ هذه المهارة مباشرة</a>${r.self ? ` <a class="skgo" href="${ROOT}review/#s=${encodeURIComponent(s.slug)}">مراجعة هذه المهارة</a>` : ""}</div>` : "";
+}
 function skill(slug) {
   const s = SK.find((x) => x.slug === slug);
   if (!s) { root.innerHTML = `<a class="skback" href="#">← كل المهارات</a><div class="fzempty"><h3>لم نجد هذه المهارة</h3><p>قد تكون مخفية مؤقتًا أو غير موجودة.</p></div>`; return; }
@@ -87,7 +94,7 @@ function skill(slug) {
   const sec = STG.map((g) => { const a = by(g[0]); if (!a.length) return ""; return `<h3 class="skstage">${g[1]} <small>${g[2]}</small></h3>${a.map((l) => `<div class="skres"><b>${esc(l.it.title)}</b><div class="mt">${l.it.ct ? `<span>${esc(Z.CT[l.it.ct] || "")}</span>` : ""}<span>${esc(lvTxt(l.it.lv))}</span>${l.role === "sub" ? `<span>مهارة داعمة</span>` : ""}${badge(l.it)}</div><a href="${esc(url(l.it))}" aria-label="${l.it.paid ? "عرض المعاينة" : "فتح"}: ${esc(l.it.title)}">${l.it.paid ? "عرض المعاينة" : "فتح"}</a></div>`).join("")}`; }).join("");
   let path = "";
   if (s.path && rs.length) { const steps = STG.map((g) => { const m = rs.filter((l) => l.stage === g[0]).slice(0, 1)[0]; return m ? `<li><b>${g[1]}:</b> <a href="${esc(url(m.it))}">${esc(m.it.title)}</a></li>` : ""; }).filter(Boolean); if (steps.length > 1) path = `<div class="skpath"><b>مسار مقترح لهذه المهارة</b><p class="skhint">الترتيب مبني على التسلسل التعليمي (تعرّف ثم تدرّب ثم طبّق ثم راجع) وليس على تاريخ إضافة المورد. يمكنك اتباعه أو فتح أي مورد مباشرة من القائمة أدناه.</p><ol>${steps.join("")}</ol></div>`; }
-  root.innerHTML = `<a class="skback" href="#">← كل المهارات</a><div class="sktitle"><img src="${ROOT}images/ill/${esc(s.d.icon)}" alt=""><div><h2>${esc(s.name)}</h2><div class="mt skcard" style="border:0;box-shadow:none;padding:0;--c:${esc(s.d.color)}"><div class="mt"><span>${esc(s.d.name)}</span><span>${esc(lvTxt(s.levels))}</span><span>${s.path ? "مهارة متسلسلة" : "مهارة"}</span></div></div></div></div>${s.descr ? `<p>${esc(s.descr)}</p>` : ""}${progress(s)}<div class="skf"><label>العمر أو الصف<select id="sklv2">${lvO}</select></label></div>${path}${rs.length ? sec : `<div class="fzempty"><h3>لا توجد موارد بهذه الاختيارات</h3><p>جرّب كل الأعمار والصفوف.</p></div>`}${planBox(s, rs)}`;
+  root.innerHTML = `<a class="skback" href="#">← كل المهارات</a><div class="sktitle"><img src="${ROOT}images/ill/${esc(s.d.icon)}" alt=""><div><h2>${esc(s.name)}</h2><div class="mt skcard" style="border:0;box-shadow:none;padding:0;--c:${esc(s.d.color)}"><div class="mt"><span>${esc(s.d.name)}</span><span>${esc(lvTxt(s.levels))}</span><span>${s.path ? "مهارة متسلسلة" : "مهارة"}</span></div></div></div></div>${s.descr ? `<p>${esc(s.descr)}</p>` : ""}${progress(s)}${revBox(s)}<div class="skf"><label>العمر أو الصف<select id="sklv2">${lvO}</select></label></div><div id="skstart"></div>${path}${rs.length ? sec : `<div class="fzempty"><h3>لا توجد موارد بهذه الاختيارات</h3><p>جرّب كل الأعمار والصفوف.</p></div>`}${planBox(s, rs)}`;
   D.title = s.name + " | ابحث حسب المهارة | منصة زاد التعليمية";
 }
 
@@ -119,6 +126,7 @@ async function init() {
   root = $("#skbody");
   try {
     const [j] = await Promise.all([fetchSkills(), Z.load()]);
+    try { const rj = await fetch(SB + "/rest/v1/rpc/review_public", { method: "POST", headers: { apikey: ANON, Authorization: "Bearer " + ANON, "Content-Type": "application/json" }, body: "{}" }); if (rj.ok) { const o = await rj.json(); REV = {}; (o.items || []).forEach((x) => (REV[x.s] = Object.assign({ self: true }, x))); } } catch (e) { REV = {}; }
     DATA = j; if (!Z.X.items.length && (Z.X.failed || []).length) throw new Error("index");
     prep(); const k = kidLv(); if (k) ST.lv = ""; bind(); route();
   } catch (e) {
