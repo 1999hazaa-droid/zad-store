@@ -23,3 +23,46 @@
 .zpathbar b{flex:1;min-width:160px;font-size:14px}.zpathbar a{background:#5b2bb8;color:#fff;border-radius:99px;padding:8px 14px;font-weight:800;font-size:13px;text-decoration:none;min-height:38px;display:inline-flex;align-items:center}
 .zpathbar a.alt{background:#fff;color:#5b2bb8;border:2px solid #5b2bb8}
 @media (max-width:480px){.pth .pthcov{flex-direction:column;text-align:center}.zpathbar{margin:10px 16px}}
+
+/* ===== المرحلة الثانية: بطاقات، مراحل، لوحة ولي الأمر ===== */
+.pth .pthtabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.pth .pthtabs a{border:2px solid var(--z-pri,#5b2bb8);color:var(--z-pri,#5b2bb8);border-radius:99px;padding:8px 16px;font-weight:800;font-size:14px;text-decoration:none;min-height:44px;display:inline-flex;align-items:center;background:#fff}
+.pth .pthtabs a[aria-current=page]{background:var(--z-pri,#5b2bb8);color:#fff}
+.pth .pthgrid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.pth .pcard{display:flex;flex-direction:column;gap:8px;border-top:6px solid var(--c,#c1aef0)}
+.pth .pcard .pic{width:72px;height:72px;border-radius:22px;background:color-mix(in srgb,var(--c,#c1aef0) 22%,#fff);display:flex;align-items:center;justify-content:center}
+.pth .pcard .pic img{width:52px;height:52px;object-fit:contain}
+.pth .pcard h3{margin:0;font-size:17px;line-height:1.5;color:#2a1a52}
+.pth .pcard .pdsc{margin:0;font-size:13px;line-height:1.7;color:#4a3d6b}
+.pth .pcard .pms{margin:0;font-size:13px;color:#3a1a85;line-height:1.7}
+.pth .pcard .df{background:#fff0d1;color:#8a5200}
+.pth .pcard .pact{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.pth .pcard .pact .go,.pth .pcard .pact button{flex:1 1 auto;min-height:44px;border-radius:99px;font:800 13px var(--z-font,inherit);display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;text-decoration:none;cursor:pointer;border:2px solid var(--z-pri,#5b2bb8);background:var(--z-pri,#5b2bb8);color:#fff}
+.pth .pcard .pact .alt{background:#fff;color:var(--z-pri,#5b2bb8)}
+.pth .pcard .pact button[aria-pressed=true]{background:#f1eaff}
+.pth .pcard .pact :focus-visible{outline:3px solid #f5a623;outline-offset:2px}
+.pth .pthsug{background:#faf7ff;border:2px solid var(--z-tint2,#e4d9ff);border-radius:18px;padding:10px 14px;margin:12px 0}
+.pth .pthsug h2{margin:0 0 6px;font-size:16px;color:var(--z-pri,#5b2bb8)}.pth .pthsug h2 small{font-weight:600;color:#6b5c8f;font-size:12px;margin-inline-start:6px}
+.pth .pthsugl{display:flex;flex-wrap:wrap;gap:8px}
+.pth .pthsugi{flex:1 1 220px;background:#fff;border:1px solid #e4d9ff;border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;gap:3px;font-size:13px}
+.pth .pthsugi b{font-size:14px;color:#2a1a52}.pth .pthsugi a{align-self:flex-start;color:var(--z-pri,#5b2bb8);font-weight:800;min-height:36px;display:inline-flex;align-items:center}
+.pth .pthstg{border:2px solid #e4d9ff;border-radius:20px;padding:12px;margin:14px 0;background:#fff;scroll-margin-top:70px}
+.pth .pthstg.cur{border-color:var(--z-pri,#5b2bb8);box-shadow:0 0 0 3px #f1eaff}
+.pth .pthstg header{display:flex;gap:10px;align-items:center}
+.pth .pthstg .sn{width:38px;height:38px;border-radius:50%;background:var(--z-pri,#5b2bb8);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.pth .pthstg h3{margin:0;font-size:17px;color:#2a1a52}.pth .pthstg h3 em{font-style:normal;font-size:12px;background:#dff6e7;color:#17683a;border-radius:99px;padding:2px 9px;margin-inline-start:6px}
+.pth .pthstg .tsk{margin:2px 0 0;font-size:13px;color:#3a1a85}.pth .pthstg .tsk a{font-weight:800}
+.pth .pthstg .ex{margin:8px 0 2px;font-size:14px;line-height:1.7}.pth .pthstg .cn{margin:0 0 4px;font-size:12px;color:#6b5c8f}
+.pth .pstgact{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.pth .pstgact .go,.pth .pstgact button,.pth .pstgact .lk{min-height:44px;border-radius:99px;font:800 13px var(--z-font,inherit);display:inline-flex;align-items:center;padding:8px 14px;text-decoration:none;cursor:pointer;border:2px solid var(--z-pri,#5b2bb8);background:var(--z-pri,#5b2bb8);color:#fff}
+.pth .pstgact .alt{background:#fff;color:var(--z-pri,#5b2bb8)}
+.pth .pstgact :focus-visible{outline:3px solid #f5a623;outline-offset:2px}
+.pth .pthpl{margin:6px 0;padding-inline-start:20px;line-height:1.9}
+.pth .pthprog .pthgo.cont{display:inline-flex;align-items:center;margin:6px 0;border-radius:99px;background:var(--z-pri,#5b2bb8);color:#fff;font:800 14px var(--z-font,inherit);padding:10px 18px;min-height:46px;text-decoration:none}
+.pth .pthbox{border:2px solid #e4d9ff;border-radius:18px;padding:12px;margin:10px 0;background:#fff}.pth .pthbox h3{margin:0 0 6px;font-size:16px;color:#3a1a85}
+.pth .pthrow{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-top:1px dashed #e4d9ff;padding:8px 0}.pth .pthrow:first-of-type{border-top:0}
+.pth .pthrow a.b{border:2px solid var(--z-pri,#5b2bb8);color:var(--z-pri,#5b2bb8);border-radius:99px;min-height:44px;padding:6px 14px;font-weight:800;font-size:13px;text-decoration:none;display:inline-flex;align-items:center}
+.pth .pthchip{display:inline-block;background:#f1eaff;color:#3a1a85;border-radius:99px;padding:4px 12px;font-size:13px;font-weight:700;margin:2px}
+.pth .evintro,.pth .evprivacy{font-size:13px;line-height:1.8;color:#4a3d6b}.pth .cnt{font-size:13px;color:#6b5c8f;margin:4px 0}
+.pth #fkid{border:2px solid #e4d9ff;border-radius:10px;padding:6px;min-height:44px;font:inherit;margin:4px 6px}
+@media (max-width:480px){.pth .pthgrid{grid-template-columns:1fr}.pth .pthstg{padding:10px}}

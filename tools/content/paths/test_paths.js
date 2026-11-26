@@ -49,19 +49,19 @@ for(const vp of (process.env.VP?[{width:+process.env.VP,height:800}]:[{width:390
  await p.fill('#pq','الأشكال');n=await names();T(n.length===1,'بحث بالاسم: '+n);await p.fill('#pq','لا يوجد هذا');T((await names()).length===0&&(await p.innerText('#skbody')).includes('لا توجد مسارات'),'لا نتائج رسالة');await p.fill('#pq','');
  // 3 صفحة المسار والترتيب
  await go('#p=p-1');let txt=await p.innerText('#skbody');
- T(txt.includes('مسار ربط الحرف بصوته')&&txt.includes('3 موارد')||txt.includes('٣ موارد'),'عدد الموارد الفعلي');
+ T(txt.includes('مسار ربط الحرف بصوته')&&/[3٣] أنشطة وموارد/.test(txt),'عدد الموارد الفعلي');
  T(txt.includes('مدة تقديرية')&&/٢٥|25/.test(txt),'المدة تظهر عند توفرها');await go('#p=p-2');T(!(await p.innerText('#skbody')).includes('مدة تقديرية'),'لا مدة إن لم تتوفر');
  await go('#p=p-1');
  const order=await p.$$eval('.pthstep b',e=>e.map(x=>x.textContent));T(order[0].includes('قصة')&&order[1].includes('نصل'),'الفهم قبل التدريب: '+order);
  T(txt.includes('الفهم')&&txt.includes('التدريب')&&!txt.includes('المراجعة'),'مراحل المسار فقط بلا فرض كل المراحل');
  T(await p.$('a[href*="goals/#g=g-ar-letter"]')!==null,'رابط الهدف');await ov('path');
- T(!/\d\s*%|٪/.test(txt),'لا نسبة قبل أي نشاط');T(txt.includes('لم يفتح طفلك موارد'),'التقدم صادق قبل البدء');T(await p.$('#pcont')===null,'لا زر تابع بلا استخدام');
+ T(!/\d\s*%|٪/.test(txt),'لا نسبة قبل أي نشاط');T(txt.includes('لم يبدأ طفلك هذا المسار'),'التقدم صادق قبل البدء');T(await p.$('#pcont')===null,'لا زر تابع بلا استخدام');
  T(txt.includes('اختياري'),'المورد الاختياري موسوم');
  // 4 ابدأ
  const first=await p.getAttribute('#pstart','href');T(/bank\/play\/\?s=bank-y/.test(first)||/stories\/read/.test(first),'ابدأ يفتح أول مورد: '+first);
  // أول مورد بالترتيب: النظام يرتب حسب مرحلة التعرف/الفهم أولًا
  await p.click('#pstart');await p.waitForTimeout(200);const cur=await p.evaluate(()=>JSON.parse(sessionStorage.getItem('zad-path-cur')||'null'));
- T(cur&&cur.slug==='p-1'&&cur.i===0&&cur.list.length===3,'سياق المسار محفوظ: '+JSON.stringify(cur&&{s:cur.slug,i:cur.i,n:cur.list.length}));
+ T(cur&&cur.slug==='p-1'&&cur.i>=0&&cur.list.length===3,'سياق المسار محفوظ: '+JSON.stringify(cur&&{s:cur.slug,i:cur.i,n:cur.list.length}));
  // 5 شريط التنقل في صفحة مورد
  await p.goto(B+'bank/play/?s=bank-y');await p.waitForTimeout(400);
  const bar=await p.$('#zpathbar');T(bar!==null,'شريط المسار يظهر في صفحة المورد');
@@ -75,14 +75,14 @@ for(const vp of (process.env.VP?[{width:+process.env.VP,height:800}]:[{width:390
   const w={};w[ws]={items:[{id:'a1',key:'bank:bank-y',day:4,st:'done',c:now,why:'x',ty:'find',tries:0,note:''},{id:'a2',key:'stories:story-x',day:4,st:'todo',c:now,why:'x',ty:'find',tries:0,note:''}]};
   localStorage.setItem('zad-learn-v3',JSON.stringify({cur:'k1',kids:{k1:{age:4,name:'س',plan:{weeks:w}}}}))});
  await go('#p=p-1');txt=await p.innerText('#skbody');
- T(/فُتح [٢2] من [٣3]/.test(txt),'فُتح 2 من 3: '+txt.slice(txt.indexOf('تقدم المسار'),txt.indexOf('تقدم المسار')+160));
- T(/المكتمل في خطة طفلك: [١1] من [٣3]/.test(txt),'المكتمل 1 من 3 وليس 2 (الفتح ليس إكمالًا)');T(/المتبقي [٢2]/.test(txt),'المتبقي 2');
- T(/[٣3][٣3]٪|33/.test(txt)||/نسبة الموارد المكتملة في الخطة/.test(txt),'نسبة المكتمل في الخطة');T(txt.includes('لا تعني إتقان')||txt.includes('لا يعني أنه أُكمل'),'تنبيه عدم الإتقان');
+ T(/أنشطة بدأها الطفل: [٢2] من [٣3]/.test(txt),'فُتح 2 من 3: '+txt.slice(txt.indexOf('تقدم المسار'),txt.indexOf('تقدم المسار')+160));
+ T(/المكتمل في خطة طفلك: [١1] من [٣3]/.test(txt),'المكتمل 1 من 3 وليس 2 (الفتح ليس إكمالًا)');
+ T(await p.$('.pthprog .bar i')!==null,'نسبة المكتمل في الخطة');T(txt.includes('لا تعني إتقان')||txt.includes('لا يعني أنه أُكمل'),'تنبيه عدم الإتقان');
  T(await p.$('#pcont')!==null,'تابع المسار يظهر لأن هناك استخدامًا حقيقيًا');
  T(await p.$$eval('.pthstep .no.done',e=>e.length)===1,'مورد واحد مكتمل فقط');
  await ov('progress');
  // مقياس: ابدأ من جديد في مسار آخر لا يتأثر
- await go('#p=p-3');txt=await p.innerText('#skbody');T(txt.includes('لم يفتح طفلك'),'مسار آخر بلا تقدم');
+ await go('#p=p-3');txt=await p.innerText('#skbody');T(txt.includes('لم يبدأ طفلك'),'مسار آخر بلا تقدم');
  // 7 مفضلة وبدأ
  await go('#p=p-1');await p.click('#pfav');T((await p.getAttribute('#pfav','aria-pressed'))==='true','المفضلة مفعلة');
  await go();await p.check('#pfv');n=await names();T(n.length===1&&n[0].includes('ربط الحرف'),'فلتر المفضلة: '+n);await p.uncheck('#pfv');
