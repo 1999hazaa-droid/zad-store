@@ -1,0 +1,45 @@
+/* مركز المهارات المكتسبة من المشاريع – زاد: بنفسجي، ألوان المجالات، بلا درجات */
+.skp .skpgrid{display:grid;gap:12px;margin:12px 0;grid-template-columns:1fr}
+@media(min-width:640px){.skp .skpgrid{grid-template-columns:1fr 1fr}}
+@media(min-width:980px){.skp .skpgrid{grid-template-columns:1fr 1fr 1fr}}
+.skp .skpc{background:#fff;border:2px solid #e4d9ff;border-top:6px solid var(--c,#6b3fd4);border-radius:22px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.skp .skpc .ic{width:64px;height:64px;border-radius:20px;background:color-mix(in srgb,var(--c,#6b3fd4) 14%,#fff);padding:10px;box-sizing:border-box}
+.skp .skpc h3{margin:0;font-size:17px;line-height:1.5;color:#2b1060}
+.skp .skpc p{margin:0;font-size:14px;line-height:1.8}
+.skp .skpc .mt{display:flex;flex-wrap:wrap;gap:6px}
+.skp .skpc .mt span{background:color-mix(in srgb,var(--c,#6b3fd4) 12%,#fff);color:#2b1060;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700}
+.skp .skpc .ex{font-size:13px;color:#4a3a78}
+.skp .skpc .bt{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+.skp .skpc .bt a{flex:1 1 120px;text-align:center;border-radius:99px;padding:10px 12px;min-height:44px;box-sizing:border-box;font:800 13px var(--z-font,inherit);text-decoration:none;background:var(--z-pri,#5b2bb8);color:#fff;display:inline-flex;align-items:center;justify-content:center}
+.skp .skpc .bt a.alt{background:#fff;color:var(--z-pri,#5b2bb8);border:2px solid var(--z-pri,#5b2bb8)}
+.skp .lvl{display:inline-block;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:800}
+.skp .lvl.none{background:#eee;color:#555}.skp .lvl.start{background:#dff6e7;color:#17683a}.skp .lvl.more{background:#fff1d6;color:#8a5a00}.skp .lvl.cont{background:#e6dcff;color:#3a1a85}
+.skp .skpdoms{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.skp .skpdoms button{border:2px solid var(--c,#cdb8f5);background:#fff;border-radius:99px;padding:6px 14px;min-height:44px;font:800 13px var(--z-font,inherit);color:#2b1060;cursor:pointer}
+.skp .skpdoms button[aria-pressed=true]{background:var(--c,#6b3fd4);color:#fff}
+.skp .skpsel{display:grid;gap:8px;grid-template-columns:1fr 1fr;margin:8px 0}
+@media(min-width:760px){.skp .skpsel{grid-template-columns:repeat(4,1fr)}}
+.skp .skpsel label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:#3a1a85}
+.skp .skpsel select{min-height:44px;border:2px solid #cdb8f5;border-radius:12px;padding:6px;font:inherit;background:#fff}
+.skp .skprow{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-top:1px dashed #e4d9ff;padding:8px 0}
+.skp .skprow:first-of-type{border-top:0}
+.skp .skprow button,.skp .skprow a.b{border:2px solid var(--z-pri,#5b2bb8);background:#fff;color:var(--z-pri,#5b2bb8);border-radius:99px;min-height:44px;padding:6px 14px;font:800 13px var(--z-font,inherit);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.skp .skprow button[aria-pressed=true]{background:#dff6e7;border-color:#17683a;color:#17683a}
+.skp .skphead{display:grid;grid-template-columns:84px 1fr;gap:12px;align-items:center;background:color-mix(in srgb,var(--c,#6b3fd4) 10%,#fff);border:2px solid var(--c,#e4d9ff);border-radius:22px;padding:12px;margin:10px 0}
+.skp .skphead img{width:84px;height:84px;background:#fff;border-radius:22px;padding:12px;box-sizing:border-box}
+.skp .skphead h2{margin:0;font-size:21px;color:#2b1060}
+.skp .skpnote{background:#f1eaff;border-radius:14px;padding:10px 12px;font-size:14px;line-height:1.9;margin:10px 0}
+.skp .skprole{display:inline-block;border-radius:99px;padding:1px 10px;font-size:12px;font-weight:800;background:#e6dcff;color:#3a1a85}
+.skp .skprole.sup{background:#eee;color:#444}
+.skp .skpproj{border:2px solid #e4d9ff;border-radius:16px;padding:10px;margin:8px 0;background:#fff}
+.skp .skpbox{border:2px solid #e4d9ff;border-radius:18px;padding:12px;margin:10px 0;background:#fff;scroll-margin-top:70px}
+.skp .skpbox h3{margin:0 0 6px;font-size:16px;color:#3a1a85}
+/* قسم صفحة المشروع */
+.pjskp{border:2px solid #e4d9ff;border-radius:18px;padding:12px;margin:12px 0;background:#faf7ff}
+.pjskp h2{margin:0 0 8px}
+.pjskp .it{border-inline-start:6px solid var(--c,#6b3fd4);padding:4px 10px;margin:8px 0}
+.pjskp .it b{color:#2b1060}
+.pjskp .it .r{display:inline-block;border-radius:99px;padding:0 10px;font-size:12px;font-weight:800;background:#e6dcff;color:#3a1a85;margin-inline-start:6px}
+.pjskp .it .r.s{background:#eee;color:#444}
+.pjskp .it p{margin:2px 0;font-size:14px;line-height:1.8}
+@media print{.skp .skpc .bt{display:none}}

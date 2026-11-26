@@ -23,7 +23,7 @@ alter table public.skill_info enable row level security;
 alter table public.proj_skills enable row level security;
 
 create or replace function public.skp_bad(t text) returns boolean language sql immutable set search_path to 'public' as $$
- select coalesce(t,'') ~ '(أتقن|اتقن|إتقان|اتقان|متقن|درجة|درجات|رسوب|عقوبة|أفضل من|أسوأ|الأول على|ترتيب الأطفال|منافسة|ضعيف|فاشل|متأخر عن)' $$;
+ select coalesce(t,'') ~ '(أتقن|اتقن|يتقن|تتقن|نتقن|إتقان|اتقان|متقن|درجة|درجات|رسوب|عقوبة|أفضل من|أسوأ|الأول على|ترتيب الأطفال|منافسة|ضعيف|فاشل|متأخر عن)' $$;
 
 -- العرض العام: مهارات منشورة فقط، وروابط مشاريع منشورة ضمن النطاق (سنة إلى 6 سنوات والصفوف 1-4)
 create or replace function public.skp_public() returns jsonb language sql stable security definer set search_path to 'public' as $$
