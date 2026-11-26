@@ -42,6 +42,9 @@ function prep() {
   void id2;
 }
 const diffOf = (it) => (DATA.diff || {})[it.key] || "";
+const FEAT = { intro: "تعليمات ومثال قبل البدء", retry: "يمكن إعادة المحاولة", why: "يشرح الإجابة بعد المحاولة", say: "فيه قراءة صوتية للأسئلة" };
+/* «intro» يخص أنشطة بنك الأنشطة التفاعلية فقط: صفحتها تعرض التعليمات ومثالًا قبل زر «ابدأ النشاط» (تحقّق منه اختبار المحرك) */
+const featOf = (it) => (((DATA.feat || {})[it.key] || []).concat(it.key.startsWith("bank:") && ((DATA.feat || {})[it.key] || []).includes("retry") ? ["intro"] : [])).filter((f) => FEAT[f]).map((f) => `<span>${FEAT[f]}</span>`).join("");
 /* الموارد المرئية لمهارة: منشورة ومتقاطعة العمر مع المهارة، وضمن المرحلة المختارة، ولا تتجاوز الصف الرابع */
 function res(s) {
   return (LINKS.get(s.id) || []).filter((l) => {
@@ -68,13 +71,17 @@ function list() {
   const ok = GR.filter((g) => nSk(g) > 0);
   root.innerHTML = `<a class="supback" href="${ROOT}library/">→ العودة إلى المكتبة</a>${levelBar()}<h2 class="skhint" style="font-size:17px;margin:12px 0 0;color:var(--z-pri,#5b2bb8)">ما الذي تحب أن نقوّيه اليوم؟</h2>${GR.length ? `<div class="supgroups">${cards}</div>` : `<div class="fzempty"><h3>لا توجد مجموعات الآن</h3><p>سنعرضها هنا عند إتاحتها.</p></div>`}${ok.length === 0 && GR.length ? `<div class="fzempty"><h3>لا أنشطة بهذا العمر</h3><p>جرّب اختيار عمر أو صف آخر.</p></div>` : ""}${logBox()}`;
 }
+/* عدد مرات إكمال أنشطة بنك الأنشطة: يسجّله البنك فعلًا على الجهاز (S.bank.done[slug].d)؛ لا نعرض عدد الأخطاء */
+function bankDone() { const d = lget("zad-learn-v3", null), k = d && d.kids && d.kids[kidId()], m = (k && k.bank && k.bank.done) || {}, r = {}; Object.keys(m).forEach((sl) => { if (m[sl] && m[sl].d > 0) r["bank:" + sl] = m[sl].d; }); return r; }
 function logBox() {
   const u = usage(), [, k] = store(), all = new Set(); GR.forEach((g) => g.sk.forEach((s) => (LINKS.get(s.id) || []).forEach((l) => all.add(l.it.key))));
   const opened = Object.keys(u.opened).filter((x) => all.has(x) && BYKEY.get(x)).sort((a, b) => (u.opened[b].at || 0) - (u.opened[a].at || 0)).slice(0, 5);
   const doneN = [...u.done].filter((x) => all.has(x)).length;
   const skills = k.skills.map((sl) => SKB.get(sl)).filter(Boolean), back = k.back.map((x) => BYKEY.get(x)).filter(Boolean);
-  const none = !opened.length && !doneN && !skills.length && !back.length;
-  return `<div class="suplog" id="suplog"><h3>سجلي الاختياري (على هذا الجهاز)</h3>${none ? "<p>لا يوجد شيء هنا بعد. عندما تختار مهارة أو تفتح نشاطًا أو تحفظ نشاطًا للعودة إليه سيظهر هنا. لا نسجّل عدد المحاولات.</p>" : `${skills.length ? `<b>مهارات اخترت التدريب عليها</b><ul>${skills.map((s) => `<li><a href="#s=${esc(s.slug)}">${esc(s.name)}</a></li>`).join("")}</ul>` : ""}${opened.length ? `<b>أنشطة فتحتها مؤخرًا</b><ul>${opened.map((x) => `<li><a href="${esc(url(BYKEY.get(x)))}">${esc(BYKEY.get(x).title)}</a></li>`).join("")}</ul>` : ""}${back.length ? `<b>أنشطة أريد العودة إليها</b><ul>${back.map((it) => `<li><a href="${esc(url(it))}">${esc(it.title)}</a></li>`).join("")}</ul>` : ""}${doneN ? `<p>أنشطة أكملتها في الخطة: ${AD(doneN)}.</p>` : ""}<p class="skhint">فتح النشاط أو إكماله لا يعني إتقان المهارة، ولا نصنّف الطفل بناءً عليه.</p>`}</div>`;
+  const bd = bankDone(), again = Object.keys(bd).filter((x) => bd[x] >= 2 && all.has(x) && BYKEY.get(x));
+  const redo = []; GR.forEach((g) => g.sk.forEach((s) => { if (!redo.includes(s) && (LINKS.get(s.id) || []).some((l) => again.includes(l.it.key))) redo.push(s); }));
+  const none = !opened.length && !doneN && !skills.length && !back.length && !again.length;
+  return `<div class="suplog" id="suplog"><h3>سجلي الاختياري (على هذا الجهاز)</h3>${none ? "<p>لا يوجد شيء هنا بعد. عندما تختار مهارة أو تفتح نشاطًا أو تحفظ نشاطًا للعودة إليه سيظهر هنا. نعرض عدد مرات إكمال أنشطة بنك الأنشطة فقط لأنه يسجّلها.</p>" : `${skills.length ? `<b>مهارات اخترت التدريب عليها</b><ul>${skills.map((s) => `<li><a href="#s=${esc(s.slug)}">${esc(s.name)}</a></li>`).join("")}</ul>` : ""}${opened.length ? `<b>أنشطة فتحتها مؤخرًا</b><ul>${opened.map((x) => `<li><a href="${esc(url(BYKEY.get(x)))}">${esc(BYKEY.get(x).title)}</a></li>`).join("")}</ul>` : ""}${back.length ? `<b>أنشطة أريد العودة إليها</b><ul>${back.map((it) => `<li><a href="${esc(url(it))}">${esc(it.title)}</a></li>`).join("")}</ul>` : ""}${again.length ? `<b>أنشطة أعدتها أكثر من مرة</b><ul>${again.map((x) => `<li><a href="${esc(url(BYKEY.get(x)))}">${esc(BYKEY.get(x).title)}</a> — أكملتها ${AD(bd[x])} مرات</li>`).join("")}</ul>` : ""}${redo.length ? `<b>مهارات أعدت التدريب عليها</b><ul>${redo.map((s) => `<li><a href="#s=${esc(s.slug)}">${esc(s.name)}</a></li>`).join("")}</ul>` : ""}${doneN ? `<p>أنشطة أكملتها في الخطة: ${AD(doneN)}.</p>` : ""}<p class="skhint">فتح النشاط أو إكماله لا يعني إتقان المهارة، ولا نصنّف الطفل بناءً عليه.</p>`}</div>`;
 }
 /* ---------- صفحة المجموعة ---------- */
 function group(slug) {
@@ -100,7 +107,7 @@ function skill(gslug, slug) {
   D.title = s.name + " | دعم التعلم | منصة زاد التعليمية";
   const rs = res(s), un = (LINKS.get(s.id) || []).filter((l) => l.it.lv.some((x) => s.levels.includes(x)) && !diffOf(l.it)).length;
   const by = (k) => rs.filter((l) => l.stage === k);
-  const one = (l) => { const d = diffOf(l.it); return `<div class="supres"><b>${esc(l.it.title)}</b><div class="mt">${l.it.ct ? `<span>${esc(Z.CT[l.it.ct] || "")}</span>` : ""}<span>${esc(lvTxt(l.it.lv.filter(INSCOPE)))}</span>${d ? `<span>${SUP[d][0]}</span>` : ""}${badge(l.it)}</div><a href="${esc(url(l.it))}" aria-label="${l.it.paid ? "عرض المعاينة" : "ابدأ"}: ${esc(l.it.title)}">${l.it.paid ? "عرض المعاينة" : "ابدأ"}</a><button type="button" class="supbk" data-k="${esc(l.it.key)}" aria-pressed="${backed(l.it.key)}">${backed(l.it.key) ? "♥ سأعود إليه" : "♡ أريد العودة إليه"}</button></div>`; };
+  const one = (l) => { const d = diffOf(l.it); return `<div class="supres"><b>${esc(l.it.title)}</b><div class="mt">${l.it.ct ? `<span>${esc(Z.CT[l.it.ct] || "")}</span>` : ""}<span>${esc(lvTxt(l.it.lv.filter(INSCOPE)))}</span>${d ? `<span>${SUP[d][0]}</span>` : ""}${featOf(l.it)}${badge(l.it)}</div><a href="${esc(url(l.it))}" aria-label="${l.it.paid ? "عرض المعاينة" : "ابدأ"}: ${esc(l.it.title)}">${l.it.paid ? "عرض المعاينة" : "ابدأ"}</a><button type="button" class="supbk" data-k="${esc(l.it.key)}" aria-pressed="${backed(l.it.key)}">${backed(l.it.key) ? "♥ سأعود إليه" : "♡ أريد العودة إليه"}</button></div>`; };
   const sec = STG.map((st) => { const a = by(st[0]); return a.length ? `<h3 class="skstage">${st[1]} <small>${st[2]}</small></h3>${a.map(one).join("")}` : ""; }).join("");
   const outs = GOALS.filter((x) => x.skill === s.slug).flatMap((x) => x.outcomes || []).slice(0, 4);
   const lvO = `<option value="">كل الأعمار والصفوف</option>` + Z.LVK.filter((l) => s.levels.includes(l) && INSCOPE(l)).map((l) => `<option value="${l}"${ST.lv === l ? " selected" : ""}>${esc(Z.LVN[l])}</option>`).join("");

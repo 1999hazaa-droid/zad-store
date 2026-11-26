@@ -8,9 +8,13 @@ for(const VW of (process.env.VW?[+process.env.VW]:[390,768,1100])){
   window.msgs=[];window.calls=[];window.NEXT_ERR=null;window.ME={roles:['library_manager'],name:'المدير'};window.ASK_YES=true;window.went=null;
   const DB={support_groups:[{slug:'arabic',name:'دعم اللغة العربية',descr:'أنشطة للحروف.',icon:'b',color:'#fff',sort:1,status:'active'},{slug:'math',name:'دعم الرياضيات',descr:'أنشطة للعد.',icon:'n',color:'#fff',sort:2,status:'hidden'}],
    support_group_skills:[{group_slug:'arabic',skill_id:'S1',ord:1},{group_slug:'arabic',skill_id:'S2',ord:2},{group_slug:'math',skill_id:'S3',ord:1}],
+   skill_domains:[{slug:'arabic',name:'مهارات اللغة العربية',sort:1},{slug:'math',name:'مهارات الرياضيات',sort:2}],
+   skill_links:[{skill_id:'S1',item_key:'bank:b1'},{skill_id:'S1',item_key:'vid:v1'},{skill_id:'S2',item_key:'proj:p1'},{skill_id:'S4',item_key:'ready:r1'}],
+   quality_items:[{key:'bank:b1',src:'bank',title:'نصل الحرف',levels:['a4'],status:'published',gone:false},{key:'vid:v1',src:'vid',title:'فيديو الحروف',levels:['a4'],status:'published',gone:false},{key:'proj:p1',src:'proj',title:'مشروع الحروف',levels:['a4'],status:'published',gone:false},{key:'ready:r1',src:'ready',title:'جاهز خارج',levels:['g1'],status:'published',gone:false}],
+   support_levels:[],
    skills:[{id:'S1',slug:'a',name:'ربط الحرف بصوته',status:'active',levels:['a4'],sort:1},{id:'S2',slug:'b',name:'التعرف على الحروف',status:'active',levels:['a4'],sort:2},{id:'S3',slug:'c',name:'العد',status:'active',levels:['a4'],sort:3},{id:'S4',slug:'d',name:'الجمع',status:'active',levels:['g1'],sort:4},{id:'S5',slug:'e',name:'مهارة مخفية',status:'hidden',levels:['g1'],sort:5}]};
   window.DB=DB;
-  const q=(tb)=>{const st={ord:[]};const api={select(){return api},order(c,o){st.ord.push([c,!o||o.ascending!==false]);return api},then(res){let r=(DB[tb]||[]).slice();st.ord.slice().reverse().forEach(([c,a])=>r=r.sort((x,y)=>(x[c]>y[c]?1:x[c]<y[c]?-1:0)*(a?1:-1)));res({data:JSON.parse(JSON.stringify(r)),error:null})}};return api};
+  const q=(tb)=>{const st={ord:[],f:[],rg:null};const api={select(){return api},eq(c,v){st.f.push(r=>r[c]===v);return api},range(a,b){st.rg=[a,b];return api},order(c,o){st.ord.push([c,!o||o.ascending!==false]);return api},then(res){let r=(DB[tb]||[]).filter(x=>st.f.every(f=>f(x)));st.ord.slice().reverse().forEach(([c,a])=>r=r.sort((x,y)=>(x[c]>y[c]?1:x[c]<y[c]?-1:0)*(a?1:-1)));if(st.rg)r=r.slice(st.rg[0],st.rg[1]+1);res({data:JSON.parse(JSON.stringify(r)),error:null})}};return api};
   window.sb={from:q,rpc:async(n,a)=>{window.calls.push([n,JSON.parse(JSON.stringify(a||{}))]);if(n==='quality_my')return{data:window.ME};
    if(window.NEXT_ERR){const e=window.NEXT_ERR;window.NEXT_ERR=null;return{error:{message:e}}}
    if(n==='support_group_update'){Object.assign(DB.support_groups.find(g=>g.slug===a.p_slug),{name:a.p_name,descr:a.p_descr});return{data:null}}
@@ -19,6 +23,9 @@ for(const VW of (process.env.VW?[+process.env.VW]:[390,768,1100])){
    if(n==='support_skill_add'){DB.support_group_skills.push({group_slug:a.p_group,skill_id:a.p_skill,ord:9});return{data:null}}
    if(n==='support_skill_remove'){DB.support_group_skills=DB.support_group_skills.filter(x=>!(x.group_slug===a.p_group&&x.skill_id===a.p_skill));return{data:null}}
    if(n==='support_skills_order'){a.p_ids.forEach((id,i)=>DB.support_group_skills.find(x=>x.group_slug===a.p_group&&x.skill_id===id).ord=i+1);return{data:null}}
+   if(n==='support_public')return{data:{diff:{'bank:b1':'easy'}}};
+   if(n==='support_set_level'){DB.support_levels=DB.support_levels.filter(x=>x.item_key!==a.p_key);if(a.p_diff)DB.support_levels.push({item_key:a.p_key,difficulty:a.p_diff});return{data:null}}
+   if(n==='skill_save'){if(/متقارب/.test(a.p.name))return{error:{message:'توجد مهارة مماثلة'}};DB.skills.push({id:'NS',slug:'x',name:a.p.name,status:'active',levels:a.p.levels,sort:9});return{data:{id:'NS'}}}
    if(n==='support_check')return{data:[{t:'noitems',group:'math',skill:'S3',msg:'المهارة «العد» في «دعم الرياضيات» بلا موارد منشورة، لذلك لا تظهر للزوار.'}]};
    return{data:null}}};
   const $=(s,r)=>(r||document).querySelector(s),$$=(s,r)=>[...(r||document).querySelectorAll(s)];
@@ -53,6 +60,19 @@ for(const VW of (process.env.VW?[+process.env.VW]:[390,768,1100])){
  await p.evaluate(()=>document.querySelector('.su-row[data-g=arabic] [data-a=hide]').click());await p.waitForTimeout(150);c=await calls();T(c.find(x=>x[0]==='support_group_status')[1].p_status==='hidden','إخفاء');
  // مراجعة
  await ck('#sutabs [data-t=review]');await p.waitForTimeout(200);t=await txt();T(t.includes('بلا موارد منشورة')&&t.includes('فحص جودة المركز'),'الفحص');await ov('review');
+ // مستوى الأنشطة
+ await p.evaluate(()=>{DB.support_group_skills.push({group_slug:'arabic',skill_id:'S1',ord:3})});await open();await ck('#sutabs [data-t=levels]');await p.waitForTimeout(300);t=await txt();
+ T(t.includes('2 نشاطًا')||t.includes('٢ نشاطًا'),'نشاطان بلا مستوى داخل مهارات المركز (الخارجي لا يُحتسب): '+t.slice(0,260));
+ T(!t.includes('جاهز خارج'),'نشاط مهارة ليست في أي مجموعة لا يظهر');T(t.includes('دعم بسيط (من بيانات النشاط)'),'مستوى النشاط من بياناته ثابت');
+ await p.selectOption('.su-row[data-k="vid:v1"] [data-f=lv]','mid');await p.waitForTimeout(150);c=await calls();const sl=c.find(x=>x[0]==='support_set_level');T(sl&&sl[1].p_key==='vid:v1'&&sl[1].p_diff==='mid','حفظ المستوى');
+ await p.selectOption('.su-row[data-k="vid:v1"] [data-f=lv]','');await p.waitForTimeout(150);c=await calls();T(c.find(x=>x[0]==='support_set_level')[1].p_diff===null,'إزالة المستوى');
+ await ov('levels');
+ // إنشاء مهارة
+ await ck('#sutabs [data-t=create]');await p.waitForTimeout(150);T(await p.$$eval('[data-go]',e=>e.map(x=>x.dataset.go).join())==='skillsadm,bankadm,quizadm,libadm,activitiesadm,qualityadm','الاختصارات');
+ await ck('[data-go=bankadm]');T((await p.evaluate(()=>window.went))==='bankadm','الاختصار ينقل لإدارة بنك الأنشطة');
+ await p.fill('#cnn','مهارة جديدة للتجربة');await p.evaluate(()=>document.querySelector('#cnl input[value=a4]').click());await ck('#cngo');await p.waitForTimeout(200);c=await calls();
+ const ss=c.find(x=>x[0]==='skill_save'),sa=c.find(x=>x[0]==='support_skill_add');T(ss&&ss[1].p.levels.join()==='a4'&&sa&&sa[1].p_skill==='NS','إنشاء ثم إضافة للمجموعة: '+JSON.stringify([ss,sa]));
+ await p.fill('#cnn','مهارة متقاربة');await p.evaluate(()=>{document.querySelector('#cnl input[value=a4]').click()});await ck('#cngo');T((await txt()).includes('توجد مهارة مماثلة'),'رفض القاعدة للمتقارب يظهر');await ov('create');
  // صلاحيات
  await p.evaluate(()=>{window.ME={roles:['content_editor'],name:'ح'}});await open();T(await p.$('[data-a=show]')===null,'المحرر لا يرى الإظهار');T(await p.$('[data-a=edit]')!==null,'المحرر يعدل');
  await p.evaluate(()=>{window.ME={roles:[],name:'ز'}});await open();T((await txt()).includes('ليست لديك صلاحية'),'بلا صلاحية');

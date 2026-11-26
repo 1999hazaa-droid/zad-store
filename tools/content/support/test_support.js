@@ -15,7 +15,7 @@ const LINKS=[L('stories:story-x','SA','recognize'),L('bank:bank-y','SA','practic
  L('lib:s-p2','SE','practice'),L('lib:s-p10','SE','practice','sub',2)];
 const SUPD={groups:[{slug:'arabic',name:'دعم اللغة العربية',descr:'أنشطة للحروف.',icon:'book.svg',color:'#ffe3ec'},{slug:'math',name:'دعم الرياضيات',descr:'أنشطة للعد.',icon:'numbers.svg',color:'#dff3ff'},{slug:'visual',name:'دعم المهارات البصرية',descr:'أنشطة بصرية.',icon:'palette.svg',color:'#e6f7d9'},{slug:'motor',name:'دعم المهارات الحركية الدقيقة',descr:'تتبع.',icon:'pencil.svg',color:'#e6dcff'}],
  gs:[{g:'arabic',s:'ar-letter-sound',o:1},{g:'math',s:'m-addsub',o:1},{g:'math',s:'m-shapes',o:2},{g:'visual',s:'c-visual',o:1},{g:'visual',s:'m-shapes',o:2}],
- diff:{'bank:bank-y':'easy','bank:bank-g':'mid','quiz:qz-1':'adv','acts:act-1':'mid'}};
+ diff:{'bank:bank-y':'easy','bank:bank-g':'mid','quiz:qz-1':'adv','acts:act-1':'mid'},feat:{'bank:bank-y':['retry','why','say'],'bank:bank-g':['retry']}};
 const GOALS=[{skill:'ar-letter-sound',outcomes:['ينطق صوت الحرف الذي يراه']}];
 (async()=>{const b=await chromium.launch();
 for(const vp of (process.env.VP?[{width:+process.env.VP,height:800}]:[{width:390,height:800},{width:768,height:900},{width:1100,height:900}])){
@@ -63,6 +63,9 @@ for(const vp of (process.env.VP?[{width:+process.env.VP,height:800}]:[{width:390
  await p.click('[data-sup=adv]');T((await p.innerText('#skbody')).includes('لا أنشطة بهذه الاختيارات'),'تحدٍ بلا أنشطة: رسالة لطيفة');await p.click('[data-sup=""]');
  // عمر
  await p.selectOption('#suplv2','g1');rt=await p.$$eval('.supres b',e=>e.map(x=>x.textContent));T(!rt.some(x=>x.includes('أصنّف')),'نشاط عمره لا يناسب الصف الأول لا يظهر: '+rt);await p.selectOption('#suplv2','');
+ // شارات حقيقية من بيانات النشاط
+ let bt=await p.$$eval('.supres',e=>e.map(x=>x.innerText));const by=bt.find(x=>x.includes('نصل الحرف')),st0=bt.find(x=>x.includes('قصة الحروف'));
+ T(by&&by.includes('تعليمات ومثال قبل البدء')&&by.includes('يمكن إعادة المحاولة')&&by.includes('يشرح الإجابة بعد المحاولة')&&by.includes('قراءة صوتية'),'شارات النشاط الذي فيه الميزات: '+by);T(st0&&!/إعادة المحاولة|يشرح الإجابة|قراءة صوتية/.test(st0),'لا شارات لنشاط بلا بيانات ميزات: '+st0);
  // العودة لاحقًا واختيار المهارة
  await p.click('.supbk');T((await p.getAttribute('.supbk','aria-pressed'))==='true','حفظ للعودة');
  await p.click('#supchoose');T((await p.getAttribute('#supchoose','aria-pressed'))==='true','اختيار المهارة');
@@ -70,6 +73,10 @@ for(const vp of (process.env.VP?[{width:+process.env.VP,height:800}]:[{width:390
  await go();t=await p.innerText('#suplog');T(t.includes('ربط الحرف بصوته')&&t.includes('أريد العودة'),'السجل يعرض الاختيارات: '+t);T(!/محاولات: |عدد المحاولات: [٠-٩0-9]/.test(t),'لا عدد محاولات مختلق');
  // سجل الفتح والإكمال (حقيقي من الجهاز)
  await p.evaluate(()=>{localStorage.setItem('zad-recent-v1',JSON.stringify({kids:{k1:{items:{'bank:bank-y':{at:Date.now()}}}}}));});await go();t=await p.innerText('#suplog');T(t.includes('أنشطة فتحتها مؤخرًا')&&t.includes('نصل الحرف'),'الفتح الأخير');T(t.includes('لا يعني إتقان'),'تنبيه عدم الإتقان');
+ // عدد مرات الإكمال من بنك الأنشطة
+ await p.evaluate(()=>{localStorage.clear();localStorage.setItem('zad-learn-v3',JSON.stringify({cur:'k1',kids:{k1:{age:4,bank:{done:{'bank-y':{d:3,w:5,best:3,t:Date.now(),last:0}}}}}}))});await go();t=await p.innerText('#suplog');
+ T(t.includes('أنشطة أعدتها أكثر من مرة')&&/أكملتها [٣3] مرات/.test(t),'عدد مرات الإكمال: '+t);T(t.includes('مهارات أعدت التدريب عليها')&&t.includes('ربط الحرف بصوته'),'المهارة المعادة');T(!/أخطاء|خطأ/.test(t),'لا عرض للأخطاء');
+ await p.evaluate(()=>{localStorage.setItem('zad-learn-v3',JSON.stringify({cur:'k1',kids:{k1:{age:4,bank:{done:{'bank-y':{d:1,w:0,best:3,t:Date.now(),last:0}}}}}}))});await go();T(!(await p.innerText('#suplog')).includes('أعدتها أكثر من مرة'),'مرة واحدة ليست إعادة');
  // 4 الخطة
  await p.evaluate(()=>{localStorage.clear();localStorage.setItem('zad-learn-v3',JSON.stringify({cur:'k1',kids:{k1:{age:4,name:'س'}}}))});await go('#g=arabic&s=ar-letter-sound');
  T(await p.$('#supadd')!==null,'زر الخطة');await p.click('#supadd');await p.waitForTimeout(150);const pm=await p.innerText('#supmsg');T(pm.includes('تمت إضافة')&&pm.includes('ليست إنجازًا'),'رسالة الإضافة: '+pm);
