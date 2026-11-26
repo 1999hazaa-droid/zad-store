@@ -1,0 +1,59 @@
+// NODE_PATH=$(npm root -g) node tools/content/paths/test_paths.js   (خادم 8765 من جذر المستودع؛ الخادم الحقيقي مُحاكى، وقواعد قاعدة البيانات اختُبرت على القاعدة الحقيقية)
+const {chromium}=require('playwright');const fs=require('fs');const errs=[];const E=m=>{console.log('ERR',m);errs.push(m)};
+const src=fs.readFileSync(__dirname+'/../find/test_find.js','utf8');const a=src.indexOf('const DOMS'),z=src.indexOf('(async()=>{');
+const {DOMS,PRODS,DATA,OVS,SYNS}=new Function(src.slice(a,z)+';return {DOMS,PRODS,DATA,OVS,SYNS}')();
+const CORS={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'};
+const dm=[['arabic','مهارات اللغة العربية','book.svg'],['math','مهارات الرياضيات','numbers.svg'],['science','العلوم والاستكشاف','microscope.svg'],['life','المهارات الحياتية','heart.svg'],['cognitive','المهارات المعرفية','brain.svg']].map(([slug,name,icon],i)=>({slug,name,icon,color:'#e6dcff',sort:i+1}));
+const I=(k,s,r)=>({k,s,r:r===undefined?true:r});
+const P=(id,domain,skill,skillName,goal,goalName,name,levels,items,extra)=>Object.assign({id,slug:'p-'+id,domain,goal,goalName,outcomes:['يفعل شيئًا يمكن ملاحظته'],skill,skillName,name,descr:'وصف '+name,levels,est:null,items},extra||{});
+
+
+const sk=(id,slug,domain,name,levels)=>({id,slug,domain,name,descr:'وصف '+name,levels,path:false,parent:null});
+const SKILLS=[sk('S1','m-count','math','العد',['a4','a5','a6']),sk('S2','m-shapes','math','التعرف على الأشكال',['a4','a5','a6']),sk('S3','ar-letter-sound','arabic','ربط الحرف بصوته',['a4','a5','a6']),sk('S4','m-addsub','math','الجمع والطرح',['g1','g2'])];
+const ACT={items:[
+ {slug:'i-1',name:'سوق الأعداد',kind:'langmath',item:'bank:bank-y',main:'m-count',extra:['m-shapes','ar-letter-sound'],levels:['a4','a5'],goal:'نعد المنتجات ونصف المجموعة بكلمة.',tools:'ثلاثة أشياء من البيت',instr:'اختر مجموعة ثم عدّها.',steps:['نختار مجموعة','نعد العناصر','نصف المجموعة'],inter:'اختيار ومطابقة',feedback:'نشجعك ونعيد المحاولة معك.',extra_key:'lib:s-p1'},
+ {slug:'i-2',name:'رحلة الأشكال',kind:'observe',item:'proj:proj-1',main:'m-shapes',extra:['m-count'],levels:['a5','a6'],goal:'نبحث عن الأشكال حولنا.',tools:null,instr:'ابحث عن شكل معين.',steps:['نبحث','نصنف'],inter:null,feedback:null,extra_key:null},
+ {slug:'i-3',name:'مورد غير موجود',kind:'story',item:'lib:ghost',main:'m-count',extra:['m-shapes'],levels:['a5'],goal:'x',tools:null,instr:'y',steps:['z'],inter:null,feedback:null,extra_key:null},
+ {slug:'i-4',name:'صف خامس',kind:'life',item:'bank:bank-y',main:'m-count',extra:['m-shapes'],levels:['g5'],goal:'x',tools:null,instr:'y',steps:['z'],inter:null,feedback:null,extra_key:null}]};
+const REVS={items:[{s:'m-count',intro:'x',example:null,summary:null,pre:[],next:[]}]};
+(async()=>{const b=await chromium.launch();
+for(const vp of (process.env.VP?[{width:+process.env.VP,height:800}]:[{width:390,height:800},{width:768,height:900},{width:1100,height:900}])){
+ const W=vp.width,ctx=await b.newContext({viewport:vp});const p=await ctx.newPage();p.on('pageerror',e=>E(W+' pageerror '+e.message));
+ let fail=false,act=ACT;
+ await p.route(/supabase\.co/,async r=>{const u=new URL(r.request().url()),tb=u.pathname.split('/').pop(),m=r.request().method();const J=(o,c=200)=>r.fulfill({status:c,headers:{...CORS,'content-type':'application/json'},body:JSON.stringify(o)});
+  if(m==='OPTIONS')return r.fulfill({status:204,headers:CORS});
+  if(m==='POST'&&tb==='integ_public'){if(fail)return J({},500);return J(act)}
+  if(m==='POST'&&tb==='review_public')return J(REVS);
+  if(m==='POST'&&tb==='skills_public')return J({domains:dm,skills:SKILLS,links:[]});
+  if(m==='POST')return r.fulfill({status:201,headers:CORS,body:''});
+  if(tb==='rp_config')return J(DOMS);if(tb==='search_overrides')return J(OVS);if(tb==='search_synonyms')return J(SYNS);if(tb==='lib_stats')return J([]);
+  if(tb==='products')return J(PRODS);if(DATA[tb])return J(DATA[tb]);return J([])});
+ const B='http://localhost:8765/';
+ const ov=async(n)=>{if(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))E(W+' overflow '+n)};
+ const go=async(h)=>{await p.goto(B+'integrated/'+(h||''));await p.reload();await p.waitForSelector('#skbody .skcard, #skbody .fzempty, #skbody .skback');await p.waitForTimeout(150)};
+ const T=(c,m)=>{if(!c)E(W+' FAIL '+m)};const names=()=>p.$$eval('.skcard h3',e=>e.map(x=>x.textContent));
+ await go();let n=await names();console.log(W,n.join(' | '));
+ T(n.length===2&&n.includes('سوق الأعداد')&&n.includes('رحلة الأشكال'),'نشاطان صالحان فقط (بلا مورد مفقود ولا صف خامس): '+n);await ov('home');
+ let body=await p.innerText('body');T(!/ضعيف|فشل/.test(body),'لغة داعمة');T(!/أنهيته/.test(body),'لا سجل قبل أي إنهاء');
+ const ch=await p.$$eval('.skdom',e=>e.map(x=>x.dataset.k));T(ch.join()==='langmath,observe','أنواع متاحة فقط: '+ch);
+ await p.click('.skdom[data-k=observe]');n=await names();T(n.length===1&&n[0].includes('رحلة'),'تصفية النوع');await p.click('.skdom[data-k=observe]');
+ await p.selectOption('#iage','a4');n=await names();T(n.length===1&&n[0].includes('سوق'),'عمر 4: '+n);await p.selectOption('#iage','a6');n=await names();T(n.length===1&&n[0].includes('رحلة'),'عمر 6: '+n);await p.selectOption('#iage','');
+ const gs=await p.$$eval('#igr option',e=>e.map(x=>x.value));T(!gs.some(v=>/g[5-9]/.test(v)),'لا صفوف فوق الرابع');
+ T(await p.$$eval('.skcard .igsk span',e=>e.length)>=5,'المهارات المجمّعة ظاهرة بتسميات');
+ await go('#a=i-1');let t=await p.innerText('#skbody');
+ T(t.includes('نعد المنتجات')&&t.includes('ثلاثة أشياء من البيت')&&t.includes('اختر مجموعة ثم عدّها')&&t.includes('نصف المجموعة')&&t.includes('اختيار ومطابقة')&&t.includes('نشجعك'),'كل عناصر النشاط');
+ T(await p.$$eval('ol.igst li',e=>e.length)===3,'ثلاث خطوات');T(t.includes('العد')&&t.includes('التعرف على الأشكال')&&t.includes('ربط الحرف بصوته'),'المهارات الثلاث');
+ T((await p.getAttribute('#igstart','href')).includes('bank/play'),'زر البدء يفتح النشاط التفاعلي الفعلي: '+await p.getAttribute('#igstart','href'));
+ T(t.includes('ماذا بعد؟')&&t.includes('نشاط إضافي')&&t.includes('مراجعة قصيرة')&&t.includes('نشاط مشابه'),'اقتراحات بعد النشاط');
+ T(await p.$('a[href*="review/#s=m-count"]')!==null,'رابط المراجعة');T(!/\d\s*%|٪/.test(t),'لا نسب');T(!t.includes('أنهيته'),'لا سجل بلا ضغط');
+ await p.click('#igdone');t=await p.innerText('#skbody');T(t.includes('أنهيته ١ مرة')&&/رائع|أنت تتدرب|يمكنك العودة/.test(t),'تسجيل الإنهاء بالضغط فقط: '+t.slice(0,40));
+ let st=await p.evaluate(()=>JSON.parse(localStorage.getItem('zad-integ-v1')));T(Object.values(st.kids)[0]['i-1'].n===1,'تخزين محلي');
+ await p.click('#igundo');T(!(await p.innerText('#skbody')).includes('أنهيته ١'),'التراجع');
+ await p.click('.srpar summary');T((await p.innerText('.srpar')).includes('الأدوات')&&(await p.innerText('.srpar')).includes('خريطة المهارات'),'لوحة ولي الأمر');await ov('detail');
+ await go('#a=i-2');t=await p.innerText('#skbody');T(!t.includes('الأدوات أو الموارد المطلوبة')&&!t.includes('طريقة التفاعل')&&!t.includes('التغذية الراجعة'),'لا حقول فارغة تُعرض');
+ await go('#a=i-3');T((await p.innerText('#skbody')).includes('لم نجد هذا النشاط'),'نشاط مورده مفقود لا يُفتح');
+ act={items:[]};await go();T((await p.innerText('#skbody')).includes('لا توجد أنشطة شاملة'),'فارغة');
+ fail=true;await p.goto(B+'integrated/');await p.reload();await p.waitForSelector('#iretry');T((await p.innerText('#skbody')).includes('تعذّر'),'رسالة فشل');fail=false;
+ T(await p.$$eval('a[href*="library"]',e=>e.length)>0,'رابط المكتبة');
+ await ctx.close()}
+await b.close();console.log(errs.length?'FAILED '+errs.length:'ALL PASS');process.exit(errs.length?1:0)})();
