@@ -856,7 +856,7 @@
 :root body .tg-recy .tg-opt.rbin.ok,:root body .tg-hlth .tg-opt.hlb.ok{box-shadow:0 0 0 4px #fff,0 0 0 9px #FFD84D,0 8px 0 #E9C24A}
 :root body .tg-park{display:grid}
 :root body .tg-pksc{position:relative;height:clamp(340px,60vh,500px);background:linear-gradient(180deg,#BDE8FF 0 26%,#A3E07A 26% 100%)}
-:root body .tg-pk{position:absolute;aspect-ratio:1;z-index:1}
+:root body .tg-pk{position:absolute;aspect-ratio:1;z-index:1}:root body .tg-pk{min-width:48px}:root body .tg-pk[data-d]{pointer-events:none}
 :root body .tg-pbin{position:absolute;inset-inline-start:3%;bottom:3%;width:clamp(70px,20vw,100px);aspect-ratio:1;z-index:3}
 :root body .tg-pbin b,:root body .tg-bagbx b{position:absolute;top:-8px;inset-inline-end:-8px;min-width:34px;height:34px;border-radius:999px;background:#5426C7;color:#fff;font:900 20px/34px "Baloo Bhaijaan 2",system-ui,sans-serif;text-align:center;box-shadow:0 0 0 3px #fff}
 /* الطعام الصحي */
