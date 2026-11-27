@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>إبلاغ عن مشكلة في لعبة – زاد التعليمية</title>
+<style>
+:root{--bg:#F8F6FD;--fg:#1E1536;--mut:#6B6283;--card:#fff;--line:#D9CFF0;--ac:#6D3FD1;--acf:#fff;--ok:#1F7A4D}
+@media (prefers-color-scheme:dark){:root{--bg:#150F26;--fg:#EFEAFB;--mut:#B5ABD0;--card:#1E1636;--line:#3A2E5A;--ac:#A98BF2;--acf:#1b0f3d;--ok:#6BD39B}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 Cairo,system-ui,sans-serif;padding:20px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+main{max-width:640px;margin:0 auto;display:grid;gap:16px}
+h1{font-size:1.4rem;margin:0}p{margin:0}.mut{color:var(--mut);font-size:.92rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px}
+label{font-weight:700;display:block;margin-bottom:4px}
+select,textarea{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:10px 12px;min-height:48px}
+textarea{min-height:96px;resize:vertical}
+select:focus,textarea:focus,button:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+button{font:inherit;font-weight:700;min-height:52px;border:0;border-radius:14px;background:var(--ac);color:var(--acf);padding:0 20px;cursor:pointer}
+.note{background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:.95rem}
+pre{white-space:pre-wrap;margin:0;font:inherit;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0;overflow-wrap:anywhere}
+#ok{color:var(--ok);font-weight:700;min-height:1.5em}
+</style>
+</head>
+<body>
+<main>
+<div><h1>إبلاغ عن مشكلة في لعبة</h1><p class="mut">يساعدنا بلاغك على إصلاح اللعبة بسرعة. لا يُرسل شيء من هذه الصفحة تلقائيًا: أنت تنسخ النص وترسله بالطريقة التي تفضّلها.</p></div>
+<form class="card" id="f" onsubmit="return false">
+  <div><label for="g">اللعبة</label><select id="g" required><option value="">اختر اللعبة…</option></select></div>
+  <div><label for="k">ما المشكلة؟</label>
+    <select id="k">
+      <option>اللعبة لا تعمل أو لا تُفتح</option>
+      <option>التعليمات غير واضحة</option>
+      <option>زر صعب الاستعمال</option>
+      <option>الصعوبة غير مناسبة (سهلة جدًا أو صعبة جدًا)</option>
+      <option>مشكلة في الصوت</option>
+      <option>مشكلة في الانتقال بين المراحل أو في النجوم</option>
+      <option>أخرى</option>
+    </select></div>
+  <div><label for="n">تفاصيل قصيرة (اختياري)</label><textarea id="n" maxlength="400" placeholder="مثال: عند الضغط على الزر الأخضر لا يحدث شيء"></textarea></div>
+  <div class="note">من فضلك لا تكتب اسم الطفل ولا رقم هاتف ولا بريدًا، ولا ترفق صورًا أو تسجيلات.</div>
+  <button type="button" id="b">نسخ البلاغ</button>
+  <div id="ok" role="status" aria-live="polite"></div>
+</form>
+<div class="card"><label>نص البلاغ</label><pre id="o"></pre></div>
+</main>
+<script>
+(async()=>{
+ const g=document.getElementById('g'),k=document.getElementById('k'),n=document.getElementById('n'),o=document.getElementById('o'),ok=document.getElementById('ok');
+ try{const r=await (await fetch('registry.json')).json();let L=r.games;L=Array.isArray(L)?L:Object.entries(L).map(([id,v])=>({...v,id}));
+  L.filter(x=>x.status!=='legacy').sort((a,b)=>a.title.localeCompare(b.title,'ar')).forEach(x=>{const e=document.createElement('option');e.value=x.id;e.textContent=x.title;g.appendChild(e)})}catch(e){ok.textContent='تعذّر تحميل قائمة الألعاب؛ اكتب اسم اللعبة في التفاصيل.'}
+ const text=()=>{const t=g.options[g.selectedIndex];return 'بلاغ عن لعبة – زاد التعليمية\nاللعبة: '+(g.value?t.textContent+' ('+g.value+')':'—')+'\nالمشكلة: '+k.value+(n.value.trim()?'\nالتفاصيل: '+n.value.trim():'')+'\nالجهاز: '+(innerWidth<600?'هاتف':innerWidth<1000?'لوحي':'كمبيوتر')};
+ const up=()=>{o.textContent=text()};[g,k,n].forEach(e=>e.addEventListener('input',up));up();
+ document.getElementById('b').onclick=async()=>{if(!g.value){ok.textContent='اختر اللعبة أولًا.';g.focus();return}
+  try{await navigator.clipboard.writeText(text());ok.textContent='تم النسخ ✓'}catch(e){const s=getSelection(),r=document.createRange();r.selectNodeContents(o);s.removeAllRanges();s.addRange(r);ok.textContent='حدّد النص أعلاه وانسخه يدويًا.'}};
+})();
+</script>
+</body>
+</html>
