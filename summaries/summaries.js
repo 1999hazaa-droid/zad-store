@@ -105,7 +105,7 @@ async function related(a) {
       const j = r.ok ? await r.json() : []; (Array.isArray(j) ? j : []).forEach((x) => out.push(`<a href="${ROOT}activities/view/?a=${encodeURIComponent(x.slug)}">نشاط: ${esc(x.title)}</a>`));
     } catch {}
   }
-  (Array.isArray(L.lib) ? L.lib : []).filter(Boolean).forEach((n) => out.push(`<a href="${ROOT}library/#q=${encodeURIComponent(n)}">ملفات للطباعة في المكتبة: ${esc(n)}</a>`));
+  (Array.isArray(L.lib) ? L.lib : []).filter(Boolean).forEach((n) => out.push(`<a href="${ROOT}learning-files/#q=${encodeURIComponent(n)}">ملفات للطباعة في الملفات التعليمية: ${esc(n)}</a>`));
   if (L.cards) out.push(`<a href="${ROOT}cards/?cat=${encodeURIComponent(L.cards)}">البطاقات التعليمية المرتبطة</a>`);
   if (L.quiz) {
     const lv = String(L.quiz).split(":")[0];

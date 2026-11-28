@@ -1,4 +1,4 @@
-/* المكتبة التعليمية — منصة زاد التعليمية
+/* الملفات التعليمية — منصة زاد التعليمية
    تقرأ الملفات من قاعدة البيانات مباشرة (للقراءة فقط)، والمفضلة والملفات الأخيرة تُحفظ على الجهاز فقط */
 (function () {
 "use strict";
@@ -66,7 +66,7 @@ function applyTax(rows) {
   } catch (e) { console.warn("taxonomy", e); }
 }
 /* ---------- الحالة ---------- */
-const S = { items: [], byId: new Map(), uses: {}, loaded: false, failed: false, lv: "", sec: "", subj: "", price: "", q: "", sort: "new", tab: "all", all: false };
+const S = { items: [], byId: new Map(), uses: {}, loaded: false, failed: false, lv: "", sec: "", subj: "", type: "", price: "", q: "", sort: "new", tab: "all", all: false };
 
 /* ---------- الاتصال ---------- */
 function api(path, opt) {
@@ -135,11 +135,14 @@ function matches(p, o) {
   if (o.lv && !(p.lib_levels || []).includes(o.lv)) return false;
   if (o.sec && p.lib_section !== o.sec) return false;
   if (o.subj && (p.lib_subject || "متنوع") !== o.subj) return false;
+  if (o.type && typeOf(p) !== o.type) return false;
   if (o.price === "free" && !isFree(p)) return false;
   if (o.price === "paid" && isFree(p)) return false;
   if (o.q) { const t = searchText(p); if (!norm(o.q).split(" ").filter(Boolean).every((w) => t.includes(w))) return false; }
   return true;
 }
+/* نوع الملف: الحقل lib_type، وإن لم يُحدَّد فكل الملفات PDF */
+const typeOf = (p) => p.lib_type || "pdf";
 const byDate = (a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0);
 function sorted(list) {
   const nt = (p) => Date.parse(p.created_at) || 0;
@@ -147,14 +150,14 @@ function sorted(list) {
   if (S.sort === "pop") return list.slice().sort((a, b) => (S.uses[b.id] || 0) - (S.uses[a.id] || 0) || nt(b) - nt(a));
   return list.slice().sort((a, b) => nt(b) - nt(a));
 }
-const filtering = () => !!(S.lv || S.sec || S.subj || S.price || S.q || S.all);
+const filtering = () => !!(S.lv || S.sec || S.subj || S.type || S.price || S.q || S.all);
 
 /* ---------- عنوان الصفحة (حفظ الحالة في الرابط) ---------- */
 function readHash() {
   const h = new URLSearchParams(location.hash.slice(1));
   S.lv = LVI[h.get("lv")] !== undefined ? h.get("lv") : "";
   S.sec = SECI[h.get("sec")] ? h.get("sec") : "";
-  S.subj = h.get("sub") || ""; S.price = ["free", "paid"].includes(h.get("pr")) ? h.get("pr") : "";
+  S.subj = h.get("sub") || ""; S.type = h.get("ty") || ""; S.price = ["free", "paid"].includes(h.get("pr")) ? h.get("pr") : "";
   S.q = h.get("q") || ""; S.sort = h.get("s") === "pop" ? "pop" : "new";
   S.tab = ["fav", "recent"].includes(h.get("t")) ? h.get("t") : "all"; S.all = h.get("v") === "all";
   return h.get("f") || "";
@@ -162,7 +165,7 @@ function readHash() {
 function writeHash(push) {
   const h = new URLSearchParams();
   if (S.tab !== "all") h.set("t", S.tab);
-  if (S.lv) h.set("lv", S.lv); if (S.sec) h.set("sec", S.sec); if (S.subj) h.set("sub", S.subj);
+  if (S.lv) h.set("lv", S.lv); if (S.sec) h.set("sec", S.sec); if (S.subj) h.set("sub", S.subj); if (S.type) h.set("ty", S.type);
   if (S.price) h.set("pr", S.price); if (S.q) h.set("q", S.q); if (S.sort !== "new") h.set("s", S.sort); if (S.all) h.set("v", "all");
   if (PV.p) h.set("f", PV.p.slug || PV.p.id);
   const s = h.toString(), url = location.pathname + location.search + (s ? "#" + s : "");
@@ -201,7 +204,7 @@ function landing() {
   const free = sorted(items.filter(isFree)).slice(0, 6);
   let h = `<section class="lsec"><h2>اختر العمر أو الصف</h2><p>داخل كل فئة تجد الملفات مرتّبة حسب المادة والمهارة.</p><div class="ltiles">`;
   LV.forEach((l) => { const n = lvCount(l[0]); if (n) h += `<button type="button" class="ltile" data-lv="${l[0]}"><img src="${IMG(l[2])}" alt="">${esc(l[1])}<small>${countTxt(n)}</small></button>`; });
-  h += `</div></section><section class="lsec"><h2>أقسام المكتبة</h2><div class="ltiles w">`;
+  h += `</div></section><section class="lsec"><h2>أقسام الملفات</h2><div class="ltiles w">`;
   SEC.forEach((s) => { const n = secCount(s[0]); if (n) h += `<button type="button" class="ltile" data-sec="${s[0]}"><img src="${IMG(s[3])}" alt=""><span>${esc(s[1])}</span><small>${esc(s[2])}</small><em>${countTxt(n)}</em></button>`; });
   h += `</div></section>`;
   const subs = new Map(); items.forEach((p) => { if (p.lib_subject && p.lib_subject !== "متنوع") subs.set(p.lib_subject, (subs.get(p.lib_subject) || 0) + 1); });
@@ -223,7 +226,7 @@ function landing() {
 /* ---------- النتائج ---------- */
 function summary() {
   const parts = [];
-  if (S.lv) parts.push(LV[LVI[S.lv]][1]); if (S.sec) parts.push(SECI[S.sec][1]); if (S.subj) parts.push(S.subj);
+  if (S.lv) parts.push(LV[LVI[S.lv]][1]); if (S.sec) parts.push(SECI[S.sec][1]); if (S.subj) parts.push(S.subj); if (S.type) parts.push(TYPES[S.type] || S.type);
   if (S.price) parts.push(S.price === "free" ? "المجاني" : "المدفوع"); if (S.q) parts.push("«" + S.q + "»");
   return parts.join(" · ");
 }
@@ -263,6 +266,10 @@ function renderFilters() {
   S.items.filter((p) => matches(p, { ...S, subj: "", q: "" })).forEach((p) => { const k = p.lib_subject || "متنوع"; subs.set(k, (subs.get(k) || 0) + 1); });
   if (S.subj && !subs.has(S.subj)) subs.set(S.subj, 0);
   $("#fsub").innerHTML = `<option value="">كل المواد</option>` + Array.from(subs.entries()).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<option value="${esc(k)}"${k === S.subj ? " selected" : ""}>${esc(k)} (${n})</option>`).join("");
+  const tys = new Map();
+  S.items.filter((p) => matches(p, { ...S, type: "", q: "" })).forEach((p) => { const k = typeOf(p); tys.set(k, (tys.get(k) || 0) + 1); });
+  if (S.type && !tys.has(S.type)) tys.set(S.type, 0);
+  $("#ftype").innerHTML = `<option value="">كل الأنواع</option>` + Array.from(tys.entries()).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<option value="${esc(k)}"${k === S.type ? " selected" : ""}>${esc(TYPES[k] || k)} (${n})</option>`).join("");
   $("#fpr").value = S.price; $("#fsort").value = S.sort;
   const on = $("#flv .on"), on2 = $("#fsec .on");
   [on, on2].forEach((b) => { if (b && b.dataset.lv !== "" && b.dataset.sec !== "") b.scrollIntoView({ block: "nearest", inline: "nearest" }); });
@@ -463,7 +470,7 @@ D.addEventListener("click", (e) => {
   if ((b = t.closest("[data-sec]"))) return setF({ sec: b.dataset.sec, all: false });
   if ((b = t.closest("[data-more]"))) return setF(b.dataset.more === "free" ? { price: "free", all: true } : b.dataset.more === "pop" ? { sort: "pop", all: true } : { sort: "new", all: true });
   if ((b = t.closest("[data-subj]"))) return setF({ subj: b.dataset.subj, all: false });
-  if ((b = t.closest("[data-clear]"))) { $("#lq").value = ""; $("#lqx").hidden = true; return setF({ lv: "", sec: "", subj: "", price: "", q: "", all: false }); }
+  if ((b = t.closest("[data-clear]"))) { $("#lq").value = ""; $("#lqx").hidden = true; return setF({ lv: "", sec: "", subj: "", type: "", price: "", q: "", all: false }); }
   if ((b = t.closest("[data-clear-recent]"))) { REC = []; store.set("recent", REC); toast("مُسحت القائمة"); return render(); }
   if ((b = t.closest("[data-tab]"))) return setF({ tab: b.dataset.tab });
   if ((b = t.closest("[data-pg]"))) return show(+b.dataset.pg);
@@ -478,6 +485,7 @@ D.addEventListener("click", (e) => {
   if (t.closest("#lzo")) return zoom(-1);
 });
 $("#fsub").addEventListener("change", (e) => setF({ subj: e.target.value }));
+$("#ftype").addEventListener("change", (e) => setF({ type: e.target.value }));
 $("#fpr").addEventListener("change", (e) => setF({ price: e.target.value }));
 $("#fsort").addEventListener("change", (e) => setF({ sort: e.target.value }, false));
 let qt;
@@ -546,7 +554,7 @@ function boot() {
     if (S.loaded) { if (f && !PV.p) openPreview(findSlug(f), false); return; }
     S.failed = true;
     $("#lstats").innerHTML = "<span>تعذّر التحميل</span>";
-    $("#lres").innerHTML = empty("تعذّر تحميل المكتبة", "تأكد من اتصالك بالإنترنت ثم أعد المحاولة.", "i_cloud", '<button type="button" class="zbtn zb2" onclick="location.reload()">إعادة المحاولة</button>');
+    $("#lres").innerHTML = empty("تعذّر تحميل الملفات", "تأكد من اتصالك بالإنترنت ثم أعد المحاولة.", "i_cloud", '<button type="button" class="zbtn zb2" onclick="location.reload()">إعادة المحاولة</button>');
   });
   if (S.loaded && f) openPreview(findSlug(f), false);
 }

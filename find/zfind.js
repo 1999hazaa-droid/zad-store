@@ -125,7 +125,7 @@ async function load() {
     prods.forEach((p) => {
       if (!p.lib_section || !SEC[p.lib_section]) return;
       const free = Number(p.price) === 0 && !!p.file_url && !String(p.file_url).startsWith("private:");
-      raws.push({ src: "lib", slug: p.slug || p.id, title: p.name, desc: firstLine(p.description, 110), descFull: p.description, skill: p.lib_skill, subject: p.lib_subject, kw: [p.lib_keywords, p.lib_unit].filter(Boolean).join(" "), levels: p.lib_levels || [], created_at: p.created_at, img: p.thumb_url || p.image_url, uses: uses[p.id] || 0, price: Number(p.price) || 0, free, paid: !free, section: p.lib_section, ct: LIBTYPE_CT[p.lib_type] || SEC_CT[p.lib_section] || "res", dom: SEC_DOM[p.lib_section] || null, printable: true, preview: true, interactive: false, url: `library/#f=${encodeURIComponent(p.slug || p.id)}`, id: p.id, unavailable: p.is_available === false });
+      raws.push({ src: "lib", slug: p.slug || p.id, title: p.name, desc: firstLine(p.description, 110), descFull: p.description, skill: p.lib_skill, subject: p.lib_subject, kw: [p.lib_keywords, p.lib_unit].filter(Boolean).join(" "), levels: p.lib_levels || [], created_at: p.created_at, img: p.thumb_url || p.image_url, uses: uses[p.id] || 0, price: Number(p.price) || 0, free, paid: !free, section: p.lib_section, ct: LIBTYPE_CT[p.lib_type] || SEC_CT[p.lib_section] || "res", dom: SEC_DOM[p.lib_section] || null, printable: true, preview: true, interactive: false, url: `learning-files/#f=${encodeURIComponent(p.slug || p.id)}`, id: p.id, unavailable: p.is_available === false });
     });
     await Promise.all(Object.entries(TB).map(async ([src, [tb, cols]]) => {
       const rows = await safe(src, rest(`${tb}?status=eq.published&select=${cols}&limit=1500`), []);

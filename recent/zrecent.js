@@ -14,7 +14,7 @@ const H = { apikey: ANON, Authorization: "Bearer " + ANON };
 const SRC_CT = { lib: "ws", acts: "home", bank: "res", proj: "project", life: "res", ready: "res", val: "res", exp: "res", vid: "video", songs: "res", games: "game", stories: "story", quiz: "quiz" };
 const TABLE = { acts: "activities", bank: "bank_items", proj: "proj_items", life: "life_items", ready: "ready_items", val: "val_items", exp: "exp_items", vid: "video_items", songs: "song_items", stories: "stories", quiz: "qz_quizzes" };
 const PAGES = [["activities/view/", "a", "acts"], ["bank/play/", "s", "bank"], ["projects/play/", "s", "proj"], ["life/play/", "s", "life"], ["ready/play/", "s", "ready"], ["values/play/", "s", "val"], ["explore/play/", "s", "exp"], ["videos/play/", "s", "vid"], ["songs/play/", "s", "songs"], ["stories/read/", "s", "stories"], ["quizzes/quiz/", "q", "quiz"]];
-const SRC_NAME = { lib: "ملفات المكتبة", acts: "أنشطة منزلية", bank: "بنك الأنشطة", proj: "مشاريع", life: "مهارات حياتية", ready: "استعداد مدرسي", val: "قيم وسلوك", exp: "ثقافة عامة", vid: "دروس مرئية", songs: "أناشيد", games: "ألعاب", stories: "قصص", quiz: "اختبارات" };
+const SRC_NAME = { lib: "الملفات التعليمية", acts: "أنشطة منزلية", bank: "بنك الأنشطة", proj: "مشاريع", life: "مهارات حياتية", ready: "استعداد مدرسي", val: "قيم وسلوك", exp: "ثقافة عامة", vid: "دروس مرئية", songs: "أناشيد", games: "ألعاب", stories: "قصص", quiz: "اختبارات" };
 const lget = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const AD = (n) => String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);

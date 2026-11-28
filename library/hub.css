@@ -1,0 +1,20 @@
+/* المكتبة التعليمية (بوابة الأقسام) — تعتمد على zad-tokens.css و zad-ui.css */
+.lhub [hidden]{display:none!important}
+.lhub .zph h1 img{width:44px;height:44px;vertical-align:-8px;margin-inline-end:6px}
+.lhub .zph img.lpose{height:150px}
+.lh-cta{margin:12px 0 0}
+.lh-cta a{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 20px 0 22px;border-radius:99px;background:#fff;color:var(--z-pri);font-weight:800;text-decoration:none;box-shadow:0 3px 0 #0003}
+.lh-cta a img{width:28px;height:28px}
+.lh-cta a:focus-visible,.lh-card:focus-visible{outline:3px solid var(--z-pri);outline-offset:3px}
+.lh-files{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;margin:16px 0 4px;padding:14px 16px;border-radius:18px;background:#FFF4D6;color:#5C3B00;text-decoration:none;border:1px solid #F1DFA6}
+.lh-files img{width:48px;height:48px}.lh-files b{display:block;font-size:17px}.lh-files small{display:block;font-size:13px;color:#7A5410}
+.lh-files span{font-weight:800;font-size:14px;white-space:nowrap}
+.lh-sec{margin:22px 0 0}.lh-sec h2{margin:0 0 4px;font-size:20px;color:var(--z-pri)}.lh-sec>p{margin:0 0 10px;color:var(--z-ink2);font-size:14px}
+.lh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.lh-card{display:grid;grid-template-columns:48px minmax(0,1fr);gap:4px 12px;align-items:center;min-height:88px;padding:12px 14px;border-radius:16px;background:var(--bg,#F5F0FF);border:1px solid var(--z-line);text-decoration:none;color:var(--z-ink);transition:transform .12s,box-shadow .12s}
+.lh-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px #5b2bb81f}
+.lh-card img{grid-row:1/3;width:48px;height:48px}
+.lh-card b{font-size:15.5px;line-height:1.35}.lh-card small{font-size:13px;line-height:1.5;color:var(--z-ink2)}
+.lh-tools{margin:22px 0 0;font-size:14px}.lh-tools a{display:inline-flex;align-items:center;min-height:40px;padding:0 6px;font-weight:800;color:var(--z-pri)}
+@media(max-width:420px){.lh-files{grid-template-columns:auto minmax(0,1fr)}.lh-files span{grid-column:1/-1}.lh-grid{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.lh-card{transition:none}}

@@ -743,7 +743,7 @@ function suggest(pct, wrong) {
     const nextQ = pct >= 70 ? (list.find((x) => x.subj === q.subj && x.kind === nk) || list.find((x) => x.subj !== q.subj && x.kind === q.kind)) : list.find((x) => x.subj === q.subj && x.kind === "basic") || null;
     let h = g.map((x) => `<a href="${ROOT}games/#g=${encodeURIComponent(x.id)}"><img src="${IMG("i_blocks")}" alt=""><span>لعبة: ${esc(x.t)}<small>${esc(x.skill || x.s || "")}</small></span></a>`).join("");
     if (/^g\d$/.test(q.lv)) h = `<a href="${ROOT}summaries/?gr=${q.lv.slice(1)}&sub=${encodeURIComponent(LIBSUB[q.subj] || "")}"><img src="${IMG("i_book")}" alt=""><span>راجع الدرس: ملخصات ${esc(LIBSUB[q.subj] || "")} · ${esc(LV[LVI[q.lv]][1])}<small>ملخصات ومراجعات قبل أن تعيد الاختبار</small></span></a>` + h;
-    h += `<a href="${ROOT}library/#lv=${q.lv}&sub=${encodeURIComponent(LIBSUB[q.subj])}"><img src="${IMG("i_notebook")}" alt=""><span>ملفات للطباعة: ${esc(LIBSUB[q.subj])} · ${esc(LV[LVI[q.lv]][1])}<small>أوراق عمل وأنشطة من المكتبة التعليمية</small></span></a>`;
+    h += `<a href="${ROOT}learning-files/#lv=${q.lv}&sub=${encodeURIComponent(LIBSUB[q.subj])}"><img src="${IMG("i_notebook")}" alt=""><span>ملفات للطباعة: ${esc(LIBSUB[q.subj])} · ${esc(LV[LVI[q.lv]][1])}<small>أوراق عمل وأنشطة من المكتبة التعليمية</small></span></a>`;
     if (nextQ) h += `<a href="#q=${encodeURIComponent(nextQ.slug)}"><img src="${IMG(KIND[nextQ.kind][1])}" alt=""><span>${pct >= 70 ? "الاختبار التالي" : "ابدأ بالتقييم البسيط"}: ${esc(nextQ.title)}<small>${esc(KIND[nextQ.kind][0])} · ${countQ(nextQ.n)}</small></span></a>`;
     box.innerHTML = h;
   });
