@@ -461,3 +461,14 @@ body:has(.zm-hero) main#view{margin-top:0!important;padding:0!important;border-r
 /* خمسة أقسام: «المزيد» لا يترك فراغًا في الشبكة */
 .zm-grid>.zm-card:last-child{grid-column:auto}
 @media(min-width:700px) and (max-width:1023px){.zm-grid>.zm-card:last-child{grid-column:1/-1}}
+
+/* v25: زر المكتبة في البطل، وحد أدنى 12px للنصوص الصغيرة، وأهداف لمس أكبر */
+.zm-btn3{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 24px;border-radius:12px;font-weight:800;font-size:16.5px;text-decoration:none;background:#ffffff1f;color:#fff;border:1.5px solid #ffffff80;transition:background .12s,transform .12s}
+.zm-btn3:hover{background:#ffffff33}.zm-btn3:active{transform:translateY(2px)}
+.zm-btn3:focus-visible,.zm-btn2:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.zm-btn3{transition:none}}
+.zm-tag,.zm-card .zm-tag,.zm-feat .zm-tag{font-size:12px}
+.zm-card small{font-size:12px}
+.zm-fb a,.zm-sm{min-height:40px}
+.zm-sec .zfmore a,.zm-sec .rmore a{display:inline-flex;align-items:center;min-height:40px;padding:0 6px}
+.zm-sec .rmore{line-height:1.2}
