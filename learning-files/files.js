@@ -325,7 +325,17 @@ function used(p, counted) {
 const MOBILE = /iPad|iPhone|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 /* سفاري لا يطبع ملف PDF داخل إطار مخفي بشكل موثوق، فنفتح الملف في نافذة جديدة */
 const SAFARI = /^((?!chrome|chromium|crios|fxios|edg|android).)*safari/i.test(navigator.userAgent);
+const CHK = new Map();
+function checkFile(u) {
+  if (CHK.has(u)) return CHK.get(u);
+  const pr = fetch(u, { method: "HEAD", cache: "no-cache" }).then((r) => (r.ok ? ((r.headers.get("content-type") || "").includes("text/html") ? false : true) : (r.status === 404 || r.status === 410 ? false : true))).catch(() => true);
+  CHK.set(u, pr); return pr;
+}
 function doDownload(p, bw) {
+  const u0 = fileUrl(p, bw);
+  return checkFile(u0).then((ok) => { if (!ok) { toast("الملف غير متاح للتنزيل حاليًا"); return; } doDownload2(p, bw); });
+}
+function doDownload2(p, bw) {
   let u = fileUrl(p, bw);
   const a = D.createElement("a");
   if (sameOrigin(u)) a.download = fname(p, bw);
@@ -382,14 +392,16 @@ function loadMedia(p) {
 function openPreview(p, push) {
   try { if (p && window.ZRECENT) window.ZRECENT.touchLib(p.slug || p.id); } catch (e) { /* */ }
   if (!p) return;
-  PV.back = D.activeElement; PV.p = p; PV.i = 0; PV.z = 1; PV.bw = false; PV.list = []; PV.mode = "images"; const seq = ++PV.seq;
+  $("#lpv").classList.remove("nopv"); PV.dl = undefined; PV.back = D.activeElement; PV.p = p; PV.i = 0; PV.z = 1; PV.bw = false; PV.list = []; PV.mode = "images"; const seq = ++PV.seq;
   $("#lpvt").textContent = p.name;
   { const fb = $("#lfb"); if (fb) { fb.hidden = true; fb.onclick = null; const tryA = (n) => { if (window.ZFEEDBACK) window.ZFEEDBACK.attach(fb, "lib:" + (p.slug || p.id), p.name, () => seq === PV.seq); else if (n < 20) setTimeout(() => tryA(n + 1), 250); }; tryA(0); } }
   $("#lpvm").textContent = [lvLabel(p), p.lib_subject, p.lib_type && TYPES[p.lib_type], p.file_type || "PDF", pagesTxt(p.pages)].filter(Boolean).join(" · ");
   { let d = $("#lpvd"); if (!d) { d = D.createElement("p"); d.id = "lpvd"; d.className = "lpvd"; $("#lpvm").after(d); } const t = p.description ? String(p.description).trim() : ""; d.textContent = t; d.hidden = !t; }
   $("#limg").removeAttribute("src"); $("#lload").hidden = false; $("#lload").textContent = "جاري تحميل المعاينة…";
   $("#lpn").textContent = ""; $("#ldots").innerHTML = "";
+  { const bd = $("#lpvbd"); if (bd) { const fr = isFree(p); bd.className = "lpvbd " + (fr ? "fr" : "pd"); bd.textContent = fr ? "مجاني" : (Number(p.price) > 0 ? money(p.price) : ""); bd.hidden = !bd.textContent; } }
   footer();
+  if (isFree(p)) checkFile(fileUrl(p, false)).then((ok) => { if (seq === PV.seq) { PV.dl = ok; footer(); } });
   $("#lpv").hidden = false; D.documentElement.classList.add("lpv-on");
   $("#lpvx").focus();
   if (push !== false) { writeHash(true); PV.pushed = true; } else PV.pushed = false;
@@ -397,7 +409,7 @@ function openPreview(p, push) {
   loadMedia(p).then((m) => {
     if (seq !== PV.seq) return;
     PV.mode = m.mode; PV.list = m.list.map(abs); footer();
-    if (!PV.list.length) { $("#lload").textContent = "لا توجد صور معاينة لهذا الملف بعد."; return; }
+    if (!PV.list.length) { $("#lpv").classList.add("nopv"); $("#lload").hidden = false; $("#lload").textContent = "المعاينة غير متاحة لهذا الملف حاليًا."; return; }
     show(0);
   });
 }
@@ -405,8 +417,8 @@ function footer() {
   const p = PV.p, f = $("#lpvf");
   if (isFree(p)) {
     f.innerHTML = (p.bw_url ? `<div class="lver"><span>النسخة:</span><div class="lseg" role="group" aria-label="النسخة"><button type="button" data-bw="0" aria-pressed="${!PV.bw}">ملوّنة</button><button type="button" data-bw="1" aria-pressed="${PV.bw}">أبيض وأسود</button></div></div>` : "")
-      + `<div class="lpva"><button type="button" class="lbt pri" data-pa="dl">${ICON.dl}تحميل PDF</button><button type="button" class="lbt" data-pa="pr">${ICON.pr}طباعة</button></div>`
-      + `<p class="lpvn">${PV.bw ? "معاينة تقريبية لنسخة الأبيض والأسود. " : ""}مقاس A4 بهوامش مناسبة للطباعة. للاستخدام الشخصي أو داخل الفصل.</p>`;
+      + `<div class="lpva"><button type="button" class="lbt pri" data-pa="dl"${PV.dl === false ? " disabled" : ""}>${ICON.dl}تنزيل الملف</button><button type="button" class="lbt" data-pa="pr">${ICON.pr}طباعة</button></div>`
+      + `<p class="lpvn">${PV.dl === false ? "الملف غير متاح للتنزيل حاليًا. " : ""}${PV.bw ? "معاينة تقريبية لنسخة الأبيض والأسود. " : ""}مقاس A4 بهوامش مناسبة للطباعة. للاستخدام الشخصي أو داخل الفصل.</p>`;
   } else if (Number(p.price) === 0) {
     f.innerHTML = '<div class="lpva paid"><button type="button" class="lbt ord" disabled>التنزيل غير متاح حاليًا</button></div>';
   } else {
@@ -481,7 +493,7 @@ D.addEventListener("click", (e) => {
   if ((b = t.closest("[data-pa]"))) { const p = PV.p; if (!p) return; return b.dataset.pa === "dl" ? doDownload(p, PV.bw) : doPrint(p, PV.bw); }
   if ((b = t.closest(".lopt"))) { const fn = shFn, bw = b.dataset.v === "1"; closeSheet(); if (fn) fn(bw); return; }
   if (t.closest("#lshx") || t.id === "lsh") return closeSheet();
-  if (t.closest("#lpvx") || t.id === "lpv") return closePreview();
+  if (t.closest("#lpvx") || t.closest("#lpvback") || t.id === "lpv") return closePreview();
   if (t.closest("#lprev")) return show(PV.i - 1);
   if (t.closest("#lnext")) return show(PV.i + 1);
   if (t.closest("#lzi")) return zoom(1);

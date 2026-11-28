@@ -207,3 +207,11 @@ html.lpv-on,html.lpv-on body{overflow:hidden}
 .lib .lfl{background:#fff;border:2px solid var(--z-tint2);border-radius:18px;padding:12px;margin-top:12px}
 .lib .lclr{min-height:40px}
 .lib .lmorel{margin:18px 0 0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}.lib .lmorel a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:99px;background:var(--z-tint);color:var(--z-pri);font-weight:800;font-size:14px;text-decoration:none}
+
+/* v3: تفاصيل الملف */
+.lib .lpvback{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 14px 0 10px;border:0;border-radius:99px;background:var(--z-tint);color:var(--z-pri);font:800 14px var(--z-font);cursor:pointer;margin:0 0 6px}
+.lib .lpvbd{display:inline-block;margin:0 8px 6px;padding:3px 12px;border-radius:99px;font:800 13px var(--z-font)}
+.lib .lpvbd.fr{background:#E3F4EA;color:#15693f}.lib .lpvbd.pd{background:#FFF6E0;color:#8a5a00}
+.lib .lbt[disabled]{opacity:.55;cursor:not-allowed}
+.lib .lpv.nopv .lstage,.lib .lpv.nopv .lnav,.lib .lpv.nopv .lctl{display:none}.lib .lpv.nopv .lview{min-height:0}.lib .lpv.nopv .lload{position:static;display:block;margin:14px 16px;padding:26px 16px;border:2px dashed var(--z-tint2);border-radius:16px;text-align:center;color:var(--z-ink2);font-weight:700;background:#faf8ff}
+.lib .lpv.nopv .lview{flex:none;height:auto}.lib .lpv.nopv .lload{height:auto}
