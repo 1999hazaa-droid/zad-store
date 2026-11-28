@@ -3536,7 +3536,7 @@ function applyContent(rows) {
 })();
 
 /* ======================= الاشتراك ======================= */
-const FREE_L = 3, WA = "96877336242";
+const FREE_L = 3, WA = "96877058066";
 const PLANS = [["شهر", "1.5", "شهري", 30], ["٣ أشهر", "3.5", "٣ أشهر", 90], ["سنة", "10", "سنوي", 365]];
 let DEV = ""; try { DEV = localStorage.getItem("zad-dev") || ""; if (!DEV) { DEV = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()); localStorage.setItem("zad-dev", DEV); } } catch { DEV = "tmp" + Date.now(); }
 let SUB = 0; try { SUB = +localStorage.getItem("zad-sub") || 0; } catch {}

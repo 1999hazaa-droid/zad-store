@@ -525,7 +525,7 @@ SUB.settings = { title: "إعدادات المنصة", fn: async (m) => {
   const T = cfg.texts || {}, bank = (cfg.order?.payments || []).find((x) => x.type === "bank") || {}, bb = bank.bank || {};
   m.innerHTML = `${back()}
   <div class="card"><h3>🏪 المنصة</h3><label class="f"><span>اسم المنصة</span><input type="text" id="nm" value="${esc(cfg.name || "")}"></label>
-  <label class="f"><span>رقم واتساب الطلبات</span><input type="tel" id="wa" dir="ltr" value="${esc(cfg.order?.whatsapp || "")}" placeholder="96877336242"><small>بالأرقام مع رمز الدولة بدون +</small></label>
+  <label class="f"><span>رقم واتساب الطلبات</span><input type="tel" id="wa" dir="ltr" value="${esc(cfg.order?.whatsapp || "")}" placeholder="96877058066"><small>بالأرقام مع رمز الدولة بدون +</small></label>
   <label class="f"><span>اللون الأساسي</span><input type="color" id="pc" value="${esc(cfg.theme?.primary || "#5B34D6")}" style="height:46px;padding:4px"></label></div>
   <div class="card"><h3>📣 شريط الإعلان (أعلى المنصة)</h3><label class="sw"><span>إظهار الشريط</span><input type="checkbox" id="as" ${T.announce_show ? "checked" : ""}></label><label class="f"><span>نص الإعلان</span><input type="text" id="at" value="${esc(T.announce_text || "")}"></label></div>
   <div class="card"><h3>🖼️ الصفحة الرئيسية</h3><label class="f"><span>العنوان الكبير</span><textarea id="ht" style="min-height:70px">${esc(T.hero_title || "")}</textarea></label>
