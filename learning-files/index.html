@@ -21,7 +21,7 @@
 <link rel="preload" href="../fonts/cairo-bold.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="../css/zad-tokens.css">
 <link rel="stylesheet" href="../css/zad-ui.css?v=4">
-<link rel="stylesheet" href="files.css?v=1">
+<link rel="stylesheet" href="files.css?v=3">
 <link rel="stylesheet" href="../next/rec.css?v=1">
 <link rel="stylesheet" href="../find/find.css?v=3">
 <link rel="stylesheet" href="../saved/saved.css?v=3">
@@ -33,9 +33,9 @@
 <section class="zph" style="background:linear-gradient(135deg,var(--z-pri),var(--z-pri-l))"><div class="zw"><div>
 <div class="zbc"><a href="../">الرئيسية</a> › الملفات التعليمية</div>
 <h1><img src="../images/zad/i_notebook.webp" alt="">الملفات التعليمية</h1>
-<p>أوراق عمل وملخصات ومراجعات وملفات PDF جاهزة للطباعة، مرتّبة حسب العمر والصف والمادة ونوع الملف. عاين الملف قبل تحميله أو طباعته.</p>
+<p>ملفات تعليمية تساعد الطفل وولي الأمر على التعلم والمراجعة بطريقة منظمة.</p>
 <div class="zst" id="lstats" aria-live="polite"><span>جاري تحميل الملفات…</span></div>
-<p style="margin:10px 0 0;display:flex;flex-wrap:wrap;gap:8px"><a href="../library/" style="display:inline-block;background:#fff;color:var(--z-pri);font-weight:800;border-radius:99px;padding:12px 20px;text-decoration:none;box-shadow:0 3px 0 #0003">المكتبة التعليمية: القصص والبطاقات والأنشطة</a><a href="../summaries/" style="display:inline-block;background:#fff;color:var(--z-pri);font-weight:800;border-radius:99px;padding:12px 20px;text-decoration:none;box-shadow:0 3px 0 #0003">الملخصات والمراجعات الدراسية</a></p>
+<p class="lhl"><a href="../library/">المكتبة التعليمية: القصص والبطاقات والأنشطة ←</a></p>
 </div><img class="lpose" src="../games/chars/poses/girl2-read-320.png" alt="" width="150" height="150"></div></section>
 
 <div class="zsrch"><div class="zw"><div role="search">
@@ -43,8 +43,6 @@
 <input id="lq" type="search" enterkeyhint="search" autocomplete="off" placeholder="ابحث عن ورقة عمل، ملخص، مراجعة أو درس…">
 <button type="button" id="lqx" aria-label="مسح البحث" hidden><svg class="lsvg" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 </div></div></div>
-<div class="zrwrap" style="max-width:1100px;margin:0 auto;padding:0 16px"><div data-zrecent="lib"></div></div>
-<p class="zfmore"><a href="../find/" id="lfind">بحث متقدم: فلاتر واقتراحات وبحث حسب احتياج الطفل ←</a> · <a href="../saved/" id="lsaved">محتواي المحفوظ</a> · <a href="../packs/" id="lpacks">الحزم التعليمية الجاهزة</a> · <a href="../summaries/" id="lsumm">الملخصات والمراجعات</a> · <a href="../library/" id="llib">المكتبة التعليمية</a></p>
 
 <main class="zw" id="lmain">
 <div class="ltabs" role="tablist" aria-label="عرض الملفات">
@@ -61,10 +59,13 @@
 <label>السعر<select id="fpr"><option value="">المجاني والمدفوع</option><option value="free">المجاني فقط</option><option value="paid">المدفوع فقط</option></select></label>
 <label>الترتيب<select id="fsort"><option value="new">الأحدث</option><option value="pop">الأكثر استخدامًا</option></select></label>
 </div>
+<button type="button" class="lclr2" data-clear hidden id="lclrp">مسح الفلاتر وعرض كل الملفات</button>
 </div>
 <div id="lres" aria-live="polite"><div class="lgrid" style="margin-top:16px"><div class="lsk"></div><div class="lsk"></div><div class="lsk"></div><div class="lsk"></div></div></div>
 <noscript><div class="lempty"><h3>الملفات تحتاج تشغيل JavaScript</h3><p>فعّل JavaScript في المتصفح ثم أعد فتح الصفحة.</p></div></noscript>
+<p class="zfmore lmorel"><a href="../find/" id="lfind">بحث متقدم: فلاتر واقتراحات وبحث حسب احتياج الطفل ←</a><a href="../saved/" id="lsaved">محتواي المحفوظ</a><a href="../packs/" id="lpacks">الحزم التعليمية الجاهزة</a><a href="../summaries/" id="lsumm">الملخصات والمراجعات</a><a href="../library/" id="llib">المكتبة التعليمية</a></p>
 <p class="lfoot">الملفات المجانية للاستخدام الشخصي أو داخل الفصل. المفضلة والملفات المستخدمة مؤخرًا تُحفظ على جهازك فقط، ولا نطلب أي بيانات شخصية.<br><a href="../privacy/">سياسة الخصوصية</a></p>
+<div class="zrwrap" style="margin-top:18px"><div data-zrecent="lib"></div></div>
 <div class="rec-mount" data-max="3" data-title="مقترح لك من الملفات"></div>
 </main>
 
@@ -91,7 +92,7 @@
 <script src="../saved/zsaved.js?v=1" defer></script>
 <script src="../recent/zrecent.js?v=1" defer></script>
 <script src="../feedback/zfeedback.js?v=1" defer></script>
-<script src="files.js?v=1" defer></script>
+<script src="files.js?v=2" defer></script>
 <script src="../js/zad-back.js?v=8e44711078" defer></script>
 <script src="../next/rec.js?v=2" defer></script>
 <script>(function(){var q=document.getElementById("lq"),a=document.getElementById("lfind");if(!q||!a)return;var go=function(){var v=q.value.trim();return "../find/"+(v?"?q="+encodeURIComponent(v):"")};a.addEventListener("click",function(){a.href=go()});q.addEventListener("keydown",function(e){if(e.key==="Enter"&&q.value.trim()){e.preventDefault();location.href=go()}})})();</script>

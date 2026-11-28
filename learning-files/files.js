@@ -186,7 +186,7 @@ function card(p, o) {
 <button type="button" class="lth" data-a="pv" aria-label="معاينة ${esc(p.name)}"><img src="${esc(thumb(p))}" alt="" loading="lazy" decoding="async" width="420" height="525"><span class="lbg">${badges}</span>${pg ? `<span class="lpg">${esc(pg)}</span>` : ""}</button>
 <button type="button" class="lfav" data-a="fav" aria-pressed="${fav}" title="${fav ? "تم الحفظ" : "حفظ"}" aria-label="${fav ? "إزالة من المفضلة (تم الحفظ)" : "حفظ في المفضلة"}: ${esc(p.name)}">${ICON.heart}</button>
 <div class="lbd"><h3>${esc(p.name)}</h3>${p.description ? `<p class="lds">${esc(String(p.description).split("\n")[0])}</p>` : ""}
-<div class="lmeta">${lv ? `<span>${esc(lv)}</span>` : ""}${o.skill && p.lib_skill ? `<span class="ls">${esc(p.lib_skill)}</span>` : p.lib_subject ? `<span class="ls" title="${esc(subj)}">${esc(p.lib_subject)}</span>` : sec ? `<span class="ls">${esc(sec[1])}</span>` : ""}</div>
+<div class="lmeta">${lv ? `<span>${esc(lv)}</span>` : ""}${o.skill && p.lib_skill ? `<span class="ls">${esc(p.lib_skill)}</span>` : p.lib_subject ? `<span class="ls" title="${esc(subj)}">${esc(p.lib_subject)}</span>` : ""}${p.lib_type && TYPES[p.lib_type] ? `<span class="lty">${esc(TYPES[p.lib_type])}</span>` : ""}</div>
 <div class="lft"><b>${esc(p.file_type || "PDF")}</b>${DIFF[p.lib_difficulty] ? `<span class="ldf">${esc(DIFF[p.lib_difficulty])}</span>` : ""}${pg ? `<span>${esc(pg)}</span>` : ""}${free && p.bw_url ? "<span>ملوّن وأبيض وأسود</span>" : ""}</div>
 </div>${act}</article>`;
 }
@@ -270,7 +270,7 @@ function renderFilters() {
   S.items.filter((p) => matches(p, { ...S, type: "", q: "" })).forEach((p) => { const k = typeOf(p); tys.set(k, (tys.get(k) || 0) + 1); });
   if (S.type && !tys.has(S.type)) tys.set(S.type, 0);
   $("#ftype").innerHTML = `<option value="">كل الأنواع</option>` + Array.from(tys.entries()).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<option value="${esc(k)}"${k === S.type ? " selected" : ""}>${esc(TYPES[k] || k)} (${n})</option>`).join("");
-  $("#fpr").value = S.price; $("#fsort").value = S.sort;
+  $("#fpr").value = S.price; $("#fsort").value = S.sort; { const cb = $("#lclrp"); if (cb) cb.hidden = !filtering() && !$("#lq").value; }
   const on = $("#flv .on"), on2 = $("#fsec .on");
   [on, on2].forEach((b) => { if (b && b.dataset.lv !== "" && b.dataset.sec !== "") b.scrollIntoView({ block: "nearest", inline: "nearest" }); });
 }
@@ -385,7 +385,8 @@ function openPreview(p, push) {
   PV.back = D.activeElement; PV.p = p; PV.i = 0; PV.z = 1; PV.bw = false; PV.list = []; PV.mode = "images"; const seq = ++PV.seq;
   $("#lpvt").textContent = p.name;
   { const fb = $("#lfb"); if (fb) { fb.hidden = true; fb.onclick = null; const tryA = (n) => { if (window.ZFEEDBACK) window.ZFEEDBACK.attach(fb, "lib:" + (p.slug || p.id), p.name, () => seq === PV.seq); else if (n < 20) setTimeout(() => tryA(n + 1), 250); }; tryA(0); } }
-  $("#lpvm").textContent = [lvLabel(p), SECI[p.lib_section] && SECI[p.lib_section][1], p.file_type || "PDF", pagesTxt(p.pages)].filter(Boolean).join(" · ");
+  $("#lpvm").textContent = [lvLabel(p), p.lib_subject, p.lib_type && TYPES[p.lib_type], p.file_type || "PDF", pagesTxt(p.pages)].filter(Boolean).join(" · ");
+  { let d = $("#lpvd"); if (!d) { d = D.createElement("p"); d.id = "lpvd"; d.className = "lpvd"; $("#lpvm").after(d); } const t = p.description ? String(p.description).trim() : ""; d.textContent = t; d.hidden = !t; }
   $("#limg").removeAttribute("src"); $("#lload").hidden = false; $("#lload").textContent = "جاري تحميل المعاينة…";
   $("#lpn").textContent = ""; $("#ldots").innerHTML = "";
   footer();
@@ -406,6 +407,8 @@ function footer() {
     f.innerHTML = (p.bw_url ? `<div class="lver"><span>النسخة:</span><div class="lseg" role="group" aria-label="النسخة"><button type="button" data-bw="0" aria-pressed="${!PV.bw}">ملوّنة</button><button type="button" data-bw="1" aria-pressed="${PV.bw}">أبيض وأسود</button></div></div>` : "")
       + `<div class="lpva"><button type="button" class="lbt pri" data-pa="dl">${ICON.dl}تحميل PDF</button><button type="button" class="lbt" data-pa="pr">${ICON.pr}طباعة</button></div>`
       + `<p class="lpvn">${PV.bw ? "معاينة تقريبية لنسخة الأبيض والأسود. " : ""}مقاس A4 بهوامش مناسبة للطباعة. للاستخدام الشخصي أو داخل الفصل.</p>`;
+  } else if (Number(p.price) === 0) {
+    f.innerHTML = '<div class="lpva paid"><button type="button" class="lbt ord" disabled>التنزيل غير متاح حاليًا</button></div>';
   } else {
     const ok = p.is_available !== false;
     f.innerHTML = `<div class="lpva paid"><span class="lpz">${esc(money(p.price))}${p.old_price && Number(p.old_price) > Number(p.price) ? `<s>${esc(money(p.old_price))}</s>` : ""}</span>${ok ? `<a class="lbt ord" href="${esc(prodUrl(p))}">${ICON.cart}اطلب الملف</a>` : '<button type="button" class="lbt ord" disabled>غير متاح حاليًا</button>'}</div>`
